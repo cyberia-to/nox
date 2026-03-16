@@ -234,12 +234,15 @@ cost: 300. stark constraints: ~300.
 ```
 reduce(s, [16 constraint], f) =
   let (check, f1) = reduce(s, constraint, f - 1)
-  let w = PROVER_INJECT()
-  assert check(w) = 0          — Layer 1 verifies the constraint
-  (w, f1)
+  let w = PROVER_INJECT()                         — prover supplies witness noun
+  let (v, f2) = reduce(w, check, f1)              — apply check as formula to w as object
+  assert v = 0                                     — constraint must produce zero (field element)
+  (w, f2)
 ```
 
-the single non-deterministic pattern. the prover injects a witness value from outside the VM. Layer 1 constraints verify it. the verifier NEVER executes hint directly — it checks constraint satisfaction via the stark proof.
+the single non-deterministic pattern. the prover injects a witness noun `w` from outside the VM. the constraint formula is evaluated with `s` as object to produce `check` — a formula. then `check` is applied to `w` as object via standard reduction. the result must be the field element 0 (success, same convention as branch/eq). if `reduce(w, check, f1)` produces a non-zero value, halts, or errors, the hint fails and the proof is invalid.
+
+the verifier NEVER executes hint directly — it checks constraint satisfaction via the stark proof. the trace includes the rows for both `reduce(s, constraint, ...)` and `reduce(w, check, ...)`. the witness `w` appears in the trace as the object of the constraint-check rows.
 
 ```
 PROVER_INJECT: → Noun

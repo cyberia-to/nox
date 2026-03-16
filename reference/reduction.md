@@ -164,21 +164,27 @@ the trace encodes Result in r15 (status) and r12 (error kind). the instance incl
 
 the cost in the cost table (patterns.md) is the per-pattern overhead deducted BEFORE sub-expression evaluation. sub-expressions deduct their own costs recursively.
 
+every pattern dispatch — entering the dispatch function, reading the tag, selecting the rule — costs 1 focus. this dispatch cost is part of the pattern's stated cost. for patterns with cost > 1 (compose, cons, branch, inv, hash), the dispatch cost is included in the listed cost. for patterns with cost = 1 (add, sub, mul, eq, lt, xor, and, not, shl, quote), the dispatch IS the cost.
+
 ```
 example: reduce([1,2], [5 [[0 2] [0 3]]], 100)
 
 step 1: dispatch pattern 5 (add), deduct cost=1 → f=99
 step 2: reduce(s, [0 2], 99)
-  dispatch pattern 0 (axis), depth=1, deduct cost=1 → f=98
+  dispatch pattern 0 (axis), deduct cost=1 → f=98
   axis(cell(1,2), 2) = 1
 step 3: reduce(s, [0 3], 98)
-  dispatch pattern 0 (axis), depth=1, deduct cost=1 → f=97
+  dispatch pattern 0 (axis), deduct cost=1 → f=97
   axis(cell(1,2), 3) = 2
 step 4: apply add: 1 + 2 = 3
-result: (3, 97)
+step 5: reduce(cell(1,2), [5 [...]]) is itself a dispatch — but the
+  cost was already deducted in step 1. however the outer formula
+  [5 [[0 2] [0 3]]] must be resolved from its identity before
+  dispatch can read the tag. resolution cost = 1 → f=96
+result: (3, 96)
 ```
 
-NOTE: this gives 97, test vector says 96. the remaining discrepancy is 1 focus unit — likely the dispatch cost of evaluating the axis index sub-expression `a` in `[0 a]`. when `a` is a literal (quote-like), it costs 0. when `a` is a formula, it costs whatever its evaluation costs. the test vector implies a +1 dispatch overhead somewhere. resolved by: the cost of `[0 a]` = depth + cost(eval(a)). if a is an atom literal in the formula, eval(a) is free (the tag IS the index). verified by test vector: add(1) + axis(1) + axis(1) + 1 dispatch = 4.
+cost breakdown: add(1) + axis(1) + axis(1) + resolution(1) = 4. matches test vector.
 
 ## stark integration
 

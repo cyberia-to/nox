@@ -46,10 +46,13 @@ focus_final:   F_p
 status:        F_p (0 = ok, 1 = halt, 2 = error)
 ```
 
+when status = 0 (success), H(result) is the structural hash of the result noun. when status ≠ 0 (halt or error), there is no result noun — H(result) MUST be the all-zero hash (eight zero elements). the verifier enforces: `status ≠ 0 ⟹ H(result) = 0`.
+
 the instance links the trace to the computation. the verifier checks:
 1. first row: r1,r2 match instance H(object)[0..2], r3,r4 match instance H(formula)[0..2]
 2. last row: r7 matches instance H(result)[0..2], r9 matches focus_final, r15 matches status
-3. full hash verification: instance hashes are checked against committed noun store
+3. status-gated result: if status = 0, H(result) is a valid noun identity; if status ≠ 0, H(result) = 0
+4. noun store commitment: instance hashes (H(object), H(formula), and H(result) when status = 0) are checked against the noun store polynomial commitment. the commitment scheme is defined by the proof system (zheng) — nox specifies WHAT is committed (the noun identities referenced by the trace), not HOW
 
 ## AIR transition constraints
 
@@ -132,7 +135,7 @@ when r15 = 1 (halt):
   r7 = 0 (no result)
 
 when r15 = 2 (error):
-  r12 = error kind (0 = type error, 1 = axis on atom, 2 = inv(0), 3 = unavailable)
+  r12 = error kind (0 = type error, 1 = axis on atom, 2 = inv(0), 3 = unavailable, 4 = malformed)
   r7 = 0 (no result)
 ```
 
