@@ -4,14 +4,14 @@ why exactly these instruction groups — structural, field, bitwise, hash, hint 
 
 ## the five groups
 
-nox has seventeen patterns organized into five groups. each group exists because it covers a distinct algebraic domain that the others cannot reach. removing any group cripples the system. adding more groups adds no capability.
+nox has sixteen deterministic patterns organized into four groups, plus a non-deterministic prover protocol (hint). each group covers a distinct algebraic domain that the others cannot reach. removing any group cripples the system. adding more groups adds no capability.
 
 ```
-STRUCTURAL (5)      tree algebra        Turing completeness
-FIELD (6)           F_p arithmetic      proof-native computation
-BITWISE (4)         Z/2^64 arithmetic   binary world interface
-HASH (1)            cryptographic       identity and commitment
-HINT (1)            non-deterministic   privacy and search
+STRUCTURAL (5)      tree algebra        Turing completeness          4-bit encoded
+FIELD (6)           F_p arithmetic      proof-native computation     4-bit encoded
+BITWISE (4)         Z/2^64 arithmetic   binary world interface       4-bit encoded
+HASH (1)            cryptographic       identity and commitment      4-bit encoded
+HINT                non-deterministic   privacy and search           prover protocol
 ```
 
 ## group 1: structural (patterns 0-4) — tree algebra
@@ -80,17 +80,17 @@ could hash be expressed as pure structural + field patterns? yes. [[Hemera]] (Po
 
 the reason hash is a dedicated pattern rather than a library function: it appears in every meaningful operation. identity verification is a hash. Merkle trees are hashes. [[stark]] Fiat-Shamir challenges are hashes. content addressing is a hash. making hash a pattern means the most common expensive operation has the most optimized constraint layout. 83% of the stark verifier's cost is hash operations — this single pattern, jetted, accounts for the largest share of the 8.5× recursive verification speedup.
 
-## group 5: hint (pattern 16) — non-deterministic witness
+## group 5: hint — non-deterministic witness
 
 ```
-16 hint — prover injects, Layer 1 verifies
+hint — prover injects, constraints verify
 ```
 
-one pattern. the entire mechanism of privacy, search, and oracle access.
+not an opcode. a prover/verifier protocol. the entire mechanism of privacy, search, and oracle access.
 
 hint is what separates nox from a transparent calculator. without hint, every computation is publicly reproducible — the verifier can re-run the program and learn everything the prover knows. hint creates the information asymmetry that makes [[zero knowledge proofs]] possible: the prover injects private knowledge, Layer 1 constraints verify it, the verifier checks the [[stark]] proof without learning the secret.
 
-hint is the only non-deterministic pattern. the other sixteen are fully deterministic — same input always produces the same output. hint produces a result that depends on what the prover injects. this breaks confluence intentionally, creating the gap between prover knowledge and verifier knowledge that ZK exploits.
+hint is the only non-deterministic mechanism. the sixteen deterministic patterns always produce the same output from the same input. hint produces a result that depends on what the prover injects. this breaks confluence intentionally, creating the gap between prover knowledge and verifier knowledge that ZK exploits.
 
 could the system work without hint? yes — as a transparent, verifiable computation engine. all the other properties (confluence, content-addressing, memoization, proof-nativity) remain. but without hint, there are no private transactions, no ZK identity proofs, no ability to prove without revealing. hint is the minimum necessary non-determinism.
 
@@ -140,15 +140,32 @@ no sixth group is necessary because:
 - exceptions: unnecessary. errors propagate as values (⊥_error, ⊥_unavailable). no stack unwinding, no try/catch. error handling is tree navigation.
 - concurrency primitives: unnecessary. confluence guarantees safe parallelism. no locks, no channels, no atomic operations. the rewrite system's mathematics provides all the concurrency safety needed.
 
-## the four-bit argument
+## the four-bit core
 
-sixteen patterns fit in four bits. this is deliberate. the pattern tag is a single nibble. the encoding is maximally dense — a nox formula is a binary tree where each node's tag occupies exactly 4 bits. compact encoding means:
+sixteen deterministic patterns fit in four bits. the pattern tag is a single nibble — the encoding is maximally dense. a nox formula is a binary tree where each node's tag occupies exactly 4 bits. compact encoding means:
 
 - shorter programs hash faster (less data through [[Hemera]])
 - smaller proofs (fewer bits to commit in the [[stark]] trace)
 - denser caching (more computation identities per unit of storage)
 - cheaper transmission (less bandwidth per program over [[radio]])
 
-adding a seventeenth deterministic pattern would require 5 bits for the tag, wasting half the encoding space. hint (pattern 16) already occupies position 10000 in binary — the first 5-bit tag. this is acceptable because hint is rare (used only at ZK injection points). a system with 32 patterns would waste encoding density on patterns that are used less than 1% of the time.
+everything beyond the sixteen patterns lives outside the encoding:
 
-sixteen is the sweet spot: enough for algebraic completeness, few enough for encoding density, exactly the number that fits a nibble.
+```
+4-bit tag     16 deterministic patterns     the encoding, the wire format, the STARK trace
+              frozen forever
+
+runtime       jets                          recognized by formula hash, transparent optimization
+              hash is simultaneously pattern 15 AND a jet (optimized constraint layout)
+              poly_eval, merkle_verify, fri_fold, ntt — pure pattern compositions, jetted for speed
+
+prover        hint                          prover/verifier protocol, not an opcode
+              the prover injects a witness, constraints verify it
+              never appears in the encoded formula — it is a runtime interaction
+```
+
+jets do not need opcodes. a jet is a formula tree made of the sixteen core patterns — the runtime recognizes it by `H(formula) == KNOWN_HASH` and substitutes optimized native code. the encoding on the wire is still 4-bit tagged core patterns. as more jets are added over time (recursive [[stark]] verification, new cryptographic primitives, AI inference kernels), the encoding never grows. jets are a runtime layer, not an encoding layer.
+
+hint does not need an opcode either. it is a prover/verifier protocol — the prover signals "I will inject a witness here," the [[stark]] constraints verify the witness is valid, the verifier checks the proof without learning the secret. hint lives in the interaction between prover and verifier, not in the formula encoding.
+
+the result: the wire format is 4 bits per node, forever. sixteen is the exact number — enough for algebraic completeness across five domains, few enough to fill a nibble with zero waste. adding a seventeenth deterministic pattern would require 5 bits, wasting half the encoding space on tags that will never be used. the four-bit boundary is both a mathematical optimum and a forcing function: it disciplines the design to include only what is algebraically necessary.
