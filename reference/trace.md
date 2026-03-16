@@ -54,39 +54,44 @@ the instance links the trace to the computation. the verifier checks:
 3. status-gated result: if status = 0, H(result) is a valid noun identity; if status ≠ 0, H(result) = 0
 4. noun store commitment: instance hashes (H(object), H(formula), and H(result) when status = 0) are checked against the noun store polynomial commitment. the commitment scheme is defined by the proof system (zheng) — nox specifies WHAT is committed (the noun identities referenced by the trace), not HOW
 
-## AIR transition constraints
+## constraint system
 
-each pattern defines a transition constraint polynomial over consecutive rows.
+each pattern defines constraints over its trace row. single-row patterns use in-row constraints. multi-row patterns (axis depth>1, inv, hash) use transition constraints across consecutive rows. SuperSpartan CCS handles both forms and mixed degrees natively.
+
+### single-row patterns (cost = 1)
+
+each reduce() call produces 1 trace row. operand values (r5, r6) are connected to sub-expression result rows through CCS wiring constraints.
 
 ```
 pattern 5 (add):
-  r7_{t+1} = r5_t + r6_t                    degree 1
-  r9_{t+1} = r8_t - 1                       focus decrement
+  r7 = r5 + r6                              degree 1
+  r9 = r8 - 1                               focus decrement
 
 pattern 7 (mul):
-  r7_{t+1} = r5_t × r6_t                    degree 2
-  r9_{t+1} = r8_t - 1
+  r7 = r5 × r6                              degree 2
+  r9 = r8 - 1
 
-pattern 8 (inv):
-  r7_{t+1} × r5_t = 1                       degree 2
-  r9_{t+1} = r8_t - 64
-
-pattern 15 (hash):
-  Poseidon2 round constraints               degree 7
-  consumes multiple consecutive rows (see multi-row patterns)
+pattern 9 (eq):
+  r7 = (r5 == r6 ? 0 : 1)                   degree 1
+  r9 = r8 - 1
 
 pattern 4 (branch):
-  selector = (1 - r7_test × r7_test_inv)    ; 1 if zero, 0 if nonzero
-  r7_{t+1} = selector × r7_yes + (1-selector) × r7_no
+  selector = (1 - r5_test × r5_test_inv)    ; 1 if zero, 0 if nonzero
+  r7 = selector × r12_yes + (1-selector) × r12_no
+  r9 = r8 - 1
 ```
 
-constraint selector: `r0_t = tag` gates each pattern's constraints. only the active pattern's constraints apply per row. SuperSpartan CCS handles mixed degrees natively.
+### multi-row patterns
 
-## multi-row patterns
-
-patterns with cost > 1 consume multiple trace rows. each row has r0 = pattern tag, and intermediate rows use auxiliary registers for internal state.
+patterns with multi-step overhead use transition constraints across consecutive rows. all rows share the same r0 tag.
 
 ```
+pattern 8 (inv), cost 64:
+  row 0:     r5 = input value, r12 = accumulator = 1
+  rows 1-63: r12_{t+1} = r12_t × r12_t × (bit ? r5 : 1)   square-and-multiply
+  row 63:    r7 = r12 (final inverse)
+  verification: r7 × r5 = 1                                 degree 2
+
 pattern 15 (hash), cost 300:
   row 0:     r5 = input value, r12-r14 = initial sponge state
   rows 1-71: r12-r14 = round state (8 full + 64 partial Poseidon2 rounds)
@@ -94,23 +99,28 @@ pattern 15 (hash), cost 300:
   total rows: ~75 (72 rounds + absorption + squeeze overhead)
   each row: degree 7 constraint (s-box x^7)
 
-pattern 8 (inv), cost 64:
-  row 0:     r5 = input value, r12 = accumulator
-  rows 1-63: r12 = intermediate square-and-multiply state
-  row 64:    r7 = inverse result
-  total rows: 64
-  each row: degree 2 constraint (single multiplication)
-
-pattern 2 (compose), cost 2:
-  row 0: dispatch to sub-expression x
-  row 1: dispatch to sub-expression y
-  sub-expressions generate their own rows recursively
-
-pattern 3 (cons), cost 2:
-  row 0: dispatch to sub-expression a
-  row 1: dispatch to sub-expression b
-  result row: r7 = cell identity (compressed hash of cell(ra, rb))
+pattern 0 (axis), cost = depth:
+  row 0:     r5 = root noun, r12 = remaining index
+  rows 1..d: r12 = next index, r7 = traversed sub-noun
+  each row: degree 1 (select left or right child based on index bit)
 ```
+
+## single-row vs multi-row patterns
+
+most patterns produce exactly 1 trace row per reduce() call. three patterns produce multiple rows for their internal computation:
+
+```
+single-row (cost 1): quote, compose, cons, branch, add, sub, mul,
+                     eq, lt, xor, and, not, shl, hint
+                     axis (depth 1 only)
+
+multi-row:
+  axis (depth d): d rows — one per tree traversal step
+  inv (cost 64):  64 rows — square-and-multiply chain
+  hash (cost 300): ~300 rows — Poseidon2 permutation rounds
+```
+
+single-row patterns store operands in r5/r6 and result in r7. the operand values are wired to sub-expression result rows through CCS wiring constraints. compose and cons dispatch sub-expressions whose results flow back through the wiring; compose additionally generates a third reduce() call (its own row) for the final application.
 
 ## row linking
 
@@ -121,6 +131,15 @@ same object:  r1_{t+1} = r1_t AND r2_{t+1} = r2_t
 new object:   r1_{t+1}, r2_{t+1} set by compose result hash
 same formula: r3_{t+1} = r3_t AND r4_{t+1} = r4_t
 new formula:  r3_{t+1}, r4_{t+1} set by sub-expression dispatch
+```
+
+## focus decrement constraints
+
+```
+single-row patterns:  r9 = r8 - 1            (1 focus per reduce call)
+axis (depth d):       r9 = r8 - d            (d focus for d traversal steps)
+inv:                  r9 = r8 - 64           (64 focus for square-and-multiply)
+hash:                 r9 = r8 - 300          (300 focus for Poseidon2)
 ```
 
 ## error and halt encoding

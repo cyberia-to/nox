@@ -174,9 +174,9 @@ ntt(N)           │ N·log(N)     │ ~N·log(N)         │ ~2N·log(N)
 ## cost examples
 
 ```
-simple addition: ~4 patterns
+simple addition: 3 reduce() calls
   [5 [[0 2] [0 3]]]
-  cost: 1 (add) + 1 (axis 2) + 1 (axis 3) + 1 (overhead) = ~4
+  cost: 1 (add) + 1 (axis 2) + 1 (axis 3) = 3
 
 Hemera hash: 300 (jet) or ~2800 (pure Layer 1)
   [15 [0 1]]

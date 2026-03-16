@@ -61,7 +61,7 @@ cost: 1. stark constraints: 1.
 
 ```
 reduce(s, [2 [x y]], f) =
-  let (rx, f1) = reduce(s, x, f - 2)
+  let (rx, f1) = reduce(s, x, f - 1)
   let (ry, f2) = reduce(s, y, f1)
   reduce(rx, ry, f2)
 ```
@@ -70,13 +70,13 @@ evaluate x to get a new object, evaluate y to get a formula, then apply. this is
 
 PARALLELISM: reduce(s,x) and reduce(s,y) are INDEPENDENT — safe to evaluate in parallel.
 
-cost: 2. stark constraints: 2.
+cost: 1. stark constraints: 1.
 
 ### pattern 3: cons
 
 ```
 reduce(s, [3 [a b]], f) =
-  let (ra, f1) = reduce(s, a, f - 2)
+  let (ra, f1) = reduce(s, a, f - 1)
   let (rb, f2) = reduce(s, b, f1)
   (cell(ra, rb), f2)
 ```
@@ -85,13 +85,13 @@ build a cell from two evaluated sub-expressions. the data construction primitive
 
 PARALLELISM: reduce(s,a) and reduce(s,b) are INDEPENDENT.
 
-cost: 2. stark constraints: 2.
+cost: 1. stark constraints: 1.
 
 ### pattern 4: branch
 
 ```
 reduce(s, [4 [test [yes no]]], f) =
-  let (t, f1) = reduce(s, test, f - 2)
+  let (t, f1) = reduce(s, test, f - 1)
   if t = 0 then reduce(s, yes, f1)
            else reduce(s, no, f1)
 ```
@@ -100,7 +100,7 @@ CRITICAL: only ONE branch is evaluated. this is lazy evaluation — prevents inf
 
 NOT parallel — must evaluate test before choosing a branch.
 
-cost: 2. stark constraints: 2.
+cost: 1. stark constraints: 1.
 
 ## field arithmetic patterns (5-10)
 
@@ -108,7 +108,7 @@ all binary arithmetic patterns follow the same structure: evaluate both operands
 
 ```
 reduce(s, [op [a b]], f) =
-  let (v_a, f1) = reduce(s, a, f - cost)
+  let (v_a, f1) = reduce(s, a, f - 1)
   let (v_b, f2) = reduce(s, b, f1)
   (op(v_a, v_b), f2)
 ```
@@ -248,8 +248,8 @@ the verifier NEVER executes hint directly — it checks constraint satisfaction 
 PROVER_INJECT: → Noun
   source:   external to the VM, prover-only
   verifier: checks via stark (multilinear trace + sumcheck)
-  cost:     1 + cost(reduce(s, constraint)) + cost(reduce(w, check))
-            the constraint evaluation AND the check application both consume focus.
+  cost:     hint dispatch costs 1. the two sub-reductions (constraint
+            evaluation and check application) cost whatever they cost.
             witness search (PROVER_INJECT) is external — zero focus cost.
   memo:     NOT memoizable (different provers may inject different valid witnesses)
 ```
@@ -273,24 +273,28 @@ optimization:     hint injects an optimal solution
 ## cost table
 
 ```
-Layer │ Pattern      │ Exec Cost      │ stark Constraints
-──────┼──────────────┼────────────────┼───────────────────
-  1   │ 0 axis       │ depth           │ ~depth
-  1   │ 1 quote      │ 1              │ 1
-  1   │ 2 compose    │ 2              │ 2
-  1   │ 3 cons       │ 2              │ 2
-  1   │ 4 branch     │ 2              │ 2
-  1   │ 5 add        │ 1              │ 1
-  1   │ 6 sub        │ 1              │ 1
-  1   │ 7 mul        │ 1              │ 1
-  1   │ 8 inv        │ 64             │ 1
-  1   │ 9 eq         │ 1              │ 1
-  1   │ 10 lt        │ 1              │ ~64
-  1   │ 11-14 bit    │ 1              │ ~64 each
-  1   │ 15 hash      │ 300            │ ~300
-  2   │ 16 hint      │ 1 + constraint │ constraint + check rows
-      │              │   + check      │
+Layer │ Pattern      │ Exec Cost      │ STARK Constraints │ Rationale
+──────┼──────────────┼────────────────┼───────────────────┼─────────────────────
+  1   │ 0 axis       │ depth          │ ~depth            │ 1 per traversal step
+  1   │ 1 quote      │ 1              │ 1                 │ literal return
+  1   │ 2 compose    │ 1              │ 1                 │ dispatch only
+  1   │ 3 cons       │ 1              │ 1                 │ cell construction
+  1   │ 4 branch     │ 1              │ 1                 │ test + select
+  1   │ 5 add        │ 1              │ 1                 │ field addition
+  1   │ 6 sub        │ 1              │ 1                 │ field subtraction
+  1   │ 7 mul        │ 1              │ 1                 │ field multiplication
+  1   │ 8 inv        │ 64             │ 1                 │ square-and-multiply
+  1   │ 9 eq         │ 1              │ 1                 │ equality comparison
+  1   │ 10 lt        │ 1              │ ~64               │ range decomposition
+  1   │ 11-14 bit    │ 1              │ ~64 each          │ bit decomposition
+  1   │ 15 hash      │ 300            │ ~300              │ Poseidon2 permutation
+  2   │ 16 hint      │ 1              │ 1                 │ inject + dispatch
 ```
+
+the exec cost is the focus deducted for THIS pattern's dispatch. sub-expression
+reduce() calls deduct their own costs separately. three patterns have multi-step
+overhead (axis: depth traversal steps, inv: 64 sequential multiplications,
+hash: 300 Poseidon2 round rows). all other patterns cost exactly 1.
 
 ## test vectors
 
@@ -300,18 +304,16 @@ mul(p-1, p-1) = 1
 inv(2) = 9223372034707292161
 inv(0) = ⊥_error
 
-reduce([1,2], [5 [[0 2] [0 3]]], 100) = (3, 96)
-  // object = cell(1,2)
-  // formula = add(axis 2, axis 3) = add(1, 2) = 3
-  // cost: add(1) + axis(1) + axis(1) + dispatch(1) = 4
+reduce([1,2], [5 [[0 2] [0 3]]], 100) = (3, 97)
+  // add(1) + axis(1) + axis(1) = 3 reduce() calls, 3 focus
 
 reduce(42, [1 7], 10) = (7, 9)
-  // quote returns 7 literally, ignoring object 42
+  // quote(1) = 1 reduce() call, 1 focus
 
-reduce([1,2], [3 [[0 2] [0 3]]], 100) = (cell(1, 2), 96)
-  // cons(axis 2, axis 3) = cons(1, 2)
+reduce([1,2], [3 [[0 2] [0 3]]], 100) = (cell(1, 2), 97)
+  // cons(1) + axis(1) + axis(1) = 3 reduce() calls, 3 focus
 
 reduce([1,2], [4 [[9 [[0 2] [0 3]]] [[1 100] [1 200]]]], 100)
   = (200, 95)
-  // branch: eq(1,2)=1 (false), take no-branch → quote 200
+  // branch(1) + eq(1) + axis(1) + axis(1) + quote(1) = 5 reduce() calls, 5 focus
 ```

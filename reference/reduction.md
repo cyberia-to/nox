@@ -26,13 +26,13 @@ Result = (Noun, Focus')     — success with remaining focus
 
 ## focus metering
 
-every pattern costs focus. the cost is deducted before the pattern executes. if remaining focus is less than the pattern's cost, reduction halts.
+every reduce() call costs 1 focus, deducted before the pattern executes. if remaining focus is less than 1 (or less than the multi-step cost for axis/inv/hash), reduction halts.
 
 ```
-reduce(s, [5 [a b]], f) =
-  if f < 1 then Halt
-  let (v_a, f1) = reduce(s, a, f - 1)
-  ...
+reduce(s, formula, f) =
+  if f < cost then Halt          — cost is 1 for most patterns
+  let (tag, body) = formula
+  ... dispatch by tag, deducting cost from f ...
 ```
 
 focus is the same resource that weights cyberlinks in the cybergraph. a neuron spends focus to think (run nox programs) and to speak (create cyberlinks). the budget is unified — attention and computation are the same currency.
@@ -165,28 +165,50 @@ the trace encodes Result in r15 (status) and r12 (error kind). the instance incl
 
 ## focus accounting
 
-the cost in the cost table (patterns.md) is the per-pattern overhead deducted BEFORE sub-expression evaluation. sub-expressions deduct their own costs recursively.
+**rule: every reduce() call costs 1 focus.**
 
-every pattern dispatch — entering the dispatch function, reading the tag, selecting the rule — costs focus equal to the pattern's cost table entry. additionally, binary patterns with cost 1 that take a cell body (add, sub, mul, eq, lt, xor, and, shl) incur +1 for destructuring the body cell into two operand formulas. patterns with cost ≥ 2 (compose, cons, branch) already include body destructuring in their listed cost. unary patterns (quote, inv, not, hash, axis) have no body destructuring cost.
+this is the entire cost model. when reduce(s, formula, f) is entered, 1 focus is deducted for dispatch (reading the tag, selecting the pattern). sub-expression reduce() calls deduct their own costs recursively. the total focus consumed by a computation is the total number of reduce() calls in its evaluation tree.
+
+three patterns have multi-step overhead beyond the dispatch cost:
+- axis: depth traversal steps (axis 4-7 costs 2, axis 8-15 costs 3, etc.)
+- inv: 64 (square-and-multiply chain — 64 sequential multiplications)
+- hash: 300 (Poseidon2 permutation — 72 rounds + absorption/squeeze)
+
+all other patterns cost exactly 1 per reduce() call.
 
 ```
 example: reduce([1,2], [5 [[0 2] [0 3]]], 100)
 
-step 1: dispatch pattern 5 (add), deduct cost=1 → f=99
-        destructure body [[0 2] [0 3]] into (a, b), deduct 1 → f=98
-step 2: reduce(s, [0 2], 98)
-  dispatch pattern 0 (axis), deduct cost=1 → f=97
+reduce #1: dispatch pattern 5 (add), deduct 1 → f=99
+reduce #2: reduce(s, [0 2], 99)
+  dispatch pattern 0 (axis), deduct 1 → f=98
   axis(cell(1,2), 2) = 1
-step 3: reduce(s, [0 3], 97)
-  dispatch pattern 0 (axis), deduct cost=1 → f=96
+reduce #3: reduce(s, [0 3], 98)
+  dispatch pattern 0 (axis), deduct 1 → f=97
   axis(cell(1,2), 3) = 2
-step 4: apply add: 1 + 2 = 3
-result: (3, 96)
+apply: 1 + 2 = 3
+result: (3, 97)
 ```
 
-cost breakdown: add(1) + destructure(1) + axis(1) + axis(1) = 4. matches test vector.
+3 reduce() calls = 3 focus consumed. matches test vector.
 
-NOTE: the body destructuring cost for binary cost-1 patterns is implied by the test vectors but not yet formalized in the cost table. the cost table should be updated to reflect effective cost = 2 for these patterns, or the destructuring cost should be specified as a separate rule. additionally, the branch test vector (patterns.md) gives (200, 95) which implies total cost = 5, but formal branch semantics yield cost = 6 (branch(2) + eq(1) + axis(1) + axis(1) + quote(1)). this discrepancy (off by 1) requires resolution — either branch effective cost differs from its table entry, or the test vector needs correction.
+```
+example: reduce([1,2], [4 [[9 [[0 2] [0 3]]] [[1 100] [1 200]]]], 100)
+
+reduce #1: dispatch pattern 4 (branch), deduct 1 → f=99
+reduce #2: reduce(s, [9 [[0 2] [0 3]]], 99)
+  dispatch pattern 9 (eq), deduct 1 → f=98
+  reduce #3: reduce(s, [0 2], 98) → axis → 1, f=97
+  reduce #4: reduce(s, [0 3], 97) → axis → 2, f=96
+  eq(1, 2) = 1 (not equal)
+branch: t=1 ≠ 0, take no-branch
+reduce #5: reduce(s, [1 200], 96)
+  dispatch pattern 1 (quote), deduct 1 → f=95
+  result: 200
+result: (200, 95)
+```
+
+5 reduce() calls = 5 focus consumed. matches test vector.
 
 ## stark integration
 
