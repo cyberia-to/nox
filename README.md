@@ -11,34 +11,53 @@ combinatory logic (1924)   S, K combinators            pure abstraction
   → nox (2026)             field elements + inverse     proof-native VM for cyber
 ```
 
-nox replaces Nock's natural numbers with Goldilocks field elements and decrement with field inverse. the consequence: every computation is native to STARK arithmetization. the execution trace IS the algebraic constraint system.
-
 ## architecture
 
 ```
 reduce(subject, formula, focus) → result
 ```
 
-everything is a noun — a binary tree of field elements. programs are nouns. data is nouns. the result is a noun.
+everything is a noun — a binary tree of Goldilocks field elements. programs are nouns. data is nouns. the result is a noun.
 
-three layers:
-
-- Layer 1 — sixteen deterministic patterns (the ground truth of computation)
-- Layer 2 — one non-deterministic pattern: hint (the origin of privacy and search)
-- Layer 3 — five jets: hash, poly_eval, merkle_verify, fri_fold, ntt (optimization without changing meaning)
+```
+Layer 1: 16 deterministic patterns (Turing-complete + field arithmetic + bitwise + hash)
+Layer 2: hint (non-deterministic witness injection, verified by Layer 1 constraints)
+Layer 3: 5 jets (hash, poly_eval, merkle_verify, fri_fold, ntt) — optimization only
+```
 
 ## repo structure
 
 ```
-reference/         canonical specifications (vm, trace, encoding)
-src/               Rust implementation
+reference/              canonical specifications (source of truth)
+├── vm.md               field, nouns, all 16+1 patterns, jets, cost tables
+├── trace.md            execution trace layout, AIR constraints, polynomial encoding
+├── encoding.md         canonical noun serialization, wire format, content addressing
+└── props/              design proposals (draft → accepted → implemented)
+docs/
+└── explanation/
+    └── nox.md          conceptual overview — lineage, design philosophy, architecture
+src/                    Rust implementation
+├── lib.rs              module declarations
+├── noun.rs             Atom, Cell, Noun (binary tree of field elements)
+├── reduce.rs           Layer 1 reduction engine (16 patterns)
+├── hint.rs             Layer 2 non-deterministic witness injection
+├── jet.rs              Layer 3 jets (hash, poly_eval, merkle_verify, fri_fold, ntt)
+├── trace.rs            execution trace recording (becomes the STARK witness)
+├── encode.rs           canonical noun serialization (deterministic wire format)
+├── memo.rs             content-addressed computation cache
+└── focus.rs            resource metering (attention budget)
 ```
 
-## specifications
+## companion repos
 
-- `reference/vm.md` — field, nouns, all 16+1 patterns, jets, cost table, test vectors
-- `reference/trace.md` — execution trace layout, AIR constraints, polynomial encoding
-- `reference/encoding.md` — canonical noun serialization, wire format, content addressing
+| repo | path | role |
+|------|------|------|
+| aurum | ~/git/aurum/ | Goldilocks field arithmetic |
+| hemera | ~/git/hemera/ | Hemera hash (Poseidon2-Goldilocks) |
+| zheng | ~/git/zheng/ | proof system (SuperSpartan + WHIR) |
+| trident | ~/git/trident/ | high-level language, compiles to nox |
+| mudra | ~/git/mudra/ | crypto primitives (KEM, dCTIDH, TFHE, threshold) |
+| bbg | ~/git/bbg/ | authenticated state (Big Badass Graph) |
 
 ## license
 
