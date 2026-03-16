@@ -248,7 +248,9 @@ the verifier NEVER executes hint directly — it checks constraint satisfaction 
 PROVER_INJECT: → Noun
   source:   external to the VM, prover-only
   verifier: checks via stark (multilinear trace + sumcheck)
-  cost:     1 + cost(constraint). witness search is external
+  cost:     1 + cost(reduce(s, constraint)) + cost(reduce(w, check))
+            the constraint evaluation AND the check application both consume focus.
+            witness search (PROVER_INJECT) is external — zero focus cost.
   memo:     NOT memoizable (different provers may inject different valid witnesses)
 ```
 
@@ -286,7 +288,8 @@ Layer │ Pattern      │ Exec Cost      │ stark Constraints
   1   │ 10 lt        │ 1              │ ~64
   1   │ 11-14 bit    │ 1              │ ~64 each
   1   │ 15 hash      │ 300            │ ~300
-  2   │ 16 hint      │ 1 + constraint │ constraint rows
+  2   │ 16 hint      │ 1 + constraint │ constraint + check rows
+      │              │   + check      │
 ```
 
 ## test vectors

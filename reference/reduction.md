@@ -100,6 +100,8 @@ Pattern 4 (branch):   [4 [t [c d]]]
 
 all binary arithmetic and bitwise patterns can evaluate both operands in parallel. branch is the only pattern that enforces sequential evaluation (test before choice).
 
+NOTE on focus and parallelism: the formal reduction rules thread focus sequentially (f → f1 → f2), which contradicts parallel evaluation of sub-expressions. for parallelism to work, the focus budget must be partitioned between parallel branches (e.g. split f equally, or pre-compute sub-expression costs). the partitioning scheme is not yet specified. confluence guarantees the result is identical regardless of evaluation order, but the focus accounting must produce the same final value. this is an open specification gap.
+
 ## global memoization
 
 ```
@@ -152,39 +154,39 @@ Halt propagates identically — if a sub-expression exhausts focus, the parent h
 Result is not a noun. it is the return type of reduce(). in the content-addressed protocol:
 
 ```
-success:     (H(result), focus_remaining)    — noun identity + focus
-halt:        (status=1, focus_remaining)     — no result noun
-error:       (status=2, error_kind)          — no result noun
-unavailable: (status=3, error_kind=3)        — no result noun
+success:     (status=0, H(result), focus_remaining)   — noun identity + focus
+halt:        (status=1, focus_remaining)               — no result noun
+error:       (status=2, error_kind)                    — no result noun
 ```
 
-the trace encodes Result in r15 (status) and r12 (error kind). the instance includes status and H(result) for success cases. there is no need to serialize errors into the noun store — they are transient computation outcomes, not persistent data.
+unavailable is an error (status=2) with error_kind=3. it is not a separate status code — the trace only encodes three status values (0, 1, 2). the Result type in the reduction semantics distinguishes ⊥_error from ⊥_unavailable for error reporting, but the trace encoding folds them into status=2 with the error_kind discriminant.
+
+the trace encodes Result in r15 (status) and r12 (error kind). the instance includes status and H(result) for success cases (H(result) = 0 when status ≠ 0, see trace.md). errors are transient computation outcomes, not persistent data — they have no content-addressed storage entry.
 
 ## focus accounting
 
 the cost in the cost table (patterns.md) is the per-pattern overhead deducted BEFORE sub-expression evaluation. sub-expressions deduct their own costs recursively.
 
-every pattern dispatch — entering the dispatch function, reading the tag, selecting the rule — costs 1 focus. this dispatch cost is part of the pattern's stated cost. for patterns with cost > 1 (compose, cons, branch, inv, hash), the dispatch cost is included in the listed cost. for patterns with cost = 1 (add, sub, mul, eq, lt, xor, and, not, shl, quote), the dispatch IS the cost.
+every pattern dispatch — entering the dispatch function, reading the tag, selecting the rule — costs focus equal to the pattern's cost table entry. additionally, binary patterns with cost 1 that take a cell body (add, sub, mul, eq, lt, xor, and, shl) incur +1 for destructuring the body cell into two operand formulas. patterns with cost ≥ 2 (compose, cons, branch) already include body destructuring in their listed cost. unary patterns (quote, inv, not, hash, axis) have no body destructuring cost.
 
 ```
 example: reduce([1,2], [5 [[0 2] [0 3]]], 100)
 
 step 1: dispatch pattern 5 (add), deduct cost=1 → f=99
-step 2: reduce(s, [0 2], 99)
-  dispatch pattern 0 (axis), deduct cost=1 → f=98
-  axis(cell(1,2), 2) = 1
-step 3: reduce(s, [0 3], 98)
+        destructure body [[0 2] [0 3]] into (a, b), deduct 1 → f=98
+step 2: reduce(s, [0 2], 98)
   dispatch pattern 0 (axis), deduct cost=1 → f=97
+  axis(cell(1,2), 2) = 1
+step 3: reduce(s, [0 3], 97)
+  dispatch pattern 0 (axis), deduct cost=1 → f=96
   axis(cell(1,2), 3) = 2
 step 4: apply add: 1 + 2 = 3
-step 5: reduce(cell(1,2), [5 [...]]) is itself a dispatch — but the
-  cost was already deducted in step 1. however the outer formula
-  [5 [[0 2] [0 3]]] must be resolved from its identity before
-  dispatch can read the tag. resolution cost = 1 → f=96
 result: (3, 96)
 ```
 
-cost breakdown: add(1) + axis(1) + axis(1) + resolution(1) = 4. matches test vector.
+cost breakdown: add(1) + destructure(1) + axis(1) + axis(1) = 4. matches test vector.
+
+NOTE: the body destructuring cost for binary cost-1 patterns is implied by the test vectors but not yet formalized in the cost table. the cost table should be updated to reflect effective cost = 2 for these patterns, or the destructuring cost should be specified as a separate rule. additionally, the branch test vector (patterns.md) gives (200, 95) which implies total cost = 5, but formal branch semantics yield cost = 6 (branch(2) + eq(1) + axis(1) + axis(1) + quote(1)). this discrepancy (off by 1) requires resolution — either branch effective cost differs from its table entry, or the test vector needs correction.
 
 ## stark integration
 
