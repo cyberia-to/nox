@@ -175,9 +175,9 @@ cost: 1. stark constraints: ~64 (range decomposition for non-native comparison).
 
 ## bitwise patterns (11-14)
 
-valid on word type [0, 2^64) only. bitwise on hash → ⊥_error.
+valid on word type [0, 2^32) only. bitwise on hash → ⊥_error. bitwise on field → ⊥_error (coerce to word first).
 
-stark constraints: ~64 each (bit decomposition required for algebraic verification).
+stark constraints: ~32 each (bit decomposition required for algebraic verification). the 32× cost ratio vs field arithmetic is the honest algebraic distance between F_p and Z/2^32. heavy binary computation belongs in Bt (FRI-Binius, characteristic 2).
 
 ### pattern 11: xor
 
@@ -198,7 +198,7 @@ cost: 1.
 ### pattern 13: not
 
 ```
-reduce(s, [13 a], f) → (v_a ⊕ (2^64 - 1), f1)
+reduce(s, [13 a], f) → (v_a ⊕ (2^32 - 1), f1)
 ```
 
 bitwise complement. unary — single operand.
@@ -208,10 +208,10 @@ cost: 1.
 ### pattern 14: shl
 
 ```
-reduce(s, [14 [a n]], f) → ((v_a << v_n) mod 2^64, f2)
+reduce(s, [14 [a n]], f) → ((v_a << v_n) mod 2^32, f2)
 ```
 
-left shift. right shift is expressible as `shl(a, 64-n)` followed by `and` with a mask.
+left shift. v_n must be in [0, 32); shifts ≥ 32 produce 0. right shift is expressible as `shl(a, 32-n)` followed by `and` with a mask.
 
 cost: 1.
 
@@ -286,7 +286,7 @@ Layer │ Pattern      │ Exec Cost      │ STARK Constraints │ Rationale
   1   │ 8 inv        │ 64             │ 1                 │ square-and-multiply
   1   │ 9 eq         │ 1              │ 1                 │ equality comparison
   1   │ 10 lt        │ 1              │ ~64               │ range decomposition
-  1   │ 11-14 bit    │ 1              │ ~64 each          │ bit decomposition
+  1   │ 11-14 bit    │ 1              │ ~32 each          │ bit decomposition
   1   │ 15 hash      │ 300            │ ~300              │ Poseidon2 permutation
   2   │ 16 hint      │ 1              │ 1                 │ inject + dispatch
 ```

@@ -26,12 +26,12 @@ atoms carry a type tag distinguishing three uses of the same underlying field el
 │  TYPE TAG    │  REPRESENTATION     │  VALID RANGE    │  USE          │
 ├──────────────┼─────────────────────┼─────────────────┼───────────────┤
 │  0x00: field │  Single F_p element │  [0, p)         │  Arithmetic   │
-│  0x01: word  │  Single F_p element │  [0, 2^64)      │  Bitwise      │
+│  0x01: word  │  Single F_p element │  [0, 2^32)      │  Bitwise      │
 │  0x02: hash  │  8 × F_p elements   │  64-byte digest │  Identity     │
 └───────────────────────────────────────────────────────────────────────┘
 ```
 
-field and word share the same representation (one Goldilocks element) but different operations. a field element wraps around modulo p; a word wraps around modulo 2^64. the distinction is semantic, enforced by the type system.
+field and word share the same representation (one Goldilocks element) but different operations. a field element wraps around modulo p; a word wraps around modulo 2^32. the distinction is semantic, enforced by the type system. the 32-bit word range guarantees every word value is a valid field element ([0, 2^32) ⊂ [0, p)), and every bitwise operation produces a representable result. heavy 64-bit binary computation belongs in Bt (FRI-Binius, characteristic 2), not in nox's prime field bitwise patterns.
 
 the hash type (eight field elements, 64 bytes) is the identity primitive. `H(noun)` produces a hash. `axis(s, 0)` returns `H(s)` — a noun can introspect its own identity.
 
@@ -40,8 +40,8 @@ the type tag costs nothing in the stark — it is a constraint selector, not run
 ## coercion rules
 
 ```
-field → word:  always valid (Goldilocks element fits in u64)
-word → field:  always valid (injection)
+field → word:  valid when value < 2^32 (range check)
+word → field:  always valid (injection, [0, 2^32) ⊂ [0, p))
 hash → field:  extract first element (lossy, for compatibility only)
 field → hash:  forbidden (use HASH pattern 15)
 ```

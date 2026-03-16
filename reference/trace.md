@@ -18,7 +18,7 @@ columns (16 = 2⁴ registers, each one F_p element):
   r4:   formula hash[1]         ┘ (first 2 of 8 elements)
   r5:   operand A value
   r6:   operand B value
-  r7:   result value
+  r7:   result value (atom value for atoms, H(result)[0] for cells)
   r8:   focus before
   r9:   focus after
   r10:  type tag A (0x00 field, 0x01 word, 0x02 hash)
@@ -50,7 +50,7 @@ when status = 0 (success), H(result) is the structural hash of the result noun. 
 
 the instance links the trace to the computation. the verifier checks:
 1. first row: r1,r2 match instance H(object)[0..2], r3,r4 match instance H(formula)[0..2]
-2. last row: r7 matches instance H(result)[0..2], r9 matches focus_final, r15 matches status
+2. last row: r7 matches instance H(result)[0], r9 matches focus_final, r15 matches status
 3. status-gated result: if status = 0, H(result) is a valid noun identity; if status ≠ 0, H(result) = 0
 4. noun store commitment: instance hashes (H(object), H(formula), and H(result) when status = 0) are checked against the noun store polynomial commitment. the commitment scheme is defined by the proof system (zheng) — nox specifies WHAT is committed (the noun identities referenced by the trace), not HOW
 
@@ -94,10 +94,11 @@ pattern 8 (inv), cost 64:
 
 pattern 15 (hash), cost 300:
   row 0:     r5 = input value, r12-r14 = initial sponge state
-  rows 1-71: r12-r14 = round state (8 full + 64 partial Poseidon2 rounds)
-  row 72+:   r7 = hash output element, r12-r14 = remaining squeeze state
-  total rows: ~75 (72 rounds + absorption + squeeze overhead)
-  each row: degree 7 constraint (s-box x^7)
+  rows 1-299: round state progression (8 full + 64 partial Poseidon2 rounds,
+              multiple rows per round for state element constraints)
+  row 299:   r7 = H(result)[0], r12-r14 = remaining hash elements
+  total rows: 300 (72 rounds × ~4 rows/round + absorption/squeeze)
+  each constraint row: degree 7 (s-box x^7)
 
 pattern 0 (axis), cost = depth:
   row 0:     r5 = root noun, r12 = remaining index

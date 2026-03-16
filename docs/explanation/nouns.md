@@ -35,7 +35,7 @@ word  (0x01)    bitwise: a XOR b, a AND b, a << n      range [0, 2⁶⁴)
 hash  (0x02)    identity: 8 field elements = 64 bytes   Hemera output
 ```
 
-field and word share the same representation but different algebras. a field element wraps modulo p (the Goldilocks prime). a word wraps modulo 2^64 (machine integers). the distinction exists because the [[stark]] constraint system needs to know which algebra applies — addition modulo p uses one constraint, XOR uses ~64 constraints (bit decomposition). the type tag is a constraint selector, not runtime overhead.
+field and word share the same representation but different algebras. a field element wraps modulo p (the Goldilocks prime). a word wraps modulo 2^32 (32-bit integers, fitting cleanly in [0, p)). the distinction exists because the [[stark]] constraint system needs to know which algebra applies — addition modulo p uses one constraint, XOR uses ~32 constraints (bit decomposition). the type tag is a constraint selector, not runtime overhead.
 
 the hash type uses eight field elements (8 × 8 = 64 bytes). it is the identity primitive — every noun can be reduced to a hash, and the hash is how the network refers to the noun. `axis(s, 0)` returns `H(s)` — a noun can introspect its own cryptographic identity. this is unique to nox: self-referential identity is a first-class operation, not a library call.
 

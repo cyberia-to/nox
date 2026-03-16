@@ -9,7 +9,7 @@ nox has sixteen deterministic patterns organized into four groups, plus a non-de
 ```
 STRUCTURAL (5)      tree algebra        Turing completeness          4-bit encoded
 FIELD (6)           F_p arithmetic      proof-native computation     4-bit encoded
-BITWISE (4)         Z/2^64 arithmetic   binary world interface       4-bit encoded
+BITWISE (4)         Z/2^32 arithmetic   binary world interface       4-bit encoded
 HASH (1)            cryptographic       identity and commitment      4-bit encoded
 HINT                non-deterministic   privacy and search           prover protocol
 ```
@@ -39,7 +39,7 @@ these five patterns make nox Turing-complete. axis reads data. quote creates con
 
 six patterns for native arithmetic over the [[Goldilocks field]]. add, sub, mul form a ring. inv completes it to a field. eq and lt provide comparison. the reason these exist: the [[stark]] proof system operates over F_p, so if the VM's arithmetic is field arithmetic, the execution trace IS the proof witness — zero translation. see [[field-patterns]] for the full algebra and cost model.
 
-## group 3: bitwise (patterns 11-14) — Z/2^64 algebra
+## group 3: bitwise (patterns 11-14) — Z/2^32 algebra
 
 ```
 11 xor — exclusive or
@@ -48,7 +48,7 @@ six patterns for native arithmetic over the [[Goldilocks field]]. add, sub, mul 
 14 shl — left shift
 ```
 
-four patterns for native operations over 64-bit words. xor, and, not form a functionally complete Boolean algebra. shl provides positional manipulation. these exist because F_p and Z/2^64 are fundamentally different algebras — the world outside nox speaks binary, and simulating bit operations as field arithmetic costs ~64× more in proof size. see [[bitwise-patterns]] for the two-algebra problem and Boolean basis.
+four patterns for native operations over 32-bit words. xor, and, not form a functionally complete Boolean algebra. shl provides positional manipulation. these exist because F_p and Z/2^32 are fundamentally different algebras — simulating bit operations as field arithmetic costs ~32× more in proof size. 32-bit words fit cleanly in Goldilocks ([0, 2^32) ⊂ [0, p)), avoiding the overflow gap that makes 64-bit words unrepresentable. heavy binary computation belongs in [[Bt]] (FRI-Binius, characteristic 2). see [[bitwise-patterns]] for the two-algebra problem and Boolean basis.
 
 ## group 4: hash (pattern 15) — cryptographic identity
 
@@ -85,7 +85,7 @@ the five groups cover five algebraic domains:
 ```
 trees     — universal computation (Turing complete)
 F_p       — proof-native arithmetic (stark-compatible)
-Z/2^64    — binary world interface (protocols, formats)
+Z/2^32    — binary world interface (flags, masking, branching logic)
 H(·)      — cryptographic identity (content addressing)
 oracle    — non-determinism (privacy, ZK)
 ```
@@ -104,7 +104,7 @@ the nine [[cyb/architecture|computation languages]] (Nox, Bt, Rs, Trident, Arc, 
 
 ```
 Nox      → structural (direct)
-Bt       → bitwise (F_2 tower maps to Z/2^64)
+Bt       → bitwise (F_2 tower, native binary — heavy binary goes here, not nox)
 Rs       → bitwise + field (system-level word operations)
 Trident  → field + hash (proof-oriented programs)
 Arc      → structural + field (graph adjacency as nested pairs)

@@ -68,9 +68,11 @@ Layer 1 patterns form an orthogonal rewrite system:
 
 by the Huet-Levy theorem (1980), orthogonal term rewriting systems are confluent without requiring termination.
 
-consequence: the result depends only on what the program IS, never on how it was evaluated. parallel reduction, lazy reduction, eager reduction, any mixture — the answer is the same.
+confluence holds for the term rewriting system (the pure reduction rules). with finite focus, the full reduce() function is confluent only when focus is sufficient for all reduction paths to reach a normal form. with insufficient focus, different evaluation strategies may halt at different points — one path may succeed where another exhausts focus. the result noun, when produced, is always the same; whether it is produced depends on evaluation strategy and available focus.
 
-consequence: content-addressed memoization is sound. `(H(object), H(formula))` uniquely determines `H(result)`.
+consequence: for any (object, formula) pair with sufficient focus, the result depends only on what the program IS, never on how it was evaluated. parallel reduction, lazy reduction, eager reduction, any mixture — the answer is the same.
+
+consequence: content-addressed memoization is sound. `(H(object), H(formula))` uniquely determines `H(result)` for successful completions. the memo table caches only successful results (status = 0).
 
 Layer 2 (`hint`) breaks confluence intentionally — multiple valid witnesses may satisfy the same constraints. soundness is preserved: any witness that passes the Layer 1 constraint check is valid. hint is the deliberate injection point for non-determinism.
 
