@@ -119,6 +119,19 @@ layer scope:
 
 computations containing hint anywhere in their reduction tree are excluded from the global cache. pure sub-expressions within a hint-containing computation remain memoizable — the exclusion applies to the hint-tainted root, not to its pure children.
 
+## error specification
+
+errors are not nouns. they are Result variants — they exist in the reduction return type, not in the noun store. an error has no identity (no hash) and no content-addressed storage entry.
+
+```
+error kinds:
+  0: type_error      — wrong atom type for operation (bitwise on hash, arithmetic on hash)
+  1: axis_error      — axis on atom with index > 1
+  2: inv_zero        — inv(0)
+  3: unavailable     — referenced content not in store (network partition, missing noun)
+  4: malformed       — formula is atom (not cell), or body has wrong structure
+```
+
 ## error propagation
 
 errors propagate upward through the reduction tree. if any sub-expression produces ⊥_error or ⊥_unavailable, the parent expression produces the same error.
@@ -133,6 +146,39 @@ reduce(s, [5 [a b]], f) =
 ```
 
 Halt propagates identically — if a sub-expression exhausts focus, the parent halts.
+
+## Result encoding
+
+Result is not a noun. it is the return type of reduce(). in the content-addressed protocol:
+
+```
+success:     (H(result), focus_remaining)    — noun identity + focus
+halt:        (status=1, focus_remaining)     — no result noun
+error:       (status=2, error_kind)          — no result noun
+unavailable: (status=3, error_kind=3)        — no result noun
+```
+
+the trace encodes Result in r15 (status) and r12 (error kind). the instance includes status and H(result) for success cases. there is no need to serialize errors into the noun store — they are transient computation outcomes, not persistent data.
+
+## focus accounting
+
+the cost in the cost table (patterns.md) is the per-pattern overhead deducted BEFORE sub-expression evaluation. sub-expressions deduct their own costs recursively.
+
+```
+example: reduce([1,2], [5 [[0 2] [0 3]]], 100)
+
+step 1: dispatch pattern 5 (add), deduct cost=1 → f=99
+step 2: reduce(s, [0 2], 99)
+  dispatch pattern 0 (axis), deduct cost=1+1=2 → f=97
+  axis(cell(1,2), 2) = 1
+step 3: reduce(s, [0 3], 97)
+  dispatch pattern 0 (axis), deduct cost=1+1=2 → f=95
+  axis(cell(1,2), 3) = 2
+step 4: 1 + 2 = 3
+result: (3, 95)
+```
+
+NOTE: this gives remaining focus=95 (5 deducted), but the test vector says 96 (4 deducted). the discrepancy is in whether axis cost is 1+depth or just 1 for depth-1 access. axis(s,2) has depth=1, so cost=1+1=2 or cost=1? this must be resolved by implementation and test.
 
 ## stark integration
 

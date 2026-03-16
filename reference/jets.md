@@ -15,6 +15,23 @@ every jet MUST have an equivalent pure Layer 1 expression producing identical ou
 
 this is testable: a harness compares jet output against pure-pattern output on random inputs. if a jet is removed, the system remains correct — only slower. jets are never load-bearing for correctness, only for performance.
 
+## jet recognition
+
+jets are recognized by formula hash. the VM maintains a jet registry mapping formula identities to optimized implementations.
+
+```
+jet_registry: H(formula_noun) → jet_implementation
+
+recognition: at reduction time, before dispatching a formula,
+the VM checks if H(formula) is in the jet registry.
+if yes: execute the jet (same result, fewer trace rows).
+if no:  dispatch normally via Layer 1 patterns.
+```
+
+the jet registry is hardcoded — it is a protocol constant, not configurable. every conforming implementation MUST recognize the same set of jets. the canonical formula trees and their hashes are computed at build time from the pure Layer 1 definitions and committed as constants.
+
+jet registry entries are generated, not hand-written: the build system constructs each jet's pure Layer 1 formula as a noun, computes its structural hash, and emits the registry as a constant table. this ensures the hashes are correct by construction.
+
 ## jet 0: hash
 
 ```

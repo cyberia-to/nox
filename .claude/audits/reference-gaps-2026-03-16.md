@@ -41,19 +41,11 @@ corrected explanation to match reference.
 
 ## open gaps — must resolve before implementation
 
-### G1: error type specification
+### G1: error type specification — RESOLVED
 
-reference mentions ⊥_error and ⊥_unavailable but does not define:
+resolved: errors are not nouns — they are Result variants (transient computation outcomes, not persistent data). five error kinds defined (type_error, axis_error, inv_zero, unavailable, malformed). trace encoding: r15=status, r12=error_kind. Result encoding defined for protocol (success returns noun identity + focus, errors return status + kind). no need for noun store encoding of errors.
 
-- **noun representation of errors**: is ⊥_error a special atom? a sentinel value? how does it propagate through cells?
-- **error context**: does an error carry which pattern failed and why? or is it a single opaque value?
-- **⊥_unavailable trigger**: reduction.md mentions it but never defines when content is "not retrievable." is this a network partition? a missing noun in storage? how does the runtime detect this?
-- **trace encoding of errors**: r15 = 2 means "error" — but what goes in r3-r5 (operands/result) when an error occurs?
-- **error in wire format**: encoding.md defines format for nouns, not for Result. how are Halt and ⊥_error serialized?
-
-**impact**: without this, implementers must invent error representation. different implementations will be incompatible.
-
-**recommendation**: add an `errors.md` to reference/ defining error kinds, their noun representation, trace encoding, and wire format.
+added to reduction.md: error specification, Result encoding, focus accounting examples.
 
 ### G2: hash type as noun — representation ambiguity — RESOLVED
 
@@ -95,27 +87,15 @@ remaining: add test vectors for each case (atom field, atom word, atom hash, cel
 
 resolved: patterns.md now specifies: axis index must be a field-type or word-type atom, interpreted as an integer. cell or hash-type → ⊥_error.
 
-### G7: jet recognition mechanism
+### G7: jet recognition mechanism — RESOLVED
 
-jets.md says jets are recognized by formula hash, but does not specify:
-- the canonical hash values for each of the 5 jets
-- whether the jet table is hardcoded or configurable
-- whether jet recognition happens at reduction time or compile time
+resolved: jets.md now specifies jet recognition. jet registry is hardcoded (protocol constant), maps H(formula_noun) → jet_implementation. recognition at reduction time. canonical hashes are generated at build time from pure Layer 1 definitions — correct by construction.
 
-**impact**: different implementations must agree on which formula subtrees are jets. without canonical hashes, jets are undefined.
+remaining: actual hash values computed once VM implementation can build and hash the pure formula nouns.
 
-**recommendation**: add a jet registry section to jets.md listing the canonical formula tree and its hash for each jet. these become protocol constants.
+### G8: domain separation tag usage — RESOLVED
 
-### G8: domain separation tag usage
-
-vm.md defines 4 domain separation tags (COMMITMENT, NULLIFIER, MERKLE, OWNER). not specified:
-- are these passed to hemera's domain separation parameter?
-- are they nox-level constants injected into the sponge capacity?
-- how does a nox program use them? are they accessible via a specific axis address?
-
-**impact**: domain separation is a security property. misuse = hash collision across domains.
-
-**recommendation**: specify the exact mechanism in vm.md: how each tag is used with hemera's API, and how nox programs invoke domain-separated hashing.
+resolved: vm.md now specifies the mechanism. tags are injected into Hemera's capacity[11] (domain tag slot). the VM sets the tag based on calling context (structural hash, commitment, nullifier, Merkle, owner). tags are protocol constants, not user-configurable.
 
 ### G9: pattern cost overhead vs sub-expression cost
 
@@ -128,25 +108,18 @@ reduce(s, [2 [x y]], f) =
   reduce(rx, ry, f2)
 ```
 
-is the "cost: 2" the overhead deducted before sub-expressions? the test vectors suggest yes (add(axis2, axis3) costs 4 = 1 add + 1 axis + 1 axis + 1 overhead). but "1 overhead" for add is not in the cost table (add shows cost 1, not 2).
+is the "cost: 2" the overhead deducted before sub-expressions? focus accounting example added to reduction.md. test vector discrepancy identified: add(axis2, axis3) expected cost needs verification against axis depth cost formula. the pseudocode is unambiguous — cost is deducted before sub-expressions. but axis cost formula (1+depth) vs (1) for depth-1 access needs implementation test.
 
-**impact**: focus accounting must be exact for deterministic metering.
+**status**: PARTIALLY RESOLVED — pseudocode clear, test vector needs verification against implementation.
 
-**recommendation**: clarify in patterns.md whether the cost column is the per-pattern overhead only, or the total cost including dispatch. add a section "focus accounting examples" with step-by-step traces.
+### G10: Result type encoding — RESOLVED
 
-### G10: Result type wire format
+resolved: Result is not a noun. errors are transient computation outcomes, not persistent data. Result encoding defined in reduction.md:
+- success: (H(result), focus_remaining) — noun identity in store
+- halt: (status=1, focus_remaining) — no noun
+- error: (status=2, error_kind) — no noun
 
-encoding.md defines the wire format for nouns. but `reduce()` returns Result, which can be:
-- (Noun, Focus') — success
-- Halt — focus exhausted
-- ⊥_error — type/semantic error
-- ⊥_unavailable — content not retrievable
-
-how are Halt, ⊥_error, ⊥_unavailable encoded on the wire? are they special nouns? distinct from the noun encoding?
-
-**impact**: any system that transmits or stores computation results needs this.
-
-**recommendation**: define Result encoding in encoding.md. likely: success wraps the noun, Halt/error/unavailable use reserved tag bytes (0x02, 0x03, 0x04) at the top level.
+trace encodes Result in r15 (status) and r12 (error kind). instance includes H(result) for success. no separate wire format needed.
 
 ---
 

@@ -50,6 +50,15 @@ MERKLE     = 0x4E4F5820204D524B   "NOX  MRK"
 OWNER      = 0x4E4F5820204F574E   "NOX  OWN"
 ```
 
+domain separation tags are injected into Hemera's sponge capacity[11] (the domain tag slot) before permutation. they ensure that hashes computed for different purposes are cryptographically distinct — a commitment hash cannot collide with a nullifier hash, even for identical input data.
+
+nox programs invoke domain-separated hashing via pattern 15 (hash) with the tag as a capacity parameter. the tag is a protocol constant — it is not user-configurable. the VM sets capacity[11] based on the calling context:
+- structural hash of nouns: capacity[11] = DOMAIN_HASH (Hemera default, 0x00)
+- record commitment: capacity[11] = COMMITMENT
+- nullifier derivation: capacity[11] = NULLIFIER
+- Merkle tree operations: capacity[11] = MERKLE
+- owner address derivation: capacity[11] = OWNER
+
 ## three layers
 
 ```
