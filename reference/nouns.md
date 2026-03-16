@@ -15,7 +15,7 @@ noun = atom(F_p)
 atom: single Goldilocks field element.
 cell: ordered pair of two nouns — a binary tree.
 
-a program is a noun. a subject is a noun. the result is a noun. a cyberlink is a noun. a stark proof serialized for verification is a noun. one structure for everything.
+a program is a noun. an object is a noun. the result is a noun. a cyberlink is a noun. a stark proof serialized for verification is a noun. one structure for everything.
 
 ## type tags
 
@@ -91,7 +91,7 @@ cell(15, a)             hash
 cell(16, constraint)    hint
 ```
 
-the distinction between code and data is purely contextual — the same noun can be a subject in one reduction and a formula in another. this homoiconicity extends to the proof system: the stark proves that a specific noun (the formula) was applied to a specific noun (the subject). the proof refers to the same binary tree structure that the execution operated on.
+the distinction between code and data is purely contextual — the same noun can be an object in one reduction and a formula in another. this homoiconicity extends to the proof system: the stark proves that a specific noun (the formula) was applied to a specific noun (the object). the proof refers to the same binary tree structure that the execution operated on.
 
 ## axis addressing
 

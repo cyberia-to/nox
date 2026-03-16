@@ -85,7 +85,7 @@ this means nox programs with hint are automatically quantum-ready: the constrain
 hint breaks confluence — different provers may inject different valid witnesses for the same constraint. this means hint-containing computations are NOT memoizable. the global computation cache excludes them:
 
 ```
-Layer 1 computation: cache key = (H(subject), H(formula)) — permanent, universal
+Layer 1 computation: cache key = (H(object), H(formula)) — permanent, universal
 Layer 2 computation: NOT cached — result depends on prover's private knowledge
 ```
 

@@ -26,9 +26,9 @@ the trust chain does not end at an unauditable layer. it ends at the mathematics
 
 level 0: a nox program runs. it produces an execution trace. the trace is proved by the [[stark]] prover. output: a proof P₀ of ~60-157 KiB.
 
-level 1: the verifier (a nox program) takes P₀ as its subject and the verification formula as its formula. it runs (~70,000 patterns with jets). it produces an execution trace. that trace is proved. output: a proof P₁ of ~60-157 KiB.
+level 1: the verifier (a nox program) takes P₀ as its object and the verification formula as its formula. it runs (~70,000 patterns with jets). it produces an execution trace. that trace is proved. output: a proof P₁ of ~60-157 KiB.
 
-level 2: the verifier takes P₁ as its subject. it runs. it produces P₂ of ~60-157 KiB.
+level 2: the verifier takes P₁ as its object. it runs. it produces P₂ of ~60-157 KiB.
 
 at every level, the proof is the same size. the original computation could have been 10 patterns or 10 billion patterns — P₀ is the same size. P₁ is the same size. the proof compresses computation: O(N) execution → O(1) verification.
 
@@ -69,12 +69,12 @@ at ~70,000 patterns per level, a two-level recursion (proof-of-proof) costs ~140
 
 the nox verifier is written in nox. this means it is:
 
-- content-addressable: `H(verifier_subject, verifier_formula)` is a fixed identifier
+- content-addressable: `H(verifier_object, verifier_formula)` is a fixed identifier
 - memoizable: the result of verifying a specific proof is cacheable
 - auditable: the verifier code is a noun, inspectable by anyone
 - upgradeable: a new verifier version is a new noun, deployed as a new computation
 
-the verifier is not embedded in the consensus protocol as trusted code. it is a program among programs, subject to the same proof requirements as any other computation. if the verifier has a bug, the bug is provable — it will produce an incorrect trace that the (meta-)verifier can detect.
+the verifier is not embedded in the consensus protocol as trusted code. it is a program among programs, held to the same proof requirements as any other computation. if the verifier has a bug, the bug is provable — it will produce an incorrect trace that the (meta-)verifier can detect.
 
 this is the meaning of "trustless verification." the system does not ask you to trust the verifier. it asks you to trust the mathematics of finite fields and hash functions. the verifier is just another program, and its correctness is just another provable fact.
 

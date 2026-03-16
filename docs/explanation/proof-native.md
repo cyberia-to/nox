@@ -53,7 +53,7 @@ the execution trace has 16 registers and 2^n rows (padded to a power of 2):
 
 ```
 r0:  pattern tag (0-16)           which rule fired
-r1:  subject hash                 H(current subject)
+r1:  object hash                  H(current object)
 r2:  formula hash                 H(current formula)
 r3:  operand A                    first evaluated operand
 r4:  operand B                    second evaluated operand

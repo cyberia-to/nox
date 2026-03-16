@@ -5,14 +5,14 @@ status: canonical
 
 ## overview
 
-reduction is the execution model of nox. a formula is applied to a subject under a focus budget, producing a result.
+reduction is the execution model of nox. a formula is applied to an object under a focus budget, producing a result.
 
 ## reduction signature
 
 ```
-reduce : (Subject, Formula, Focus) → Result
+reduce : (Object, Formula, Focus) → Result
 
-  Subject  : Noun    — the environment, the data, the context
+  Object   : Noun    — the environment, the data, the context
   Formula  : Noun    — the code (cell of form [tag body])
   Focus    : F_p     — resource budget, decremented per pattern
 
@@ -68,7 +68,7 @@ by the Huet-Levy theorem (1980), orthogonal term rewriting systems are confluent
 
 consequence: the result depends only on what the program IS, never on how it was evaluated. parallel reduction, lazy reduction, eager reduction, any mixture — the answer is the same.
 
-consequence: content-addressed memoization is sound. `(H(subject), H(formula))` uniquely determines `H(result)`.
+consequence: content-addressed memoization is sound. `(H(object), H(formula))` uniquely determines `H(result)`.
 
 Layer 2 (`hint`) breaks confluence intentionally — multiple valid witnesses may satisfy the same constraints. soundness is preserved: any witness that passes the Layer 1 constraint check is valid. hint is the deliberate injection point for non-determinism.
 
@@ -101,7 +101,7 @@ all binary arithmetic and bitwise patterns can evaluate both operands in paralle
 ## global memoization
 
 ```
-Key:   (H(subject), H(formula))
+Key:   (H(object), H(formula))
 Value: H(result)
 ```
 

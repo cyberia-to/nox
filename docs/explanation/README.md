@@ -15,7 +15,7 @@ these pages illuminate the architecture. for formal definitions, see reference/.
 | field-patterns.md | the six field patterns — add, sub, mul, inv, eq, lt over Goldilocks |
 | bitwise-patterns.md | the four binary patterns — xor, and, not, shl and the two-algebra problem |
 | nouns.md | the one data structure — binary trees of field elements, and why nothing else is needed |
-| triple.md | subject, formula, focus — the three inputs and why the third changes everything |
+| triple.md | object, formula, focus — the three inputs and why the third changes everything |
 | layers.md | the ontological separation — truth, possibility, speed |
 | confluence.md | why evaluation order is irrelevant — and why that enables a planetary cache |
 | hint.md | the boundary of knowledge — one instruction that provides privacy, search, and oracles |

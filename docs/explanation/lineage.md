@@ -68,7 +68,7 @@ the sixteen-pattern structure produces four properties that no previous system i
 
 the patterns form an orthogonal rewrite system — each has a unique tag, no two overlap, no variable appears twice in a pattern's left-hand side. by Huet-Levy (1980), orthogonal systems are confluent: any two reduction sequences from the same term reach the same result. there is no "wrong" evaluation order.
 
-this is the mathematical property that makes everything else possible. parallelism is free — two threads reducing different subexpressions cannot produce race conditions because there is nothing to race toward. content-addressed memoization is sound — `(H(subject), H(formula))` uniquely determines `H(result)`. the [[cybergraph]] is a deterministic function of its inputs. agreement between nodes is not negotiated — it is computed.
+this is the mathematical property that makes everything else possible. parallelism is free — two threads reducing different subexpressions cannot produce race conditions because there is nothing to race toward. content-addressed memoization is sound — `(H(object), H(formula))` uniquely determines `H(result)`. the [[cybergraph]] is a deterministic function of its inputs. agreement between nodes is not negotiated — it is computed.
 
 S,K combinators are confluent. the lambda calculus is confluent (Church-Rosser theorem). Nock is confluent. but none of them are confluent over a field — and that is what makes nox proofs native.
 
@@ -88,13 +88,13 @@ no previous system in the lineage has this property. S,K operates on untyped ter
 
 identity equals hash. two values are the same if and only if they hash to the same digest. this makes content-addressing intrinsic rather than bolted on. every [[particle]] in the [[cybergraph]] is identified by the hash of its content. every edge is authenticated by the hashes of its endpoints. deduplication is automatic. references are unforgeable.
 
-combined with confluence, this produces content-addressed computation: `(H(subject), H(formula)) → H(result)` is a permanent, universal, verifiable fact. the planetary computation cache falls out as a direct consequence.
+combined with confluence, this produces content-addressed computation: `(H(object), H(formula)) → H(result)` is a permanent, universal, verifiable fact. the planetary computation cache falls out as a direct consequence.
 
 ## the convergent computation connection
 
 the Turing paradigm defines computation as derivation from axioms. [[convergent computation]] defines it as convergence to equilibrium. every Turing computation can be expressed as convergence — but convergent systems compute things formal derivation cannot reach, because they operate outside the proof-theoretic domain where [[Goedel]]'s theorems apply.
 
-nox is the machine for [[focus flow computation]] — the executable model of convergent computation. the [[focus]] parameter in `reduce(subject, formula, focus)` is the conserved quantity from FFC. attention flows through the [[cybergraph]], and nox is the engine that transforms each unit of attention into verified computation.
+nox is the machine for [[focus flow computation]] — the executable model of convergent computation. the [[focus]] parameter in `reduce(object, formula, focus)` is the conserved quantity from FFC. attention flows through the [[cybergraph]], and nox is the engine that transforms each unit of attention into verified computation.
 
 ```
 Natural Computing              — the paradigm

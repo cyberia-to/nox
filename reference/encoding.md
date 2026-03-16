@@ -63,7 +63,7 @@ where H = Hemera hash (Poseidon2 sponge over Goldilocks)
 two identical nouns always produce the same encoding, therefore the same hash. this is the foundation of content-addressed computation:
 
 ```
-computation_key = (H(subject), H(formula))
+computation_key = (H(object), H(formula))
 computation_val = H(result)
 ```
 

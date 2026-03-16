@@ -1,36 +1,36 @@
 # the triple
 
-subject, formula, focus — the three inputs to every nox computation. the first two come from [[Nock]]. the third is new, and it changes everything.
+object, formula, focus — the three inputs to every nox computation. the first two come from [[Nock]]. the third is new, and it changes everything.
 
-## reduce(subject, formula, focus) → result
+## reduce(object, formula, focus) → result
 
 every nox reduction takes exactly three inputs.
 
-subject is what the program knows — the environment, the data, the context. in a function call, the subject is the argument. in a contract execution, the subject is the current state. in a [[cyberlink]] evaluation, the subject is the graph neighborhood.
+object is what the program knows — the environment, the data, the context. in a function call, the object is the argument. in a contract execution, the object is the current state. in a [[cyberlink]] evaluation, the object is the graph neighborhood.
 
-formula is what the program does — the code, the instructions, the transformation. a formula is a noun of the form `(tag . body)` where tag selects one of seventeen patterns. the formula transforms the subject into a result.
+formula is what the program does — the code, the instructions, the transformation. a formula is a noun of the form `(tag . body)` where tag selects one of seventeen patterns. the formula transforms the object into a result.
 
 focus is what the program costs — the resource budget, the attention bound. every pattern deducts from focus. when focus reaches zero, computation halts.
 
-## subject-formula duality
+## object-formula duality
 
-in nox, programs are nouns. data is nouns. the distinction between code and data is purely contextual — the same noun can be a subject in one reduction and a formula in another.
+in nox, programs are nouns. data is nouns. the distinction between code and data is purely contextual — the same noun can be an object in one reduction and a formula in another.
 
 ```
-reduce(subject, formula, focus)
+reduce(object, formula, focus)
 
-subject = noun     (the data)
+object = noun     (the data)
 formula = noun     (the code)
 result  = noun     (the output)
 ```
 
-this duality is structural, not semantic. the VM does not "know" which noun is code and which is data. it takes any noun as a subject, any noun as a formula, and attempts to reduce. if the formula has a valid pattern tag and the operands match, reduction proceeds. if not, it produces ⊥_error.
+this duality is structural, not semantic. the VM does not "know" which noun is code and which is data. it takes any noun as an object, any noun as a formula, and attempts to reduce. if the formula has a valid pattern tag and the operands match, reduction proceeds. if not, it produces ⊥_error.
 
-the consequence: self-modifying programs, interpreters, compilers, and proof verifiers are all ordinary nox computations. a nox program that takes another nox program as its subject and executes it is just pattern 2 (compose) — evaluate the formula-noun to get a new formula, then apply it to the subject. there is no special "eval" mechanism. the universality is built in.
+the consequence: self-modifying programs, interpreters, compilers, and proof verifiers are all ordinary nox computations. a nox program that takes another nox program as its object and executes it is just pattern 2 (compose) — evaluate the formula-noun to get a new formula, then apply it to the object. there is no special "eval" mechanism. the universality is built in.
 
 ## focus: the third element
 
-[[Nock]] has subject and formula. nox adds focus. this addition is what makes nox suitable for a decentralized network where computation must be bounded and priced.
+[[Nock]] has object and formula. nox adds focus. this addition is what makes nox suitable for a decentralized network where computation must be bounded and priced.
 
 without focus, a formula can loop forever. `[2 [[1 [2 [[0 1] [0 1]]]] [1 [2 [[0 1] [0 1]]]]]]` — compose applied to a self-referencing formula — never terminates. in a single-machine system, you kill the process. in a decentralized network, who decides when to stop? focus solves this: every pattern costs focus, the budget is finite, termination is guaranteed.
 
@@ -54,10 +54,10 @@ the focus budget also determines [[cyberank]] influence. a neuron's links are we
 
 ## the triple and the stark
 
-the [[stark]] proof covers the entire triple. the proof says: "this formula was applied to this subject under this focus budget, and the result was this noun with this remaining focus." the verifier checks:
+the [[stark]] proof covers the entire triple. the proof says: "this formula was applied to this object under this focus budget, and the result was this noun with this remaining focus." the verifier checks:
 
 ```
-(H(subject), H(formula), focus_initial) → (H(result), focus_remaining)
+(H(object), H(formula), focus_initial) → (H(result), focus_remaining)
 ```
 
 focus appears in the proof. a computation that halts (focus exhausted) has a different proof than one that completes. the prover cannot lie about the budget — the trace records every focus decrement, and the [[stark]] verifier checks them all.
@@ -66,8 +66,8 @@ this means focus is publicly auditable. when a [[neuron]] claims to have spent f
 
 ## why not two inputs?
 
-many VMs separate code and data — the program counter reads instructions from one region while operating on data in another. why does nox combine them into one space (subject) and control them with one pointer (formula)?
+many VMs separate code and data — the program counter reads instructions from one region while operating on data in another. why does nox combine them into one space (object) and control them with one pointer (formula)?
 
-because content-addressing requires it. a computation's canonical identity is `(H(subject), H(formula))`. if the "code" and "data" lived in separate namespaces, you would need separate hashes, separate identity schemes, separate caches. by making everything nouns in the same space, the identity collapses to a single pair of hashes. the computation cache is one table. the content-addressing scheme is one function.
+because content-addressing requires it. a computation's canonical identity is `(H(object), H(formula))`. if the "code" and "data" lived in separate namespaces, you would need separate hashes, separate identity schemes, separate caches. by making everything nouns in the same space, the identity collapses to a single pair of hashes. the computation cache is one table. the content-addressing scheme is one function.
 
 and because homoiconicity requires it. when code is data, a program can construct and examine other programs. a compiler transforms a source noun into a target noun. a proof verifier takes a proof noun and checks it. these are ordinary computations — same triple, same reduction, same caching. the uniformity is the power.

@@ -49,9 +49,9 @@ the O(depth) access cost is real. but depth grows logarithmically with the numbe
 
 ## homoiconicity
 
-a nox formula is a cell `(tag . body)` where tag is the pattern number (0-16) and body contains the operands. a formula is a noun. a subject is a noun. the result is a noun. the distinction between code and data is purely contextual — the same noun can be a subject in one reduction and a formula in another.
+a nox formula is a cell `(tag . body)` where tag is the pattern number (0-16) and body contains the operands. a formula is a noun. an object is a noun. the result is a noun. the distinction between code and data is purely contextual — the same noun can be an object in one reduction and a formula in another.
 
-this goes deeper than Lisp's homoiconicity. in Lisp, code is data within the runtime. in nox, code is data at the level of the proof system. the [[stark]] proves that a specific noun (the formula) was applied to a specific noun (the subject) to produce a specific noun (the result). the proof refers to the same binary tree structure that the execution operated on. there is no separate representation for "the circuit" vs "the program" — they are the same noun.
+this goes deeper than Lisp's homoiconicity. in Lisp, code is data within the runtime. in nox, code is data at the level of the proof system. the [[stark]] proves that a specific noun (the formula) was applied to a specific noun (the object) to produce a specific noun (the result). the proof refers to the same binary tree structure that the execution operated on. there is no separate representation for "the circuit" vs "the program" — they are the same noun.
 
 the consequence for metaprogramming: a nox program can construct other nox programs (they are just nouns), inspect their structure (axis addressing), and compose them (pattern 2). a compiler is a nox program that takes source code (a noun) and produces target code (a noun). a proof verifier is a nox program that takes a proof (a noun) and validates it. compilation and verification are computations over nouns — they get the same content-addressing, the same memoization, the same provability as any other computation.
 

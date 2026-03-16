@@ -51,7 +51,7 @@ cost: 1 + depth. stark constraints: ~depth.
 reduce(s, [1 c], f) = (c, f - 1)
 ```
 
-returns c literally, unevaluated. the only pattern that ignores the subject.
+returns c literally, unevaluated. the only pattern that ignores the object.
 
 cost: 1. stark constraints: 1.
 
@@ -64,7 +64,7 @@ reduce(s, [2 [x y]], f) =
   reduce(rx, ry, f2)
 ```
 
-evaluate x to get a new subject, evaluate y to get a formula, then apply. this is the recursion mechanism — all control flow, looping, and function application reduce to compose.
+evaluate x to get a new object, evaluate y to get a formula, then apply. this is the recursion mechanism — all control flow, looping, and function application reduce to compose.
 
 PARALLELISM: reduce(s,x) and reduce(s,y) are INDEPENDENT — safe to evaluate in parallel.
 
@@ -293,12 +293,12 @@ inv(2) = 9223372034707292161
 inv(0) = ⊥_error
 
 reduce([1,2], [5 [[0 2] [0 3]]], 100) = (3, 96)
-  // subject = cell(1,2)
+  // object = cell(1,2)
   // formula = add(axis 2, axis 3) = add(1, 2) = 3
   // cost: 1 (add) + 1 (axis 2) + 1 (axis 3) + 1 (overhead) = 4
 
 reduce(42, [1 7], 10) = (7, 9)
-  // quote returns 7 literally, ignoring subject 42
+  // quote returns 7 literally, ignoring object 42
 
 reduce([1,2], [3 [[0 2] [0 3]]], 100) = (cell(1, 2), 96)
   // cons(axis 2, axis 3) = cons(1, 2)

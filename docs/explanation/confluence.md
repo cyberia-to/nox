@@ -27,11 +27,11 @@ nox sidesteps all of this. the sixteen patterns are pure tree transformations wi
 because the result is independent of evaluation strategy, the computation's identity can be defined purely by its inputs:
 
 ```
-key:   (H(subject), H(formula))
+key:   (H(object), H(formula))
 value: H(result)
 ```
 
-this pair of hashes — the hash of what the program knows and the hash of what the program does — uniquely determines the hash of the output. any machine, anywhere, at any time, that reduces the same subject with the same formula will produce the same result. the cache entry is universal, permanent, and verifiable.
+this pair of hashes — the hash of what the program knows and the hash of what the program does — uniquely determines the hash of the output. any machine, anywhere, at any time, that reduces the same object with the same formula will produce the same result. the cache entry is universal, permanent, and verifiable.
 
 this is the foundation of the planetary computation cache. see content-addressing.md for the full implications.
 
@@ -40,7 +40,7 @@ this is the foundation of the planetary computation cache. see content-addressin
 confluence guarantees that parallel reduction is safe. patterns 2 (compose), 3 (cons), and all binary arithmetic/bitwise patterns (5-14) have independent sub-computations:
 
 ```
-[2 [x y]]:    reduce(s,x) ∥ reduce(s,y)   — both use the same subject
+[2 [x y]]:    reduce(s,x) ∥ reduce(s,y)   — both use the same object
 [3 [a b]]:    reduce(s,a) ∥ reduce(s,b)   — independent tree construction
 [5 [a b]]:    reduce(s,a) ∥ reduce(s,b)   — independent operand evaluation
 ```
@@ -53,7 +53,7 @@ the exception is pattern 4 (branch): the test must be evaluated before choosing 
 
 any node in the [[cyber]] network that independently computes the same program on the same data will produce the same result. this is stronger than "eventually consistent" — it is "always identical." two nodes that never communicate, on different hardware, running different implementations, using different evaluation strategies, will compute the same hash for the same inputs.
 
-this makes verification trustless. a node publishes `(H(subject), H(formula)) → H(result)`. any other node can verify this claim by re-running the computation, or by checking the [[stark]] proof. the result is either correct or it is not. there is no ambiguity, no "it depends on the implementation."
+this makes verification trustless. a node publishes `(H(object), H(formula)) → H(result)`. any other node can verify this claim by re-running the computation, or by checking the [[stark]] proof. the result is either correct or it is not. there is no ambiguity, no "it depends on the implementation."
 
 ### the cybergraph is a function
 

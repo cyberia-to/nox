@@ -18,7 +18,7 @@ a frozen instruction set is the foundation on which everything else can evolve f
 
 a conventional computer accumulates state. processes crash, memory leaks, kernel panics, disk corruption. the solution is periodic restart — the universal admission that the system cannot maintain coherence indefinitely. every server room in the world runs on scheduled reboots.
 
-nox computation is stateless and verifiable. a nox program takes a subject (data), applies a formula (code), and produces a result — with a [[stark]] proof of correctness. there is no accumulated state to corrupt. there is no process that can leak. the computation either produces a correct, proven result or it halts (focus exhausted) or it errors (type mismatch). all three outcomes are clean.
+nox computation is stateless and verifiable. a nox program takes an object (data), applies a formula (code), and produces a result — with a [[stark]] proof of correctness. there is no accumulated state to corrupt. there is no process that can leak. the computation either produces a correct, proven result or it halts (focus exhausted) or it errors (type mismatch). all three outcomes are clean.
 
 the [[cybergraph]] state is a sequence of proven transitions:
 
@@ -32,7 +32,7 @@ this is the foundation for systems that run indefinitely without degradation. th
 
 ### confluent computation at planetary scale
 
-confluence means the result is independent of evaluation order. any node, anywhere, evaluating the same formula on the same subject will produce the same result. this is the mathematical guarantee that makes decentralized computation trustless.
+confluence means the result is independent of evaluation order. any node, anywhere, evaluating the same formula on the same object will produce the same result. this is the mathematical guarantee that makes decentralized computation trustless.
 
 ```
 node A (Tokyo):      reduce(s, f, π) → r    ✓
@@ -63,7 +63,7 @@ this changes the trust model of computing. you do not trust the server. you do n
 confluence + content-addressing = permanent memoization at planetary scale.
 
 ```
-(H(subject), H(formula)) → H(result)
+(H(object), H(formula)) → H(result)
 ```
 
 this cache entry is a fact — true now, true forever, true on every machine. common computations (identity verification, link validation, rank updates, proof verification) are computed once and cached permanently. as more nodes compute more programs, the cache grows. the network converges toward a state where routine operations are memory lookups.

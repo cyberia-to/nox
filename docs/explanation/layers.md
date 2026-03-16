@@ -31,11 +31,11 @@ the ontological separation — truth, possibility, speed. nox is organized into 
 
 ## Layer 1: what is
 
-sixteen deterministic patterns define the irreducible semantics of computation. given the same subject, formula, and focus, Layer 1 always produces the same result. the prover and verifier execute identically — there is no information asymmetry at this layer.
+sixteen deterministic patterns define the irreducible semantics of computation. given the same object, formula, and focus, Layer 1 always produces the same result. the prover and verifier execute identically — there is no information asymmetry at this layer.
 
 five structural patterns (axis, quote, compose, cons, branch) make the system Turing-complete. six field arithmetic patterns (add, sub, mul, inv, eq, lt) give it algebraic power native to the [[stark]] proof system. four bitwise patterns (xor, and, not, shl) handle binary data. one hash pattern (hash) provides cryptographic identity.
 
-the patterns form an orthogonal rewrite system: unique tags, linear left-hand sides, no overlap. by the Huet-Levy theorem (1980), this guarantees confluence — the result is the same regardless of evaluation order. this is the mathematical foundation of content-addressed computation: if the result is independent of how you compute it, then `(H(subject), H(formula))` is a canonical, permanent, universal identifier for that computation's result.
+the patterns form an orthogonal rewrite system: unique tags, linear left-hand sides, no overlap. by the Huet-Levy theorem (1980), this guarantees confluence — the result is the same regardless of evaluation order. this is the mathematical foundation of content-addressed computation: if the result is independent of how you compute it, then `(H(object), H(formula))` is a canonical, permanent, universal identifier for that computation's result.
 
 Layer 1 is the ground truth. if you stripped away Layers 2 and 3, you would still have a complete, deterministic, provable virtual machine. slower and less private, but functionally identical. everything builds on this foundation.
 

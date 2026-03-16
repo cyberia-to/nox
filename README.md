@@ -14,7 +14,7 @@ combinatory logic (1924)   S, K combinators            pure abstraction
 ## architecture
 
 ```
-reduce(subject, formula, focus) → result
+reduce(object, formula, focus) → result
 ```
 
 everything is a noun — a binary tree of Goldilocks field elements. programs are nouns. data is nouns. the result is a noun.
