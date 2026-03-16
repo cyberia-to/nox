@@ -9,7 +9,7 @@ the history of computation is a search for the minimum. what is the fewest rules
 ```
 combinatory logic (1924)   S, K combinators            pure abstraction
   → lambda calculus (1936) Church's untyped lambda      computable functions
-  → Nock (2016)            natural numbers + decrement  deterministic VM for Urbit
+  → Nock (2016)            natural numbers + increment  deterministic VM for Urbit
   → nox (2026)             field elements + inverse     proof-native VM for cyber
 ```
 
@@ -43,20 +43,20 @@ the lambda calculus is the right abstraction for mathematicians. it maps natural
 
 Curtis Yarvin ([[Urbit]]) took a radical step: replace variables with addresses into a binary tree. a Nock program is a noun — either an atom (natural number) or a cell (ordered pair of nouns). the environment is a noun. the code is a noun. the result is a noun. one data structure, no variables, no binding, no substitution.
 
-Nock has twelve rules. the arithmetic primitive is decrement — given n, produce n-1. this is sufficient for Turing completeness (decrement plus conditional plus recursion), but it is maximally hostile to algebraic reasoning. every arithmetic operation decomposes into iterated decrement. multiplication of two 64-bit numbers takes O(2^64) steps. the system is deterministic and minimal, but the cost model is pathological.
+Nock has twelve rules. the sole arithmetic primitive is increment — given n, produce n+1. decrement is the famously hard operation: built by counting up from 0 until you reach n-1, costing O(n) steps. this is sufficient for Turing completeness (increment plus conditional plus recursion), but it is maximally hostile to algebraic reasoning. every arithmetic operation decomposes into iterated increment. multiplication of two 64-bit numbers takes O(2^64) steps. the system is deterministic and minimal, but the cost model is pathological.
 
 the deeper insight of Nock is structural: computation as tree transformation. a program navigates a tree (axis), constructs trees (cons), and recursively applies transformations (compose). this is the core that nox inherits. the arithmetic, nox replaces entirely.
 
 ## nox (2026)
 
-nox makes one fundamental mutation: replace natural numbers with [[Goldilocks field]] elements and decrement with field inverse.
+nox makes one fundamental mutation: replace natural numbers with [[Goldilocks field]] elements and increment with field inverse.
 
 ```
-Nock:  atom = natural number,   primitive = decrement
+Nock:  atom = natural number,   primitive = increment
 nox:   atom = F_p element,      primitive = field inverse
 ```
 
-this changes everything. decrement over natural numbers is O(1) but leads to O(n) arithmetic. field inverse over [[Goldilocks field|Goldilocks]] is O(64) multiplications (Fermat's little theorem) but leads to O(1) arithmetic for add, sub, mul — and O(1) [[stark]] constraint verification. the tradeoff: pay 64× for inversion, gain constant-time everything else.
+this changes everything. increment over natural numbers is O(1) but leads to O(n) arithmetic — decrement alone costs O(n), addition costs O(a+b), multiplication costs O(a×b). field inverse over [[Goldilocks field|Goldilocks]] is O(64) multiplications (Fermat's little theorem) but leads to O(1) arithmetic for add, sub, mul — and O(1) [[stark]] constraint verification. the tradeoff: pay 64× for inversion, gain constant-time everything else.
 
 the consequence is proof-nativity. the [[Goldilocks field]] is the native field of the [[stark]] proof system. a nox execution trace — the sequence of field element operations — is directly the algebraic constraint system that the prover proves and the verifier checks. there is no compilation step from "program" to "circuit." the program IS the circuit. the execution IS the witness.
 
@@ -74,7 +74,7 @@ S,K combinators are confluent. the lambda calculus is confluent (Church-Rosser t
 
 ### cost determinism
 
-the cost of a computation depends only on its syntactic structure, never on runtime values, cache state, or execution environment. if two nodes compute the same function on the same input, they spend the same [[focus]]. this is unique in the lineage — even Nock's cost model depends on the magnitude of natural numbers (decrement of a large number costs proportionally more).
+the cost of a computation depends only on its syntactic structure, never on runtime values, cache state, or execution environment. if two nodes compute the same function on the same input, they spend the same [[focus]]. this is unique in the lineage — even Nock's cost model depends on the magnitude of natural numbers (decrement costs O(n), making arithmetic on large numbers proportionally expensive).
 
 cost determinism means: the network can price computation before executing it. a [[neuron]] can estimate the focus cost of a formula by static analysis. the [[stark]] prover can predict the trace size. there are no cost surprises.
 
@@ -115,7 +115,7 @@ from Nock, nox inherits:
 
 from Nock, nox replaces:
 - natural numbers → [[aurum]] elements
-- decrement → field inverse
+- increment → field inverse
 - crash semantics → typed error propagation (⊥_error, ⊥_unavailable)
 - implicit cost → explicit focus metering
 

@@ -47,7 +47,7 @@ why field arithmetic? because the [[stark]] proof system operates over a finite 
 
 why these six operations specifically? because {+, -, ×, ÷} is the complete set of field operations, and {=, <} is the minimal set of comparisons. you can build any polynomial from add, sub, and mul. you can solve any equation with inv. you can branch on any condition with eq and lt. there is no field operation that cannot be expressed as a composition of these six.
 
-could the system work without field arithmetic, using only structural patterns? yes — in the same way Nock works with only decrement. you could implement addition as iterated increment, multiplication as iterated addition. but the cost would be catastrophic: O(p) operations for a single addition, where p ≈ 2^64. and every operation would require ~64 [[stark]] constraints instead of 1. the field patterns are the reason nox can prove computations efficiently.
+could the system work without field arithmetic, using only structural patterns? yes — in the same way Nock works with only increment (its sole arithmetic primitive — decrement is the hard operation, famously requiring an O(n) loop). you could implement addition as iterated increment, multiplication as iterated addition. but the cost would be catastrophic: O(p) operations for a single addition, where p ≈ 2^64. and every operation would require ~64 [[stark]] constraints instead of 1. the field patterns are the reason nox can prove computations efficiently.
 
 ## group 3: bitwise (patterns 11-14) — Z/2^64 algebra
 
