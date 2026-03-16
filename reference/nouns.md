@@ -27,13 +27,13 @@ atoms carry a type tag distinguishing three uses of the same underlying field el
 ├──────────────┼─────────────────────┼─────────────────┼───────────────┤
 │  0x00: field │  Single F_p element │  [0, p)         │  Arithmetic   │
 │  0x01: word  │  Single F_p element │  [0, 2^64)      │  Bitwise      │
-│  0x02: hash  │  4 × F_p elements   │  256-bit digest │  Identity     │
+│  0x02: hash  │  8 × F_p elements   │  64-byte digest │  Identity     │
 └───────────────────────────────────────────────────────────────────────┘
 ```
 
 field and word share the same representation (one Goldilocks element) but different operations. a field element wraps around modulo p; a word wraps around modulo 2^64. the distinction is semantic, enforced by the type system.
 
-the hash type (four field elements) is the identity primitive. `H(noun)` produces a hash. `axis(s, 0)` returns `H(s)` — a noun can introspect its own identity.
+the hash type (eight field elements, 64 bytes) is the identity primitive. `H(noun)` produces a hash. `axis(s, 0)` returns `H(s)` — a noun can introspect its own identity.
 
 the type tag costs nothing in the stark — it is a constraint selector, not runtime data.
 
@@ -55,17 +55,24 @@ arithmetic on hash (except equality) → ⊥_error
 
 ## structural hash
 
-every noun has a canonical hash computed by Hemera.
+every noun has a canonical hash computed by Hemera. type and structure information is embedded in Hemera's capacity region — not prepended to the input. this is the same domain separation mechanism Hemera uses for leaf/node/root distinction in Merkle trees.
 
 ```
-H(atom a)     = Hemera(0x00 ‖ type_tag(a) ‖ encode(a))
-H(cell(l, r)) = Hemera(0x01 ‖ H(l) ‖ H(r))
+H(atom a)     = hemera_leaf(encode(a), capacity[14] = type_tag(a))
+H(cell(l, r)) = hemera_node(H(l), H(r))
 ```
+
+capacity layout for noun hashing:
+- capacity[14] = atom type tag (0x00 field, 0x01 word, 0x02 hash) — atoms only
+- capacity[9]  = FLAG_CHUNK for atoms, FLAG_PARENT for cells (Hemera tree flags)
+
+the hash output is 64 bytes (8 field elements). no prefix bytes, no framing — the type is inside the permutation.
 
 properties:
 - deterministic: same noun always produces same hash
 - collision-resistant: distinct nouns produce distinct hashes (Poseidon2 security)
 - composable: cell hash depends only on child hashes, enabling incremental computation
+- domain-separated: different atom types produce different hashes for the same value, enforced by the sponge capacity — not by input framing
 
 ## formulas
 

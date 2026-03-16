@@ -221,7 +221,7 @@ reduce(s, [15 a], f) →
   (H(v_a), f1)
 ```
 
-computes the structural hash of the evaluated operand using Hemera. result is a 4-element hash (256 bits, type tag 0x02).
+computes the structural hash of the evaluated operand using Hemera. result is an 8-element hash (64 bytes, type tag 0x02).
 
 hash CAN be expressed as pure Layer 1 patterns (~2800 field ops for the Poseidon2 permutation). pattern 15 is simultaneously a Layer 1 pattern and the first Layer 3 jet. the jet accelerates; semantics unchanged.
 

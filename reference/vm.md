@@ -30,11 +30,12 @@ nox uses Hemera (~/git/hemera/) for all hashing: structural hash, Fiat-Shamir ch
 
 ```
 HASH: Hemera (Poseidon2-Goldilocks)
-  state: 12 field elements
+  state: 16 field elements
   rate: 8 elements
-  capacity: 4 elements
-  rounds: 8 full + 22 partial + 8 full
-  output: 4 field elements (256 bits)
+  capacity: 8 elements
+  rounds: 8 full (4+4) + 64 partial = 72 total
+  s-box: d = 7 (x^7)
+  output: 8 field elements (64 bytes)
   cost: ~300 stark constraints per permutation
 ```
 

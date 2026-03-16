@@ -53,7 +53,7 @@ four patterns for native operations over 64-bit words. xor, and, not form a func
 ## group 4: hash (pattern 15) — cryptographic identity
 
 ```
-15 hash — H(a) → 4 × F_p (256-bit Hemera digest)
+15 hash — H(a) → 8 × F_p (64-byte Hemera digest)
 ```
 
 one pattern. but it closes the entire identity loop.

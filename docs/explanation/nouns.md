@@ -32,12 +32,12 @@ atoms carry a type tag, but the tag is metadata — it does not change the repre
 ```
 field (0x00)    arithmetic: a + b, a × b, a⁻¹         range [0, p)
 word  (0x01)    bitwise: a XOR b, a AND b, a << n      range [0, 2⁶⁴)
-hash  (0x02)    identity: 4 field elements = 256 bits   Hemera output
+hash  (0x02)    identity: 8 field elements = 64 bytes   Hemera output
 ```
 
 field and word share the same representation but different algebras. a field element wraps modulo p (the Goldilocks prime). a word wraps modulo 2^64 (machine integers). the distinction exists because the [[stark]] constraint system needs to know which algebra applies — addition modulo p uses one constraint, XOR uses ~64 constraints (bit decomposition). the type tag is a constraint selector, not runtime overhead.
 
-the hash type uses four field elements (4 × 64 = 256 bits). it is the identity primitive — every noun can be reduced to a hash, and the hash is how the network refers to the noun. `axis(s, 0)` returns `H(s)` — a noun can introspect its own cryptographic identity. this is unique to nox: self-referential identity is a first-class operation, not a library call.
+the hash type uses eight field elements (8 × 8 = 64 bytes). it is the identity primitive — every noun can be reduced to a hash, and the hash is how the network refers to the noun. `axis(s, 0)` returns `H(s)` — a noun can introspect its own cryptographic identity. this is unique to nox: self-referential identity is a first-class operation, not a library call.
 
 ## trees as memory
 
@@ -60,9 +60,11 @@ the consequence for metaprogramming: a nox program can construct other nox progr
 because nouns have a canonical encoding and a deterministic hash, every noun has a unique cryptographic identity:
 
 ```
-H(atom a)     = Hemera(0x00 ‖ type_tag(a) ‖ encode(a))
-H(cell(l, r)) = Hemera(0x01 ‖ H(l) ‖ H(r))
+H(atom a)     = hemera_leaf(encode(a), capacity[14] = type_tag(a))
+H(cell(l, r)) = hemera_node(H(l), H(r))
 ```
+
+the type tag is embedded in [[Hemera]]'s sponge capacity — the same domain separation mechanism Hemera uses for leaf/node/root distinction in Merkle trees. the hash output is 64 bytes, no prefix bytes, no framing. the type is inside the permutation, not outside it. different atom types produce different hashes for the same value — domain separation is enforced by the mathematics, not by encoding conventions.
 
 two nouns are the same if and only if they have the same hash. this is the foundation of everything content-addressed in [[cyber]]: [[particles]] are hashed nouns, [[cyberlinks]] connect hashed nouns, the computation cache keys on hashed nouns. the one data structure with the one hash function creates the one identity system.
 

@@ -18,7 +18,7 @@ this is testable: a harness compares jet output against pure-pattern output on r
 ## jet 0: hash
 
 ```
-hash(x) → 4 × F_p (256-bit Hemera digest)
+hash(x) → 8 × F_p (64-byte Hemera digest)
 ```
 
 computes Hemera(x) — the Poseidon2-Goldilocks sponge over the input noun.
