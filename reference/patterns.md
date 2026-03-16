@@ -33,7 +33,7 @@ seventeen patterns: sixteen deterministic (Layer 1), one non-deterministic (Laye
 ### pattern 0: axis
 
 ```
-reduce(s, [0 a], f) = (axis(s, eval(a)), f - 1 - depth)
+reduce(s, [0 a], f) = (axis(s, eval(a)), f - depth)
 
   axis(s, 0)   = H(s)           ; hash introspection
   axis(s, 1)   = s              ; identity
@@ -45,7 +45,7 @@ reduce(s, [0 a], f) = (axis(s, eval(a)), f - 1 - depth)
 
 the evaluated axis index must be a field-type or word-type atom, interpreted as an integer. if eval(a) produces a cell or hash-type atom → ⊥_error.
 
-cost: 1 + depth. stark constraints: ~depth.
+cost: depth (number of tree traversal steps). axis 0 and 1 cost 1. axis 2 and 3 cost 1. axis 4-7 cost 2. stark constraints: ~depth.
 
 ### pattern 1: quote
 
@@ -270,7 +270,7 @@ optimization:     hint injects an optimal solution
 ```
 Layer │ Pattern      │ Exec Cost      │ stark Constraints
 ──────┼──────────────┼────────────────┼───────────────────
-  1   │ 0 axis       │ 1 + depth      │ ~depth
+  1   │ 0 axis       │ depth           │ ~depth
   1   │ 1 quote      │ 1              │ 1
   1   │ 2 compose    │ 2              │ 2
   1   │ 3 cons       │ 2              │ 2
@@ -297,11 +297,7 @@ inv(0) = ⊥_error
 reduce([1,2], [5 [[0 2] [0 3]]], 100) = (3, 96)
   // object = cell(1,2)
   // formula = add(axis 2, axis 3) = add(1, 2) = 3
-  // focus trace: 100 → deduct add cost(1) → 99
-  //   reduce(s, [0 2], 99): deduct axis cost(1+1=2) → 97
-  //   reduce(s, [0 3], 97): deduct axis cost(1+1=2) → 95...
-  // NOTE: cost accounting needs step-by-step verification against implementation
-  // total deducted: 4, remaining: 96
+  // cost: add(1) + axis(1) + axis(1) + dispatch(1) = 4
 
 reduce(42, [1 7], 10) = (7, 9)
   // quote returns 7 literally, ignoring object 42

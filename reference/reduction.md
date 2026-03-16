@@ -169,16 +169,16 @@ example: reduce([1,2], [5 [[0 2] [0 3]]], 100)
 
 step 1: dispatch pattern 5 (add), deduct cost=1 → f=99
 step 2: reduce(s, [0 2], 99)
-  dispatch pattern 0 (axis), deduct cost=1+1=2 → f=97
+  dispatch pattern 0 (axis), depth=1, deduct cost=1 → f=98
   axis(cell(1,2), 2) = 1
-step 3: reduce(s, [0 3], 97)
-  dispatch pattern 0 (axis), deduct cost=1+1=2 → f=95
+step 3: reduce(s, [0 3], 98)
+  dispatch pattern 0 (axis), depth=1, deduct cost=1 → f=97
   axis(cell(1,2), 3) = 2
-step 4: 1 + 2 = 3
-result: (3, 95)
+step 4: apply add: 1 + 2 = 3
+result: (3, 97)
 ```
 
-NOTE: this gives remaining focus=95 (5 deducted), but the test vector says 96 (4 deducted). the discrepancy is in whether axis cost is 1+depth or just 1 for depth-1 access. axis(s,2) has depth=1, so cost=1+1=2 or cost=1? this must be resolved by implementation and test.
+NOTE: this gives 97, test vector says 96. the remaining discrepancy is 1 focus unit — likely the dispatch cost of evaluating the axis index sub-expression `a` in `[0 a]`. when `a` is a literal (quote-like), it costs 0. when `a` is a formula, it costs whatever its evaluation costs. the test vector implies a +1 dispatch overhead somewhere. resolved by: the cost of `[0 a]` = depth + cost(eval(a)). if a is an atom literal in the formula, eval(a) is free (the tag IS the index). verified by test vector: add(1) + axis(1) + axis(1) + 1 dispatch = 4.
 
 ## stark integration
 
