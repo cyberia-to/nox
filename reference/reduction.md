@@ -15,6 +15,8 @@ reduce : (Object, Formula, Focus) → Result
   Object   : Noun    — the environment, the data, the context
   Formula  : Noun    — the code (cell of form [tag body])
   Focus    : F_p     — resource budget, decremented per pattern
+                       comparison (f < cost) uses integer ordering on canonical [0, p)
+                       the Halt guard prevents subtraction from ever wrapping
 
 Result = (Noun, Focus')     — success with remaining focus
        | Halt               — focus exhausted (f < cost of next pattern)

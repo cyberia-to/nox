@@ -12,8 +12,8 @@ the nox execution trace is the sequence of register states across all reduction 
 ```
 columns (16 registers):
   r0:  pattern tag (0-16)
-  r1:  object hash (4 × F_p, packed)
-  r2:  formula hash
+  r1:  object hash (8 × F_p, 64 bytes — spans r1 or compressed; see open question)
+  r2:  formula hash (8 × F_p, 64 bytes — same)
   r3:  operand A value
   r4:  operand B value
   r5:  result value

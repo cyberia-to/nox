@@ -77,17 +77,11 @@ not specified:
 
 **recommendation**: add a section to trace.md specifying row layout for hash and inv patterns, with examples.
 
-### G4: focus semantics — type and overflow
+### G4: focus semantics — type and overflow — RESOLVED
 
-reduction.md says Focus is F_p. questions:
+resolved: focus IS F_p. the Halt guard `if f < cost then Halt` prevents subtraction from ever wrapping. comparison uses integer ordering on canonical representatives in [0, p). since practical focus values are tiny relative to p ≈ 2^64, wrapping is impossible. keeping focus as F_p means the AIR constraint `r7 = r6 - cost` is a degree-1 field equation with no range check overhead.
 
-- focus is decremented per pattern. if focus is a field element, subtraction wraps modulo p. `sub(1, 2) = p-1` — a huge budget instead of underflow. is focus comparison done as integer comparison (not field)?
-- is the Halt check `f < cost` done in integer arithmetic or field arithmetic?
-- can focus exceed 2^64 - 1? or is it clamped to u64 range?
-
-**impact**: wrong focus semantics = wrong metering = broken resource accounting.
-
-**recommendation**: clarify in reduction.md: focus is a non-negative integer with comparison and subtraction in ℤ (not F_p). if f < cost, Halt. no field wrapping.
+clarification added to reduction.md.
 
 ### G5: structural hash input format — RESOLVED
 
