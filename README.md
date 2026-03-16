@@ -29,7 +29,11 @@ Layer 3: 5 jets (hash, poly_eval, merkle_verify, fri_fold, ntt) — optimization
 
 ```
 reference/              canonical specifications (source of truth)
-├── vm.md               field, nouns, all 16+1 patterns, jets, cost tables
+├── vm.md               overview, field (aurum), hash (hemera), dependencies, index
+├── nouns.md            data model: atom, cell, type tags, coercion, structural hash
+├── patterns.md         all 17 patterns: Layer 1 (0-15) + Layer 2 hint (16)
+├── reduction.md        reduction semantics, confluence, parallelism, memoization
+├── jets.md             Layer 3: pure equivalents, hardware mapping, verifier costs
 ├── trace.md            execution trace layout, AIR constraints, polynomial encoding
 ├── encoding.md         canonical noun serialization, wire format, content addressing
 └── props/              design proposals (draft → accepted → implemented)
