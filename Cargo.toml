@@ -1,0 +1,10 @@
+[package]
+name = "nox"
+version = "0.1.0"
+edition = "2024"
+description = "proof-native virtual machine over the Goldilocks field"
+license = "Cyber"
+
+[dependencies]
+aurum = { path = "../aurum" }
+hemera = { path = "../hemera" }
