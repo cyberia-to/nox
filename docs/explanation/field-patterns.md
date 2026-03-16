@@ -73,7 +73,7 @@ together eq and lt provide the minimal comparison set. every predicate over fiel
 - less-or-equal: `branch(lt(a, b), yes, branch(eq(a, b), yes, no))`
 - range check: composition of lt comparisons
 
-comparisons are more expensive than arithmetic in the [[stark]] trace. eq requires ~32 constraints (proving that the difference is either zero or has an inverse). lt requires ~32 constraints (bit decomposition to compare magnitudes). this reflects the real algebraic cost: equality and ordering are not native field operations — they require reasoning about the integer representation of field elements, which means bit decomposition.
+lt is more expensive than arithmetic in the [[stark]] trace — ~64 constraints (bit decomposition to compare magnitudes). eq is cheap: 1 constraint (the verifier checks whether the difference is zero or has an inverse). lt requires reasoning about the integer representation of field elements, which means decomposing into bits.
 
 ## why field arithmetic matters
 
@@ -95,12 +95,12 @@ pattern    execution cost    STARK constraints    notes
 add        O(1)              1                    single field equation
 sub        O(1)              1                    single field equation
 mul        O(1)              1                    single field equation
-inv        O(64)             ~64                  square-and-multiply chain
-eq         O(1)              ~32                  zero-test via inverse
-lt         O(1)              ~32                  bit decomposition
+inv        O(64)             1                    verifier checks a × a⁻¹ = 1
+eq         O(1)              1                    difference is zero or has inverse
+lt         O(1)              ~64                  bit decomposition for comparison
 ```
 
-the cost is honest and predictable. a programmer can count the field operations in a formula and know exactly how many constraints the proof will contain. add, sub, mul each generate exactly 1 constraint — the theoretical minimum. inv generates ~64 (the exponentiation chain). eq and lt generate ~32 each (bit decomposition overhead).
+the asymmetry between execution cost and verification cost is fundamental. inv costs 64 multiplications to compute (square-and-multiply) but only 1 constraint to verify (check a × a⁻¹ = 1). the verifier does not repeat the computation — it checks the result. add, sub, mul each generate exactly 1 constraint. eq generates 1 constraint (checking whether the difference is zero). lt requires ~64 constraints (bit decomposition to compare magnitudes in the integer representation).
 
 contrast this with Nock, which has only increment as its arithmetic primitive. decrement must be built by counting up from 0 to n-1 — an O(n) loop. addition is iterated increment: O(a+b). multiplication is iterated addition: O(a×b). multiplying two 64-bit numbers takes O(2^64) steps. in a proof system, each step is a constraint, so Nock arithmetic would produce astronomically large proofs. the field patterns collapse all of this: O(1) execution, O(1) constraints, for every arithmetic operation.
 

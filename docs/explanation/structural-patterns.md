@@ -72,19 +72,18 @@ cons is also the mechanism for returning multiple values. a function that needs 
 
 ## branch: decision
 
-branch is conditional evaluation. `[4 test yes no]` evaluates `test` against the object. if the result is 0, it evaluates `yes`. if the result is 1, it evaluates `no`. any other result is an error.
+branch is conditional evaluation. `[4 test yes no]` evaluates `test` against the object. if the result is 0, it evaluates `yes`. otherwise (any nonzero value), it evaluates `no`.
 
 ```
 branch(object, [4 test yes no]):
   condition = reduce(object, test)
   if condition == 0: reduce(object, yes)
-  if condition == 1: reduce(object, no)
-  otherwise: ⊥_error
+  else:              reduce(object, no)
 ```
 
 branch is the only pattern that discards computation. one of its two branches is never evaluated — the formula for the path not taken is syntactically present but semantically absent. this is how nox avoids wasted [[focus]]: the branch not chosen costs nothing.
 
-the binary choice (0 or 1, nothing else) is deliberate. multi-way dispatch is built by nesting branches. this keeps the pattern semantics minimal — one test, two paths — and the [[stark]] constraint simple: verify the condition is 0 or 1, verify the result matches the chosen branch. a multi-way branch would require variable-length constraint patterns, complicating the proof system for marginal convenience.
+the test is zero-vs-nonzero, matching the Nock tradition. in the [[stark]] trace, the condition is recorded as a binary selector (0 or 1), derived from whether the test result was zero. the constraint checks: selector × no_result + (1-selector) × yes_result = result. multi-way dispatch is built by nesting branches.
 
 ## why five is enough
 
