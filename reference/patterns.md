@@ -43,6 +43,8 @@ reduce(s, [0 a], f) = (axis(s, eval(a)), f - 1 - depth)
   axis(s, 2n+1)= axis(axis(s,n), 3)
 ```
 
+the evaluated axis index must be a field-type or word-type atom, interpreted as an integer. if eval(a) produces a cell or hash-type atom → ⊥_error.
+
 cost: 1 + depth. stark constraints: ~depth.
 
 ### pattern 1: quote
@@ -295,7 +297,11 @@ inv(0) = ⊥_error
 reduce([1,2], [5 [[0 2] [0 3]]], 100) = (3, 96)
   // object = cell(1,2)
   // formula = add(axis 2, axis 3) = add(1, 2) = 3
-  // cost: 1 (add) + 1 (axis 2) + 1 (axis 3) + 1 (overhead) = 4
+  // focus trace: 100 → deduct add cost(1) → 99
+  //   reduce(s, [0 2], 99): deduct axis cost(1+1=2) → 97
+  //   reduce(s, [0 3], 97): deduct axis cost(1+1=2) → 95...
+  // NOTE: cost accounting needs step-by-step verification against implementation
+  // total deducted: 4, remaining: 96
 
 reduce(42, [1 7], 10) = (7, 9)
   // quote returns 7 literally, ignoring object 42

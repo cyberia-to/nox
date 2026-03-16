@@ -59,23 +59,18 @@ reference mentions ⊥_error and ⊥_unavailable but does not define:
 
 resolved: hash is a wide atom (8 elements stored contiguously, type tag 0x02). it is an atom, not a cell. axis on a hash atom with index > 1 returns ⊥_error (same as axis on a regular atom). axis 0 returns its structural hash. axis 1 returns itself.
 
-the wire format encodes hash atoms as prefix 0x02 + 64 bytes. the structural hash uses hemera_leaf with capacity[14] = 0x02. no representation ambiguity remains.
+content-addressed storage: hash atoms store as 64 bytes (size-determined type). the structural hash uses hemera_leaf with capacity[14] = 0x02. no representation ambiguity remains.
 
 nouns.md already states "axis on an atom (except 0 and 1) produces ⊥_error" — this applies to hash atoms unchanged.
 
-### G3: multi-row trace layout for complex patterns
+### G3: multi-row trace layout for complex patterns — RESOLVED
 
-trace.md shows 16 registers per row. pattern 15 (hash) costs 300 and spans the Poseidon2 permutation (72 rounds). pattern 8 (inv) costs 64 (square-and-multiply chain).
+resolved: trace.md now specifies multi-row patterns:
+- hash (cost 300): ~75 rows (72 Poseidon2 rounds + absorption/squeeze). r12-r14 hold round state. degree 7 per row.
+- inv (cost 64): 64 rows (square-and-multiply chain). r12 holds accumulator. degree 2 per row.
+- compose/cons (cost 2): 2 dispatch rows + recursive sub-expression rows.
 
-not specified:
-- how many trace rows does a single hash operation consume?
-- what register values appear in intermediate rows?
-- does each Poseidon2 round get its own row? or is it compressed into fewer rows via the jet constraint layout?
-- how does inv's 64-multiplication chain appear in the trace?
-
-**impact**: cannot implement the trace recorder or write AIR constraints without this.
-
-**recommendation**: add a section to trace.md specifying row layout for hash and inv patterns, with examples.
+remaining: concrete register values for intermediate rows of hash and inv (needed for AIR constraint implementation).
 
 ### G4: focus semantics — type and overflow — RESOLVED
 
@@ -96,16 +91,9 @@ atoms use hemera_leaf with the atom type tag in capacity[14]. cells use hemera_n
 
 remaining: add test vectors for each case (atom field, atom word, atom hash, cell).
 
-### G6: axis on evaluated sub-expressions
+### G6: axis on evaluated sub-expressions — RESOLVED
 
-pattern 0 (axis): `reduce(s, [0 a], f)` evaluates `a` first: `axis(s, eval(a))`. what if `eval(a)` returns:
-- a cell? (axis index must be an atom — is this ⊥_error?)
-- a hash-type atom? (8 elements — what's the integer axis value?)
-- a word-type atom vs field-type atom? (do they produce the same axis behavior?)
-
-**impact**: implementer must decide error behavior for type mismatches in axis index.
-
-**recommendation**: add to patterns.md: axis index must be a field-type or word-type atom interpreted as an integer. cell or hash-type → ⊥_error.
+resolved: patterns.md now specifies: axis index must be a field-type or word-type atom, interpreted as an integer. cell or hash-type → ⊥_error.
 
 ### G7: jet recognition mechanism
 
