@@ -119,7 +119,7 @@ reduce(s, [op [a b]], f) =
 reduce(s, [5 [a b]], f) → ((v_a + v_b) mod p, f2)
 ```
 
-Goldilocks addition. provided by aurum. cost: 1. stark constraints: 1.
+Goldilocks addition. provided by nebu. cost: 1. stark constraints: 1.
 
 ### pattern 6: sub
 
@@ -127,7 +127,7 @@ Goldilocks addition. provided by aurum. cost: 1. stark constraints: 1.
 reduce(s, [6 [a b]], f) → ((v_a - v_b) mod p, f2)
 ```
 
-Goldilocks subtraction. provided by aurum. cost: 1. stark constraints: 1.
+Goldilocks subtraction. provided by nebu. cost: 1. stark constraints: 1.
 
 ### pattern 7: mul
 
@@ -135,7 +135,7 @@ Goldilocks subtraction. provided by aurum. cost: 1. stark constraints: 1.
 reduce(s, [7 [a b]], f) → ((v_a × v_b) mod p, f2)
 ```
 
-Goldilocks multiplication. provided by aurum. cost: 1. stark constraints: 1.
+Goldilocks multiplication. provided by nebu. cost: 1. stark constraints: 1.
 
 ### pattern 8: inv
 
@@ -146,7 +146,7 @@ reduce(s, [8 a], f) →
   (v_a^(p-2) mod p, f1)
 ```
 
-Goldilocks field inverse via Fermat's little theorem. provided by aurum.
+Goldilocks field inverse via Fermat's little theorem. provided by nebu.
 
 execution cost: 64 (reflects ~64 multiplications in square-and-multiply).
 stark verification cost: 1 constraint (verifier checks a × a⁻¹ = 1).

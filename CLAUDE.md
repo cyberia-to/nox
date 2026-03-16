@@ -557,7 +557,7 @@ Layer 3: 5 jets (hash, poly_eval, merkle_verify, fri_fold, ntt) — optimization
 
 | repo | path | role |
 |------|------|------|
-| aurum | `~/git/aurum/` | Goldilocks field arithmetic |
+| nebu | `~/git/nebu/` | Goldilocks field arithmetic |
 | hemera | `~/git/hemera/` | hash function (Poseidon2) |
 | nox | `~/git/nox/` | VM (this repo) |
 | zheng | `~/git/zheng/` | proof system (SuperSpartan + WHIR) |

@@ -64,7 +64,7 @@ poly_eval([c_0, c_1, ..., c_N], z) = c_0 + c_1·z + c_2·z² + ... + c_N·z^N
 - stark constraints: ~N
 - accelerates: WHIR query verification, constraint evaluation at random points
 
-Horner's method is iterated FMA (fused multiply-accumulate), mapping directly to the aurum field's multiply-add sequence.
+Horner's method is iterated FMA (fused multiply-accumulate), mapping directly to the nebu field's multiply-add sequence.
 
 ## jet 2: merkle_verify
 
@@ -121,7 +121,7 @@ forward: coefficient representation → evaluation representation
 inverse: evaluation representation → coefficient representation
 ```
 
-uses the 2^32-th root of unity (1753635133440165772) from the Goldilocks field, provided by aurum.
+uses the 2^32-th root of unity (1753635133440165772) from the Goldilocks field, provided by nebu.
 
 - pure equivalent: ~2N·log(N) patterns (butterfly operations)
 - jet cost: N·log(N)

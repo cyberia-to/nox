@@ -6,5 +6,5 @@ description = "proof-native virtual machine over the Goldilocks field"
 license = "Cyber"
 
 [dependencies]
-aurum = { path = "../aurum/rs" }
+nebu = { path = "../nebu/rs" }
 hemera = { package = "cyber-hemera", path = "../hemera/rs" }

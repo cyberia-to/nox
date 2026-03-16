@@ -29,7 +29,7 @@ Layer 3: 5 jets (hash, poly_eval, merkle_verify, fri_fold, ntt) — optimization
 
 ```
 reference/              canonical specifications (source of truth)
-├── vm.md               overview, field (aurum), hash (hemera), dependencies, index
+├── vm.md               overview, field (nebu), hash (hemera), dependencies, index
 ├── nouns.md            data model: atom, cell, type tags, coercion, structural hash
 ├── patterns.md         all 17 patterns: Layer 1 (0-15) + Layer 2 hint (16)
 ├── reduction.md        reduction semantics, confluence, parallelism, memoization
@@ -56,7 +56,7 @@ src/                    Rust implementation
 
 | repo | path | role |
 |------|------|------|
-| aurum | ~/git/aurum/ | Goldilocks field arithmetic |
+| nebu | ~/git/nebu/ | Goldilocks field arithmetic |
 | hemera | ~/git/hemera/ | Hemera hash (Poseidon2-Goldilocks) |
 | zheng | ~/git/zheng/ | proof system (SuperSpartan + WHIR) |
 | trident | ~/git/trident/ | high-level language, compiles to nox |

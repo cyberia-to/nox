@@ -114,7 +114,7 @@ from Nock, nox inherits:
 - the structural patterns (axis, quote, compose, cons, branch)
 
 from Nock, nox replaces:
-- natural numbers → [[aurum]] elements
+- natural numbers → [[nebu]] elements
 - increment → field inverse
 - crash semantics → typed error propagation (⊥_error, ⊥_unavailable)
 - implicit cost → explicit focus metering

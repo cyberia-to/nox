@@ -11,7 +11,7 @@ every nox execution produces a trace that IS the stark witness. there is no sepa
 
 ## field
 
-nox operates over the Goldilocks field, provided by aurum (~/git/aurum/).
+nox operates over the Goldilocks field, provided by nebu (~/git/nebu/).
 
 ```
 p = 2^64 - 2^32 + 1 = 18446744069414584321
@@ -22,7 +22,7 @@ efficient reduction: a mod p = a_lo - a_hi × (2^32 - 1) + correction
 
 the field choice is load-bearing: nox arithmetic IS Goldilocks arithmetic. the execution trace IS a table of Goldilocks elements. the stark proof IS over Goldilocks. there is no impedance mismatch at any layer.
 
-aurum provides: field element type, addition, subtraction, multiplication, Fermat inversion, NTT-friendly roots of unity, Montgomery/Barrett reduction. nox imports the field — it does not reimplement it.
+nebu provides: field element type, addition, subtraction, multiplication, Fermat inversion, NTT-friendly roots of unity, Montgomery/Barrett reduction. nox imports the field — it does not reimplement it.
 
 ## hash
 
@@ -84,6 +84,6 @@ remove Layer 3: identical results, ~8.5× slower. remove Layer 2: no privacy, no
 
 | crate | path | provides | nox uses |
 |-------|------|----------|----------|
-| aurum | ~/git/aurum/rs | Goldilocks field arithmetic | F_p type, add, sub, mul, inv, roots of unity |
+| nebu | ~/git/nebu/rs | Goldilocks field arithmetic | F_p type, add, sub, mul, inv, roots of unity |
 | hemera | ~/git/hemera/rs | Hemera hash (Poseidon2-Goldilocks) | H(), domain separation, Merkle mode |
 | zheng | ~/git/zheng/ | proof system (SuperSpartan + WHIR) | stark proving/verifying (downstream consumer of trace) |

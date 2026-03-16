@@ -6,7 +6,7 @@ canonical specification of the nox virtual machine. this is the source of truth 
 
 | page | scope | status |
 |------|-------|--------|
-| vm.md | overview, field (aurum), hash (hemera), dependencies | canonical |
+| vm.md | overview, field (nebu), hash (hemera), dependencies | canonical |
 | nouns.md | data model: atom, cell, type tags, coercion, structural hash | canonical |
 | patterns.md | all 17 patterns: Layer 1 (0-15) + Layer 2 hint (16) | canonical |
 | reduction.md | reduction semantics, confluence, parallelism, memoization | canonical |
@@ -28,7 +28,7 @@ canonical specification of the nox virtual machine. this is the source of truth 
 
 nox depends on two companion crates:
 
-- aurum (~/git/aurum/rs) — Goldilocks field arithmetic. provides the F_p type and all field operations (add, sub, mul, inv, roots of unity). nox imports the field, it does not reimplement it.
+- nebu (~/git/nebu/rs) — Goldilocks field arithmetic. provides the F_p type and all field operations (add, sub, mul, inv, roots of unity). nox imports the field, it does not reimplement it.
 - hemera (~/git/hemera/rs) — Hemera hash (Poseidon2-Goldilocks). provides the sponge construction, domain-separated hashing, and Merkle-compatible mode. nox imports the hash, it does not reimplement it.
 
 zheng (~/git/zheng/) is a downstream consumer — it takes nox execution traces and produces stark proofs.
