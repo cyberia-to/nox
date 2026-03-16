@@ -8,7 +8,9 @@ these pages illuminate the architecture. for formal definitions, see reference/.
 
 | page | topic |
 |------|-------|
-| lineage.md | from combinatory logic to nox — a century of searching for minimal computation |
+| why-nox.md | the frozen foundation — what nox enables and why the patterns never change |
+| lineage.md | from combinatory logic to nox — two lineages meet: minimalism and convergence |
+| completeness.md | why exactly these instruction groups — structural, field, bitwise, hash, hint |
 | nouns.md | the one data structure — binary trees of field elements, and why nothing else is needed |
 | triple.md | subject, formula, focus — the three inputs and why the third changes everything |
 | layers.md | the ontological separation — truth, possibility, speed |
