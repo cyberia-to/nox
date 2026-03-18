@@ -7,7 +7,27 @@ status: canonical
 
 reduction is the execution model of nox. a formula is applied to an object under a focus budget, producing a result. the reduction rules are algebra-independent — they work identically across all nox<F, W, H> instantiations. pattern dispatch costs and constraint counts are per-instantiation (see patterns.md).
 
+## interface
+
+the top-level invocation is `ask` — the seven fields of a [[cyberlink]]:
+
+```
+ask : (ν, Object, Formula, τ, a, v, t) → Answer
+
+  ν        : Neuron  — who orders the computation
+  Object   : Noun    — the environment, the data, the context
+  Formula  : Noun    — the code (cell of form [tag body])
+  τ        : Token   — denomination of payment
+  a        : Amount  — how much to pay (focus budget)
+  v        : Valence — prediction about result quality {-1, 0, +1}
+  t        : Time    — block height
+```
+
+`ask` checks the [[cybergraph]] memo cache before executing. if `axon(Formula, Object)` has a verified result → return it. otherwise → `reduce`, prove, link.
+
 ## reduction signature
+
+the internal execution engine:
 
 ```
 reduce : (Object, Formula, Focus) → Result
@@ -107,17 +127,39 @@ all binary arithmetic and bitwise patterns can evaluate both operands in paralle
 
 NOTE on focus and parallelism: the formal reduction rules thread focus sequentially (f → f1 → f2), which contradicts parallel evaluation of sub-expressions. for parallelism to work, the focus budget must be partitioned between parallel branches (e.g. split f equally, or pre-compute sub-expression costs). the partitioning scheme is not yet specified. confluence guarantees the result is identical regardless of evaluation order, but the focus accounting must produce the same final value. this is an open specification gap.
 
-## global memoization
+## global memoization via cybergraph
+
+the [[cybergraph]] is the memo table. the cache key is the axon — the directed edge from formula to object:
 
 ```
-Key:   (H(object), H(formula))
-Value: H(result)
+Key:   axon(formula, object) = H(formula, object)
+Value: result particle linked to the axon
 ```
+
+before executing, `ask` checks whether `axon(formula, object)` already has a verified result linked to it in the graph. if yes → zero computation, return the cached result. if no → reduce, prove, link `axon → result`.
+
+```
+ask(ν, object, formula, τ, a, v, t) → answer
+
+  1. order_axon = H(formula, object)
+  2. lookup axon in cybergraph
+     → verified result exists: return cached (zero compute)
+     → no result: reduce(object, formula, focus=(τ,a)), prove
+  3. link order_axon → result (with stark proof)
+  4. return result
+```
+
+two [[cyberlinks]] per computation:
+- order: neuron links formula → object (with payment τ,a and valence v)
+- answer: device links order_axon → result (with stark proof)
+
+the order axon is a [[particle]] (axiom A6). multiple devices can answer the same order — competing results. the [[coupling|ICBS]] market determines which answer the graph trusts.
 
 properties:
 - universal: any node in the network can contribute and consume
 - permanent: results never change (confluence guarantees determinism)
 - verifiable: result hash is checkable against the stark proof
+- the more the graph grows, the fewer computations actually execute
 
 layer scope:
 - Layer 1: fully memoizable (deterministic)
