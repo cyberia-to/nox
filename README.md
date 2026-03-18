@@ -32,8 +32,28 @@ nox replaces Nock's natural numbers with [[Goldilocks field]] elements and decre
 ## architecture
 
 ```
-reduce(subject, formula, focus) → result
+ask(ν, subject, formula, τ, a, v, t) → answer
 ```
+
+the seven arguments of `ask` are the seven fields of a [[cyberlink]]. computation IS linking. the function:
+
+1. compute `order_axon = H(formula, subject)`
+2. lookup: does `axon(formula, subject)` have a verified result in the [[cybergraph]]?
+   → yes: return cached result (zero computation — memoized)
+   → no: `reduce(subject, formula, focus=(τ,a))`, prove via [[zheng|STARK]]
+3. link `order_axon → result` (with proof)
+4. return result
+
+the [[cybergraph]] is a universal, persistent, proven memo cache. every computation anyone ever did is reusable by everyone. the more the graph grows, the fewer computations actually execute
+
+two [[cyberlinks]] per computation:
+
+| Link | From | To | Who | What it records |
+|------|------|----|-----|----------------|
+| order | formula | subject | neuron | "compute this" + payment |
+| answer | order_axon | result | device | "here is the result" + proof |
+
+the order axon `H(formula, subject)` is itself a [[particle]] (axiom A6). anyone can query backlinks to it — "what results exist for this computation?" multiple devices can answer the same order. the [[coupling|ICBS]] market determines which answer the graph trusts
 
 everything is a noun — a binary tree of [[Goldilocks field]] elements. programs are nouns. data is nouns. the result is a noun.
 
