@@ -15,19 +15,23 @@ nox replaces Nock's natural numbers with [[Goldilocks field]] elements and decre
 
 ## why nox is amazing
 
-**proof-native execution.** most virtual machines bolt proofs onto execution after the fact — run the program, then arithmetize the trace, then prove. nox skips the middle step. the execution trace is already a valid STARK witness. `reduce(subject, formula)` simultaneously computes the result and generates the proof artifact.
+computation IS linking. `ask(ν, subject, formula, τ, a, v, t)` has seven arguments — the seven fields of a [[cyberlink]]. ordering a computation and asserting knowledge are the same act. the [[cybergraph]] is simultaneously a knowledge base and a universal memo cache. every computation anyone ever did is reusable by everyone. the more the graph grows, the fewer computations actually execute. nox does not just compute — it remembers.
 
-**algebra polymorphism.** the same 16 reduction patterns work over any field, any word width, any hash function. pattern semantics are universal — algebra is a parameter. a single nox program runs over Goldilocks (STARKs), F₂ (Binius), or F_{p³} (recursive composition) by selecting a different instantiation. one spec, many proof systems.
+proof-native execution. most virtual machines bolt proofs onto execution after the fact — run the program, then arithmetize the trace, then prove. nox skips the middle step. the execution trace is already a valid STARK witness. `reduce(subject, formula)` simultaneously computes the result and generates the proof artifact.
 
-**merkle by construction.** every `cons(a, b)` builds a Merkle tree — the hash is computed and stored at the parent node. `axis` traversal produces Merkle proofs as a side effect. content addressing is not a feature layered on top — it is the data model itself.
+algebra polymorphism. the same 16 reduction patterns work over any field, any word width, any hash function. pattern semantics are universal — algebra is a parameter. a single nox program runs over Goldilocks (STARKs), F₂ (Binius), or F_{p³} (recursive composition) by selecting a different instantiation. one spec, many proof systems.
 
-**minimal irreducible design.** 16 deterministic patterns, 1 non-deterministic hint, 5 optimization jets. remove the jets — identical results, ~8.5× slower. remove the hint — no privacy, no ZK, but still Turing-complete. remove Layer 1 — nothing remains. every pattern earns its place.
+merkle by construction. every `cons(a, b)` builds a Merkle tree — the hash is computed and stored at the parent node. `axis` traversal produces Merkle proofs as a side effect. content addressing is not a feature layered on top — it is the data model itself. and because every noun is content-addressed, every reduction result has a unique identity — the foundation of global memoization.
 
-**privacy at the boundary.** the hint pattern (16) injects untrusted witness data that Layer 1 constraints verify. this is where privacy enters: the prover knows the secret, the verifier checks the math. no trusted setup. no MPC ceremony. the architecture separates knowledge from verification.
+cybergraph-native. nox is tightly coupled with the [[cybergraph]] and [[bbg]]. the memo cache IS the graph state. the proof IS a [[cyberlink]]. the focus budget IS the token payment. this coupling is not a dependency — it is the source of compounding returns. every computation enriches the graph. every enrichment accelerates future computation.
 
-**lazy evaluation.** the branch pattern (4) evaluates only the taken path. the other branch is never touched. this prevents infinite-recursion DoS attacks structurally — a property of the reduction semantics, not a runtime check.
+minimal irreducible design. 16 deterministic patterns, 1 non-deterministic hint, 5 optimization jets. remove the jets — identical results, ~8.5× slower. remove the hint — no privacy, no ZK, but still Turing-complete. remove Layer 1 — nothing remains. every pattern earns its place.
 
-**unified IR.** nox is simultaneously the intermediate representation (all [[cyber]] languages compile through it), the node runtime (production blockchain binary), and the composition tier (orchestrating programs across execution contexts). one representation from source to proof.
+privacy at the boundary. the hint pattern (16) injects untrusted witness data that Layer 1 constraints verify. this is where privacy enters: the prover knows the secret, the verifier checks the math. no trusted setup. no MPC ceremony. the architecture separates knowledge from verification.
+
+lazy evaluation. the branch pattern (4) evaluates only the taken path. the other branch is never touched. this prevents infinite-recursion DoS attacks structurally — a property of the reduction semantics, not a runtime check.
+
+unified IR. nox is simultaneously the intermediate representation (all [[cyber]] languages compile through it), the node runtime (production blockchain binary), and the composition tier (orchestrating programs across execution contexts). one representation from source to proof.
 
 ## architecture
 
