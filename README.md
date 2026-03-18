@@ -1,6 +1,6 @@
 # nox
 
-proof-native virtual machine for [cyber](https://github.com/cyberia-to/cyber). every execution produces a STARK proof as a byproduct — running a program and proving it ran correctly are the same act. there is no separate arithmetization step. the execution trace IS the algebraic constraint system.
+proof-native virtual machine for [[cyber]]. every execution produces a STARK proof as a byproduct — running a program and proving it ran correctly are the same act. there is no separate arithmetization step. the execution trace IS the algebraic constraint system.
 
 ## lineage
 
@@ -11,7 +11,7 @@ combinatory logic (1924)   S, K combinators            pure abstraction
   → nox (2026)             field elements + inverse     proof-native virtual machine for cyber
 ```
 
-nox replaces Nock's natural numbers with Goldilocks field elements and decrement with field inverse. this single substitution makes the virtual machine algebraically native — every operation maps directly to field constraints with zero translation overhead.
+nox replaces Nock's natural numbers with [[Goldilocks field]] elements and decrement with field inverse. this single substitution makes the virtual machine algebraically native — every operation maps directly to field constraints with zero translation overhead.
 
 ## why nox is amazing
 
@@ -27,7 +27,7 @@ nox replaces Nock's natural numbers with Goldilocks field elements and decrement
 
 **lazy evaluation.** the branch pattern (4) evaluates only the taken path. the other branch is never touched. this prevents infinite-recursion DoS attacks structurally — a property of the reduction semantics, not a runtime check.
 
-**unified IR.** nox is simultaneously the intermediate representation (all cyber languages compile through it), the node runtime (production blockchain binary), and the composition tier (orchestrating programs across execution contexts). one representation from source to proof.
+**unified IR.** nox is simultaneously the intermediate representation (all [[cyber]] languages compile through it), the node runtime (production blockchain binary), and the composition tier (orchestrating programs across execution contexts). one representation from source to proof.
 
 ## architecture
 
@@ -35,7 +35,7 @@ nox replaces Nock's natural numbers with Goldilocks field elements and decrement
 reduce(subject, formula, focus) → result
 ```
 
-everything is a noun — a binary tree of Goldilocks field elements. programs are nouns. data is nouns. the result is a noun.
+everything is a noun — a binary tree of [[Goldilocks field]] elements. programs are nouns. data is nouns. the result is a noun.
 
 ```
 Layer 1: 16 deterministic patterns    Turing-complete + field arithmetic + bitwise + hash
@@ -62,7 +62,7 @@ Layer 3: 5 jets                       hash, poly_eval, merkle_verify, fri_fold, 
 | 12 | and | bitwise | bitwise and |
 | 13 | not | bitwise | bitwise complement |
 | 14 | shl | bitwise | shift left |
-| 15 | hash | hash | structural hashing via hemera |
+| 15 | hash | hash | structural hashing via [[hemera]] |
 
 ### canonical instantiation
 
@@ -74,14 +74,14 @@ H = hemera           Poseidon2-Goldilocks sponge, 32-byte output
 
 ## companion repos
 
-| repo | role |
-|------|------|
-| [nebu](https://github.com/cyberia-to/nebu) | field arithmetic |
-| [hemera](https://github.com/cyberia-to/hemera) | hash function |
-| [zheng](https://github.com/cyberia-to/zheng) | proof system |
-| [trident](https://github.com/cyberia-to/trident) | language compiler |
-| [mudra](https://github.com/cyberia-to/mudra) | crypto primitives |
-| [bbg](https://github.com/cyberia-to/bbg) | authenticated state |
+| repo | role | github |
+|------|------|--------|
+| [[nebu]] | field arithmetic | [nebu](https://github.com/cyberia-to/nebu) |
+| [[hemera]] | hash function | [hemera](https://github.com/cyberia-to/hemera) |
+| [[zheng]] | proof system | [zheng](https://github.com/cyberia-to/zheng) |
+| [[trident]] | language compiler | [trident](https://github.com/cyberia-to/trident) |
+| [[mudra]] | crypto primitives | [mudra](https://github.com/cyberia-to/mudra) |
+| [[bbg]] | authenticated state | [bbg](https://github.com/cyberia-to/bbg) |
 
 ## license
 
