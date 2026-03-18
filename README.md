@@ -1,21 +1,21 @@
 # nox
 
-proof-native virtual machine for [[cyber]]. every execution produces a STARK proof as a byproduct — running a program and proving it ran correctly are the same act. there is no separate arithmetization step. the execution trace IS the algebraic constraint system.
+proof-native virtual machine for [cyber](https://github.com/cyberia-to/cyber). every execution produces a STARK proof as a byproduct — running a program and proving it ran correctly are the same act. there is no separate arithmetization step. the execution trace IS the algebraic constraint system.
 
 ## lineage
 
 ```
 combinatory logic (1924)   S, K combinators            pure abstraction
   → lambda calculus (1936) Church's untyped lambda      computable functions
-  → Nock (2016)            natural numbers + decrement  deterministic VM for Urbit
-  → nox (2026)             field elements + inverse     proof-native VM for cyber
+  → Nock (2016)            natural numbers + decrement  deterministic virtual machine for Urbit
+  → nox (2026)             field elements + inverse     proof-native virtual machine for cyber
 ```
 
-nox replaces Nock's natural numbers with [[Goldilocks field]] elements and decrement with field inverse. this single substitution makes the VM algebraically native — every operation maps directly to field constraints with zero translation overhead.
+nox replaces Nock's natural numbers with Goldilocks field elements and decrement with field inverse. this single substitution makes the virtual machine algebraically native — every operation maps directly to field constraints with zero translation overhead.
 
 ## why nox is amazing
 
-**proof-native execution.** most VMs bolt proofs onto execution after the fact — run the program, then arithmetize the trace, then prove. nox skips the middle step. the execution trace is already a valid STARK witness. `reduce(subject, formula)` simultaneously computes the result and generates the proof artifact.
+**proof-native execution.** most virtual machines bolt proofs onto execution after the fact — run the program, then arithmetize the trace, then prove. nox skips the middle step. the execution trace is already a valid STARK witness. `reduce(subject, formula)` simultaneously computes the result and generates the proof artifact.
 
 **algebra polymorphism.** the same 16 reduction patterns work over any field, any word width, any hash function. pattern semantics are universal — algebra is a parameter. a single nox program runs over Goldilocks (STARKs), F₂ (Binius), or F_{p³} (recursive composition) by selecting a different instantiation. one spec, many proof systems.
 
@@ -27,7 +27,7 @@ nox replaces Nock's natural numbers with [[Goldilocks field]] elements and decre
 
 **lazy evaluation.** the branch pattern (4) evaluates only the taken path. the other branch is never touched. this prevents infinite-recursion DoS attacks structurally — a property of the reduction semantics, not a runtime check.
 
-**unified IR.** nox is simultaneously the intermediate representation (all [[cyber]] languages compile through it), the node runtime (production blockchain binary), and the composition tier (orchestrating programs across execution contexts). one representation from source to proof.
+**unified IR.** nox is simultaneously the intermediate representation (all cyber languages compile through it), the node runtime (production blockchain binary), and the composition tier (orchestrating programs across execution contexts). one representation from source to proof.
 
 ## architecture
 
@@ -35,7 +35,7 @@ nox replaces Nock's natural numbers with [[Goldilocks field]] elements and decre
 reduce(subject, formula, focus) → result
 ```
 
-everything is a noun — a binary tree of [[Goldilocks field]] elements. programs are nouns. data is nouns. the result is a noun.
+everything is a noun — a binary tree of Goldilocks field elements. programs are nouns. data is nouns. the result is a noun.
 
 ```
 Layer 1: 16 deterministic patterns    Turing-complete + field arithmetic + bitwise + hash
@@ -62,7 +62,7 @@ Layer 3: 5 jets                       hash, poly_eval, merkle_verify, fri_fold, 
 | 12 | and | bitwise | bitwise and |
 | 13 | not | bitwise | bitwise complement |
 | 14 | shl | bitwise | shift left |
-| 15 | hash | hash | structural hashing via [[hemera]] |
+| 15 | hash | hash | structural hashing via hemera |
 
 ### canonical instantiation
 
@@ -74,14 +74,14 @@ H = hemera           Poseidon2-Goldilocks sponge, 32-byte output
 
 ## companion repos
 
-| repo | path | role |
-|------|------|------|
-| [[nebu]] | ~/git/nebu/ | Goldilocks field arithmetic |
-| [[hemera]] | ~/git/hemera/ | hash function (Poseidon2-Goldilocks, 32-byte output, 24 rounds) |
-| [[zheng]] | ~/git/zheng/ | proof system (SuperSpartan + WHIR, 1-5 KiB proofs, 10-50 μs verification) |
-| [[trident]] | ~/git/trident/ | high-level language, compiles to nox |
-| [[mudra]] | ~/git/mudra/ | crypto primitives (KEM, dCTIDH, TFHE, threshold) |
-| [[bbg]] | ~/git/bbg/ | authenticated state (Big Badass Graph) |
+| repo | role |
+|------|------|
+| [nebu](https://github.com/cyberia-to/nebu) | field arithmetic |
+| [hemera](https://github.com/cyberia-to/hemera) | hash function |
+| [zheng](https://github.com/cyberia-to/zheng) | proof system |
+| [trident](https://github.com/cyberia-to/trident) | language compiler |
+| [mudra](https://github.com/cyberia-to/mudra) | crypto primitives |
+| [bbg](https://github.com/cyberia-to/bbg) | authenticated state |
 
 ## license
 
