@@ -1,11 +1,11 @@
 # reduction specification
 
-version: 0.1
+version: 0.2
 status: canonical
 
 ## overview
 
-reduction is the execution model of nox. a formula is applied to an object under a focus budget, producing a result.
+reduction is the execution model of nox. a formula is applied to an object under a focus budget, producing a result. the reduction rules are algebra-independent — they work identically across all nox<F, W, H> instantiations. pattern dispatch costs and constraint counts are per-instantiation (see patterns.md).
 
 ## reduction signature
 
@@ -14,8 +14,9 @@ reduce : (Object, Formula, Focus) → Result
 
   Object   : Noun    — the environment, the data, the context
   Formula  : Noun    — the code (cell of form [tag body])
-  Focus    : F_p     — resource budget, decremented per pattern
-                       comparison (f < cost) uses integer ordering on canonical [0, p)
+  Focus    : F       — resource budget (element of the instantiated field),
+                       decremented per pattern
+                       comparison (f < cost) uses integer ordering on canonical representatives
                        the Halt guard prevents subtraction from ever wrapping
 
 Result = (Noun, Focus')     — success with remaining focus
@@ -23,6 +24,8 @@ Result = (Noun, Focus')     — success with remaining focus
        | ⊥_error            — type/semantic error (bitwise on hash, inv(0), axis on atom)
        | ⊥_unavailable      — referenced content not retrievable (network partition)
 ```
+
+in the canonical instantiation (nox<Goldilocks>), Focus is an F_p element with comparison on [0, p).
 
 ## focus metering
 
@@ -171,7 +174,9 @@ the trace encodes Result in r15 (status) and r12 (error kind). the instance incl
 
 this is the entire cost model. when reduce(s, formula, f) is entered, 1 focus is deducted for dispatch (reading the tag, selecting the pattern). sub-expression reduce() calls deduct their own costs recursively. the total focus consumed by a computation is the total number of reduce() calls in its evaluation tree.
 
-three patterns have multi-step overhead beyond the dispatch cost:
+three patterns have multi-step overhead beyond the dispatch cost. the overhead is per-instantiation:
+
+canonical (nox<Goldilocks, Z/2^32, Hemera>):
 - axis: depth traversal steps (axis 4-7 costs 2, axis 8-15 costs 3, etc.)
 - inv: 64 (square-and-multiply chain — 64 sequential multiplications)
 - hash: 300 (Poseidon2 permutation — 72 rounds + absorption/squeeze)
@@ -214,4 +219,4 @@ result: (200, 95)
 
 ## stark integration
 
-the reduction trace (sequence of pattern applications with register states) IS the stark witness. see trace.md for the register layout and AIR constraints. see jets.md for optimized verification.
+the reduction trace (sequence of pattern applications with register states) IS the stark witness. the trace layout is per-instantiation — column widths depend on F element size. see trace.md for the register layout and AIR constraints. see jets.md for optimized verification.

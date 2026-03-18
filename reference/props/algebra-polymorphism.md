@@ -1,6 +1,6 @@
 ---
 title: algebra-polymorphic patterns
-status: draft
+status: accepted
 date: 2026-03-17
 ---
 

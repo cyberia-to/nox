@@ -1,16 +1,18 @@
 # execution trace specification
 
-version: 0.1
+version: 0.2
 status: canonical
 
 ## overview
 
 the nox execution trace is the sequence of register states across all reduction steps. it IS the stark witness — no separate arithmetization. each row is one reduction step. each column is a register.
 
+the trace layout is algebra-independent in structure (16 registers, power-of-2 rows) but per-instantiation in element size (each register holds one element of the instantiated field F). all concrete details below refer to the canonical instantiation: nox<Goldilocks, Z/2^32, Hemera>.
+
 ## trace layout
 
 ```
-columns (16 = 2⁴ registers, each one F_p element):
+columns (16 = 2⁴ registers, each one F element):
   r0:   pattern tag (0-16)
   r1:   object hash[0]          ┐ 128-bit compressed identity
   r2:   object hash[1]          ┘ (first 2 of 8 elements)
@@ -57,6 +59,8 @@ the instance links the trace to the computation. the verifier checks:
 ## constraint system
 
 each pattern defines constraints over its trace row. single-row patterns use in-row constraints. multi-row patterns (axis depth>1, inv, hash) use transition constraints across consecutive rows. SuperSpartan CCS handles both forms and mixed degrees natively.
+
+constraint degrees and counts are per-instantiation. the structure of the constraint system (which registers constrain which patterns) is algebra-independent. the concrete degrees below refer to the canonical instantiation.
 
 ### single-row patterns (cost = 1)
 

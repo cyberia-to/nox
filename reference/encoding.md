@@ -1,11 +1,13 @@
 # noun encoding specification
 
-version: 0.1
+version: 0.2
 status: canonical
 
 ## identity
 
-every noun has a 64-byte identity computed by Hemera (see nouns.md structural hash). the nox protocol operates exclusively on 64-byte identities.
+every noun has an identity computed by the instantiated hash function H (see nouns.md structural hash). the nox protocol operates exclusively on hash identities.
+
+in the canonical instantiation (nox<Goldilocks, Z/2^32, Hemera>), the identity is 64 bytes (8 × F_p elements). identity size is per-instantiation — it depends on H's output size. all concrete sizes below refer to the canonical instantiation.
 
 ```
 identity = H(noun)                          64 bytes
@@ -17,6 +19,8 @@ computation_val = H(result)                 64 bytes
 
 there is no reason for a prefix byte in a system where every value is looked up by its hash. nouns are stored and transmitted as content-addressed entries. no prefix bytes. no self-describing framing. the content byte length determines interpretation.
 
+### canonical (nox<Goldilocks, Z/2^32, Hemera>)
+
 ```
 store: Identity (64 bytes) → Content
 
@@ -27,6 +31,8 @@ Content variants (determined by byte length):
 ```
 
 three sizes: 2³, 2⁶, 2⁷. all powers of 2.
+
+content sizes are per-instantiation. atom size = sizeof(F). hash size = sizeof(H output). cell size = 2 × hash size. in nox<F₂>, an atom is 1 bit. the storage model is the same — only the element widths change.
 
 ## resolution
 
@@ -45,7 +51,7 @@ resolve(id):
 
 field atoms and word atoms store the same 8 bytes. the type distinction is a runtime property — which arithmetic algebra applies (modular vs bitwise). the structural hash distinguishes them (capacity[14] produces different identities for the same value with different types). the store does not need to know the type. the VM knows from execution context. the STARK proof verifies type correctness.
 
-## field element encoding
+## field element encoding (canonical: Goldilocks)
 
 ```
 8 bytes, little-endian, canonical value in [0, p)
@@ -53,7 +59,7 @@ p = 2^64 - 2^32 + 1
 values ≥ p are invalid
 ```
 
-## hash encoding
+## hash encoding (canonical: Hemera)
 
 ```
 64 bytes = 8 × 8 bytes

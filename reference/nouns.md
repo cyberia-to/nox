@@ -1,6 +1,6 @@
 # noun specification
 
-version: 0.1
+version: 0.2
 status: canonical
 
 ## overview
@@ -8,18 +8,22 @@ status: canonical
 everything in nox is a noun. a noun is either an atom or a cell. there is nothing else.
 
 ```
-noun = atom(F_p)
+noun = atom(F)
      | cell(noun, noun)
 ```
 
-atom: single Goldilocks field element.
+atom: single element of the instantiated field F.
 cell: ordered pair of two nouns — a binary tree.
 
 a program is a noun. an object is a noun. the result is a noun. a cyberlink is a noun. a stark proof serialized for verification is a noun. one structure for everything.
 
+the noun model is parameterized by the field F. in the canonical instantiation (nox<Goldilocks, Z/2^32, Hemera>), F = F_p where p = 2^64 - 2^32 + 1. see vm.md for the instantiation model.
+
 ## type tags
 
-atoms carry a type tag distinguishing three uses of the same underlying field element.
+atoms carry a type tag distinguishing uses of the underlying field element. the value tower is per-instantiation — the number of type tags, their ranges, and their semantics depend on the field F and word width W.
+
+### canonical value tower (nox<Goldilocks, Z/2^32, Hemera>)
 
 ```
 ┌───────────────────────────────────────────────────────────────────────┐
@@ -37,7 +41,20 @@ the hash type (eight field elements, 64 bytes) is the identity primitive. `H(nou
 
 the type tag costs nothing in the stark — it is a constraint selector, not runtime data.
 
+### value tower across instantiations
+
+the three-type tower (field, word, hash) is specific to the Goldilocks instantiation. in other instantiations the tower adapts:
+
+```
+nox<F₂, Z/2^1, Grøstl>:     atom = 1 bit, word = 1 bit (field = word in char 2)
+nox<F_{p³}, Z/2^32, Hemera>: atom = 3 × F_p, word = [0, 2^32), hash = 8 × F_p
+```
+
+whether the three-type value tower generalizes cleanly across all fields is an open question. what is invariant: the distinction between field operations (patterns 5-10), bitwise operations (patterns 11-14), and hash (pattern 15) — these map to algebraically distinct domains in every instantiation.
+
 ## coercion rules
+
+### canonical (Goldilocks)
 
 ```
 field → word:  valid when value < 2^32 (range check)
@@ -55,7 +72,11 @@ arithmetic on hash (except equality) → ⊥_error
 
 ## structural hash
 
-every noun has a canonical hash computed by Hemera. type and structure information is embedded in Hemera's capacity region — not prepended to the input. this is the same domain separation mechanism Hemera uses for leaf/node/root distinction in Merkle trees.
+every noun has a canonical hash computed by H (the instantiated hash function). type and structure information is embedded in the hash function's capacity region — not prepended to the input.
+
+### canonical (Hemera)
+
+domain separation via Hemera's sponge capacity — the same mechanism Hemera uses for leaf/node/root distinction in Merkle trees.
 
 ```
 H(atom a)     = hemera_leaf(encode(a), capacity[14] = type_tag(a))

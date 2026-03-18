@@ -1,17 +1,80 @@
 # nox virtual machine specification
 
-version: 0.1
+version: 0.2
 status: canonical
 
 ## overview
 
-nox is a proof-native virtual machine. sixteen deterministic reduction patterns over the Goldilocks field (Layer 1), one non-deterministic witness injection pattern (Layer 2), five jets for efficient recursive stark verification (Layer 3).
+nox is a proof-native virtual machine. sixteen deterministic reduction patterns parameterized by algebra, plus one non-deterministic witness injection pattern and five jets for efficient recursive stark verification.
 
 every nox execution produces a trace that IS the stark witness. there is no separate arithmetization step.
 
-## field
+## algebra-polymorphic patterns
 
-nox operates over the Goldilocks field, provided by nebu (~/git/nebu/).
+the 16 patterns are abstract operations parameterized by algebra, not tied to a specific field. the pattern semantics are universal — the algebra is a parameter.
+
+```
+nox<F, W, H> where:
+  F = field        (determines patterns 5-10: add, sub, mul, inv, eq, lt)
+  W = word width   (determines patterns 11-14: xor, and, not, shl)
+  H = hash function (determines pattern 15: hash)
+```
+
+three groups map to algebraic domains:
+
+```
+structural (0-4):   algebra-independent — tree operations work over any leaf type
+field (5-10):       parameterized by F — any field
+bitwise (11-14):    parameterized by W — any word width
+hash (15):          parameterized by H — any hash function
+```
+
+the same `add(a, b)` means:
+- in F_p context: `(a + b) mod p`
+- in F_{p³} context: extension field addition (3 base additions)
+- in F₂ context: XOR (binary addition)
+
+the same `and(a, b)` means:
+- in Z/2^32 context: 32-bit bitwise AND
+- in F₂ context: multiplication (AND = mul in characteristic 2)
+- in Z/2^64 context: 64-bit bitwise AND
+
+the operations are identical. the algebra is a parameter. the programmer writes one tree. the prover splits it by algebra. cross-algebra boundaries are Hemera commitments.
+
+## proof-system polymorphism
+
+the same nox program can be verified by different proof systems:
+
+```
+nox<F_p> program     → zheng STARK (field-native, 1 constraint per field op)
+nox<F₂> program      → Binius/FRI (binary-native, 1 constraint per binary op)
+nox<F_{p³}> program   → zheng STARK with extension (3× wider constraints)
+```
+
+a single nox program containing both field and bitwise operations can be partitioned by the prover into algebra-specific sub-trees, with cross-algebra boundaries using Hemera commitments.
+
+constraint costs are per-instantiation:
+
+```
+and(a, b) in nox<F_p>:   ~32 STARK constraints (bit decomposition in prime field)
+and(a, b) in nox<F₂>:    1 constraint (native multiplication in binary field)
+```
+
+the cost difference is the honest algebraic distance between fields. the patterns stay. the proof system chooses the cheapest verification path.
+
+## canonical instantiation: nox<Goldilocks, Z/2^32, Hemera>
+
+this specification documents one instantiation. all concrete parameters, costs, and test vectors refer to:
+
+```
+F = Goldilocks field, F_p where p = 2^64 - 2^32 + 1
+W = Z/2^32 (32-bit words, fitting cleanly in [0, p))
+H = Hemera (Poseidon2-Goldilocks sponge)
+```
+
+## field — Goldilocks (canonical)
+
+nox<Goldilocks> operates over the Goldilocks field, provided by nebu (~/git/nebu/).
 
 ```
 p = 2^64 - 2^32 + 1 = 18446744069414584321
@@ -20,13 +83,13 @@ primitive root: 7
 efficient reduction: a mod p = a_lo - a_hi × (2^32 - 1) + correction
 ```
 
-the field choice is load-bearing: nox arithmetic IS Goldilocks arithmetic. the execution trace IS a table of Goldilocks elements. the stark proof IS over Goldilocks. there is no impedance mismatch at any layer.
+in this instantiation, nox arithmetic IS Goldilocks arithmetic. the execution trace IS a table of Goldilocks elements. the stark proof IS over Goldilocks. there is no impedance mismatch at any layer.
 
 nebu provides: field element type, addition, subtraction, multiplication, Fermat inversion, NTT-friendly roots of unity, Montgomery/Barrett reduction. nox imports the field — it does not reimplement it.
 
-## hash
+## hash — Hemera (canonical)
 
-nox uses Hemera (~/git/hemera/) for all hashing: structural hash, Fiat-Shamir challenges, Merkle trees, content addressing.
+nox<_, _, Hemera> uses Hemera (~/git/hemera/) for all hashing: structural hash, Fiat-Shamir challenges, Merkle trees, content addressing.
 
 ```
 HASH: Hemera (Poseidon2-Goldilocks)
@@ -40,6 +103,16 @@ HASH: Hemera (Poseidon2-Goldilocks)
 ```
 
 hemera provides: sponge construction, domain-separated hashing, Merkle-compatible mode. nox imports the hash — it does not reimplement it.
+
+## the Hemera anchor
+
+all algebras settle through Goldilocks via Hemera (Poseidon2 over Goldilocks). this creates a permanent F_p dependency:
+
+- nox<F₂> programs must defer Hemera to settlement (~10 constraints deferred, ~1,200 at settlement)
+- nox<F_{p³}> programs compute Hemera natively (Hemera operates over base field F_p)
+- nox<F_p> programs compute Hemera natively (300 focus cost)
+
+the polymorphism is real for computation but asymmetric for commitment. Goldilocks is the anchor field. all algebras settle through it.
 
 ## domain separation
 
@@ -68,6 +141,18 @@ Layer 3: 5 jets                      — optimization without changing meaning
 ```
 
 remove Layer 3: identical results, ~8.5× slower. remove Layer 2: no privacy, no ZK. remove Layer 1: nothing remains.
+
+## other instantiations
+
+the canonical instantiation is nox<Goldilocks, Z/2^32, Hemera>. other instantiations are possible:
+
+```
+nox<F₂, Z/2^1, Grøstl>           = Bt (binary world)
+nox<F_{p³}, Z/2^32, Hemera>       = Tri recursion context
+nox<F_{p²}, Z/2^32, Hemera>       = quantum simulation context
+```
+
+the 4-bit encoding, the trace layout, the focus metering, the confluence property — all are properties of the abstract pattern set, not of a specific field. a new instantiation reuses the same spec with different F, W, H parameters.
 
 ## specification index
 

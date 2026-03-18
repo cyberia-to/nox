@@ -1,21 +1,25 @@
 # pattern specification
 
-version: 0.1
+version: 0.2
 status: canonical
 
 ## overview
 
 seventeen patterns: sixteen deterministic (Layer 1), one non-deterministic (Layer 2). four bits index the Layer 1 patterns (0-15). pattern 16 (hint) is Layer 2.
 
+the 16 deterministic patterns are algebra-polymorphic — parameterized by field F, word width W, and hash function H. structural patterns (0-4) are algebra-independent. field patterns (5-10) are parameterized by F. bitwise patterns (11-14) are parameterized by W. hash (15) is parameterized by H. see vm.md for the instantiation model.
+
+all concrete costs and constraint counts below refer to the canonical instantiation: nox<Goldilocks, Z/2^32, Hemera>.
+
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                       LAYER 1: REDUCTION PATTERNS                         ║
 ╠═══════════════════════════════════════════════════════════════════════════╣
 ║  STRUCTURAL (5)              FIELD ARITHMETIC (6)                         ║
-║  0: axis — navigate          5: add — (a + b) mod p                       ║
-║  1: quote — literal          6: sub — (a - b) mod p                       ║
-║  2: compose — recursion      7: mul — (a × b) mod p                       ║
-║  3: cons — build cell        8: inv — a^(p-2) mod p                       ║
+║  0: axis — navigate          5: add — F-addition                          ║
+║  1: quote — literal          6: sub — F-subtraction                       ║
+║  2: compose — recursion      7: mul — F-multiplication                    ║
+║  3: cons — build cell        8: inv — F-inverse                           ║
 ║  4: branch — conditional     9: eq  — equality test                       ║
 ║                              10: lt — less-than                           ║
 ║                                                                           ║
@@ -28,7 +32,9 @@ seventeen patterns: sixteen deterministic (Layer 1), one non-deterministic (Laye
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
-## structural patterns (0-4)
+## structural patterns (0-4) — algebra-independent
+
+structural patterns operate on the tree structure of nouns. they work identically over any leaf type, any field, any instantiation.
 
 ### pattern 0: axis
 
@@ -102,7 +108,9 @@ NOT parallel — must evaluate test before choosing a branch.
 
 cost: 1. stark constraints: 1.
 
-## field arithmetic patterns (5-10)
+## field arithmetic patterns (5-10) — parameterized by F
+
+field patterns compute over the instantiated field F. the abstract semantics are universal: add computes F-addition, mul computes F-multiplication, inv computes F-inverse. the concrete reduction rules, costs, and constraint counts depend on F.
 
 all binary arithmetic patterns follow the same structure: evaluate both operands (parallelizable), then apply the operation.
 
@@ -110,53 +118,53 @@ all binary arithmetic patterns follow the same structure: evaluate both operands
 reduce(s, [op [a b]], f) =
   let (v_a, f1) = reduce(s, a, f - 1)
   let (v_b, f2) = reduce(s, b, f1)
-  (op(v_a, v_b), f2)
+  (op_F(v_a, v_b), f2)
 ```
 
 ### pattern 5: add
 
 ```
-reduce(s, [5 [a b]], f) → ((v_a + v_b) mod p, f2)
+abstract:   add_F(a, b) → a + b in F
+canonical:  (v_a + v_b) mod p              Goldilocks addition, provided by nebu
 ```
 
-Goldilocks addition. provided by nebu. cost: 1. stark constraints: 1.
+cost: 1. stark constraints: 1.
 
 ### pattern 6: sub
 
 ```
-reduce(s, [6 [a b]], f) → ((v_a - v_b) mod p, f2)
+abstract:   sub_F(a, b) → a - b in F
+canonical:  (v_a - v_b) mod p              Goldilocks subtraction, provided by nebu
 ```
 
-Goldilocks subtraction. provided by nebu. cost: 1. stark constraints: 1.
+cost: 1. stark constraints: 1.
 
 ### pattern 7: mul
 
 ```
-reduce(s, [7 [a b]], f) → ((v_a × v_b) mod p, f2)
+abstract:   mul_F(a, b) → a × b in F
+canonical:  (v_a × v_b) mod p              Goldilocks multiplication, provided by nebu
 ```
 
-Goldilocks multiplication. provided by nebu. cost: 1. stark constraints: 1.
+cost: 1. stark constraints: 1.
 
 ### pattern 8: inv
 
 ```
-reduce(s, [8 a], f) →
-  let (v_a, f1) = reduce(s, a, f - 64)
-  if v_a = 0 then ⊥_error
-  (v_a^(p-2) mod p, f1)
+abstract:   inv_F(a) → a⁻¹ in F, or ⊥_error if a = 0
+canonical:  v_a^(p-2) mod p                Fermat's little theorem, provided by nebu
 ```
 
-Goldilocks field inverse via Fermat's little theorem. provided by nebu.
-
-execution cost: 64 (reflects ~64 multiplications in square-and-multiply).
+execution cost: 64 (reflects ~64 multiplications in square-and-multiply for Goldilocks).
 stark verification cost: 1 constraint (verifier checks a × a⁻¹ = 1).
 
-the asymmetry between execution cost and verification cost is fundamental: inversion is expensive to compute but cheap to verify.
+the asymmetry between execution cost and verification cost is fundamental: inversion is expensive to compute but cheap to verify. the execution cost is per-instantiation (different fields have different inversion algorithms). the verification cost (1 constraint) is universal.
 
 ### pattern 9: eq
 
 ```
-reduce(s, [9 [a b]], f) → (0 if v_a = v_b else 1, f2)
+abstract:   eq(a, b) → 0 if a = b in F, else 1
+canonical:  0 if v_a = v_b else 1
 ```
 
 equality test across all types (field, word, hash). returns 0 for true (consistent with branch: 0 = take yes-branch).
@@ -166,23 +174,25 @@ cost: 1. stark constraints: 1.
 ### pattern 10: lt
 
 ```
-reduce(s, [10 [a b]], f) → (0 if v_a < v_b else 1, f2)
+abstract:   lt(a, b) → 0 if a < b under F's canonical ordering, else 1
+canonical:  0 if v_a < v_b else 1 (comparing canonical representatives in [0, p))
 ```
 
-less-than comparison. on field elements, compares canonical representatives.
+cost: 1. stark constraints: ~64 (range decomposition for non-native comparison in Goldilocks). the constraint count is per-instantiation — in F₂, lt is trivial (1 constraint).
 
-cost: 1. stark constraints: ~64 (range decomposition for non-native comparison).
+## bitwise patterns (11-14) — parameterized by W
 
-## bitwise patterns (11-14)
+bitwise patterns compute over W-bit words. the abstract semantics are Boolean operations on bit vectors. the word width W determines the range of valid operands and the proof cost.
 
-valid on word type [0, 2^32) only. bitwise on hash → ⊥_error. bitwise on field → ⊥_error (coerce to word first).
+valid on word type [0, W) only. bitwise on hash → ⊥_error. bitwise on field → ⊥_error (coerce to word first).
 
-stark constraints: ~32 each (bit decomposition required for algebraic verification). the 32× cost ratio vs field arithmetic is the honest algebraic distance between F_p and Z/2^32. heavy binary computation belongs in Bt (FRI-Binius, characteristic 2).
+stark constraints in the canonical instantiation: ~32 each (bit decomposition required for algebraic verification in a prime field). in nox<F₂>, these same operations cost 1 constraint each (native in characteristic 2). the cost ratio is the honest algebraic distance between F_p and Z/2^W.
 
 ### pattern 11: xor
 
 ```
-reduce(s, [11 [a b]], f) → (v_a ⊕ v_b, f2)
+abstract:   xor_W(a, b) → bitwise exclusive-or over W bits
+canonical:  v_a ⊕ v_b (32-bit XOR)
 ```
 
 cost: 1.
@@ -190,7 +200,8 @@ cost: 1.
 ### pattern 12: and
 
 ```
-reduce(s, [12 [a b]], f) → (v_a ∧ v_b, f2)
+abstract:   and_W(a, b) → bitwise conjunction over W bits
+canonical:  v_a ∧ v_b (32-bit AND)
 ```
 
 cost: 1.
@@ -198,7 +209,8 @@ cost: 1.
 ### pattern 13: not
 
 ```
-reduce(s, [13 a], f) → (v_a ⊕ (2^32 - 1), f1)
+abstract:   not_W(a) → bitwise complement over W bits
+canonical:  v_a ⊕ (2^32 - 1)
 ```
 
 bitwise complement. unary — single operand.
@@ -208,26 +220,33 @@ cost: 1.
 ### pattern 14: shl
 
 ```
-reduce(s, [14 [a n]], f) → ((v_a << v_n) mod 2^32, f2)
+abstract:   shl_W(a, n) → left shift over W bits, n must be in [0, W)
+canonical:  (v_a << v_n) mod 2^32, shifts ≥ 32 produce 0
 ```
 
-left shift. v_n must be in [0, 32); shifts ≥ 32 produce 0. right shift is expressible as `shl(a, 32-n)` followed by `and` with a mask.
+right shift is expressible as `shl(a, W-n)` followed by `and` with a mask.
 
 cost: 1.
 
-## hash pattern (15)
+## hash pattern (15) — parameterized by H
 
 ```
 reduce(s, [15 a], f) →
-  let (v_a, f1) = reduce(s, a, f - 300)
+  let (v_a, f1) = reduce(s, a, f - cost_H)
   (H(v_a), f1)
 ```
 
-computes the structural hash of the evaluated operand using Hemera. result is an 8-element hash (64 bytes, type tag 0x02).
+computes the structural hash of the evaluated operand using the instantiated hash function H. result type depends on H's output size.
+
+### canonical (Hemera)
+
+result is an 8-element hash (64 bytes, type tag 0x02).
 
 hash CAN be expressed as pure Layer 1 patterns (~2800 field ops for the Poseidon2 permutation). pattern 15 is simultaneously a Layer 1 pattern and the first Layer 3 jet. the jet accelerates; semantics unchanged.
 
 cost: 300. stark constraints: ~300.
+
+the cost is per-instantiation. a different hash function H would have different cost.
 
 ## hint pattern (16) — Layer 2
 
@@ -258,7 +277,7 @@ hint is the entire mechanism of privacy, search, and oracle access:
 
 ```
 identity:         hint injects the secret behind a neuron address
-                  Layer 1 checks: Hemera(secret) = address
+                  Layer 1 checks: H(secret) = address
 
 private transfer: hint injects record details (owner, value, nonce)
                   Layer 1 checks: conservation, ownership, nullifier freshness
@@ -270,7 +289,7 @@ optimization:     hint injects an optimal solution
                   Layer 1 checks: solution satisfies constraints AND is optimal
 ```
 
-## cost table
+## cost table (canonical: nox<Goldilocks, Z/2^32, Hemera>)
 
 ```
 Layer │ Pattern      │ Exec Cost      │ STARK Constraints │ Rationale
@@ -280,14 +299,14 @@ Layer │ Pattern      │ Exec Cost      │ STARK Constraints │ Rationale
   1   │ 2 compose    │ 1              │ 1                 │ dispatch only
   1   │ 3 cons       │ 1              │ 1                 │ cell construction
   1   │ 4 branch     │ 1              │ 1                 │ test + select
-  1   │ 5 add        │ 1              │ 1                 │ field addition
-  1   │ 6 sub        │ 1              │ 1                 │ field subtraction
-  1   │ 7 mul        │ 1              │ 1                 │ field multiplication
-  1   │ 8 inv        │ 64             │ 1                 │ square-and-multiply
+  1   │ 5 add        │ 1              │ 1                 │ F-addition
+  1   │ 6 sub        │ 1              │ 1                 │ F-subtraction
+  1   │ 7 mul        │ 1              │ 1                 │ F-multiplication
+  1   │ 8 inv        │ 64             │ 1                 │ F-inverse (Goldilocks)
   1   │ 9 eq         │ 1              │ 1                 │ equality comparison
-  1   │ 10 lt        │ 1              │ ~64               │ range decomposition
-  1   │ 11-14 bit    │ 1              │ ~32 each          │ bit decomposition
-  1   │ 15 hash      │ 300            │ ~300              │ Poseidon2 permutation
+  1   │ 10 lt        │ 1              │ ~64               │ range decomposition (Goldilocks)
+  1   │ 11-14 bit    │ 1              │ ~32 each          │ bit decomposition (Z/2^32 in F_p)
+  1   │ 15 hash      │ 300            │ ~300              │ Hemera permutation
   2   │ 16 hint      │ 1              │ 1                 │ inject + dispatch
 ```
 
@@ -296,7 +315,9 @@ reduce() calls deduct their own costs separately. three patterns have multi-step
 overhead (axis: depth traversal steps, inv: 64 sequential multiplications,
 hash: 300 Poseidon2 round rows). all other patterns cost exactly 1.
 
-## test vectors
+per-instantiation costs that change across algebras: inv (execution cost depends on inversion algorithm), lt (constraint count depends on field size), bitwise (constraint count depends on whether the field is binary-native), hash (cost depends on H).
+
+## test vectors (canonical: nox<Goldilocks>)
 
 ```
 add(1, 2) = 3

@@ -1,13 +1,19 @@
 # jet specification
 
-version: 0.1
+version: 0.2
 status: canonical
 
 ## overview
 
-five jets selected by analyzing the stark verifier bottleneck. every jet has an equivalent Layer 1 program producing identical output on all inputs. jets are OPTIMIZATION — semantics unchanged.
+jets are compositions of Layer 1 patterns recognized by formula hash and replaced with optimized implementations. every jet has an equivalent pure Layer 1 program producing identical output on all inputs. jets are OPTIMIZATION — semantics unchanged.
 
-the selection criterion: recursive proof composition requires running the stark verifier inside nox and proving that run. the unoptimized verifier costs ~600,000 patterns. with jets: ~70,000. this 8.5× reduction makes recursive composition practical.
+the jet mechanism is algebra-polymorphic. jet formula hashes are computed from the abstract pattern trees. the optimized implementation is per-instantiation — the same jet dispatches to different backends depending on the algebra (software, GFP hardware, or delegated to a specialized prover).
+
+two categories of jets: **verifier jets** (five, selected by analyzing the stark verifier bottleneck) and **domain-specific jets** (open-ended, recognized by the same formula-hash mechanism).
+
+### verifier jets
+
+five jets make recursive proof composition practical. the unoptimized verifier costs ~600,000 patterns. with jets: ~70,000. this 8.5× reduction makes recursive composition practical.
 
 ## semantic contract
 
@@ -202,3 +208,37 @@ the VM can verify proofs about its own executions. a proof-of-proof is a nox pro
 ```
 program → trace → stark proof → verifier (nox program) → trace → stark proof → ...
 ```
+
+## domain-specific jets
+
+the same formula-hash recognition mechanism that accelerates the verifier accelerates every domain-specific language. language operations are compositions of the 16 patterns — recognized by hash, replaced with optimized implementations, potentially dispatched to specialized hardware.
+
+```
+language operation       nox composition              jet           GFP hardware
+─────────────────────    ──────────────────────────   ──────────    ────────────
+Arc: rank(g, steps)      iterated add/mul loops       matmul jet    fma array
+Wav: fft(x)              butterfly add/mul network    ntt jet       ntt engine
+Any: hash(x)             Poseidon2 field ops          hash jet      p2r pipeline
+Ten: activation(x)       table lookup composition     lookup jet    lut engine
+Ren: geometric_product   mul/add over components      geo_mul jet   fma array
+Wav: polynomial_mul      NTT + pointwise + iNTT       ntt jet       ntt engine
+```
+
+the GFP's four hardware primitives (fma, ntt, p2r, lut) are the physical substrate that jets map to. the chain:
+
+```
+source language → compiler → nox pattern tree → jet recognition → GFP hardware
+```
+
+every domain-specific language gets hardware acceleration through the jet mechanism. no language-specific hardware needed. the algebra determines which GFP primitive handles each jet.
+
+domain-specific jets follow the same semantic contract as verifier jets: every jet MUST have an equivalent pure Layer 1 expression. the jet registry is per-instantiation — formula hashes may differ across algebras if the same source operation compiles to different pattern trees.
+
+## per-instantiation notes
+
+jet implementations are per-instantiation. the same formula hash dispatches to:
+- software implementation (any instantiation)
+- GFP hardware primitives (nox<Goldilocks> on GFP-equipped hardware)
+- delegated prover (cross-algebra boundary jets)
+
+the verifier jets (hash, poly_eval, merkle_verify, fri_fold, ntt) are specific to the canonical instantiation's proof system. other instantiations (e.g. nox<F₂> with Binius) would have their own verifier jets for their own proof system, recognized by different formula hashes.
