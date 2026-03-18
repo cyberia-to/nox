@@ -80,7 +80,7 @@ H = hemera           Poseidon2-Goldilocks sponge, 32-byte output
 | [[hemera]] | hash function | [hemera](https://github.com/cyberia-to/hemera) |
 | [[zheng]] | proof system | [zheng](https://github.com/cyberia-to/zheng) |
 | [[trident]] | language compiler | [trident](https://github.com/cyberia-to/trident) |
-| [[mudra]] | crypto primitives | [mudra](https://github.com/cyberia-to/mudra) |
+| [[mudra]] | communication primitives | [mudra](https://github.com/cyberia-to/mudra) |
 | [[bbg]] | authenticated state | [bbg](https://github.com/cyberia-to/bbg) |
 
 ## license
