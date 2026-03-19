@@ -1,6 +1,6 @@
 # jet specification
 
-version: 0.2
+version: 0.3
 status: canonical
 
 ## overview
@@ -9,11 +9,7 @@ jets are compositions of Layer 1 patterns recognized by formula hash and replace
 
 the jet mechanism is algebra-polymorphic. jet formula hashes are computed from the abstract pattern trees. the optimized implementation is per-instantiation — the same jet dispatches to different backends depending on the algebra (software, GFP hardware, or delegated to a specialized prover).
 
-two categories of jets: **verifier jets** (five, selected by analyzing the stark verifier bottleneck) and **domain-specific jets** (open-ended, recognized by the same formula-hash mechanism).
-
-### verifier jets
-
-five jets make recursive proof composition practical. the unoptimized verifier costs ~600,000 patterns. with jets: ~70,000. this 8.5× reduction makes recursive composition practical.
+two categories of jets: **verifier jets** (proof-system specific, per-instantiation) and **domain-specific jets** (language-specific, open-ended). both use the same formula-hash recognition mechanism.
 
 ## semantic contract
 
@@ -38,180 +34,65 @@ the jet registry is hardcoded — it is a protocol constant, not configurable. e
 
 jet registry entries are generated, not hand-written: the build system constructs each jet's pure Layer 1 formula as a noun, computes its structural hash, and emits the registry as a constant table. this ensures the hashes are correct by construction.
 
-## jet 0: hash
+## per-instantiation dispatch
+
+jet implementations are per-instantiation. the same formula hash dispatches to:
+- software implementation (any instantiation)
+- GFP hardware primitives (nox<Goldilocks> on GFP-equipped hardware)
+- delegated prover (cross-algebra boundary jets)
+
+each nox instantiation defines its own jet registry. formula hashes may differ across algebras if the same source operation compiles to different pattern trees.
 
 ```
-hash(x) → 8 × F_p (64-byte Hemera digest)
+nox<Goldilocks>  →  verifier jets (hash, poly_eval, merkle_verify, fri_fold, ntt)
+nox<F₂>          →  binary jets (popcount, packed_inner_product, binary_matvec, ...)
 ```
 
-computes Hemera(x) — the Poseidon2-Goldilocks sponge over the input noun.
+## adding a new jet
 
-- pure equivalent: ~2,800 field ops (full Poseidon2 permutation as Layer 1 patterns)
-- jet cost: 300
-- stark constraints: ~300
-- accelerates: Fiat-Shamir challenges, Merkle tree construction, content addressing
+to add a jet:
 
-hash is simultaneously Layer 1 pattern 15 and Layer 3 jet 0. the pattern defines the semantics; the jet provides the optimized constraint layout.
+1. **write the pure Layer 1 formula** — the jet's semantics are defined by this formula. it must be a valid nox program using only patterns 0-16. no external dependencies.
 
-## jet 1: poly_eval
+2. **compute the formula hash** — build the formula as a noun, compute H(formula_noun) via hemera. this hash is the jet's identity. the build system does this automatically.
 
-```
-poly_eval(coeffs, point) → F_p
-```
+3. **implement the optimized version** — write the jet implementation for each target backend:
+   - software: native Rust function with the same input/output contract
+   - constraint: optimized CCS encoding (fewer rows than naive pattern trace)
+   - hardware: GFP primitive mapping (if applicable)
 
-Horner evaluation of a degree-N polynomial at a single point.
+4. **add to the jet registry** — register the (formula_hash, implementation) pair. the registry is a protocol constant — adding a jet requires a protocol upgrade.
 
-```
-poly_eval([c_0, c_1, ..., c_N], z) = c_0 + c_1·z + c_2·z² + ... + c_N·z^N
-```
+5. **write the test harness** — property test: `∀ inputs: jet(input) == pure_formula(input)`. this is the jet's correctness proof. it runs on every build.
 
-- pure equivalent: ~2N patterns (N multiplications + N additions)
-- jet cost: N
-- stark constraints: ~N
-- accelerates: WHIR query verification, constraint evaluation at random points
-
-Horner's method is iterated FMA (fused multiply-accumulate), mapping directly to the nebu field's multiply-add sequence.
-
-## jet 2: merkle_verify
+6. **document the jet** — specify: input types, output type, pure cost, jet cost, constraint count, which workloads it accelerates.
 
 ```
-merkle_verify(root, leaf, path, index) → {0, 1}
+jet entry format:
+
+  name:              human-readable identifier
+  formula_hash:      H(pure Layer 1 formula noun)
+  input:             type signature
+  output:            type signature
+  pure_cost:         Layer 1 pattern count
+  jet_cost:          optimized execution cost
+  constraints:       STARK constraint count
+  accelerates:       list of workloads
+  hardware_mapping:  GFP primitive (if applicable)
 ```
 
-verify a Merkle authentication path of depth d. returns 0 if the path is valid (leaf hashes up to root), 1 otherwise.
+## jet categories
 
-```
-for each level i from 0 to d-1:
-  if bit i of index = 0:
-    current = Hemera(current ‖ path[i])
-  else:
-    current = Hemera(path[i] ‖ current)
-assert current = root
-```
+### verifier jets
 
-- pure equivalent: d × ~310 patterns (hash + conditional per level)
-- jet cost: d × 300
-- stark constraints: ~d × 300
-- accelerates: stark proof checking (500K → 50K of unjetted verifier cost)
+proof-system-specific jets that make recursive composition practical. each nox instantiation has its own verifier jets matched to its proof system:
 
-Merkle verification is the single largest cost in the unjetted verifier — 83% of total cost is hash operations for Merkle paths and Fiat-Shamir.
+- nox<Goldilocks> + WHIR: hash, poly_eval, merkle_verify, fri_fold, ntt → [[verifier-jets]]
+- nox<F₂> + Binius: binary-specific verifier jets → [[binary-jets]]
 
-## jet 3: fri_fold
+### domain-specific jets
 
-```
-fri_fold(poly_layer, challenge) → poly_layer_next
-```
-
-one round of FRI folding: split the polynomial by parity of exponent, combine with the random challenge.
-
-```
-given f(x) = f_even(x²) + x·f_odd(x²)
-fri_fold(f, α) = f_even + α·f_odd
-```
-
-- pure equivalent: ~N patterns (N/2 multiplications + N/2 additions + restructuring)
-- jet cost: N/2
-- stark constraints: ~N/2
-- accelerates: WHIR verification (log(N) folding rounds per proof)
-
-## jet 4: ntt
-
-```
-ntt(values, direction) → transformed values
-```
-
-Number Theoretic Transform (forward or inverse) over F_p. the algebraic analogue of FFT.
-
-```
-forward: coefficient representation → evaluation representation
-inverse: evaluation representation → coefficient representation
-```
-
-uses the 2^32-th root of unity (1753635133440165772) from the Goldilocks field, provided by nebu.
-
-- pure equivalent: ~2N·log(N) patterns (butterfly operations)
-- jet cost: N·log(N)
-- stark constraints: ~N·log(N)
-- accelerates: polynomial multiplication, WHIR commitment computation, proof aggregation
-
-## hardware mapping
-
-the five jets map to four Goldilocks Field Processor (GFP) hardware primitives:
-
-```
-GFP primitive                    jets it accelerates
-────────────────────────────     ─────────────────────────────────────
-fma (field multiply-accumulate)  poly_eval (Horner = iterated FMA)
-ntt (NTT butterfly)              ntt (direct correspondence)
-p2r (Poseidon2 round)            hash, merkle_verify (hash-dominated)
-lut (lookup table)               activation functions via Layer 1
-```
-
-the stack is continuous: nox pattern → software jet → GFP hardware primitive. the same computation, three speeds, identical semantics at every level.
-
-## verifier cost analysis
-
-```
-Component               │ Layer 1 only │ With jets  │ Reduction
-────────────────────────┼──────────────┼────────────┼──────────
-Parse proof             │     ~1,000   │    ~1,000  │  1×
-Fiat-Shamir challenges  │    ~30,000   │    ~5,000  │  6×
-Merkle verification     │   ~500,000   │   ~50,000  │ 10×
-Constraint evaluation   │    ~10,000   │    ~3,000  │  3×
-WHIR verification       │    ~50,000   │   ~10,000  │  5×
-────────────────────────┼──────────────┼────────────┼──────────
-TOTAL                   │   ~600,000   │   ~70,000  │ ~8.5×
-```
-
-this 8.5× reduction is what makes recursive proof composition practical — a proof-of-proof at every block, O(1) on-chain verification for O(N) transactions.
-
-## jet cost table
-
-```
-jet              │ exec cost    │ stark constraints │ pure Layer 1 cost
-─────────────────┼──────────────┼───────────────────┼──────────────────
-hash             │ 300          │ ~300              │ ~2,800
-poly_eval(N)     │ N            │ ~N                │ ~2N
-merkle_verify(d) │ d × 300      │ ~d × 300          │ d × ~310
-fri_fold(N)      │ N/2          │ ~N/2              │ ~N
-ntt(N)           │ N·log(N)     │ ~N·log(N)         │ ~2N·log(N)
-```
-
-## cost examples
-
-```
-simple addition: 3 reduce() calls
-  [5 [[0 2] [0 3]]]
-  cost: 1 (add) + 1 (axis 2) + 1 (axis 3) = 3
-
-Hemera hash: 300 (jet) or ~2800 (pure Layer 1)
-  [15 [0 1]]
-  jet cost: 300
-
-Merkle verification (32 levels): ~9,600 (jet) or ~9,920 (pure Layer 1)
-  merkle_verify(root, leaf, path, 32)
-  jet cost: 32 × 300 = 9,600
-
-stark verifier (one recursion level): ~70,000 (with jets)
-  without jets: ~600,000 Layer 1 patterns
-
-recursive composition (2 levels): ~140,000 (with jets)
-  proof-of-proof: verify a proof that itself verified a proof
-```
-
-## self-verification
-
-the stark verifier for nox is itself a nox program. every operation the verifier needs — field arithmetic (patterns 5-8), hashing (jet 0), polynomial evaluation (jet 1), Merkle path checking (jet 2), FRI folding (jet 3) — is native to the sixteen patterns or their jet equivalents.
-
-the VM can verify proofs about its own executions. a proof-of-proof is a nox program that runs the verifier on a proof. the proof-of-proof is itself provable. recursion to arbitrary depth, constant proof size at every level (~60-157 KiB).
-
-```
-program → trace → stark proof → verifier (nox program) → trace → stark proof → ...
-```
-
-## domain-specific jets
-
-the same formula-hash recognition mechanism that accelerates the verifier accelerates every domain-specific language. language operations are compositions of the 16 patterns — recognized by hash, replaced with optimized implementations, potentially dispatched to specialized hardware.
+language operations recognized by the same formula-hash mechanism. open-ended — any frequently-used nox composition can become a jet:
 
 ```
 language operation       nox composition              jet           GFP hardware
@@ -224,21 +105,45 @@ Ren: geometric_product   mul/add over components      geo_mul jet   fma array
 Wav: polynomial_mul      NTT + pointwise + iNTT       ntt jet       ntt engine
 ```
 
-the GFP's four hardware primitives (fma, ntt, p2r, lut) are the physical substrate that jets map to. the chain:
+domain-specific jets follow the same semantic contract as verifier jets. the jet registry is per-instantiation — each algebra's jets are recognized by their own formula hashes.
+
+### cross-algebra boundary jets
+
+jets that handle the F_p ↔ F₂ transition:
 
 ```
-source language → compiler → nox pattern tree → jet recognition → GFP hardware
+quantize:    F_p value → F₂ binary representation
+dequantize:  F₂ binary result → F_p value
 ```
 
-every domain-specific language gets hardware acceleration through the jet mechanism. no language-specific hardware needed. the algebra determines which GFP primitive handles each jet.
+these fire at algebra boundaries — when nox execution crosses from Goldilocks to binary or back. the constraint encoding spans both fields.
 
-domain-specific jets follow the same semantic contract as verifier jets: every jet MUST have an equivalent pure Layer 1 expression. the jet registry is per-instantiation — formula hashes may differ across algebras if the same source operation compiles to different pattern trees.
+## hardware mapping
 
-## per-instantiation notes
+```
+GFP primitive                    jets it accelerates
+────────────────────────────     ─────────────────────────────────────
+fma (field multiply-accumulate)  poly_eval (Horner = iterated FMA)
+ntt (NTT butterfly)              ntt (direct correspondence)
+p2r (Poseidon2 round)            hash, merkle_verify (hash-dominated)
+lut (lookup table)               activation functions via Layer 1
+```
 
-jet implementations are per-instantiation. the same formula hash dispatches to:
-- software implementation (any instantiation)
-- GFP hardware primitives (nox<Goldilocks> on GFP-equipped hardware)
-- delegated prover (cross-algebra boundary jets)
+the stack is continuous: nox pattern → software jet → GFP hardware primitive. the same computation, three speeds, identical semantics at every level.
 
-the verifier jets (hash, poly_eval, merkle_verify, fri_fold, ntt) are specific to the canonical instantiation's proof system. other instantiations (e.g. nox<F₂> with Binius) would have their own verifier jets for their own proof system, recognized by different formula hashes.
+## self-verification
+
+the stark verifier for nox is itself a nox program. every operation the verifier needs — field arithmetic (patterns 5-8), hashing (jet 0), polynomial evaluation (jet 1), Merkle path checking (jet 2), FRI folding (jet 3) — is native to the sixteen patterns or their jet equivalents.
+
+the VM can verify proofs about its own executions. a proof-of-proof is a nox program that runs the verifier on a proof. the proof-of-proof is itself provable. recursion to arbitrary depth, constant proof size at every level.
+
+```
+program → trace → stark proof → verifier (nox program) → trace → stark proof → ...
+```
+
+## proposals
+
+specific jet designs are specified in proposals:
+
+- [[verifier-jets]] — Goldilocks/WHIR verifier jets (hash, poly_eval, merkle_verify, fri_fold, ntt)
+- [[binary-jets]] — F₂/Binius jets (popcount, packed_inner_product, binary_matvec, quantize, dequantize, activation_lut, gadget_decompose, barrel_shift)
