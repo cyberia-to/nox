@@ -7,12 +7,12 @@ status: canonical
 
 every noun has an identity computed by the instantiated hash function H (see nouns.md structural hash). the nox protocol operates exclusively on hash identities.
 
-in the canonical instantiation (nox<Goldilocks, Z/2^32, Hemera>), the identity is 64 bytes (8 × F_p elements). identity size is per-instantiation — it depends on H's output size. all concrete sizes below refer to the canonical instantiation.
+in the canonical instantiation (nox<Goldilocks, Z/2^32, Hemera>), the identity is 32 bytes (4 × F_p elements). identity size is per-instantiation — it depends on H's output size. all concrete sizes below refer to the canonical instantiation.
 
 ```
-identity = H(noun)                          64 bytes
-computation_key = (H(object), H(formula))  128 bytes
-computation_val = H(result)                 64 bytes
+identity = H(noun)                          32 bytes
+computation_key = (H(object), H(formula))   64 bytes
+computation_val = H(result)                 32 bytes
 ```
 
 ## content-addressed storage
@@ -22,15 +22,15 @@ there is no reason for a prefix byte in a system where every value is looked up 
 ### canonical (nox<Goldilocks, Z/2^32, Hemera>)
 
 ```
-store: Identity (64 bytes) → Content
+store: Identity (32 bytes) → Content
 
 Content variants (determined by byte length):
    8 bytes     atom value (single field element, canonical LE)
-  64 bytes     hash value (8 field elements, canonical LE)
- 128 bytes     cell (H(left) ‖ H(right), two 64-byte identities)
+  32 bytes     hash value (4 field elements, canonical LE)
+  64 bytes     cell (H(left) ‖ H(right), two 32-byte identities)
 ```
 
-three sizes: 2³, 2⁶, 2⁷. all powers of 2.
+three sizes: 2³, 2⁵, 2⁶. all powers of 2.
 
 content sizes are per-instantiation. atom size = sizeof(F). hash size = sizeof(H output). cell size = 2 × hash size. in nox<F₂>, an atom is 1 bit. the storage model is the same — only the element widths change.
 
@@ -43,8 +43,8 @@ resolve(id):
   content = store.get(id)
   match content.len():
     8   → atom(decode_field_element(content))
-    64  → hash_atom(decode_8_field_elements(content))
-    128 → cell(resolve(content[0..64]), resolve(content[64..128]))
+    32  → hash_atom(decode_4_field_elements(content))
+    64  → cell(resolve(content[0..32]), resolve(content[32..64]))
 ```
 
 ## atom type distinction
@@ -62,17 +62,17 @@ values ≥ p are invalid
 ## hash encoding (canonical: Hemera)
 
 ```
-64 bytes = 8 × 8 bytes
+32 bytes = 4 × 8 bytes
 each element is a canonical field element in [0, p), little-endian
 ```
 
 ## canonical invariants
 
 1. field element values MUST be in [0, p)
-2. hash values: each of the 8 elements MUST be in [0, p)
+2. hash values: each of the 4 elements MUST be in [0, p)
 3. cell content is deterministic: left identity before right identity
 4. no trailing bytes after content
-5. content length MUST be exactly 8, 64, or 128 bytes
+5. content length MUST be exactly 8, 32, or 64 bytes
 
 ## formula encoding
 

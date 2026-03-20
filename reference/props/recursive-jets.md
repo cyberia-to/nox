@@ -7,21 +7,21 @@ date: 2026-03-17
 ---
 # verifier jets — Goldilocks/WHIR recursive composition
 
-five jets that make recursive proof composition practical for nox<Goldilocks>. the unoptimized verifier costs ~600,000 patterns. with jets: ~70,000. this 8.5× reduction makes recursive composition practical.
+five jets that make recursive proof composition practical for nox<Goldilocks>. hemera-2 (24 rounds, 32-byte output) reduces hash cost from 300 to 200 focus and from ~1,152 to ~736 constraints per permutation. the unoptimized verifier costs ~400,000 patterns. with jets: ~50,000. this 8× reduction makes recursive composition practical.
 
 ## the five jets
 
 ### jet 0: hash
 
 ```
-hash(x) → 8 × F_p (64-byte Hemera digest)
+hash(x) → 4 × F_p (32-byte Hemera digest)
 ```
 
-computes Hemera(x) — the Poseidon2-Goldilocks sponge over the input noun.
+computes Hemera(x) — the Poseidon2-Goldilocks sponge over the input noun. hemera-2: 24 rounds (8 full + 16 partial), x⁻¹ S-box in partial rounds, 32-byte output (4 F_p elements).
 
-- pure equivalent: ~2,800 field ops (full Poseidon2 permutation as Layer 1 patterns)
-- jet cost: 300
-- stark constraints: ~300
+- pure equivalent: ~1,000 field ops (Poseidon2 permutation as Layer 1 patterns, hemera-2)
+- jet cost: 200
+- stark constraints: ~736
 - accelerates: Fiat-Shamir challenges, Merkle tree construction, content addressing
 
 hash is simultaneously Layer 1 pattern 15 and Layer 3 jet 0. the pattern defines the semantics; the jet provides the optimized constraint layout.
@@ -62,12 +62,14 @@ for each level i from 0 to d-1:
 assert current = root
 ```
 
-- pure equivalent: d × ~310 patterns (hash + conditional per level)
-- jet cost: d × 300
-- stark constraints: ~d × 300
-- accelerates: stark proof checking (500K → 50K of unjetted verifier cost)
+hemera-2 tree hashing: binary node = 64 bytes (2 × 32-byte children) = 8 F_p elements = 1 permutation per level (was 2 permutations with 64-byte output).
 
-Merkle verification is the single largest cost in the unjetted verifier — 83% of total cost is hash operations for Merkle paths and Fiat-Shamir.
+- pure equivalent: d × ~210 patterns (hash + conditional per level)
+- jet cost: d × 200
+- stark constraints: ~d × 736
+- accelerates: stark proof checking (330K → 33K of unjetted verifier cost)
+
+Merkle verification is the single largest cost in the unjetted verifier — ~83% of total cost is hash operations for Merkle paths and Fiat-Shamir.
 
 ### jet 3: fri_fold
 
@@ -113,12 +115,12 @@ uses the 2^32-th root of unity (1753635133440165772) from the Goldilocks field, 
 Component               │ Layer 1 only │ With jets  │ Reduction
 ────────────────────────┼──────────────┼────────────┼──────────
 Parse proof             │     ~1,000   │    ~1,000  │  1×
-Fiat-Shamir challenges  │    ~30,000   │    ~5,000  │  6×
-Merkle verification     │   ~500,000   │   ~50,000  │ 10×
+Fiat-Shamir challenges  │    ~20,000   │    ~3,000  │  7×
+Merkle verification     │   ~330,000   │   ~33,000  │ 10×
 Constraint evaluation   │    ~10,000   │    ~3,000  │  3×
-WHIR verification       │    ~50,000   │   ~10,000  │  5×
+WHIR verification       │    ~35,000   │    ~7,000  │  5×
 ────────────────────────┼──────────────┼────────────┼──────────
-TOTAL                   │   ~600,000   │   ~70,000  │ ~8.5×
+TOTAL                   │   ~400,000   │   ~50,000  │ ~8×
 ```
 
 ## hardware mapping
@@ -137,9 +139,9 @@ lut (lookup table)               activation functions via Layer 1
 ```
 jet              │ exec cost    │ stark constraints │ pure Layer 1 cost
 ─────────────────┼──────────────┼───────────────────┼──────────────────
-hash             │ 300          │ ~300              │ ~2,800
+hash             │ 200          │ ~736              │ ~1,000
 poly_eval(N)     │ N            │ ~N                │ ~2N
-merkle_verify(d) │ d × 300      │ ~d × 300          │ d × ~310
+merkle_verify(d) │ d × 200      │ ~d × 736          │ d × ~210
 fri_fold(N)      │ N/2          │ ~N/2              │ ~N
 ntt(N)           │ N·log(N)     │ ~N·log(N)         │ ~2N·log(N)
 ```
@@ -147,18 +149,18 @@ ntt(N)           │ N·log(N)     │ ~N·log(N)         │ ~2N·log(N)
 ## cost examples
 
 ```
-Hemera hash: 300 (jet) or ~2800 (pure Layer 1)
+Hemera hash: 200 (jet) or ~1000 (pure Layer 1)
   [15 [0 1]]
-  jet cost: 300
+  jet cost: 200
 
-Merkle verification (32 levels): ~9,600 (jet) or ~9,920 (pure Layer 1)
+Merkle verification (32 levels): ~6,400 (jet) or ~6,720 (pure Layer 1)
   merkle_verify(root, leaf, path, 32)
-  jet cost: 32 × 300 = 9,600
+  jet cost: 32 × 200 = 6,400
 
-stark verifier (one recursion level): ~70,000 (with jets)
-  without jets: ~600,000 Layer 1 patterns
+stark verifier (one recursion level): ~50,000 (with jets)
+  without jets: ~400,000 Layer 1 patterns
 
-recursive composition (2 levels): ~140,000 (with jets)
+recursive composition (2 levels): ~100,000 (with jets)
   proof-of-proof: verify a proof that itself verified a proof
 ```
 

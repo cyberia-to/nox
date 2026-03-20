@@ -92,14 +92,15 @@ nebu provides: field element type, addition, subtraction, multiplication, Fermat
 nox<_, _, Hemera> uses Hemera (~/git/hemera/) for all hashing: structural hash, Fiat-Shamir challenges, Merkle trees, content addressing.
 
 ```
-HASH: Hemera (Poseidon2-Goldilocks)
+HASH: Hemera (Poseidon2-Goldilocks, hemera-2)
   state: 16 field elements
   rate: 8 elements
   capacity: 8 elements
-  rounds: 8 full (4+4) + 64 partial = 72 total
-  s-box: d = 7 (x^7)
-  output: 8 field elements (64 bytes)
-  cost: ~300 stark constraints per permutation
+  rounds: 8 full (4+4) + 16 partial = 24 total
+  s-box (full rounds): x^7
+  s-box (partial rounds): x^{-1} (field inversion, 0^{-1} = 0)
+  output: 4 field elements (32 bytes)
+  cost: ~736 stark constraints per permutation
 ```
 
 hemera provides: sponge construction, domain-separated hashing, Merkle-compatible mode. nox imports the hash — it does not reimplement it.
@@ -108,9 +109,9 @@ hemera provides: sponge construction, domain-separated hashing, Merkle-compatibl
 
 all algebras settle through Goldilocks via Hemera (Poseidon2 over Goldilocks). this creates a permanent F_p dependency:
 
-- nox<F₂> programs must defer Hemera to settlement (~10 constraints deferred, ~1,200 at settlement)
+- nox<F₂> programs must defer Hemera to settlement (~10 constraints deferred, ~736 at settlement)
 - nox<F_{p³}> programs compute Hemera natively (Hemera operates over base field F_p)
-- nox<F_p> programs compute Hemera natively (300 focus cost)
+- nox<F_p> programs compute Hemera natively (200 focus cost)
 
 the polymorphism is real for computation but asymmetric for commitment. Goldilocks is the anchor field. all algebras settle through it.
 

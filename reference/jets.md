@@ -87,7 +87,7 @@ jet entry format:
 
 proof-system-specific jets that make recursive composition practical. each nox instantiation has its own verifier jets matched to its proof system:
 
-- nox<Goldilocks> + WHIR: hash, poly_eval, merkle_verify, fri_fold, ntt → [[verifier-jets]]
+- nox<Goldilocks> + WHIR: hash, poly_eval, merkle_verify, fri_fold, ntt → [[recursive-jets]]
 - nox<F₂> + Binius: binary-specific verifier jets → [[binary-jets]]
 
 ### domain-specific jets
@@ -145,5 +145,5 @@ program → trace → stark proof → verifier (nox program) → trace → stark
 
 specific jet designs are specified in proposals:
 
-- [[verifier-jets]] — Goldilocks/WHIR verifier jets (hash, poly_eval, merkle_verify, fri_fold, ntt)
+- [[recursive-jets]] — Goldilocks/WHIR verifier jets (hash, poly_eval, merkle_verify, fri_fold, ntt)
 - [[binary-jets]] — F₂/Binius jets (popcount, packed_inner_product, binary_matvec, quantize, dequantize, activation_lut, gadget_decompose, barrel_shift)

@@ -15,9 +15,9 @@ the trace layout is algebra-independent in structure (16 registers, power-of-2 r
 columns (16 = 2⁴ registers, each one F element):
   r0:   pattern tag (0-16)
   r1:   object hash[0]          ┐ 128-bit compressed identity
-  r2:   object hash[1]          ┘ (first 2 of 8 elements)
+  r2:   object hash[1]          ┘ (first 2 of 4 elements)
   r3:   formula hash[0]         ┐ 128-bit compressed identity
-  r4:   formula hash[1]         ┘ (first 2 of 8 elements)
+  r4:   formula hash[1]         ┘ (first 2 of 4 elements)
   r5:   operand A value
   r6:   operand B value
   r7:   result value (atom value for atoms, H(result)[0] for cells)
@@ -33,16 +33,16 @@ columns (16 = 2⁴ registers, each one F element):
 rows: 2^n (padded to power of 2)
 ```
 
-full 64-byte identities (8 elements each) are in the instance (public input). the trace stores 2 elements per hash for row-linking — 128-bit collision security (birthday bound 2⁶⁴), matching Goldilocks field security. the instance constraint verifies full hashes against the first row.
+full 32-byte identities (4 elements each) are in the instance (public input). the trace stores 2 elements per hash for row-linking — 128-bit collision security (birthday bound 2⁶⁴), matching Goldilocks field security. the instance constraint verifies full hashes against the first row.
 
 ## instance (public input)
 
 ```
 instance = (H(object), H(formula), H(result), focus_initial, focus_final, status)
 
-H(object):  8 × F_p (full 64-byte identity)
-H(formula): 8 × F_p (full 64-byte identity)
-H(result):  8 × F_p (full 64-byte identity)
+H(object):  4 × F_p (full 32-byte identity)
+H(formula): 4 × F_p (full 32-byte identity)
+H(result):  4 × F_p (full 32-byte identity)
 focus_initial: F_p
 focus_final:   F_p
 status:        F_p (0 = ok, 1 = halt, 2 = error)
@@ -96,13 +96,14 @@ pattern 8 (inv), cost 64:
   row 63:    r7 = r12 (final inverse)
   verification: r7 × r5 = 1                                 degree 2
 
-pattern 15 (hash), cost 300:
+pattern 15 (hash), cost 200:
   row 0:     r5 = input value, r12-r14 = initial sponge state
-  rows 1-299: round state progression (8 full + 64 partial Poseidon2 rounds,
+  rows 1-199: round state progression (8 full + 16 partial Poseidon2 rounds,
               multiple rows per round for state element constraints)
-  row 299:   r7 = H(result)[0], r12-r14 = remaining hash elements
-  total rows: 300 (72 rounds × ~4 rows/round + absorption/squeeze)
-  each constraint row: degree 7 (s-box x^7)
+  row 199:   r7 = H(result)[0], r12-r14 = remaining hash elements
+  total rows: ~200 (24 rounds × ~8 rows/round + absorption/squeeze)
+  full round constraint rows: degree 7 (s-box x^7)
+  partial round constraint rows: degree 2 (s-box x^{-1}, verified as x × y = 1)
 
 pattern 0 (axis), cost = depth:
   row 0:     r5 = root noun, r12 = remaining index
@@ -122,7 +123,7 @@ single-row (cost 1): quote, compose, cons, branch, add, sub, mul,
 multi-row:
   axis (depth d): d rows — one per tree traversal step
   inv (cost 64):  64 rows — square-and-multiply chain
-  hash (cost 300): ~300 rows — Poseidon2 permutation rounds
+  hash (cost 200): ~200 rows — Poseidon2 permutation rounds (hemera-2)
 ```
 
 single-row patterns store operands in r5/r6 and result in r7. the operand values are wired to sub-expression result rows through CCS wiring constraints. compose and cons dispatch sub-expressions whose results flow back through the wiring; compose additionally generates a third reduce() call (its own row) for the final application.
@@ -144,7 +145,7 @@ new formula:  r3_{t+1}, r4_{t+1} set by sub-expression dispatch
 single-row patterns:  r9 = r8 - 1            (1 focus per reduce call)
 axis (depth d):       r9 = r8 - d            (d focus for d traversal steps)
 inv:                  r9 = r8 - 64           (64 focus for square-and-multiply)
-hash:                 r9 = r8 - 300          (300 focus for Poseidon2)
+hash:                 r9 = r8 - 200          (200 focus for Poseidon2 hemera-2)
 ```
 
 ## error and halt encoding
@@ -195,4 +196,4 @@ breakdown:
   WHIR verification:      ~10,000 (was ~50,000)
 ```
 
-recursive composition: prove the verifier's execution. proof-of-proof at every block. constant proof size at every recursion level (~60-157 KiB).
+recursive composition: prove the verifier's execution. proof-of-proof at every block. constant proof size at every recursion level (~1-5 KiB with zheng-2).

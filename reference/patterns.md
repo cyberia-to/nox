@@ -238,13 +238,13 @@ reduce(s, [15 a], f) →
 
 computes the structural hash of the evaluated operand using the instantiated hash function H. result type depends on H's output size.
 
-### canonical (Hemera)
+### canonical (Hemera-2)
 
-result is an 8-element hash (64 bytes, type tag 0x02).
+result is a 4-element hash (32 bytes, type tag 0x02).
 
-hash CAN be expressed as pure Layer 1 patterns (~2800 field ops for the Poseidon2 permutation). pattern 15 is simultaneously a Layer 1 pattern and the first Layer 3 jet. the jet accelerates; semantics unchanged.
+hash CAN be expressed as pure Layer 1 patterns (~1000 field ops for the Poseidon2 permutation with hemera-2: 24 rounds, x⁻¹ S-box in partial rounds). pattern 15 is simultaneously a Layer 1 pattern and the first Layer 3 jet. the jet accelerates; semantics unchanged.
 
-cost: 300. stark constraints: ~300.
+cost: 200. stark constraints: ~736.
 
 the cost is per-instantiation. a different hash function H would have different cost.
 
@@ -306,14 +306,14 @@ Layer │ Pattern      │ Exec Cost      │ STARK Constraints │ Rationale
   1   │ 9 eq         │ 1              │ 1                 │ equality comparison
   1   │ 10 lt        │ 1              │ ~64               │ range decomposition (Goldilocks)
   1   │ 11-14 bit    │ 1              │ ~32 each          │ bit decomposition (Z/2^32 in F_p)
-  1   │ 15 hash      │ 300            │ ~300              │ Hemera permutation
+  1   │ 15 hash      │ 200            │ ~736              │ Hemera-2 permutation
   2   │ 16 hint      │ 1              │ 1                 │ inject + dispatch
 ```
 
 the exec cost is the focus deducted for THIS pattern's dispatch. sub-expression
 reduce() calls deduct their own costs separately. three patterns have multi-step
 overhead (axis: depth traversal steps, inv: 64 sequential multiplications,
-hash: 300 Poseidon2 round rows). all other patterns cost exactly 1.
+hash: 200 Poseidon2 round rows). all other patterns cost exactly 1.
 
 per-instantiation costs that change across algebras: inv (execution cost depends on inversion algorithm), lt (constraint count depends on field size), bitwise (constraint count depends on whether the field is binary-native), hash (cost depends on H).
 
