@@ -1,3 +1,8 @@
+# ---
+# tags: nox, config
+# crystal-type: source
+# crystal-domain: comp
+# ---
 [package]
 name = "nox"
 version = "0.1.0"

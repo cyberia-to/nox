@@ -1,3 +1,8 @@
+// ---
+// tags: nox, rust
+// crystal-type: source
+// crystal-domain: comp
+// ---
 //! nox — proof-native virtual machine over the Goldilocks field
 //!
 //! Sixteen deterministic reduction patterns (Layer 1), one non-deterministic
