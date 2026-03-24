@@ -13,7 +13,7 @@ density: 0
 ---
 # verifier jets — Goldilocks/WHIR recursive composition
 
-five jets that make recursive proof composition practical for nox<Goldilocks>. hemera-2 (24 rounds, 32-byte output) reduces hash cost from 300 to 200 focus and from ~1,152 to ~736 constraints per permutation. the unoptimized verifier costs ~400,000 patterns. with jets: ~50,000. this 8× reduction makes recursive composition practical.
+five jets that make recursive proof composition practical for nox<Goldilocks>. hemera (x⁻¹ S-box, 24 rounds, 32-byte output) reduces hash cost from 300 to 200 focus and from ~1,152 to ~736 constraints per permutation. the unoptimized verifier costs ~400,000 patterns. with jets: ~50,000. this 8× reduction makes recursive composition practical.
 
 ## the five jets
 
@@ -23,9 +23,9 @@ five jets that make recursive proof composition practical for nox<Goldilocks>. h
 hash(x) → 4 × F_p (32-byte Hemera digest)
 ```
 
-computes Hemera(x) — the Poseidon2-Goldilocks sponge over the input noun. hemera-2: 24 rounds (8 full + 16 partial), x⁻¹ S-box in partial rounds, 32-byte output (4 F_p elements).
+computes Hemera(x) — the Poseidon2-Goldilocks sponge over the input noun. 24 rounds (8 full + 16 partial), x⁻¹ S-box in partial rounds, 32-byte output (4 F_p elements).
 
-- pure equivalent: ~1,000 field ops (Poseidon2 permutation as Layer 1 patterns, hemera-2)
+- pure equivalent: ~1,000 field ops (Poseidon2 permutation as Layer 1 patterns)
 - jet cost: 200
 - stark constraints: ~736
 - accelerates: Fiat-Shamir challenges, Merkle tree construction, content addressing
@@ -68,7 +68,7 @@ for each level i from 0 to d-1:
 assert current = root
 ```
 
-hemera-2 tree hashing: binary node = 64 bytes (2 × 32-byte children) = 8 F_p elements = 1 permutation per level (was 2 permutations with 64-byte output).
+hemera tree hashing: binary node = 64 bytes (2 × 32-byte children) = 8 F_p elements = 1 permutation per level (was 2 permutations with 64-byte output).
 
 - pure equivalent: d × ~210 patterns (hash + conditional per level)
 - jet cost: d × 200

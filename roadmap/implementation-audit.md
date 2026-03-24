@@ -26,7 +26,7 @@ nox has 7 canonical spec files (vm, nouns, patterns, reduction, jets, trace, enc
 | reduction.md | canonical v0.2 | **yes** — ask()/reduce() interface, focus metering, confluence proof, error types |
 | encoding.md | canonical v0.2 | **yes** — 3 sizes (8/32/64), content addressing, canonical invariants |
 | trace.md | canonical v0.2 | **yes** — 16 registers, per-pattern row layout, constraint structure |
-| vm.md | canonical v0.2 | **mostly** — hemera-2 params updated, see gaps below |
+| vm.md | canonical v0.2 | **mostly** — hemera params updated, see gaps below |
 | jets.md | canonical v0.3 | **API yes, jet formulas no** — mechanism defined, actual formulas missing |
 
 ## spec gaps — what blocks implementation
@@ -87,7 +87,7 @@ the cost-model-redesign plan (marked "implemented") identified TV1 and TV3 as of
 
 ### G5: hemera version (resolved)
 
-resolved: nox now targets hemera-2 (24 rounds, 32-byte output, x⁻¹ S-box). all spec files updated in commit 2f8572f.
+resolved: nox now targets hemera (24 rounds, 32-byte output, x⁻¹ S-box). all spec files updated in commit 2f8572f.
 
 ### G6: memoization spec (low)
 
@@ -111,7 +111,7 @@ the ask() interface handles one computation. how does the VM process a batch (e.
 | Determinism | #[deterministic] | **perfect fit**: Rs enforces what nox requires |
 | No heap | Rs edition restrictions | **perfect fit**: nox VM should be heap-free |
 | Canonical encoding | #[derive(Addressed)] | **works**: Particle = nox identity |
-| Content addressing | Particle type (32 bytes) | **needs update**: Rs Particle is 64 bytes, hemera-2 outputs 32 |
+| Content addressing | Particle type (32 bytes) | **needs update**: Rs Particle is 64 bytes, hemera outputs 32 |
 | Focus metering | u64 or nebu field element | **works**: simple decrement counter |
 | Jet dispatch | match on formula hash | **works**: no dyn dispatch needed, static table |
 | Trace generation | BoundedVec<TraceRow, N> | **gap**: trace size unbounded, needs streaming |
@@ -121,7 +121,7 @@ the ask() interface handles one computation. how does the VM process a batch (e.
 
 1. **nebu dependency missing**: Rs core needs `nebu` for Goldilocks field elements
 2. **hemera dependency missing**: real Hemera hash needed, not placeholder
-3. **Particle size**: Rs Particle is 64 bytes, hemera-2 outputs 32 bytes — need to update Rs
+3. **Particle size**: Rs Particle is 64 bytes, hemera outputs 32 bytes — need to update Rs
 4. **trace buffer sizing**: nox traces can be arbitrarily large (2^20+ rows). streaming trace writer avoids bounded buffer
 5. **no recursive types without arena**: solved by arena + NounRef pattern
 
@@ -130,7 +130,7 @@ the ask() interface handles one computation. how does the VM process a batch (e.
 | Rs primitive | nox concept | alignment |
 |-------------|-------------|-----------|
 | Particle (→ 32 bytes) | Noun identity H(noun) | **match after update** |
-| Address (32 bytes) | Noun identity H(noun) | **exact match** with hemera-2 |
+| Address (32 bytes) | Noun identity H(noun) | **exact match** with hemera |
 | #[derive(Addressed)] | Canonical encoding | **exact match** (content-addressed) |
 | #[step] | Focus step boundary | **natural fit** (reset state per computation) |
 | BoundedVec<T, N> | Axis path, formula body | **works** for bounded sequences |
@@ -138,7 +138,7 @@ the ask() interface handles one computation. how does the VM process a batch (e.
 | Arena<T, N> | Noun allocation | **works** for tree construction |
 | FixedPoint<T, D> | — | **not used** by nox (field elements, not fixed-point) |
 
-note: Rs Address (32 bytes) now matches hemera-2 output (32 bytes). Address = Particle = H(noun). the three types converge.
+note: Rs Address (32 bytes) now matches hemera output (32 bytes). Address = Particle = H(noun). the three types converge.
 
 ## nox crate layout in Rs
 
@@ -172,7 +172,7 @@ dependencies: nebu (field arithmetic), hemera (hash)
 | # | gap | action | where |
 |---|-----|--------|-------|
 | G4 | test vectors | verify TV1, TV3 corrections landed | patterns.md |
-| R3 | Rs Particle size | update from 64 to 32 bytes for hemera-2 | rs/core/src/core_types.rs |
+| R3 | Rs Particle size | update from 64 to 32 bytes for hemera | rs/core/src/core_types.rs |
 
 ### medium (can defer)
 
@@ -186,6 +186,6 @@ dependencies: nebu (field arithmetic), hemera (hash)
 
 ## bottom line
 
-the nox spec is 85-90% implementation-ready. three critical gaps (G1-G3) are solvable in 1-2 sessions each. Rs is a natural fit — its no-heap, deterministic, content-addressed primitives align with nox's requirements. the hemera-2 upgrade aligns output size (32 bytes) with Rs Address type. the main design decision is arena-based noun representation.
+the nox spec is 85-90% implementation-ready. three critical gaps (G1-G3) are solvable in 1-2 sessions each. Rs is a natural fit — its no-heap, deterministic, content-addressed primitives align with nox's requirements. hemera output size (32 bytes) aligns with Rs Address type. the main design decision is arena-based noun representation.
 
 estimated implementation effort: 6-8 sessions for a working nox VM with all 17 patterns, 5 jets, streaming trace, and content-addressed memoization.
