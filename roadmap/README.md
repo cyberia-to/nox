@@ -10,6 +10,7 @@ design proposals for [[nox]] VM evolution.
 | [[recursive-jets]] | **yes** → reference/jets.md | 5 verifier jets (hash, poly_eval, merkle_verify, fri_fold, ntt), 8× reduction |
 | [[binary-jets]] | **yes** → reference/jets.md | 8 Bt jets (popcount, binary_matvec, quantize, etc.), 1,400× for inference |
 | [[implementation-audit]] | no (audit document, not a spec proposal) | Rs implementation readiness: 3 critical gaps identified |
+| [[transformer-jets]] | no (draft) | 7 jets for compiled cybergraph inference: SVD, hull attention, tri-kernel, reconvergence |
 
 ## lifecycle
 
