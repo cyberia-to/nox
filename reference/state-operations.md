@@ -7,21 +7,23 @@ status: canonical
 
 state operations are patterns for modifying [[BBG]] polynomial state. they are NOT a separate instruction set — they are compositions of the 16 nox patterns (primarily field arithmetic: add, mul, eq) applied to polynomial evaluation points. state jets optimize their proof encoding.
 
-five irreducible operations. three groups. derived from CCS structure.
+five named compositions of the 16 nox patterns. not new instructions — abbreviations for common pattern sequences applied to the polynomial evaluation table noun.
 
-## derivation from CCS
+## derivation from the 16 patterns
 
-a CCS satisfaction equation:
+the [[BBG]] polynomial evaluation table is a NOUN — a binary tree of [[Goldilocks field]] elements. state operations are standard nox patterns operating on this noun:
 
-$$\sum_j c_j \cdot \bigodot_{i \in S_j} M_i \cdot z = 0$$
+| state operation | nox patterns used | what it does |
+|---|---|---|
+| READ | pattern 0 (axis) | navigate evaluation table noun to (dimension, key) |
+| WRITE | pattern 0 (axis) + pattern 3 (cons) | navigate to position, build updated tree |
+| ASSERT_EQ | pattern 9 (eq) | check two field values are equal |
+| ADD | pattern 5 (add) | field addition on state values |
+| MUL | pattern 7 (mul) | field multiplication on state values |
 
-decomposes into five nox-native activities:
-- z contains state values → accessed by **READ** / **WRITE** (polynomial evaluation = field ops)
-- $M_i \cdot z$ computes linear combinations → **ADD** (pattern 5)
-- $\bigodot$ computes Hadamard products → **MUL** (pattern 7)
-- $= 0$ asserts equality → **ASSERT_EQ** (pattern 9)
+PCS verification (proving READ is correct) decomposes into: field arithmetic (patterns 5-8) + hemera hash (pattern 15). also from the 16.
 
-these are nox patterns operating on polynomial state. not new instructions.
+**16 patterns are the axiom. state operations are derived. no new instructions.**
 
 ## the five operations
 
