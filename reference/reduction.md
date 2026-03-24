@@ -259,6 +259,52 @@ result: (200, 95)
 
 5 reduce() calls = 5 focus consumed. matches test vector.
 
+## proof-carrying reduction
+
+reduction and proving are one operation. each reduce() call generates a trace row AND folds it into a running [[HyperNova]] accumulator:
+
+```
+reduce_with_proof(s, formula, f, acc) =
+  if f < cost then Halt
+  let (tag, body) = formula
+  let (result, f', trace_row) = dispatch(s, tag, body, f)
+  let acc' = fold_row(acc, trace_row)         ← ~30 field ops
+  (result, f', acc')
+```
+
+at computation end, the accumulator IS the proof. run one decider to produce the final verifiable [[zheng]] proof. no separate proving phase — proving overhead is ~30 field operations per reduce() call, folded into execution.
+
+hemera hash operations (pattern 15) during execution also fold via the sponge construction: each absorption block folds into the accumulator (~30 field ops) instead of being proved independently. a 4 KiB particle hash: ~2,956 constraints folded (was ~54,464 with independent permutations, 18× savings).
+
+### signal assembly
+
+the output of a complete ask() with proof-carrying is a [[signal]]:
+
+```
+signal = {
+  ν:    neuron_id                          from ask() argument
+  l⃗:    [cyberlink]                        the batch (from computation results)
+  π_Δ:  [(particle, F_p)]                  impulse (focus shift)
+  σ:    accumulator                        the proof (from proof-carrying reduction)
+  prev: H(previous signal)                ordering (hash chain)
+  mc:   H(causal DAG root)                ordering (Merkle clock)
+  vdf:  VDF(prev, T_min)                  ordering (physical time)
+  step: u64                               ordering (logical clock)
+}
+
+σ is the proof-carrying accumulator. it proves:
+  - all reduce() calls were valid (correct pattern dispatch)
+  - all hemera hashes were computed correctly (folded sponge)
+  - focus was sufficient and correctly metered
+  - the result noun has the claimed identity H(result)
+
+verification: one zheng decider call (10-50 μs), independent of computation size.
+signal size: ~1-5 KiB (proof + impulse + 160 bytes ordering metadata)
+proof cost: ZERO additional (accumulated during execution)
+```
+
+the signal is the unit of state change for [[BBG]]. it flows from device through [[structural-sync|structural sync]] (layers 1-5) to the network.
+
 ## stark integration
 
-the reduction trace (sequence of pattern applications with register states) IS the stark witness. the trace layout is per-instantiation — column widths depend on F element size. see trace.md for the register layout and AIR constraints. see jets.md for optimized verification.
+the reduction trace (sequence of pattern applications with register states) IS the stark witness. the trace layout is per-instantiation — column widths depend on F element size. see trace.md for the register layout and AIR constraints. see jets.md for optimized verification. see [[zheng]] recursion.md for HyperNova folding mechanics.
