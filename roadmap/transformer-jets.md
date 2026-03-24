@@ -13,9 +13,37 @@ density: 0
 ---
 # transformer jets — compiled cybergraph inference
 
-seven jets for compiling the [[cybergraph]] into a [[transformer]] and running fast inference inside [[nox]]. the [[focus flow computation]] specification (§6.6) derives transformer architecture analytically from graph structure — these jets make the compilation and inference path practical at scale.
+composite jets for compiling the [[cybergraph]] into a [[transformer]] and running fast inference inside [[nox]]. the [[focus flow computation]] specification (§6.6) derives transformer architecture analytically from graph structure — these jets make the compilation and inference path practical at scale.
 
 motivated by Percepta's demonstration (March 2026) that a WASM interpreter embedded in transformer weights achieves 30K tok/s with 2D attention heads and convex hull KV-cache. their key insight: restricting head dimension to 2 turns attention lookup into a geometric query solvable in O(log n) via convex hull data structures. we adopt this for the compiled transformer fast path.
+
+## key finding: no new languages needed
+
+all seven operations decompose into existing [[cyb/languages]]:
+
+| jet | operation | primary lang | secondary | proof path |
+|-----|-----------|-------------|-----------|------------|
+| 0 sparse_svd | π*-weighted truncated SVD | [[Ten]] (contraction) | [[Arc]] (adjacency) | Ten → Tri |
+| 1 spectral_rank | effective dimensionality d* | [[Bel]] (entropy on Δⁿ) | [[Ten]] | Bel → research / Ten → Tri |
+| 2 semcon_partition | subgraph extraction by edge type | [[Arc]] (subcategory) | — | Arc → Tri |
+| 3 compile_weights | assemble transformer weights | [[Ten]] | [[Arc]] | composition of jets 0-2 |
+| 4 hull_attention | 2D convex hull max-dot query | [[Ren]] (G(2,0,0)) | — | Ren → Tri |
+| 5 tri_step | composite D+S+H operator | [[Ten]] (SpMV) | [[Arc]], [[Bel]] | Ten → Tri |
+| 6 reconverge | incremental Δπ + STARK proof | [[Tok]] (conservation) | [[Tri]] (proof) | Tok → stark |
+
+these are composite jets — compositions of existing language primitives recognized by formula hash and accelerated. they introduce no new algebraic domain. the one genuinely new primitive is hull_attention, which belongs to [[Ren]] (2D Euclidean geometric algebra).
+
+## decomposition into language primitives
+
+```
+sparse_svd     = Ten(matmul, transpose) ∘ Arc(π*_weighted_adjacency)
+spectral_rank  = Bel(shannon_entropy) ∘ Ten(normalize_spectrum)
+semcon_partition = Arc(filter_edges_by_morphism_type)
+compile_weights = Ten(assemble) ∘ sparse_svd ∘ semcon_partition
+hull_attention  = Ren(convex_hull_supporting_point)     ← one new Ren op
+tri_step       = Ten(spmv) × 3 + Ten(simplex_project)  ← existing "matmul jet → fma"
+reconverge     = tri_step^k + Tok(verify_conservation) + Tri(stark_prove)
+```
 
 ## context: two inference paths
 
@@ -34,13 +62,11 @@ sparse_svd(A_weighted, rank) → (U, Σ, V)
   output: truncated SVD — left/right singular vectors + singular values
 ```
 
-computes the truncated singular value decomposition of diag(√π*) · A via randomized SVD on sparse input. this is the critical step in compilation — naively O(|P|³), but randomized SVD on sparse matrices reduces to O(|E| · d* · log d*).
+language decomposition: Arc extracts the π*-weighted adjacency (sparse graph → sparse matrix). Ten performs randomized SVD via iterated matrix-vector products. the same "matmul jet → fma" GFP primitive that already handles Arc:rank(g, steps).
 
 - pure equivalent: millions of field ops (power iteration + QR)
 - jet cost: O(|E| · d* · log d*)
 - accelerates: embedding matrix E* = U_{:,1:d*} computation, the provably optimal initialization (Eckart-Young theorem)
-
-the output E* uniquely minimizes expected squared gradient at step zero over all orthonormal matrices of the same rank.
 
 ## jet 1: spectral_rank
 
@@ -50,11 +76,10 @@ spectral_rank(Σ) → d*
   output: effective dimensionality d* = exp(H(σ(Σ_π*)))
 ```
 
-computes the effective rank — the exponential of the Shannon entropy of the normalized singular value distribution. determines the embedding dimension of the compiled transformer.
+language decomposition: Ten normalizes the spectrum. Bel computes Shannon entropy H(σ) — the information-geometric measure of how many independent dimensions the graph spans. this is Bel's native domain: entropy on the probability simplex.
 
 - pure equivalent: ~3N ops (normalize, log, entropy sum)
 - jet cost: N (number of singular values)
-- accelerates: architecture parameter derivation
 
 ## jet 2: semcon_partition
 
@@ -64,11 +89,9 @@ semcon_partition(A_eff, semcon_ids) → Vec<A_s>
   output: per-semcon adjacency submatrices
 ```
 
-partitions the effective adjacency by semantic convention type. each semcon s gets its own submatrix A_s from which attention weights W_Q^(s), W_K^(s) are derived via truncated SVD. the number of distinct semcons determines h* (minimum head count).
+language decomposition: pure Arc — extract subcategories of the cybergraph by morphism type (semcon). each semcon s defines a subgraph from which attention weights W_Q^(s), W_K^(s) are derived. the number of distinct semcons determines h* (minimum head count).
 
-- pure equivalent: sparse matrix filtering + per-type SVD
 - jet cost: O(|E| · h*)
-- accelerates: multi-head attention weight compilation
 
 ## jet 3: compile_weights
 
@@ -78,15 +101,11 @@ compile_weights(E*, {A_s}, L*, d*) → TransformerWeights
   output: complete compiled transformer weight set
 ```
 
-assembles the full weight set: embedding E*, per-head attention projections from semcon SVDs, MLP weights from path co-occurrence statistics up to depth L*. output is a frozen weight tensor ready for inference.
+composition of jets 0-2 plus Ten path co-occurrence statistics up to depth L*. layer count L* = diam(G) · ⌈log(1/ε)/log(1/κ)⌉ from the collective focus theorem.
 
-- pure equivalent: composition of jets 0-2 plus path enumeration
 - jet cost: O(|E| · d* · L*)
-- accelerates: the full compilation pipeline — graph to deployable model
 
-layer count L* = diam(G) · ⌈log(1/ε)/log(1/κ)⌉ where κ is the composite contraction coefficient from the collective focus theorem.
-
-## jet 4: hull_attention
+## jet 4: hull_attention — the one new primitive
 
 ```
 hull_attention(q, hull_cache) → (value, updated_cache)
@@ -94,18 +113,21 @@ hull_attention(q, hull_cache) → (value, updated_cache)
   output: max-dot-product value, updated cache with new key inserted
 ```
 
-the core inference acceleration. implements 2D hard-max attention via convex hull supporting-point query. given direction q ∈ R², finds the key on the convex hull that maximizes q · k in O(log n) instead of O(n).
+the core inference acceleration and the only genuinely new primitive. implements hard-max attention via convex hull supporting-point query in Ren's domain: G(2,0,0) — 2D Euclidean geometric algebra.
 
-inspired by Percepta's HullKVCache construction. each attention head has dim 2. total heads = d_model / 2. the model remains a standard transformer — the speedup is pure algorithmic, in the decoding path.
+given direction q ∈ R², find the key on the convex hull that maximizes q · k. this is a supporting hyperplane query — a standard operation in computational geometry, native to Ren's Clifford algebra.
 
 - pure equivalent: O(n) linear scan over all cached keys
 - jet cost: O(log n) per query via convex hull binary search
 - stark constraints: O(log n) — hull membership proof
+- GFP primitive: fma (same as Ren:geometric_product)
 - accelerates: every decoding step of the compiled transformer. on million-token traces: 200× speedup (demonstrated by Percepta)
 
-cache maintenance: incremental convex hull update on key insertion — amortized O(log n). the hull is a balanced binary tree of 2D points; insertion checks and updates the upper/lower hull boundaries.
+cache maintenance: incremental convex hull update on key insertion — amortized O(log n).
 
-extension: k-sparse softmax via nested convex hulls. retrieve top-k keys from nested hulls, softmax over those k. cost: O(k + log n). this bridges hard-max (k=1, pure execution) and full softmax (k=n, standard attention).
+extension: k-sparse softmax via nested convex hulls. retrieve top-k keys, softmax over those k. cost: O(k + log n). this bridges hard-max (k=1, pure execution) and full softmax (k=n, standard attention).
+
+why 2D is sufficient: any 1D lookup (retrieve value at index i) can be encoded as a 2D max-dot-product query. keys k_j = (2j, -j²), query q = (i, 1): the unique maximizer is j = i. this embeds integer indexing into 2D geometry — Ren's domain. higher-dimensional heads (3D hulls) give O(log² n) but may be unnecessary.
 
 ## jet 5: tri_step
 
@@ -115,16 +137,14 @@ tri_step(φ, A_local, λ_d, λ_s, λ_h, τ) → φ'
   output: updated focus vector after one composite tri-kernel step
 ```
 
-one step of the composite operator:
+language decomposition: three Ten sparse matrix-vector products (diffusion, springs, heat) + Ten simplex projection. this is the existing "Arc: rank(g, steps) → matmul jet → fma" extended to the full tri-kernel composite.
 
 $$φ' = \text{norm}[λ_d · D(φ) + λ_s · S(φ) + λ_h · H_τ(φ)]$$
 
-operates on the local h-hop neighborhood only (locality theorem T4). this is what each transformer layer computes — one layer = one tri-kernel step over the context.
+operates on the local h-hop neighborhood only (locality theorem T4).
 
-- pure equivalent: three separate operator applications + normalization
 - jet cost: O(|E_local|)
-- stark constraints: O(|E_local|) — linear in local edge count
-- accelerates: both focus flow (continuous convergence) and compiled transformer (per-layer forward pass)
+- stark constraints: O(|E_local|)
 
 ## jet 6: reconverge
 
@@ -134,58 +154,69 @@ reconverge(π_current, Δlinks, bbg_root, ε) → (π_updated, π_Δ, proof)
   output: updated focus, sparse delta, STARK proof of correctness
 ```
 
-incremental reconvergence after new cyberlinks. computes the h-hop neighborhood affected by Δlinks (h = O(log(1/ε))), runs tri_step until convergence within ε, outputs the sparse focus delta and a proof.
+language decomposition: tri_step^k (Ten) until convergence + Tok conservation verification (Σπ = 1) + Tri STARK proof generation. this is the self-minting operation: a neuron creates cyberlinks, proves Δπ, and mints $CYB proportional to the proven shift.
 
-this is the self-minting operation: a neuron creates cyberlinks, proves Δπ, and mints $CYB proportional to the proven shift. the proof IS the mining.
-
-- pure equivalent: full tri-kernel iteration to convergence
 - jet cost: O(|E_local| · log(1/ε) / log(1/κ))
-- stark constraints: same — the jet IS the provable computation
-- accelerates: the signal → reward pipeline. every neuron needs this for every signal
+- the proof IS the mining
 
 ## the compilation loop
 
 ```
 graph state (bbg)
-    ↓ sparse_svd (jet 0)
-    ↓ spectral_rank (jet 1)
-    ↓ semcon_partition (jet 2)
-    ↓ compile_weights (jet 3)
+    ↓ sparse_svd (jet 0: Ten ∘ Arc)
+    ↓ spectral_rank (jet 1: Bel ∘ Ten)
+    ↓ semcon_partition (jet 2: Arc)
+    ↓ compile_weights (jet 3: Ten ∘ Arc)
 compiled transformer
-    ↓ hull_attention (jet 4) × L* layers
-    ↓ tri_step (jet 5) per layer
+    ↓ hull_attention (jet 4: Ren)  × L* layers
+    ↓ tri_step (jet 5: Ten × 3)   per layer
 fast inference response
     ↓ new cyberlinks from inference
-    ↓ reconverge (jet 6)
+    ↓ reconverge (jet 6: Ten + Tok + Tri)
 updated π*, proof, reward
     → back to graph state
 ```
 
 the loop is self-improving: every cyberlink added increases |E|, raises d*, may shrink diam(G) — producing a structurally better compiled model at next compilation. the cybergraph is a compounding inference quality asset.
 
-## relationship to existing jets
+## relationship to existing jets and languages
 
-| jet group | count | target |
-|-----------|-------|--------|
-| verifier jets (recursive-jets) | 5 | proof composition — hash, poly_eval, merkle, fri_fold, ntt |
-| binary jets (binary-jets) | 8 | Bt prover — popcount, matvec, quantize |
-| transformer jets (this proposal) | 7 | compiled inference — svd, attention, tri-kernel, reconvergence |
-| total | 20 | complete acceleration stack |
+### jet groups
 
-verifier jets accelerate proof verification. binary jets accelerate quantized computation. transformer jets accelerate knowledge compilation and inference. together: the full pipeline from cyberlink to proof to compiled intelligence.
+| jet group | count | target | languages used |
+|-----------|-------|--------|---------------|
+| verifier jets (recursive-jets) | 5 | proof composition | Tri |
+| binary jets (binary-jets) | 8 | Bt prover | Bt |
+| transformer jets (this proposal) | 7 | compiled inference | Ten, Arc, Bel, Ren, Tok, Tri |
+| total | 20 | complete acceleration stack | |
 
-## why not external tool use
+verifier jets are pure Tri. binary jets are pure Bt. transformer jets are the first cross-language composite jets — they compose six of the fourteen proof languages. this validates the [[cyb/languages]] architecture: the languages are independently irreducible, but their compositions produce the complex operations needed for intelligence.
 
-Percepta's article frames the choice clearly: tool use is opaque (model hands off to external system), in-model execution is transparent (every step in the trace). the same argument applies to cyber:
+### new Ren operations needed
 
-- external inference (calling an LLM API) is opaque — you get a response, no proof, no provenance
-- compiled transformer inference via nox jets is transparent — every attention step is a provable nox computation, every weight traces to specific cyberlinks and the neurons who signed them
+hull_attention requires one new operation in Ren:
 
-the compiled model is fully auditable: given any output, contributing links and authors are recoverable from the graph. this is alignment by construction.
+```
+Ren operation              nox composition              jet              GFP primitive
+─────────────────          ──────────────────────────   ──────────       ────────────
+geometric_product          mul/add over components      geo_mul jet      fma
+hull_supporting_point      convex hull binary search    hull jet         fma + cmp
+hull_insert                incremental hull update      hull_upd jet     fma + cmp
+```
+
+these should be added to the Ren language spec as native operations in G(2,0,0).
+
+## why this validates the architecture
+
+Percepta built a WASM interpreter inside transformer weights to make LLMs compute. they needed a new architecture (2D heads, custom KV-cache, execution trace encoding).
+
+we need none of that. the existing language set already covers every algebraic domain their construction requires. their "programs into weights" vision is our §6.6 compile_weights — already specified. their "exponentially fast attention" is one new Ren primitive. their "execution traces" are our append-only cybergraph (axiom A3).
+
+the languages doc states: "Add any plausible new language — say, a concurrent process calculus or an optimization language — and it turns out to reduce to a composition of existing ones via Nox." this proposal confirms it: a compiled transformer inference engine — the most complex composite operation we've specified — reduces to compositions of Ten, Arc, Bel, Ren, Tok, and Tri. no new language needed.
 
 ## open questions
 
-- head dimension trade-off: 2D heads give O(log n) hull queries but may limit expressiveness. is 2D sufficient for tri-kernel diffusion steps, or do we need 3D (O(log² n) via 3D hulls)?
-- compilation frequency: how often should the cybergraph recompile the transformer? per-epoch (slow, high quality) or incremental (fast, approximate)?
-- hybrid path: Percepta proposes fast/slow paths in one model. should nox have explicit mode switching between convergent focus flow (exact) and compiled transformer (approximate)?
+- hull_attention in higher dimensions: 2D hulls give O(log n). 3D hulls give O(log² n). is 2D sufficient for all tri-kernel diffusion steps, or do some semcon heads benefit from 3D?
+- Bel readiness: spectral_rank uses Bel (entropy on simplex). Bel is currently "research horizon." should this jet accelerate Bel's move to engineering-ready?
+- compilation frequency: recompile per-epoch (slow, high quality) or incremental (fast, approximate)?
 - training residual: after compilation, what does fine-tuning learn that the graph cannot encode? quantifying this gap determines the value of the compiled path vs pure focus flow
