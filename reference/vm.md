@@ -9,9 +9,9 @@ nox is a proof-native virtual machine. sixteen deterministic reduction patterns 
 
 every nox execution produces a trace that IS the stark witness. there is no separate arithmetization step.
 
-## algebra-polymorphic patterns
+## algebra polymorphism
 
-the 16 patterns are abstract operations parameterized by algebra, not tied to a specific field. the pattern semantics are universal — the algebra is a parameter.
+nox is parameterised over its algebra. a nox instance is:
 
 ```
 nox<F, W, H> where:
@@ -19,6 +19,21 @@ nox<F, W, H> where:
   W = word width   (determines patterns 11-14: xor, and, not, shl)
   H = hash function (determines pattern 15: hash)
 ```
+
+key instantiations:
+
+| instantiation | F | W | H | role |
+|---------------|---|---|---|------|
+| nox<Goldilocks, Z/2^32, Hemera> | F_p, p = 2^64 - 2^32 + 1 | Z/2^32 | Hemera (Poseidon2-Goldilocks) | canonical — all concrete costs in this spec |
+| nox<F_2, Z/2, external> | F_2 | Z/2^1 | Grostl or external | Bt (binary world) — quantized inference, tri-kernel |
+| nox<F_{p^3}, Z/2^32, Hemera> | F_{p^3} | Z/2^32 | Hemera | Tri recursion context |
+| nox<F_{p^2}, Z/2^32, Hemera> | F_{p^2} | Z/2^32 | Hemera | quantum simulation context |
+
+structural patterns (0-4) are identical across all instantiations. field patterns (5-10) dispatch to the instantiated field. bitwise patterns (11-14) dispatch to the instantiated word width. hash (15) dispatches to the instantiated hash function. jets are per-instantiation — each algebra has its own jet registry with its own formula hashes.
+
+## algebra-polymorphic patterns
+
+the 16 patterns are abstract operations parameterized by algebra, not tied to a specific field. the pattern semantics are universal — the algebra is a parameter.
 
 three groups map to algebraic domains:
 
@@ -145,15 +160,7 @@ remove Layer 3: identical results, ~8.5× slower. remove Layer 2: no privacy, no
 
 ## other instantiations
 
-the canonical instantiation is nox<Goldilocks, Z/2^32, Hemera>. other instantiations are possible:
-
-```
-nox<F₂, Z/2^1, Grøstl>           = Bt (binary world)
-nox<F_{p³}, Z/2^32, Hemera>       = Tri recursion context
-nox<F_{p²}, Z/2^32, Hemera>       = quantum simulation context
-```
-
-the 4-bit encoding, the trace layout, the focus metering, the confluence property — all are properties of the abstract pattern set, not of a specific field. a new instantiation reuses the same spec with different F, W, H parameters.
+the canonical instantiation is nox<Goldilocks, Z/2^32, Hemera>. other instantiations are possible — see the algebra polymorphism section above for the full table. the 4-bit encoding, the trace layout, the focus metering, the confluence property — all are properties of the abstract pattern set, not of a specific field. a new instantiation reuses the same spec with different F, W, H parameters.
 
 ## specification index
 

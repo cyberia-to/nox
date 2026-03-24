@@ -85,10 +85,50 @@ jet entry format:
 
 ### verifier jets
 
-proof-system-specific jets that make recursive composition practical. each nox instantiation has its own verifier jets matched to its proof system:
+proof-system-specific jets that make recursive composition practical. each nox instantiation has its own verifier jets matched to its proof system.
 
-- nox<Goldilocks> + WHIR: hash, poly_eval, merkle_verify, fri_fold, ntt → [[recursive-jets]]
-- nox<F₂> + Binius: binary-specific verifier jets → [[binary-jets]]
+#### nox<Goldilocks> + WHIR verifier jets
+
+five jets that make recursive proof composition practical. the unoptimized verifier costs ~400,000 patterns. with jets: ~50,000. this 8x reduction makes recursive composition practical.
+
+| jet | signature | exec cost | stark constraints | pure Layer 1 cost |
+|-----|-----------|-----------|-------------------|--------------------|
+| 0: hash | hash(x) -> 4 x F_p | 200 | ~736 | ~1,000 |
+| 1: poly_eval | poly_eval(coeffs, point) -> F_p | N | ~N | ~2N |
+| 2: merkle_verify | merkle_verify(root, leaf, path, index) -> {0,1} | d x 200 | ~d x 736 | d x ~210 |
+| 3: fri_fold | fri_fold(poly_layer, challenge) -> poly_layer_next | N/2 | ~N/2 | ~N |
+| 4: ntt | ntt(values, direction) -> transformed values | N*log(N) | ~N*log(N) | ~2N*log(N) |
+
+verifier cost breakdown:
+
+```
+Component               | Layer 1 only | With jets  | Reduction
+------------------------+--------------+------------+----------
+Parse proof             |     ~1,000   |    ~1,000  |  1x
+Fiat-Shamir challenges  |    ~20,000   |    ~3,000  |  7x
+Merkle verification     |   ~330,000   |   ~33,000  | 10x
+Constraint evaluation   |    ~10,000   |    ~3,000  |  3x
+WHIR verification       |    ~35,000   |    ~7,000  |  5x
+------------------------+--------------+------------+----------
+TOTAL                   |   ~400,000   |   ~50,000  | ~8x
+```
+
+#### nox<F_2> + Binius binary jets
+
+eight jets for the Bt binary prover. base operations (XOR, AND, NOT, SHL) are already 1 constraint each in F_2 — jets target composite operations that appear millions of times in quantized inference and tri-kernel SpMV.
+
+| jet | input | naive | jet | speedup | primary workload |
+|-----|-------|-------|-----|---------|------------------|
+| 0: popcount | F_2^128 -> Z | ~640 | ~128 | 5x | all accumulation |
+| 1: packed_inner_product | F_2^128^2 -> Z | ~5n | ~128 | 5x | matmul kernel |
+| 2: binary_matvec | F_2^{m x n} -> Z^m | m x 5n | m x 128 | 5x | inference, tri-kernel |
+| 3: quantize | F_p -> F_2^k | ~k^2 | ~k | kx | F_p -> F_2 boundary |
+| 4: dequantize | F_2^k -> F_p | ~k^2 | ~k | kx | F_2 -> F_p boundary |
+| 5: activation_lut | F_2^k -> F_2^m | ~2^k/lookup | ~k/lookup | 2^k/kx | activation functions |
+| 6: gadget_decompose | F_p -> F_2^k | ~k^2 | ~k | kx | FHE bootstrapping |
+| 7: barrel_shift | F_2^n -> F_2^n | ~n^2 | ~3n*log(n) | n/3log x | crypto, permutations |
+
+constraint count understates the jet advantage. Binius prover operates on packed u128 words — 128 F_2 elements per machine operation. popcount/packed_inner_product/binary_matvec achieve ~90x prover wall-clock speedup via SIMD packing on top of the constraint reduction.
 
 ### domain-specific jets
 
@@ -143,7 +183,7 @@ program → trace → stark proof → verifier (nox program) → trace → stark
 
 ## proposals
 
-specific jet designs are specified in proposals:
+jet designs originated as proposals, now merged into this spec:
 
-- [[recursive-jets]] — Goldilocks/WHIR verifier jets (hash, poly_eval, merkle_verify, fri_fold, ntt)
-- [[binary-jets]] — F₂/Binius jets (popcount, packed_inner_product, binary_matvec, quantize, dequantize, activation_lut, gadget_decompose, barrel_shift)
+- [[recursive-jets]] — Goldilocks/WHIR verifier jets (hash, poly_eval, merkle_verify, fri_fold, ntt) — accepted, merged above
+- [[binary-jets]] — F₂/Binius jets (popcount, packed_inner_product, binary_matvec, quantize, dequantize, activation_lut, gadget_decompose, barrel_shift) — accepted, merged above
