@@ -107,7 +107,7 @@ nebu provides: field element type, addition, subtraction, multiplication, Fermat
 nox<_, _, Hemera> uses Hemera (~/git/hemera/) for all hashing: structural hash, Fiat-Shamir challenges, Merkle trees, content addressing.
 
 ```
-HASH: Hemera (Poseidon2-Goldilocks, hemera-2)
+HASH: Hemera (Poseidon2-Goldilocks, hemera)
   state: 16 field elements
   rate: 8 elements
   capacity: 8 elements

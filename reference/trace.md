@@ -123,7 +123,7 @@ single-row (cost 1): quote, compose, cons, branch, add, sub, mul,
 multi-row:
   axis (depth d): d rows — one per tree traversal step
   inv (cost 64):  64 rows — square-and-multiply chain
-  hash (cost 200): ~200 rows — Poseidon2 permutation rounds (hemera-2)
+  hash (cost 200): ~200 rows — Poseidon2 permutation rounds 
 ```
 
 single-row patterns store operands in r5/r6 and result in r7. the operand values are wired to sub-expression result rows through CCS wiring constraints. compose and cons dispatch sub-expressions whose results flow back through the wiring; compose additionally generates a third reduce() call (its own row) for the final application.
@@ -145,7 +145,7 @@ new formula:  r3_{t+1}, r4_{t+1} set by sub-expression dispatch
 single-row patterns:  r9 = r8 - 1            (1 focus per reduce call)
 axis (depth d):       r9 = r8 - d            (d focus for d traversal steps)
 inv:                  r9 = r8 - 64           (64 focus for square-and-multiply)
-hash:                 r9 = r8 - 200          (200 focus for Poseidon2 hemera-2)
+hash:                 r9 = r8 - 200          (200 focus for Poseidon2 hemera)
 ```
 
 ## error and halt encoding
