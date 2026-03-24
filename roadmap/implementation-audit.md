@@ -59,7 +59,7 @@ the spec says "formula hashes computed at build time from pure Layer 1 definitio
 
 what's needed: the nox program (as a noun) for each of: hash, poly_eval, merkle_verify, fri_fold, ntt. these are the jet's pure Layer 1 definitions.
 
-**action**: write pure Layer 1 nox programs for all 5 jets in nox/reference/props/recursive-jets.md
+**action**: write pure Layer 1 nox programs for all 5 jets in nox/roadmap/recursive-jets.md
 
 ### G3: hint callback interface (high)
 
