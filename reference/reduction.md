@@ -196,6 +196,72 @@ reduce(s, [5 [a b]], f) =
 
 Halt propagates identically — if a sub-expression exhausts focus, the parent halts.
 
+## pattern 16: hint interface
+
+hint is the non-deterministic witness injection point. the prover provides a value; Layer 1 constraints validate it. the verifier never calls the provider — it checks the zheng proof.
+
+### provider signature
+
+```
+trait HintProvider {
+    fn provide(&self, tag: F, subject: NounRef) -> HintResult;
+}
+
+enum HintResult {
+    Value(NounRef),    // prover provides a witness noun
+    Halt,              // prover has no witness — clean halt
+}
+```
+
+### reduction rule
+
+```
+hint formula structure: cell(16, cell(tag_formula, check_formula))
+
+reduce(s, [16 [tag_f check_f]], f):
+  1. tag = reduce(s, tag_f, f - 1)           // evaluate tag expression
+     if tag is error/halt → propagate
+  2. witness = provider.provide(tag, s)       // ask prover
+     if witness == Halt → return Halt(f')     // clean halt, focus preserved
+  3. result = reduce([witness s], check_f, f')  // validate: check runs on [witness subject]
+     if result is error → return Error(HintRejected)
+  4. return result
+```
+
+### tag
+
+tag is a field element identifying WHICH hint the prover should provide. conventions:
+
+```
+0x00  unspecified (prover decides)
+0x01  private key / secret witness
+0x02  optimization solution
+0x03  search result / oracle query
+0x04  decryption share
+```
+
+tags are conventions, not enforced by the VM. any field value is a valid tag. the prover interprets the tag to decide what witness to provide.
+
+### check formula
+
+the check formula validates the witness using Layer 1 patterns only. the witness enters as head of the subject: `[witness original_subject]`. the check can access both the witness (via axis 2) and the original subject (via axis 3).
+
+if check succeeds → result is the check's output (the validated computation).
+if check fails (error) → HintRejected. the witness was invalid.
+
+### properties
+
+- **synchronous**: hint is a function call, not an event
+- **no hint = halt**: not an error. the prover simply doesn't know. focus preserved for caller
+- **hint rejected = error**: the witness failed validation. prover bug
+- **not memoizable**: different provers provide different valid witnesses. hint-tainted computation trees excluded from global cache. pure sub-expressions within remain memoizable
+- **confluence broken intentionally**: multiple valid witnesses may satisfy the same check. this is correct — it is what makes zero-knowledge possible
+- **verifier never calls provide()**: the zheng proof covers steps 1 and 3. the witness enters the trace as a value; constraints verify the check formula
+
+### focus cost
+
+hint dispatch: 1 focus (same as all patterns). tag evaluation: cost of tag_f. check evaluation: cost of check_f. total: 1 + cost(tag_f) + cost(check_f). if hint halts, only 1 + cost(tag_f) consumed.
+
 ## Result encoding
 
 Result is not a noun. it is the return type of reduce(). in the content-addressed protocol:
