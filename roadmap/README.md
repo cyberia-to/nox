@@ -1,20 +1,19 @@
 # nox roadmap
 
-design proposals for [[nox]] VM evolution.
+## implemented — migrated to reference
 
-## status: in reference = proposal is now the canonical spec
+| proposal | migrated to | what it became |
+|----------|------------|----------------|
+| algebra-polymorphism | reference/vm.md + docs/explanation/five-algebras.md | nox<F,W,H> parameterisation, five algebra instantiations |
+| recursive-jets | reference/jets.md + jets/nebu.md | 5 verifier jets, 8× recursive composition |
+| binary-jets | reference/jets.md + jets/kuro.md | 8 binary jets, 32-90× quantized inference |
+| decider-jet | reference/jets.md + jets/decider.md | 89-constraint all-history verification |
 
-| proposal | in reference? | target |
-|----------|--------------|--------|
-| [[algebra-polymorphism]] | **yes** → reference/vm.md | nox<F, W, H> parameterisation, 14 instantiations |
-| [[recursive-jets]] | **yes** → reference/jets.md | 5 verifier jets (hash, poly_eval, merkle_verify, fri_fold, ntt), 8× reduction |
-| [[binary-jets]] | **yes** → reference/jets.md | 8 Bt jets (popcount, binary_matvec, quantize, etc.), 1,400× for inference |
-| [[implementation-audit]] | no (audit document, not a spec proposal) | Rs implementation readiness: 3 critical gaps identified |
-| [[transformer-jets]] | no (draft) | 7 jets for compiled cybergraph inference: SVD, hull attention, tri-kernel, reconvergence |
+ring (jali), isogeny (genies), and tropical (trop) jets specified directly in jets/ alongside their PCS backends in zheng.
 
-## lifecycle
+## active
 
-| status | meaning |
-|--------|---------|
-| **in reference** | merged into canonical spec — this is the architecture |
-| draft | idea captured, open for discussion |
+| proposal | status | target |
+|----------|--------|--------|
+| [[transformer-jets]] | draft | 7 jets for compiled cybergraph inference: SVD, hull attention, tri-kernel, reconvergence |
+| [[implementation-audit]] | audit doc | Rs implementation readiness: 3 critical gaps |

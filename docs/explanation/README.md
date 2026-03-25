@@ -23,3 +23,5 @@ these pages illuminate the architecture. for formal definitions, see reference/.
 | proof-native.md | execution IS proof — why there is no circuit compilation step |
 | jets.md | optimization without compromise — from patterns to silicon |
 | self-verification.md | the system that verifies itself — recursive proof composition to arbitrary depth |
+| five-algebras.md | one VM, five algebras — nebu, kuro, jali, trop, genies and why each is irreducible |
+| decider.md | 89 constraints — verifying all history from genesis cheaper than one hash call |

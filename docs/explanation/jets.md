@@ -99,3 +99,19 @@ this means jet adoption is purely a prover-side optimization. provers who use je
 nox inherits the jet concept from [[Nock]]/[[Urbit]], where jets are called "arms" — optimized C implementations of computationally expensive Nock expressions. the principle is the same: semantic equivalence between the slow pure version and the fast optimized version.
 
 nox's innovation is the selection criterion. Nock jets are chosen by practical utility (what Urbit applications need to be fast). nox jets are chosen by proof-system necessity (what the stark verifier needs to be fast). the difference reflects the systems' purposes: Nock powers a personal computing environment, nox powers a planetary verification machine.
+
+## beyond the verifier: 33 jets across five algebras
+
+the five verifier jets described above cover nebu (F_p). four more algebras contribute their own jet families:
+
+- **kuro** (F₂): 8 binary jets — popcount, binary_matvec, quantize, dequantize, activation_lut, gadget_decompose, barrel_shift. 32× constraint reduction for bitwise workloads.
+- **jali** (R_q): 5 ring jets — ntt_batch, key_switch, gadget_decomp, noise_track, blind_rotate. 3072× gap motivates ring-aware proving for FHE.
+- **trop** (min,+): 5 tropical jets — trop_matmul, trop_shortest, trop_hungarian, trop_viterbi, trop_transport. optimization witnesses verified in F_p.
+- **genies** (F_q): 4 isogeny jets — group_action, isogeny_walk, vrf_eval, vdf_step. privacy primitives over a foreign field.
+- **decider**: 1 jet — all-history verification in 89 constraints, less than one hemera hash.
+
+5 boundary jets handle algebra crossings (quantize, dequantize, gadget_decomp, secret_hash, witness_commit).
+
+33 jets total. the same principle at every level: semantic equivalence, optimization without compromise.
+
+see [[five-algebras]] for why five algebras are irreducible, [[decider]] for the 89-constraint all-history verification.
