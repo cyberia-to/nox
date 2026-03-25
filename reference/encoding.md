@@ -5,15 +5,17 @@ status: canonical
 
 ## identity
 
-every noun has an identity computed by the instantiated hash function H (see nouns.md structural hash). the nox protocol operates exclusively on hash identities.
+every noun has an identity derived from its polynomial commitment (see nouns.md polynomial representation). the nox protocol operates exclusively on these identities.
 
 in the canonical instantiation (nox<Goldilocks, Z/2^32, Hemera>), the identity is 32 bytes (4 × F_p elements). identity size is per-instantiation — it depends on H's output size. all concrete sizes below refer to the canonical instantiation.
 
 ```
-identity = H(noun)                          32 bytes
-computation_key = (H(object), H(formula))   64 bytes
-computation_val = H(result)                 32 bytes
+identity = hemera(PCS.commit(noun_polynomial) ‖ domain_tag)    32 bytes
+computation_key = (identity(object), identity(formula))         64 bytes
+computation_val = identity(result)                              32 bytes
 ```
+
+the identity computation is: encode the noun as a multilinear polynomial, compute the PCS commitment (O(N) field operations where N = number of leaves, using Brakedown linear-time commitment), then wrap with hemera for domain separation (1 hemera call). total cost: O(N) field ops + 1 hemera call. for small nouns (<56 bytes): same cost as a direct hemera hash. for large nouns: cheaper — field operations replace multiple hemera absorptions.
 
 ## content-addressed storage
 

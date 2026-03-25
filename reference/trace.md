@@ -20,7 +20,8 @@ columns (16 = 2⁴ registers, each one F element):
   r4:   formula hash[1]         ┘ (first 2 of 4 elements)
   r5:   operand A value
   r6:   operand B value
-  r7:   result value (atom value for atoms, H(result)[0] for cells)
+  r7:   result value (atom value for atoms, H(result)[0] for cells,
+                       or PCS commitment element for polynomial noun references)
   r8:   focus before
   r9:   focus after
   r10:  type tag A (0x00 field, 0x01 word, 0x02 hash)
@@ -54,7 +55,7 @@ the instance links the trace to the computation. the verifier checks:
 1. first row: r1,r2 match instance H(object)[0..2], r3,r4 match instance H(formula)[0..2]
 2. last row: r7 matches instance H(result)[0], r9 matches focus_final, r15 matches status
 3. status-gated result: if status = 0, H(result) is a valid noun identity; if status ≠ 0, H(result) = 0
-4. noun store commitment: instance hashes (H(object), H(formula), and H(result) when status = 0) are checked against the noun store polynomial commitment. the commitment scheme is defined by the proof system (zheng) — nox specifies WHAT is committed (the noun identities referenced by the trace), not HOW
+4. noun store commitment: instance identities (identity(object), identity(formula), and identity(result) when status = 0) are checked against the noun store polynomial commitments. each noun identity is hemera(PCS.commit(noun_polynomial) ‖ domain_tag) — trace register values may include PCS commitments (32-byte polynomial commitments stored as 4 field element tuples). the commitment scheme is defined by the proof system (zheng) — nox specifies WHAT is committed (the noun identities referenced by the trace), not HOW
 
 ## constraint system
 
@@ -105,25 +106,24 @@ pattern 15 (hash), cost 200:
   full round constraint rows: degree 7 (s-box x^7)
   partial round constraint rows: degree 2 (s-box x^{-1}, verified as x × y = 1)
 
-pattern 0 (axis), cost = depth:
-  row 0:     r5 = root noun, r12 = remaining index
-  rows 1..d: r12 = next index, r7 = traversed sub-noun
-  each row: degree 1 (select left or right child based on index bit)
+pattern 0 (axis), cost = 1:
+  row 0:     r5 = root noun polynomial commitment, r12 = evaluation point (binary encoding of axis address)
+  PCS opening verifies the evaluation in 1 constraint (degree 1)
+  legacy (tree traversal): cost = depth, rows 0..d with index bit selection per row
 ```
 
 ## single-row vs multi-row patterns
 
-most patterns produce exactly 1 trace row per reduce() call. three patterns produce multiple rows for their internal computation:
+most patterns produce exactly 1 trace row per reduce() call. two patterns produce multiple rows for their internal computation:
 
 ```
-single-row (cost 1): quote, compose, cons, branch, add, sub, mul,
+single-row (cost 1): axis, quote, compose, cons, branch, add, sub, mul,
                      eq, lt, xor, and, not, shl, hint
-                     axis (depth 1 only)
 
 multi-row:
-  axis (depth d): d rows — one per tree traversal step
+  axis: 1 row — O(1) polynomial evaluation via PCS opening (legacy: d rows for tree traversal)
   inv (cost 64):  64 rows — square-and-multiply chain
-  hash (cost 200): ~200 rows — Poseidon2 permutation rounds 
+  hash (cost 200): ~200 rows — Poseidon2 permutation rounds
 ```
 
 single-row patterns store operands in r5/r6 and result in r7. the operand values are wired to sub-expression result rows through CCS wiring constraints. compose and cons dispatch sub-expressions whose results flow back through the wiring; compose additionally generates a third reduce() call (its own row) for the final application.
@@ -143,7 +143,7 @@ new formula:  r3_{t+1}, r4_{t+1} set by sub-expression dispatch
 
 ```
 single-row patterns:  r9 = r8 - 1            (1 focus per reduce call)
-axis (depth d):       r9 = r8 - d            (d focus for d traversal steps)
+axis:                 r9 = r8 - 1            (1 focus — O(1) PCS opening)
 inv:                  r9 = r8 - 64           (64 focus for square-and-multiply)
 hash:                 r9 = r8 - 200          (200 focus for Poseidon2 hemera)
 ```

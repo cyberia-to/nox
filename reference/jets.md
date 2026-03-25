@@ -136,6 +136,10 @@ jets that optimize PROVING state transitions. verifier jets reduce trace length 
 
 a state transition is a nox program that reads polynomial state, validates changes, and writes updated values. the 5 primitive state operations (see [[state-operations]]) are nox patterns: READ/WRITE (polynomial evaluation), ASSERT_EQ (pattern 9), ADD (pattern 5), MUL (pattern 7). common compositions of these operations — TRANSFER, INSERT, UPDATE — have state jets.
 
+with polynomial nouns, READ is O(1) polynomial evaluation via PCS opening. axis on any noun — including state evaluation tables — is a single polynomial evaluation at a binary point, verified by one PCS opening proof (~75 bytes). this is the core benefit of polynomial nouns for state access: every table lookup is O(1) regardless of table size.
+
+NOTE: merkle_verify jet (jet 2) becomes less relevant in the all-algebraic system. with polynomial nouns, most data authenticated via Merkle paths in the legacy model is instead authenticated via PCS openings. merkle_verify remains for backward compatibility and for cross-system interop where Merkle proofs are the interface.
+
 #### recognition hierarchy
 
 **level 1 (exact formula match):** H(formula) → hand-optimized CCS encoding.

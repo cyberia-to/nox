@@ -56,6 +56,10 @@ the same `and(a, b)` means:
 
 the operations are identical. the algebra is a parameter. the programmer writes one tree. the prover splits it by algebra. cross-algebra boundaries are Hemera commitments.
 
+### polynomial nouns and axis
+
+every noun is a multilinear polynomial (see nouns.md polynomial representation). axis — the fundamental navigation operation — becomes polynomial evaluation at a binary point. a PCS opening proves the evaluation in O(1) (~75 bytes proof), replacing O(depth) tree traversal. the 16 patterns are unchanged semantically — axis still navigates nouns. the implementation changes from pointer-following to polynomial evaluation. this applies across all instantiations: the noun polynomial is over the instantiated field F, and the PCS commitment uses the same field.
+
 ## proof-system polymorphism
 
 the same nox program can be verified by different proof systems:
