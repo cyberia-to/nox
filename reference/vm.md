@@ -20,16 +20,63 @@ nox<F, W, H> where:
   H = hash function (determines pattern 15: hash)
 ```
 
-key instantiations:
-
-| instantiation | F | W | H | role |
-|---------------|---|---|---|------|
-| nox<Goldilocks, Z/2^32, Hemera> | F_p, p = 2^64 - 2^32 + 1 | Z/2^32 | Hemera (Poseidon2-Goldilocks) | canonical — all concrete costs in this spec |
-| nox<F_2, Z/2, external> | F_2 | Z/2^1 | Grostl or external | Bt (binary world) — quantized inference, tri-kernel |
-| nox<F_{p^3}, Z/2^32, Hemera> | F_{p^3} | Z/2^32 | Hemera | Tri recursion context |
-| nox<F_{p^2}, Z/2^32, Hemera> | F_{p^2} | Z/2^32 | Hemera | quantum simulation context |
-
 structural patterns (0-4) are identical across all instantiations. field patterns (5-10) dispatch to the instantiated field. bitwise patterns (11-14) dispatch to the instantiated word width. hash (15) dispatches to the instantiated hash function. jets are per-instantiation — each algebra has its own jet registry with its own formula hashes.
+
+## five algebras — key instantiations
+
+five execution regimes, each with its own nox instantiation, arithmetic repo, PCS backend in zheng, and jet family. see [[five algebras]] for the independence criteria.
+
+| algebra | instantiation | F | W | H | repo | PCS | jets |
+|---------|--------------|---|---|---|------|-----|------|
+| nebu | nox<Goldilocks, Z/2^32, Hemera> | F_p (p = 2^64 - 2^32 + 1) | Z/2^32 | Hemera | [[nebu]] | PCS₁: Brakedown | 5 verifier |
+| kuro | nox<F₂, Z/2, external> | F₂ | Z/2 | external (hemera at settlement) | [[kuro]] | PCS₂: Binius | 8 binary |
+| jali | nox<Goldilocks, Z/2^32, Hemera> | F_p (R_q operations via jets) | Z/2^32 | Hemera | [[jali]] | PCS₃: Ring-aware | 5 ring |
+| trop | nox<Goldilocks, Z/2^32, Hemera> | F_p (min,+ via branch+lt) | Z/2^32 | Hemera | [[trop]] | PCS₅: Tropical | 6 tropical |
+| genies | nox<F_q, Z/2^512, Hemera> | F_q (q = 4·ℓ₁·...·ℓₙ - 1) | Z/2^512 | Hemera | [[genies]] | PCS₄: Isogeny | 5 isogeny |
+
+extension instantiations for proof recursion and quantum simulation:
+
+| instantiation | F | role |
+|--------------|---|------|
+| nox<F_{p³}, Z/2^32, Hemera> | cubic extension of Goldilocks | zheng recursive proof soundness |
+| nox<F_{p²}, Z/2^32, Hemera> | quadratic extension of Goldilocks | quantum circuit simulation |
+
+### how the five algebras enter nox
+
+**nebu (F_p):** the canonical instantiation. all patterns operate natively. all costs in this spec refer to this instantiation.
+
+**kuro (F₂):** separate instantiation. field patterns (add = XOR, mul = AND) are native binary operations at 1 constraint each (vs ~32 in F_p). bitwise patterns collapse to field operations (and = mul in characteristic 2). hash deferred to hemera at settlement boundary (~766 constraints per crossing).
+
+**jali (R_q):** runs on the SAME canonical instantiation (F_p). R_q = F_p[x]/(x^n+1) is a polynomial RING over F_p, not a separate field. ring operations decompose to F_p operations via NTT. dedicated jets (ntt_batch, key_switch, blind_rotate) recognize structured compositions and commit them as batched ring operations in zheng PCS₃.
+
+**trop (min,+):** runs on the SAME canonical instantiation (F_p). tropical operations decompose to existing patterns: min(a,b) = branch(lt(a,b), a, b). dedicated jets produce structured witnesses (assignment + cost + dual certificate) verified in F_p via zheng PCS₅.
+
+**genies (F_q):** separate instantiation with a DIFFERENT prime q. the only algebra with a foreign field. F_q elements are multi-limb (8 × 64-bit for CSIDH-512). patterns 5-10 dispatch to F_q arithmetic (Montgomery multiplication). hash remains hemera (at settlement boundary). dedicated PCS₄ in zheng (Brakedown over F_q).
+
+### cross-algebra composition
+
+a single nox program can mix algebras. the prover partitions the trace into algebra-specific sub-traces. each sub-trace proves via its native PCS backend. HyperNova folds all into one F_p accumulator. one decider, one proof.
+
+```
+boundary cost: ~766 F_p constraints per algebra crossing
+               (30 field ops + 1 hemera hash)
+
+example — FHE bootstrapping crosses three algebras:
+  jali → kuro (gadget_decomp)      ~766
+  kuro → jali (blind rotation)     ~766
+  jali → nebu (key switching)      ~766
+  total boundary:                  ~2,298
+```
+
+universal CCS with selectors enables heterogeneous folding:
+
+```
+sel_Fp:   1 for Goldilocks rows (nebu, jali, trop)
+sel_F2:   1 for binary rows (kuro)
+sel_ring: 1 for ring-structured rows (jali — NTT batch, automorphisms)
+sel_Fq:   1 for isogeny rows (genies)
+sel_trop: 1 for tropical witness-verify rows (trop)
+```
 
 ## algebra-polymorphic patterns
 
@@ -155,16 +202,16 @@ nox programs invoke domain-separated hashing via pattern 15 (hash) with the tag 
 ## three layers
 
 ```
-Layer 1: 16 deterministic patterns   — the ground truth of computation
-Layer 2: 1 non-deterministic hint    — the origin of privacy and search
-Layer 3: 5 jets                      — optimization without changing meaning
+Layer 1: 16 deterministic patterns     — the ground truth of computation
+Layer 2: 1 non-deterministic hint      — the origin of privacy and search
+Layer 3: 30+ jets across 5 algebras   — optimization without changing meaning
 ```
 
-remove Layer 3: identical results, ~8.5× slower. remove Layer 2: no privacy, no ZK. remove Layer 1: nothing remains.
+remove Layer 3: identical results, orders of magnitude slower. remove Layer 2: no privacy, no ZK. remove Layer 1: nothing remains. see [[jets/]] for the full jet registry.
 
-## other instantiations
+## adding new instantiations
 
-the canonical instantiation is nox<Goldilocks, Z/2^32, Hemera>. other instantiations are possible — see the algebra polymorphism section above for the full table. the 4-bit encoding, the trace layout, the focus metering, the confluence property — all are properties of the abstract pattern set, not of a specific field. a new instantiation reuses the same spec with different F, W, H parameters.
+the 4-bit encoding, the trace layout, the focus metering, the confluence property — all are properties of the abstract pattern set, not of a specific field. a new instantiation reuses the same spec with different F, W, H parameters. see the five algebras section for the current instantiation table and cross-algebra composition.
 
 ## specification index
 
