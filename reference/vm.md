@@ -70,10 +70,10 @@ Trident type    →  regime   →  lens         →  nox patterns
 ───────────        ──────      ────────        ────────────
 Field              nebu        Brakedown       add, mul, inv (native F_p)
 Fp2, Fp3, Fp4      nebu²/³/⁴   Brakedown       extension jets (fp2_mul, ...)
-BitVec             kuro        Binius          xor, and (native F₂)
-RingElement        jali        Ring-aware      ring jets (ntt_batch, ...)
-Tropical           trop        Tropical        branch + lt (witness jets)
-Curve              genies      Isogeny         isogeny jets (group_action, ...)
+Bit, Nibble, Byte  kuro        Binius          xor, and (native F₂)
+Lattice, Eval      jali        Ring-aware      ring jets (ntt_batch, ...)
+Cost, Gain         trop        Tropical        branch + lt (witness jets)
+Iso, Shade         genies      Isogeny         isogeny jets (group_action, ...)
 ```
 
 cross-regime boundary: where types change. the Trident compiler inserts hemera commitments at type transitions — no manual boundary management. nox VM executes uniformly (16 patterns). zheng partitions the trace by operand types and proves each partition through its native lens. HyperNova folds all into one accumulator.
@@ -103,13 +103,13 @@ boundary cost: ~766 F_p constraints per type transition
                (30 field ops + 1 hemera hash)
 
 example — FHE bootstrapping uses three types:
-  RingElement → BitVec (gadget_decomp)   ~766
-  BitVec → RingElement (blind rotation)  ~766
-  RingElement → Field (key switching)    ~766
+  Lattice → Bit (gadget_decomp)          ~766
+  Bit → Lattice (blind rotation)         ~766
+  Lattice → Field (key switching)        ~766
   total boundary:                        ~2,298
 
 the programmer writes:
-  fn bootstrap(ct: &RingElement) -> RingElement { ... }
+  fn bootstrap(ct: &Lattice) -> Lattice { ... }
 
 the compiler sees type transitions and inserts boundaries automatically.
 ```
@@ -118,10 +118,10 @@ universal CCS with type selectors enables heterogeneous folding:
 
 ```
 sel_Fp:   1 for Field operands (nebu, jali, trop)
-sel_F2:   1 for BitVec operands (kuro)
-sel_ring: 1 for RingElement operands (jali — NTT batch)
-sel_Fq:   1 for Curve operands (genies)
-sel_trop: 1 for Tropical operands (trop)
+sel_F2:   1 for Bit/Nibble/Byte operands (kuro)
+sel_ring: 1 for Lattice/Eval operands (jali — NTT batch)
+sel_Fq:   1 for Iso/Shade operands (genies)
+sel_trop: 1 for Cost/Gain operands (trop)
 ```
 
 ## algebra-polymorphic patterns
