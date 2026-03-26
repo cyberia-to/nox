@@ -36,4 +36,4 @@ quantize (jet 3) and dequantize (jet 4) handle the nebu ↔ kuro boundary. gadge
 
 ## lens
 
-Lens₂: Binius (binary Reed-Solomon over F₂ tower via kuro)
+Binius: Binius (binary Reed-Solomon over F₂ tower via kuro)

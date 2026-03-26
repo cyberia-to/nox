@@ -6,7 +6,7 @@ alias: isogeny jets, genies jets, F_q jets, privacy jets
 ---
 # genies jets — isogeny (F_q)
 
-four jets for commutative group action on supersingular curves over F_q. privacy primitives. proved via Lens₄ (isogeny) in zheng.
+four jets for commutative group action on supersingular curves over F_q. privacy primitives. proved via Porphyry (isogeny) in zheng.
 
 ## jets
 
@@ -34,7 +34,7 @@ secret_hash boundary jet: H(shared_secret) → F_p hemera digest
 nebu continuation (F_p)
 ```
 
-zheng folds F_q sub-traces into the F_p accumulator via Lens₄ (~766 constraints per crossing).
+zheng folds F_q sub-traces into the F_p accumulator via Porphyry (~766 constraints per crossing).
 
 ## hardware mapping
 
@@ -43,4 +43,4 @@ zheng folds F_q sub-traces into the F_p accumulator via Lens₄ (~766 constraint
 
 ## lens
 
-Lens₄: Isogeny (Brakedown instantiated over F_q)
+Porphyry: Isogeny (Brakedown instantiated over F_q)

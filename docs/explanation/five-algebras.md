@@ -79,7 +79,7 @@ five algebras, five lenses in zheng, five jet families in nox, four GFP hardware
 algebra → jets → lens → hardware
 nebu    → 5    → Brakedown     → fma, ntt, p2r, lut
 kuro    → 8    → Binius        → lut (SIMD packed)
-jali    → 5    → Ring-aware    → fma, ntt
+jali    → 5    → Ikat    → fma, ntt
 trop    → 5    → Tropical      → lut (comparisons)
 genies  → 4    → Isogeny       → fma
 ```

@@ -62,13 +62,13 @@ individual jet specifications live in `jets/`. see [[jets/README|jet registry in
 
 | group | algebra | jets | lens | spec |
 |-------|---------|------|-----|------|
-| nebu | F_p | 5 | nebu lens | [[jets/nebu]] |
-| kuro | F₂ | 8 | kuro lens | [[jets/kuro]] |
-| jali | R_q | 5 | jali lens | [[jets/jali]] |
-| genies | F_q | 5 | genies lens | [[jets/genies]] |
-| trop | (min,+) | 6 | trop lens | [[jets/trop]] |
-| state | F_p | level 1-3 | nebu lens | [[jets/state]] |
-| decider | F_p | 1 | nebu lens | [[jets/decider]] |
+| nebu | F_p | 5 | Brakedown | [[jets/nebu]] |
+| kuro | F₂ | 8 | Binius | [[jets/kuro]] |
+| jali | R_q | 5 | Ikat | [[jets/jali]] |
+| genies | F_q | 5 | Porphyry | [[jets/genies]] |
+| trop | (min,+) | 6 | Assayer | [[jets/trop]] |
+| state | F_p | level 1-3 | Brakedown | [[jets/state]] |
+| decider | F_p | 1 | Brakedown | [[jets/decider]] |
 
 boundary jets (quantize, dequantize, gadget_decompose, secret_hash, witness_commit) live within their parent algebra — not a separate group.
 

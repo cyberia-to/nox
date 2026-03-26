@@ -8,7 +8,7 @@ alias: tropical jets, trop jets, optimization jets
 
 five jets for (min,+) semiring operations. optimization, assignment, decoding. no separate nox instantiation — tropical operations decompose to existing patterns (branch + lt). jets accelerate common compositions.
 
-proved via Lens₅ (tropical witness-verify) in zheng.
+proved via Assayer (tropical witness-verify) in zheng.
 
 ## jets
 
@@ -36,12 +36,12 @@ with jet:    tropical computation produces witness
 
 ## cross-algebra
 
-tropical witness commits via Lens₁ (Brakedown) at the boundary:
+tropical witness commits via Brakedown (Brakedown) at the boundary:
 
 ```
 trop computation → witness (assignment, cost, dual certificate)
   ↓
-witness_commit boundary jet: Lens₁.commit(witness) → F_p commitment
+witness_commit boundary jet: Brakedown.commit(witness) → F_p commitment
   ↓
 zheng verification in F_p (structural + cost + optimality checks)
 ```
@@ -52,4 +52,4 @@ zheng verification in F_p (structural + cost + optimality checks)
 
 ## lens
 
-Lens₅: Tropical (witness-verify protocol, delegates commitment to Lens₁)
+Assayer: Tropical (witness-verify protocol, delegates commitment to Brakedown)

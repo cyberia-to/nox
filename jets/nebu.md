@@ -41,7 +41,7 @@ TOTAL                   |   ~400,000   |   ~50,000  | ~8×
 
 ## lens
 
-Lens₁: Brakedown (expander-graph linear codes, Merkle-free)
+Brakedown: Brakedown (expander-graph linear codes, Merkle-free)
 
 ## note on merkle_verify
 

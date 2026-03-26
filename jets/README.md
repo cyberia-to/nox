@@ -15,9 +15,9 @@ see [[reference/jets|jets spec]] for principles, semantic contract, recognition 
 |-------|---------|------|----------|------|
 | [[nebu]] | F_p (Goldilocks) | 5 | Brakedown | [[nebu]] |
 | [[kuro]] | F₂ (binary tower) | 8 | Binius | [[kuro]] |
-| [[jali]] | R_q (polynomial ring) | 5 | Ring-aware | [[jali]] |
-| [[genies]] | F_q (isogeny curves) | 5 (incl. secret_hash boundary) | Isogeny | [[genies]] |
-| [[trop]] | (min,+) (tropical) | 6 (incl. witness_commit boundary) | Tropical | [[trop]] |
+| [[jali]] | R_q (polynomial ring) | 5 | Ikat | [[jali]] |
+| [[genies]] | F_q (isogeny curves) | 5 (incl. secret_hash boundary) | Porphyry | [[genies]] |
+| [[trop]] | (min,+) (tropical) | 6 (incl. witness_commit boundary) | Assayer | [[trop]] |
 | [[state]] | F_p (polynomial nouns) | level 1-3 (unlimited) | Brakedown | [[state]] |
 | [[decider]] | F_p (accumulator) | 1 | Brakedown | [[decider]] |
 
