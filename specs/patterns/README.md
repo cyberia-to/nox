@@ -34,25 +34,25 @@ all concrete costs and constraint counts refer to the canonical instantiation: n
 
 ## module index
 
-| page | pattern | rs module |
-|------|---------|-----------|
-| axis.md | 0: axis | patterns/axis.rs |
-| quote.md | 1: quote | patterns/quote.rs |
-| compose.md | 2: compose | patterns/compose.rs |
-| cons.md | 3: cons | patterns/cons.rs |
-| branch.md | 4: branch | patterns/branch.rs |
-| add.md | 5: add | patterns/add.rs |
-| sub.md | 6: sub | patterns/sub.rs |
-| mul.md | 7: mul | patterns/mul.rs |
-| inv.md | 8: inv | patterns/inv.rs |
-| eq.md | 9: eq | patterns/eq.rs |
-| lt.md | 10: lt | patterns/lt.rs |
-| xor.md | 11: xor | patterns/xor.rs |
-| and.md | 12: and | patterns/and.rs |
-| not.md | 13: not | patterns/not.rs |
-| shl.md | 14: shl | patterns/shl.rs |
-| hash.md | 15: hash | patterns/hash.rs |
-| hint.md | 16: hint | patterns/hint.rs + hint.rs |
+| spec | tag | pattern | rs module |
+|------|-----|---------|-----------|
+| 00-axis.md | 0 | axis | patterns/axis.rs |
+| 01-quote.md | 1 | quote | patterns/quote.rs |
+| 02-compose.md | 2 | compose | patterns/compose.rs |
+| 03-cons.md | 3 | cons | patterns/cons.rs |
+| 04-branch.md | 4 | branch | patterns/branch.rs |
+| 05-add.md | 5 | add | patterns/add.rs |
+| 06-sub.md | 6 | sub | patterns/sub.rs |
+| 07-mul.md | 7 | mul | patterns/mul.rs |
+| 08-inv.md | 8 | inv | patterns/inv.rs |
+| 09-eq.md | 9 | eq | patterns/eq.rs |
+| 10-lt.md | 10 | lt | patterns/lt.rs |
+| 11-xor.md | 11 | xor | patterns/xor.rs |
+| 12-and.md | 12 | and | patterns/and.rs |
+| 13-not.md | 13 | not | patterns/not.rs |
+| 14-shl.md | 14 | shl | patterns/shl.rs |
+| 15-hash.md | 15 | hash | patterns/hash.rs |
+| 16-hint.md | 16 | hint | patterns/hint.rs + hint.rs |
 
 ## cost table (canonical: nox<Goldilocks, Z/2^32, Hemera>)
 
