@@ -26,21 +26,38 @@ structural patterns (0-4) are identical across all instantiations. field pattern
 
 eight instantiations across five arithmetics. flat table — no hierarchy. each regime has its own field, costs, jets, and PCS backend. see [[five algebras]] for the independence criteria.
 
-| regime | instantiation | field | repo | PCS | jets | role |
-|--------|--------------|-------|------|-----|------|------|
-| nebu | nox<F_p, Z/2^32, Hemera> | Goldilocks scalar | [[nebu]] | PCS₁: Brakedown | 5 verifier | truth (canonical) |
-| nebu² | nox<F_p², Z/2^32, Hemera> | F_p[u]/(u²−7) | [[nebu]]::Fp2 | PCS₁ (2× wide) | fp2_mul, fp2_inv | quantum, 128-bit |
-| nebu³ | nox<F_p³, Z/2^32, Hemera> | F_p[t]/(t³−t−1) | [[nebu]]::Fp3 | PCS₁ (3× wide) | fp3_mul, fp3_inv | recursion soundness |
-| nebu⁴ | nox<F_p⁴, Z/2^32, Hemera> | F_p[w]/(w⁴−7) | [[nebu]]::Fp4 | PCS₁ (4× wide) | fp4_mul, fp4_inv | 256-bit, recursion tower |
-| kuro | nox<F₂, Z/2, external> | F₂ binary tower | [[kuro]] | PCS₂: Binius | 8 binary | efficiency |
-| jali | nox<F_p, Z/2^32, Hemera> | R_q via jets | [[jali]] | PCS₃: Ring-aware | 5 ring | veil |
-| trop | nox<F_p, Z/2^32, Hemera> | min,+ via patterns | [[trop]] | PCS₅: Tropical | 6 tropical | choice |
-| genies | nox<F_q, Z/2^512, Hemera> | F_q isogeny prime | [[genies]] | PCS₄: Isogeny | 5 isogeny | shadow |
+| regime | field | repo | PCS | jets | mul cost | constraints/mul | role |
+|--------|-------|------|-----|------|----------|-----------------|------|
+| nebu | F_p scalar | [[nebu]] | PCS₁: Brakedown | 5 verifier | 1 | 1 | truth (canonical) |
+| nebu² | F_p[u]/(u²−7) | [[nebu]]::Fp2 | PCS₁ (2× wide) | fp2_mul, fp2_inv | 3 | 3 | quantum, 128-bit |
+| nebu³ | F_p[t]/(t³−t−1) | [[nebu]]::Fp3 | PCS₁ (3× wide) | fp3_mul, fp3_inv | 6 | 6 | recursion soundness |
+| nebu⁴ | F_p[w]/(w⁴−7) | [[nebu]]::Fp4 | PCS₁ (4× wide) | fp4_mul, fp4_inv | 9 | 9 | 256-bit, recursion tower |
+| kuro | F₂ tower | [[kuro]] | PCS₂: Binius | 8 binary | 1 | 1 | efficiency |
+| jali | R_q (n=1024) | [[jali]] | PCS₃: Ring-aware | 5 ring | 3072 | ~N (batched) | veil |
+| trop | (min,+) | [[trop]] | PCS₅: Tropical | 6 tropical | — | O(\|witness\|) | choice |
+| genies | F_q (512-bit) | [[genies]] | PCS₄: Isogeny | 5 isogeny | 1 F_q | 1 F_q | shadow |
+
+mul cost = base F_p multiplications per one regime-native multiply. constraints/mul = STARK constraints per multiply with regime-native PCS (with jets). jali batching: N individual commitments → 1 batch via PCS₃.
+
+### per-regime cost table
+
+| pattern | nebu | nebu² | nebu³ | nebu⁴ | kuro | jali | trop | genies |
+|---------|------|-------|-------|-------|------|------|------|--------|
+| add | 1 | 2 | 3 | 4 | 1 | n | 1 | 1 F_q |
+| sub | 1 | 2 | 3 | 4 | 1 | n | 1 | 1 F_q |
+| mul | 1 | 3 | 6 | 9 | 1 | 3n | 1 | 1 F_q |
+| inv | 64 | ~130 | ~200 | ~260 | 1 | — | — | ~4000 |
+| eq | 1 | 2 | 3 | 4 | 1 | n | 1 | 8 |
+| lt | 1 | — | — | — | 1 | — | 1 | — |
+| xor | 1 | — | — | — | 1 | — | — | — |
+| and | 1 | — | — | — | 1 | — | — | — |
+| hash | 300 | 300 | 300 | 300 | deferred | 300 | 300 | deferred |
+| STARK/mul | ~32 | 3 | 6 | 9 | 1 | ~N (batch) | O(w) | 1 F_q |
+
+"—" = operation not defined or not meaningful for this regime. n = ring degree (1024). deferred = hemera computed at settlement boundary (~766 constraints). all costs are execution focus; STARK constraint counts are per-instantiation (see [[patterns]]).
 
 five arithmetics (repos): nebu (4 regimes), kuro (1), jali (1), trop (1), genies (1).
 five PCS backends (zheng): Brakedown (4 regimes), Binius (1), Ring-aware (1), Isogeny (1), Tropical (1).
-
-### how the five algebras enter nox
 
 ### how the eight regimes enter nox
 
