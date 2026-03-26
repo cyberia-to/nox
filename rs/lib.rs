@@ -19,6 +19,6 @@ pub mod reduce;
 pub mod hint;
 pub mod patterns;
 
-pub use noun::{Arena, NounRef, NounInner, Tag, Digest, NIL};
+pub use noun::{Order, NounId, Noun, Tag, Digest, NIL};
 pub use reduce::{reduce, Outcome, ErrorKind};
 pub use hint::{HintProvider, NullHints};

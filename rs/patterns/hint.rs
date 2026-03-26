@@ -5,12 +5,12 @@
 //! step 4: return witness
 
 use nebu::Goldilocks;
-use crate::noun::{Arena, NounRef};
+use crate::noun::{Order, NounId};
 use crate::reduce::{reduce, Outcome, ErrorKind, cell_pair, evaluate};
 use crate::hint::HintProvider;
 
 pub fn hint<const N: usize>(
-    arena: &mut Arena<N>, subject: NounRef, body: NounRef, budget: u64, hints: &dyn HintProvider<N>,
+    arena: &mut Order<N>, subject: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> Outcome {
     let (tag_formula, check_formula) = match cell_pair(arena, body) {
         Some(p) => p,

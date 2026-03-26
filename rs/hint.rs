@@ -9,7 +9,7 @@
 //! the verifier never calls provide() — it checks the zheng proof.
 
 use nebu::Goldilocks;
-use crate::noun::{Arena, NounRef};
+use crate::noun::{Order, NounId};
 
 /// hint provider trait — the prover's interface to inject witnesses
 pub trait HintProvider<const N: usize> {
@@ -19,7 +19,7 @@ pub trait HintProvider<const N: usize> {
     /// subject: the current computation subject
     ///
     /// returns Some(witness_noun) or None (= halt, prover doesn't know)
-    fn provide(&self, arena: &mut Arena<N>, tag: Goldilocks, subject: NounRef) -> Option<NounRef>;
+    fn provide(&self, arena: &mut Order<N>, tag: Goldilocks, subject: NounId) -> Option<NounId>;
 }
 
 /// null hint provider — always returns None (no hints available)
@@ -27,7 +27,7 @@ pub trait HintProvider<const N: usize> {
 pub struct NullHints;
 
 impl<const N: usize> HintProvider<N> for NullHints {
-    fn provide(&self, _arena: &mut Arena<N>, _tag: Goldilocks, _subject: NounRef) -> Option<NounRef> {
+    fn provide(&self, _arena: &mut Order<N>, _tag: Goldilocks, _subject: NounId) -> Option<NounId> {
         None
     }
 }

@@ -2,11 +2,11 @@
 
 use nebu::Goldilocks;
 use super::tag::Tag;
-use super::NounRef;
+use super::NounId;
 
 /// the two kinds of noun
 #[derive(Debug, Clone, Copy)]
-pub enum NounInner {
+pub enum Noun {
     Atom { value: Goldilocks, tag: Tag },
-    Cell { left: NounRef, right: NounRef },
+    Cell { left: NounId, right: NounId },
 }

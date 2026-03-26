@@ -2,12 +2,12 @@
 //! returns 0 if a < b, 1 otherwise
 
 use nebu::Goldilocks;
-use crate::noun::{Arena, NounRef};
+use crate::noun::{Order, NounId};
 use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_field, make_field};
 use crate::hint::HintProvider;
 
 pub fn lt<const N: usize>(
-    arena: &mut Arena<N>, subject: NounRef, body: NounRef, budget: u64, hints: &dyn HintProvider<N>,
+    arena: &mut Order<N>, subject: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> Outcome {
     let (a, b) = match cell_pair(arena, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
     let (va, budget) = match evaluate_field(arena, subject, a, budget, hints) { Ok(v) => v, Err(o) => return o };

@@ -7,13 +7,13 @@
 //! pattern implementations live in patterns/
 
 use nebu::Goldilocks;
-use crate::noun::{Arena, NounRef, NounInner, Tag};
+use crate::noun::{Order, NounId, Noun, Tag};
 use crate::hint::HintProvider;
 use crate::patterns;
 
 #[derive(Debug)]
 pub enum Outcome {
-    Ok(NounRef, u64),
+    Ok(NounId, u64),
     Halt(u64),
     Error(ErrorKind),
 }
@@ -33,11 +33,11 @@ fn cost(tag: u64) -> u64 {
 }
 
 pub fn reduce<const N: usize>(
-    arena: &mut Arena<N>, subject: NounRef, formula: NounRef, budget: u64, hints: &dyn HintProvider<N>,
+    arena: &mut Order<N>, subject: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> Outcome {
     let (tag_ref, body) = match arena.get(formula).inner {
-        NounInner::Cell { left, right } => (left, right),
-        NounInner::Atom { .. } => return Outcome::Error(ErrorKind::Malformed),
+        Noun::Cell { left, right } => (left, right),
+        Noun::Atom { .. } => return Outcome::Error(ErrorKind::Malformed),
     };
     let tag = match arena.atom_value(tag_ref) {
         Some((v, _)) => v.as_u64(),
@@ -70,16 +70,16 @@ pub fn reduce<const N: usize>(
 
 // === public helpers used by pattern implementations ===
 
-pub fn cell_pair<const N: usize>(arena: &Arena<N>, r: NounRef) -> Option<(NounRef, NounRef)> {
+pub fn cell_pair<const N: usize>(arena: &Order<N>, r: NounId) -> Option<(NounId, NounId)> {
     match arena.get(r).inner {
-        NounInner::Cell { left, right } => Some((left, right)),
+        Noun::Cell { left, right } => Some((left, right)),
         _ => None,
     }
 }
 
 pub fn evaluate<const N: usize>(
-    arena: &mut Arena<N>, subject: NounRef, formula: NounRef, budget: u64, hints: &dyn HintProvider<N>,
-) -> core::result::Result<(NounRef, u64), Outcome> {
+    arena: &mut Order<N>, subject: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
+) -> core::result::Result<(NounId, u64), Outcome> {
     match reduce(arena, subject, formula, budget, hints) {
         Outcome::Ok(r, b) => Ok((r, b)),
         other => Err(other),
@@ -87,7 +87,7 @@ pub fn evaluate<const N: usize>(
 }
 
 pub fn evaluate_field<const N: usize>(
-    arena: &mut Arena<N>, subject: NounRef, formula: NounRef, budget: u64, hints: &dyn HintProvider<N>,
+    arena: &mut Order<N>, subject: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> core::result::Result<(Goldilocks, u64), Outcome> {
     let (result, budget) = evaluate(arena, subject, formula, budget, hints)?;
     match arena.atom_value(result) {
@@ -97,7 +97,7 @@ pub fn evaluate_field<const N: usize>(
 }
 
 pub fn evaluate_word<const N: usize>(
-    arena: &mut Arena<N>, subject: NounRef, formula: NounRef, budget: u64, hints: &dyn HintProvider<N>,
+    arena: &mut Order<N>, subject: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> core::result::Result<(u64, u64), Outcome> {
     let (result, budget) = evaluate(arena, subject, formula, budget, hints)?;
     match arena.atom_value(result) {
@@ -107,16 +107,16 @@ pub fn evaluate_word<const N: usize>(
     }
 }
 
-pub fn make_field<const N: usize>(arena: &mut Arena<N>, v: Goldilocks, budget: u64) -> Outcome {
+pub fn make_field<const N: usize>(arena: &mut Order<N>, v: Goldilocks, budget: u64) -> Outcome {
     match arena.atom(v, Tag::Field) { Some(r) => Outcome::Ok(r, budget), None => Outcome::Error(ErrorKind::Unavailable) }
 }
 
-pub fn make_word<const N: usize>(arena: &mut Arena<N>, v: u64, budget: u64) -> Outcome {
+pub fn make_word<const N: usize>(arena: &mut Order<N>, v: u64, budget: u64) -> Outcome {
     match arena.atom(Goldilocks::new(v & 0xFFFF_FFFF), Tag::Word) { Some(r) => Outcome::Ok(r, budget), None => Outcome::Error(ErrorKind::Unavailable) }
 }
 
 pub fn field_binary_op<const N: usize>(
-    arena: &mut Arena<N>, subject: NounRef, body: NounRef, budget: u64, hints: &dyn HintProvider<N>,
+    arena: &mut Order<N>, subject: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
     op: fn(Goldilocks, Goldilocks) -> Goldilocks,
 ) -> Outcome {
     let (a, b) = match cell_pair(arena, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
@@ -126,7 +126,7 @@ pub fn field_binary_op<const N: usize>(
 }
 
 pub fn word_binary_op<const N: usize>(
-    arena: &mut Arena<N>, subject: NounRef, body: NounRef, budget: u64, hints: &dyn HintProvider<N>,
+    arena: &mut Order<N>, subject: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
     op: fn(u64, u64) -> u64,
 ) -> Outcome {
     let (a, b) = match cell_pair(arena, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };

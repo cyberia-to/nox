@@ -18,11 +18,11 @@ the verifier NEVER executes hint directly — it checks constraint satisfaction 
 
 ```
 trait HintProvider {
-    fn provide(&self, tag: F, subject: NounRef) -> HintResult;
+    fn provide(&self, tag: F, subject: NounId) -> HintResult;
 }
 
 enum HintResult {
-    Value(NounRef),
+    Value(NounId),
     Halt,
 }
 ```

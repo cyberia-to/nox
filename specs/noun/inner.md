@@ -1,12 +1,11 @@
-# noun inner
-
+# noun
 
 ## definition
 
 ```
-enum NounInner {
+enum Noun {
     Atom { value: F, tag: u8 },
-    Cell { left: NounRef, right: NounRef },
+    Cell { left: NounId, right: NounId },
 }
 ```
 

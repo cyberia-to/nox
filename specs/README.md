@@ -7,7 +7,7 @@ canonical specification of the nox virtual machine. this is the source of truth 
 | page | scope | status |
 |------|-------|--------|
 | vm.md | overview, field, hash, algebra polymorphism, dependencies | canonical |
-| noun/ | data model: atom, cell, type tags, arena, hash, polynomial representation | canonical |
+| noun/ | data model: atom, cell, type tags, order, hash, polynomial representation | canonical |
 | patterns/ | all 17 patterns: structural (0-4), field (5-10), bitwise (11-14), hash (15), hint (16) | canonical |
 | reduction.md | reduce(), ask(), budget, confluence, memoization, proof-carrying, signal assembly | canonical |
 | jets.md | Layer 3: genesis jet registry, semantic contract, hardware mapping | canonical |
