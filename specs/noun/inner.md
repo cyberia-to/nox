@@ -1,6 +1,5 @@
 # noun inner
 
-rs module: noun/inner.rs
 
 ## definition
 

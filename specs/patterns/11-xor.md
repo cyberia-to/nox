@@ -1,6 +1,5 @@
 # pattern 11: xor
 
-rs module: patterns/xor.rs
 
 parameterized by W. valid on word type only. bitwise on hash → ⊥_error.
 

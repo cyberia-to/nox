@@ -1,6 +1,5 @@
 # pattern 13: not
 
-rs module: patterns/not.rs
 
 parameterized by W. valid on word type only.
 

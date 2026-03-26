@@ -1,6 +1,5 @@
 # pattern 5: add
 
-rs module: patterns/add.rs
 
 parameterized by F.
 

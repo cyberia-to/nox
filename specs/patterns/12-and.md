@@ -1,6 +1,5 @@
 # pattern 12: and
 
-rs module: patterns/and.rs
 
 parameterized by W. valid on word type only.
 

@@ -1,6 +1,5 @@
 # pattern 2: compose
 
-rs module: patterns/compose.rs
 
 algebra-independent.
 

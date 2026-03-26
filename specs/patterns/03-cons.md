@@ -1,6 +1,5 @@
 # pattern 3: cons
 
-rs module: patterns/cons.rs
 
 algebra-independent.
 

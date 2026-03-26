@@ -1,6 +1,5 @@
 # pattern 7: mul
 
-rs module: patterns/mul.rs
 
 parameterized by F.
 

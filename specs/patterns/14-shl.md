@@ -1,6 +1,5 @@
 # pattern 14: shl
 
-rs module: patterns/shl.rs
 
 parameterized by W. valid on word type only.
 

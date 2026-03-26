@@ -1,6 +1,5 @@
 # pattern 4: branch
 
-rs module: patterns/branch.rs
 
 algebra-independent.
 

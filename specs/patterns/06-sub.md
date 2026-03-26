@@ -1,6 +1,5 @@
 # pattern 6: sub
 
-rs module: patterns/sub.rs
 
 parameterized by F.
 

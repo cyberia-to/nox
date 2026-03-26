@@ -1,6 +1,5 @@
 # noun hash
 
-rs module: noun/hash.rs
 
 ## structural hash
 

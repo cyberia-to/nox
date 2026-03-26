@@ -1,6 +1,5 @@
 # pattern 8: inv
 
-rs module: patterns/inv.rs
 
 parameterized by F.
 

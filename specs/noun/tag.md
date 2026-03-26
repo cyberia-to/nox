@@ -1,6 +1,5 @@
 # type tags
 
-rs module: noun/tag.rs
 
 ## canonical value tower (nox<Goldilocks, Z/2^32, Hemera>)
 

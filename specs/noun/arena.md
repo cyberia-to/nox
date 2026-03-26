@@ -1,6 +1,5 @@
 # arena
 
-rs module: noun/arena.rs
 
 ## memory representation
 

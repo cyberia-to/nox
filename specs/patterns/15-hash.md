@@ -1,6 +1,5 @@
 # hash pattern (15)
 
-rs module: patterns/hash.rs
 
 parameterized by H.
 

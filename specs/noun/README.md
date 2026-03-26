@@ -70,9 +70,9 @@ axis on an atom (except 0 and 1) produces ⊥_error.
 
 ## module index
 
-| page | scope | rs module |
-|------|-------|-----------|
-| tag.md | type tags, value tower, coercion | noun/tag.rs |
-| inner.md | atom, cell, polynomial representation | noun/inner.rs |
-| arena.md | memory, bounds, structural sharing, lifecycle | noun/arena.rs |
-| hash.md | structural hash, identity | noun/hash.rs |
+| page | scope |
+|------|-------|
+| tag.md | type tags, value tower, coercion |
+| inner.md | atom, cell, polynomial representation |
+| arena.md | memory, bounds, structural sharing, lifecycle |
+| hash.md | structural hash, identity |

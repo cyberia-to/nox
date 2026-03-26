@@ -1,6 +1,5 @@
 # pattern 0: axis
 
-rs module: patterns/axis.rs
 
 algebra-independent.
 

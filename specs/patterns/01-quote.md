@@ -1,6 +1,5 @@
 # pattern 1: quote
 
-rs module: patterns/quote.rs
 
 algebra-independent.
 

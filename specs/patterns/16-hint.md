@@ -1,6 +1,5 @@
 # hint pattern (16) — Layer 2
 
-rs modules: patterns/hint.rs, hint.rs
 
 ```
 reduce(s, [16 [tag_f check_f]], f) =
