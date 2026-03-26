@@ -59,43 +59,69 @@ mul cost = base F_p multiplications per one regime-native multiply. constraints/
 five arithmetics (repos): nebu (4 regimes), kuro (1), jali (1), trop (1), genies (1).
 five PCS backends (zheng): Brakedown (4 regimes), Binius (1), Ring-aware (1), Isogeny (1), Tropical (1).
 
+### type-driven regime dispatch
+
+the programmer does not choose a regime. the TYPE SYSTEM chooses.
+
+Trident type-checks every expression. the type of an expression determines its algebra. the algebra determines its regime. the regime determines its [[lens]]. the chain is fully automatic — zero annotations, zero configuration.
+
+```
+Trident type    →  regime   →  lens         →  nox patterns
+───────────        ──────      ────────        ────────────
+Field              nebu        Brakedown       add, mul, inv (native F_p)
+Fp2, Fp3, Fp4      nebu²/³/⁴   Brakedown       extension jets (fp2_mul, ...)
+BitVec             kuro        Binius          xor, and (native F₂)
+RingElement        jali        Ring-aware      ring jets (ntt_batch, ...)
+Tropical           trop        Tropical        branch + lt (witness jets)
+Curve              genies      Isogeny         isogeny jets (group_action, ...)
+```
+
+cross-regime boundary: where types change. the Trident compiler inserts hemera commitments at type transitions — no manual boundary management. nox VM executes uniformly (16 patterns). zheng partitions the trace by operand types and proves each partition through its native lens. HyperNova folds all into one accumulator.
+
+boundary cost: ~766 F_p constraints per type transition (30 field ops + 1 hemera hash).
+
 ### how the eight regimes enter nox
 
 **nebu (F_p):** canonical instantiation. all patterns operate natively. all costs in this spec refer to this regime.
 
-**nebu², nebu³, nebu⁴:** same nox parameterization pattern, wider field elements. one F_p² mul = 3 base muls (Karatsuba). one F_p³ mul = 6 base muls. one F_p⁴ mul = 9 base muls (tower Fp2→Fp4). extension jets (fp2_mul, fp3_mul, fp4_mul, inverses) recognize these structured compositions. all use Brakedown PCS₁ with proportionally wider columns.
+**nebu², nebu³, nebu⁴:** same nox parameterization, wider field elements. one F_p² mul = 3 base muls (Karatsuba). one F_p³ mul = 6 base muls. one F_p⁴ mul = 9 base muls (tower Fp2→Fp4). extension jets recognize these structured compositions. all use Brakedown lens with proportionally wider columns.
 
-**kuro (F₂):** separate instantiation. field patterns (add = XOR, mul = AND) are native binary operations at 1 constraint each (vs ~32 in F_p). bitwise patterns collapse to field operations (and = mul in characteristic 2). hash deferred to hemera at settlement boundary (~766 constraints per crossing).
+**kuro (F₂):** separate instantiation. field patterns (add = XOR, mul = AND) are native binary operations at 1 constraint each (vs ~32 in F_p). bitwise patterns collapse to field operations. hash deferred to hemera at settlement boundary.
 
-**jali (R_q):** runs on the SAME nebu instantiation (F_p). R_q = F_p[x]/(x^n+1) is a polynomial RING over F_p, not a separate field. ring operations decompose to F_p operations via NTT. dedicated jets (ntt_batch, key_switch, blind_rotate) recognize structured compositions and commit them as batched ring operations in zheng PCS₃.
+**jali (R_q):** runs on the SAME nebu instantiation (F_p). R_q = F_p[x]/(x^n+1) is a polynomial RING over F_p. ring operations decompose to F_p operations via NTT. dedicated jets commit them as batched ring operations in zheng Ring-aware lens.
 
-**trop (min,+):** runs on the SAME nebu instantiation (F_p). tropical operations decompose to existing patterns: min(a,b) = branch(lt(a,b), a, b). dedicated jets produce structured witnesses (assignment + cost + dual certificate) verified in F_p via zheng PCS₅.
+**trop (min,+):** runs on the SAME nebu instantiation (F_p). tropical operations decompose to existing patterns: min(a,b) = branch(lt(a,b), a, b). dedicated jets produce structured witnesses verified via zheng Tropical lens.
 
-**genies (F_q):** separate instantiation with a DIFFERENT prime q. the only regime with a foreign field. F_q elements are multi-limb (8 × 64-bit for CSIDH-512). patterns 5-10 dispatch to F_q arithmetic (Montgomery multiplication). hash remains hemera (at settlement boundary). dedicated PCS₄ in zheng (Brakedown over F_q).
+**genies (F_q):** separate instantiation with a DIFFERENT prime q. the only regime with a foreign field. F_q elements are multi-limb (8 × 64-bit for CSIDH-512). patterns 5-10 dispatch to F_q arithmetic. dedicated Isogeny lens in zheng.
 
-### cross-algebra composition
+### cross-regime composition
 
-a single nox program can mix algebras. the prover partitions the trace into algebra-specific sub-traces. each sub-trace proves via its native PCS backend. HyperNova folds all into one F_p accumulator. one decider, one proof.
+a single Trident program can use multiple types from different algebras. the Trident compiler inserts hemera commitments at type transitions. nox executes uniformly. zheng partitions the trace by operand type and proves each partition through its native lens. HyperNova folds all into one F_p accumulator. one decider, one proof.
 
 ```
-boundary cost: ~766 F_p constraints per algebra crossing
+boundary cost: ~766 F_p constraints per type transition
                (30 field ops + 1 hemera hash)
 
-example — FHE bootstrapping crosses three algebras:
-  jali → kuro (gadget_decomp)      ~766
-  kuro → jali (blind rotation)     ~766
-  jali → nebu (key switching)      ~766
-  total boundary:                  ~2,298
+example — FHE bootstrapping uses three types:
+  RingElement → BitVec (gadget_decomp)   ~766
+  BitVec → RingElement (blind rotation)  ~766
+  RingElement → Field (key switching)    ~766
+  total boundary:                        ~2,298
+
+the programmer writes:
+  fn bootstrap(ct: &RingElement) -> RingElement { ... }
+
+the compiler sees type transitions and inserts boundaries automatically.
 ```
 
-universal CCS with selectors enables heterogeneous folding:
+universal CCS with type selectors enables heterogeneous folding:
 
 ```
-sel_Fp:   1 for Goldilocks rows (nebu, jali, trop)
-sel_F2:   1 for binary rows (kuro)
-sel_ring: 1 for ring-structured rows (jali — NTT batch, automorphisms)
-sel_Fq:   1 for isogeny rows (genies)
-sel_trop: 1 for tropical witness-verify rows (trop)
+sel_Fp:   1 for Field operands (nebu, jali, trop)
+sel_F2:   1 for BitVec operands (kuro)
+sel_ring: 1 for RingElement operands (jali — NTT batch)
+sel_Fq:   1 for Curve operands (genies)
+sel_trop: 1 for Tropical operands (trop)
 ```
 
 ## algebra-polymorphic patterns
