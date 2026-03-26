@@ -167,17 +167,7 @@ fn main() {
                 }
             }
             "--help" | "-h" => {
-                println!("nox — proof-native VM");
-                println!();
-                println!("Usage:");
-                println!("  nox <file.nox>              evaluate formula from file");
-                println!("  nox -e '[5 [[1 3] [1 5]]]'  evaluate inline formula");
-                println!("  echo '[1 42]' | nox          evaluate from stdin");
-                println!();
-                println!("Options:");
-                println!("  -s, --subject <noun>  subject (default: 0)");
-                println!("  -b, --budget <n>      budget (default: 1000000)");
-                println!("  -e <formula>          inline formula");
+                print_usage();
                 std::process::exit(0);
             }
             other => {
@@ -195,14 +185,7 @@ fn main() {
     if formula_text.is_empty() {
         use std::io::IsTerminal;
         if std::io::stdin().is_terminal() {
-            eprintln!("nox — proof-native VM");
-            eprintln!();
-            eprintln!("Usage:");
-            eprintln!("  nox <file.nox>              evaluate formula from file");
-            eprintln!("  nox -e '[5 [[1 3] [1 5]]]'  evaluate inline formula");
-            eprintln!("  echo '[1 42]' | nox          evaluate from stdin");
-            eprintln!();
-            eprintln!("Run `nox --help` for all options.");
+            print_usage();
             std::process::exit(1);
         }
         std::io::stdin().read_to_string(&mut formula_text).unwrap_or_else(|e| {
@@ -244,4 +227,31 @@ fn main() {
             std::process::exit(1);
         }
     }
+}
+
+fn print_usage() {
+    eprintln!(
+        "\
+\x1b[31m
+    ███╗   ██╗ ██████╗ ██╗  ██╗
+\x1b[33m    ████╗  ██║██╔═══██╗╚██╗██╔╝
+\x1b[32m    ██╔██╗ ██║██║   ██║ ╚███╔╝
+\x1b[36m    ██║╚██╗██║██║   ██║ ██╔██╗
+\x1b[34m    ██║ ╚████║╚██████╔╝██╔╝ ██╗
+\x1b[35m    ╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝
+\x1b[0m\x1b[37m    the VM for superintelligence\x1b[0m
+\x1b[90m
+    16 patterns · 36 genesis jets · 5 algebras
+    Goldilocks field · p = 2^64 - 2^32 + 1
+    computation IS linking · proof-native
+\x1b[0m
+  nox <file.nox>                evaluate formula from file
+  nox -e '[5 [[1 3] [1 5]]]'    evaluate inline formula
+  echo '[1 42]' | nox            evaluate from stdin
+
+  -s, --subject <noun>    subject (default: 0)
+  -b, --budget <n>        budget (default: 1000000)
+  -e <formula>            inline formula
+"
+    );
 }
