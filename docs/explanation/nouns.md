@@ -32,12 +32,12 @@ atoms carry a type tag, but the tag is metadata — it does not change the repre
 ```
 field (0x00)    arithmetic: a + b, a × b, a⁻¹         range [0, p)
 word  (0x01)    bitwise: a XOR b, a AND b, a << n      range [0, 2⁶⁴)
-hash  (0x02)    identity: 8 field elements = 64 bytes   Hemera output
+hash  (0x02)    identity: 4 field elements = 32 bytes   Hemera output
 ```
 
 field and word share the same representation but different algebras. a field element wraps modulo p (the Goldilocks prime). a word wraps modulo 2^32 (32-bit integers, fitting cleanly in [0, p)). the distinction exists because the [[stark]] constraint system needs to know which algebra applies — addition modulo p uses one constraint, XOR uses ~32 constraints (bit decomposition). the type tag is a constraint selector, not runtime overhead.
 
-the hash type uses eight field elements (8 × 8 = 64 bytes). it is the identity primitive — every noun can be reduced to a hash, and the hash is how the network refers to the noun. `axis(s, 0)` returns `H(s)` — a noun can introspect its own cryptographic identity. this is unique to nox: self-referential identity is a first-class operation, not a library call.
+the hash type uses four field elements (4 × 8 = 32 bytes). it is the identity primitive — every noun can be reduced to a hash, and the hash is how the network refers to the noun. `axis(s, 0)` returns `H(s)` — a noun can introspect its own cryptographic identity. this is unique to nox: self-referential identity is a first-class operation, not a library call.
 
 ## trees as memory
 
@@ -64,7 +64,7 @@ H(atom a)     = hemera_leaf(encode(a), capacity[14] = type_tag(a))
 H(cell(l, r)) = hemera_node(H(l), H(r))
 ```
 
-the type tag is embedded in [[Hemera]]'s sponge capacity — the same domain separation mechanism Hemera uses for leaf/node/root distinction in Merkle trees. the hash output is 64 bytes, no prefix bytes, no framing. the type is inside the permutation, not outside it. different atom types produce different hashes for the same value — domain separation is enforced by the mathematics, not by encoding conventions.
+the type tag is embedded in [[Hemera]]'s sponge capacity — the same domain separation mechanism Hemera uses for leaf/node/root distinction in Merkle trees. the hash output is 32 bytes, no prefix bytes, no framing. the type is inside the permutation, not outside it. different atom types produce different hashes for the same value — domain separation is enforced by the mathematics, not by encoding conventions.
 
 two nouns are the same if and only if they have the same hash. this is the foundation of everything content-addressed in [[cyber]]: [[particles]] are hashed nouns, [[cyberlinks]] connect hashed nouns, the computation cache keys on hashed nouns. the one data structure with the one hash function creates the one identity system.
 
@@ -74,19 +74,19 @@ the hash is compositional: `H(cell(l, r))` depends only on `H(l)` and `H(r)`, no
 
 every other content-addressed system has a serialization layer. Git has object headers (`blob 42\0`). IPFS has CBOR-encoded DAG nodes with link tables. Ethereum has RLP encoding. Protocol Buffers have field tags and wire types. every one of them pays framing overhead to make the byte stream self-describing.
 
-nox has no serialization format. the store maps 64-byte identity to content, and content length IS the type. this is not an optimization — it is a category elimination. the serialization layer does not exist.
+nox has no serialization format. the store maps 32-byte identity to content, and content length IS the type. this is not an optimization — it is a category elimination. the serialization layer does not exist.
 
 the hash function IS the type system at the protocol level. a field atom with value 7 and a word atom with value 7 have different identities — not because of a tag byte, but because [[Hemera]] capacity carries different values during permutation. the type distinction is enforced by the mathematics of the sponge, not by a convention on top of it. you cannot forge a field-typed identity from a word-typed value because the Poseidon2 permutation is one-way.
 
-fixed-size everything. three content sizes: 8, 64, 128. the store is a fixed-size key-value map. no variable-length records. no allocation decisions. no fragmentation. uniform record sizes with content-addressed keys.
+fixed-size everything. three content sizes: 8, 32, 64. the store is a fixed-size key-value map. no variable-length records. no allocation decisions. no fragmentation. uniform record sizes with content-addressed keys.
 
-cells store hashes, not data. a cell is always 128 bytes: two child identities. the tree is navigated by hash lookup, not by pointer chasing through variable-length buffers. structural sharing is automatic — two cells with the same left subtree store the same left hash, and the store deduplicates by identity. this is Merkle tree semantics applied to the entire data model, not just to a specific data structure.
+cells store hashes, not data. a cell is always 64 bytes: two child identities. the tree is navigated by hash lookup, not by pointer chasing through variable-length buffers. structural sharing is automatic — two cells with the same left subtree store the same left hash, and the store deduplicates by identity. this is Merkle tree semantics applied to the entire data model, not just to a specific data structure.
 
-one hash function for everything. [[Hemera]] does structural hashing, Merkle trees, Fiat-Shamir challenges, content addressing, domain separation, commitment schemes, nullifier derivation. one function, one output size (64 bytes), one security assumption. the entire cryptographic surface area is one Poseidon2 instance.
+one hash function for everything. [[Hemera]] does structural hashing, Merkle trees, Fiat-Shamir challenges, content addressing, domain separation, commitment schemes, nullifier derivation. one function, one output size (32 bytes), one security assumption. the entire cryptographic surface area is one Poseidon2 instance.
 
 ## honest tradeoffs
 
-storage amplification for small nouns. a field atom is 8 bytes of data but has a 64-byte identity. a cell of two small atoms: 16 bytes of actual data, but the cell stores 128 bytes of child hashes, plus each atom has a 64-byte identity. the store entry for the cell is 128 bytes, pointing to two 8-byte entries. total: 128 + 8 + 8 = 144 bytes for 16 bytes of data. 9x overhead.
+storage amplification for small nouns. a field atom is 8 bytes of data but has a 32-byte identity. a cell of two small atoms: 16 bytes of actual data, but the cell stores 64 bytes of child hashes, plus each atom has a 32-byte identity. the store entry for the cell is 64 bytes, pointing to two 8-byte entries. total: 64 + 8 + 8 = 80 bytes for 16 bytes of data. 5x overhead.
 
 for deep trees this amortizes (hashes are shared, deduplication kicks in). but for flat formulas with many small atoms, storage is heavier than a serialized format would be.
 
@@ -94,7 +94,7 @@ resolution latency. materializing a noun of depth d requires d sequential store 
 
 no streaming decode. with a serialized format, you can read bytes and build the noun in one pass. with content-addressed resolution, you must fetch the root, then its children, then their children — breadth-first or depth-first, but always recursive. you cannot pipe a noun through a socket and process it incrementally.
 
-the atom identity paradox. an atom identity (64 bytes) is larger than its content (8 bytes). you carry more metadata than data for leaves. in systems with many small atoms (which formulas are — pattern tags are atoms 0-16), the identity overhead dominates.
+the atom identity paradox. an atom identity (32 bytes) is larger than its content (8 bytes). you carry more metadata than data for leaves. in systems with many small atoms (which formulas are — pattern tags are atoms 0-16), the identity overhead dominates.
 
 ## why the tradeoffs are acceptable
 
@@ -105,7 +105,7 @@ every tradeoff above trades throughput for verifiability. in a proof-native syst
 - no streaming is fine because nouns enter the system through reduction, not through deserialization — the VM builds nouns, it does not parse them
 - the atom identity paradox is actually a feature: small values get strong identities, making the content-addressed cache effective even for trivial sub-expressions
 
-the system is designed for one thing: produce a computation, prove it, verify the proof. every design choice optimizes for that path. the 64-byte identity is the unit of trust — and having it be clean, uniform, and prefix-free means the trust layer has zero accidental complexity.
+the system is designed for one thing: produce a computation, prove it, verify the proof. every design choice optimizes for that path. the 32-byte identity is the unit of trust — and having it be clean, uniform, and prefix-free means the trust layer has zero accidental complexity.
 
 ## what nouns cannot do
 
