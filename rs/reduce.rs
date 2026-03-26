@@ -33,13 +33,13 @@ fn cost(tag: u64) -> u64 {
 }
 
 pub fn reduce<const N: usize>(
-    arena: &mut Order<N>, subject: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> Outcome {
-    let (tag_ref, body) = match arena.get(formula).inner {
+    let (tag_ref, body) = match order.get(formula).inner {
         Noun::Cell { left, right } => (left, right),
         Noun::Atom { .. } => return Outcome::Error(ErrorKind::Malformed),
     };
-    let tag = match arena.atom_value(tag_ref) {
+    let tag = match order.atom_value(tag_ref) {
         Some((v, _)) => v.as_u64(),
         None => return Outcome::Error(ErrorKind::Malformed),
     };
@@ -47,90 +47,90 @@ pub fn reduce<const N: usize>(
     if budget < c { return Outcome::Halt(budget); }
     let budget = budget - c;
     match tag {
-        0  => patterns::axis::axis(arena, subject, body, budget),
+        0  => patterns::axis::axis(order, object, body, budget),
         1  => patterns::quote::quote(body, budget),
-        2  => patterns::compose::compose(arena, subject, body, budget, hints),
-        3  => patterns::cons::cons(arena, subject, body, budget, hints),
-        4  => patterns::branch::branch(arena, subject, body, budget, hints),
-        5  => patterns::add::add(arena, subject, body, budget, hints),
-        6  => patterns::sub::sub(arena, subject, body, budget, hints),
-        7  => patterns::mul::mul(arena, subject, body, budget, hints),
-        8  => patterns::inv::inv(arena, subject, body, budget, hints),
-        9  => patterns::eq::eq(arena, subject, body, budget, hints),
-        10 => patterns::lt::lt(arena, subject, body, budget, hints),
-        11 => patterns::xor::xor(arena, subject, body, budget, hints),
-        12 => patterns::and::and(arena, subject, body, budget, hints),
-        13 => patterns::not::not(arena, subject, body, budget, hints),
-        14 => patterns::shl::shl(arena, subject, body, budget, hints),
-        15 => patterns::hash::hash(arena, subject, body, budget, hints),
-        16 => patterns::hint::hint(arena, subject, body, budget, hints),
+        2  => patterns::compose::compose(order, object, body, budget, hints),
+        3  => patterns::cons::cons(order, object, body, budget, hints),
+        4  => patterns::branch::branch(order, object, body, budget, hints),
+        5  => patterns::add::add(order, object, body, budget, hints),
+        6  => patterns::sub::sub(order, object, body, budget, hints),
+        7  => patterns::mul::mul(order, object, body, budget, hints),
+        8  => patterns::inv::inv(order, object, body, budget, hints),
+        9  => patterns::eq::eq(order, object, body, budget, hints),
+        10 => patterns::lt::lt(order, object, body, budget, hints),
+        11 => patterns::xor::xor(order, object, body, budget, hints),
+        12 => patterns::and::and(order, object, body, budget, hints),
+        13 => patterns::not::not(order, object, body, budget, hints),
+        14 => patterns::shl::shl(order, object, body, budget, hints),
+        15 => patterns::hash::hash(order, object, body, budget, hints),
+        16 => patterns::hint::hint(order, object, body, budget, hints),
         _  => Outcome::Error(ErrorKind::Malformed),
     }
 }
 
 // === public helpers used by pattern implementations ===
 
-pub fn cell_pair<const N: usize>(arena: &Order<N>, r: NounId) -> Option<(NounId, NounId)> {
-    match arena.get(r).inner {
+pub fn cell_pair<const N: usize>(order: &Order<N>, r: NounId) -> Option<(NounId, NounId)> {
+    match order.get(r).inner {
         Noun::Cell { left, right } => Some((left, right)),
         _ => None,
     }
 }
 
 pub fn evaluate<const N: usize>(
-    arena: &mut Order<N>, subject: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> core::result::Result<(NounId, u64), Outcome> {
-    match reduce(arena, subject, formula, budget, hints) {
+    match reduce(order, object, formula, budget, hints) {
         Outcome::Ok(r, b) => Ok((r, b)),
         other => Err(other),
     }
 }
 
 pub fn evaluate_field<const N: usize>(
-    arena: &mut Order<N>, subject: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> core::result::Result<(Goldilocks, u64), Outcome> {
-    let (result, budget) = evaluate(arena, subject, formula, budget, hints)?;
-    match arena.atom_value(result) {
+    let (result, budget) = evaluate(order, object, formula, budget, hints)?;
+    match order.atom_value(result) {
         Some((v, Tag::Field)) | Some((v, Tag::Word)) => Ok((v, budget)),
         _ => Err(Outcome::Error(ErrorKind::TypeError)),
     }
 }
 
 pub fn evaluate_word<const N: usize>(
-    arena: &mut Order<N>, subject: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> core::result::Result<(u64, u64), Outcome> {
-    let (result, budget) = evaluate(arena, subject, formula, budget, hints)?;
-    match arena.atom_value(result) {
+    let (result, budget) = evaluate(order, object, formula, budget, hints)?;
+    match order.atom_value(result) {
         Some((v, Tag::Word)) => Ok((v.as_u64(), budget)),
         Some((v, Tag::Field)) if v.as_u64() < (1u64 << 32) => Ok((v.as_u64(), budget)),
         _ => Err(Outcome::Error(ErrorKind::TypeError)),
     }
 }
 
-pub fn make_field<const N: usize>(arena: &mut Order<N>, v: Goldilocks, budget: u64) -> Outcome {
-    match arena.atom(v, Tag::Field) { Some(r) => Outcome::Ok(r, budget), None => Outcome::Error(ErrorKind::Unavailable) }
+pub fn make_field<const N: usize>(order: &mut Order<N>, v: Goldilocks, budget: u64) -> Outcome {
+    match order.atom(v, Tag::Field) { Some(r) => Outcome::Ok(r, budget), None => Outcome::Error(ErrorKind::Unavailable) }
 }
 
-pub fn make_word<const N: usize>(arena: &mut Order<N>, v: u64, budget: u64) -> Outcome {
-    match arena.atom(Goldilocks::new(v & 0xFFFF_FFFF), Tag::Word) { Some(r) => Outcome::Ok(r, budget), None => Outcome::Error(ErrorKind::Unavailable) }
+pub fn make_word<const N: usize>(order: &mut Order<N>, v: u64, budget: u64) -> Outcome {
+    match order.atom(Goldilocks::new(v & 0xFFFF_FFFF), Tag::Word) { Some(r) => Outcome::Ok(r, budget), None => Outcome::Error(ErrorKind::Unavailable) }
 }
 
 pub fn field_binary_op<const N: usize>(
-    arena: &mut Order<N>, subject: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
     op: fn(Goldilocks, Goldilocks) -> Goldilocks,
 ) -> Outcome {
-    let (a, b) = match cell_pair(arena, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
-    let (va, budget) = match evaluate_field(arena, subject, a, budget, hints) { Ok(v) => v, Err(o) => return o };
-    let (vb, budget) = match evaluate_field(arena, subject, b, budget, hints) { Ok(v) => v, Err(o) => return o };
-    make_field(arena, op(va, vb), budget)
+    let (a, b) = match cell_pair(order, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
+    let (va, budget) = match evaluate_field(order, object, a, budget, hints) { Ok(v) => v, Err(o) => return o };
+    let (vb, budget) = match evaluate_field(order, object, b, budget, hints) { Ok(v) => v, Err(o) => return o };
+    make_field(order, op(va, vb), budget)
 }
 
 pub fn word_binary_op<const N: usize>(
-    arena: &mut Order<N>, subject: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
     op: fn(u64, u64) -> u64,
 ) -> Outcome {
-    let (a, b) = match cell_pair(arena, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
-    let (va, budget) = match evaluate_word(arena, subject, a, budget, hints) { Ok(v) => v, Err(o) => return o };
-    let (vb, budget) = match evaluate_word(arena, subject, b, budget, hints) { Ok(v) => v, Err(o) => return o };
-    make_word(arena, op(va, vb), budget)
+    let (a, b) = match cell_pair(order, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
+    let (va, budget) = match evaluate_word(order, object, a, budget, hints) { Ok(v) => v, Err(o) => return o };
+    let (vb, budget) = match evaluate_word(order, object, b, budget, hints) { Ok(v) => v, Err(o) => return o };
+    make_word(order, op(va, vb), budget)
 }

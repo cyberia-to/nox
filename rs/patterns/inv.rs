@@ -7,9 +7,9 @@ use crate::reduce::{Outcome, ErrorKind, evaluate_field, make_field};
 use crate::hint::HintProvider;
 
 pub fn inv<const N: usize>(
-    arena: &mut Order<N>, subject: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> Outcome {
-    let (v, budget) = match evaluate_field(arena, subject, body, budget, hints) { Ok(v) => v, Err(o) => return o };
+    let (v, budget) = match evaluate_field(order, object, body, budget, hints) { Ok(v) => v, Err(o) => return o };
     if v == Goldilocks::ZERO { return Outcome::Error(ErrorKind::InvZero); }
-    make_field(arena, v.inv(), budget)
+    make_field(order, v.inv(), budget)
 }

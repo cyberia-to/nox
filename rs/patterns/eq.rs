@@ -8,12 +8,12 @@ use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate, make_field};
 use crate::hint::HintProvider;
 
 pub fn eq<const N: usize>(
-    arena: &mut Order<N>, subject: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> Outcome {
-    let (a, b) = match cell_pair(arena, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
-    let (ra, budget) = match evaluate(arena, subject, a, budget, hints) { Ok(v) => v, Err(o) => return o };
-    let (rb, budget) = match evaluate(arena, subject, b, budget, hints) { Ok(v) => v, Err(o) => return o };
-    let equal = arena.digest(ra) == arena.digest(rb);
+    let (a, b) = match cell_pair(order, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
+    let (ra, budget) = match evaluate(order, object, a, budget, hints) { Ok(v) => v, Err(o) => return o };
+    let (rb, budget) = match evaluate(order, object, b, budget, hints) { Ok(v) => v, Err(o) => return o };
+    let equal = order.digest(ra) == order.digest(rb);
     let result = if equal { Goldilocks::ZERO } else { Goldilocks::ONE };
-    make_field(arena, result, budget)
+    make_field(order, result, budget)
 }

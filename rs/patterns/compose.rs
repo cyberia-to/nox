@@ -6,10 +6,10 @@ use crate::reduce::{reduce, Outcome, ErrorKind, cell_pair, evaluate};
 use crate::hint::HintProvider;
 
 pub fn compose<const N: usize>(
-    arena: &mut Order<N>, subject: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> Outcome {
-    let (a, b) = match cell_pair(arena, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
-    let (obj, budget) = match evaluate(arena, subject, a, budget, hints) { Ok(v) => v, Err(o) => return o };
-    let (frm, budget) = match evaluate(arena, subject, b, budget, hints) { Ok(v) => v, Err(o) => return o };
-    reduce(arena, obj, frm, budget, hints)
+    let (a, b) = match cell_pair(order, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
+    let (obj, budget) = match evaluate(order, object, a, budget, hints) { Ok(v) => v, Err(o) => return o };
+    let (frm, budget) = match evaluate(order, object, b, budget, hints) { Ok(v) => v, Err(o) => return o };
+    reduce(order, obj, frm, budget, hints)
 }

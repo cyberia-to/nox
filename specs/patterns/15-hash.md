@@ -4,8 +4,8 @@
 parameterized by H.
 
 ```
-reduce(s, [15 a], f) →
-  let (v_a, f1) = reduce(s, a, f - 200)
+reduce(o, [15 a], f) →
+  let (v_a, f1) = reduce(o, a, f - 200)
   (H(v_a), f1)
 ```
 

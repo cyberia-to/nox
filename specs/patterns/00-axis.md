@@ -4,7 +4,7 @@
 algebra-independent.
 
 ```
-reduce(s, [0 a], f) = (axis(s, eval(a)), f - 1)
+reduce(o, [0 a], f) = (axis(s, eval(a)), f - 1)
 ```
 
 the evaluated axis index must be a field-type or word-type atom, interpreted as an integer. if eval(a) produces a cell or hash-type atom → ⊥_error.

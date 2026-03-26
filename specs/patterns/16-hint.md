@@ -2,15 +2,15 @@
 
 
 ```
-reduce(s, [16 [tag_f check_f]], f) =
-  1. tag = reduce(s, tag_f, f - 1)           // evaluate tag expression
-  2. witness = provider.provide(tag, s)       // ask prover
+reduce(o, [16 [tag_f check_f]], f) =
+  1. tag = reduce(o, tag_f, f - 1)           // evaluate tag expression
+  2. witness = provider.provide(tag, o)       // ask prover
      if witness == Halt → return Halt
-  3. result = reduce([witness s], check_f, f')  // validate
+  3. result = reduce([witness o], check_f, f')  // validate
   4. return result
 ```
 
-the single non-deterministic pattern. the prover injects a witness noun from outside the VM. the constraint formula is evaluated with s as object to produce check — a formula. then check is applied to witness as object via standard reduction. the result must be the field element 0 (success). if the check produces a non-zero value, halts, or errors, the hint fails and the proof is invalid.
+the single non-deterministic pattern. the prover injects a witness noun from outside the VM. the constraint formula is evaluated with the object to produce check — a formula. then check is applied to witness as object via standard reduction. the result must be the field element 0 (success). if the check produces a non-zero value, halts, or errors, the hint fails and the proof is invalid.
 
 the verifier NEVER executes hint directly — it checks constraint satisfaction via the stark proof.
 
@@ -18,7 +18,7 @@ the verifier NEVER executes hint directly — it checks constraint satisfaction 
 
 ```
 trait HintProvider {
-    fn provide(&self, tag: F, subject: NounId) -> HintResult;
+    fn provide(&self, tag: F, object: NounId) -> HintResult;
 }
 
 enum HintResult {
@@ -41,7 +41,7 @@ tags are conventions, not enforced by the VM.
 
 ## check formula
 
-the check formula validates the witness using Layer 1 patterns only. the witness enters as head of the subject: `[witness original_subject]`. the check can access both the witness (via axis 2) and the original subject (via axis 3).
+the check formula validates the witness using Layer 1 patterns only. the witness enters as head of the object: `[witness original_object]`. the check can access both the witness (via axis 2) and the original object (via axis 3).
 
 ## properties
 

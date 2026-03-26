@@ -52,7 +52,7 @@ in the canonical instantiation (nox<Goldilocks>), Budget is an F_p element with 
 every reduce() call costs 1, deducted before the pattern executes. if remaining budget is less than 1 (or less than the multi-step cost for axis/inv/hash), reduction halts.
 
 ```
-reduce(s, formula, f) =
+reduce(o, formula, f) =
   if f < cost then Halt          — cost is 1 for most patterns
   let (tag, body) = formula
   ... dispatch by tag, deducting cost from f ...
@@ -107,20 +107,20 @@ confluence enables safe parallelism. specific patterns have independent sub-comp
 
 ```
 Pattern 2 (compose):  [2 [x y]]
-  reduce(s,x) ∥ reduce(s,y)  — INDEPENDENT
+  reduce(o,x) ∥ reduce(o,y)  — INDEPENDENT
   Then: reduce(result_x, result_y)
 
 Pattern 3 (cons):     [3 [a b]]
-  reduce(s,a) ∥ reduce(s,b)  — INDEPENDENT
+  reduce(o,a) ∥ reduce(o,b)  — INDEPENDENT
   Then: cell(result_a, result_b)
 
 Patterns 5-7, 9-12:   [op [a b]]
-  reduce(s,a) ∥ reduce(s,b)  — INDEPENDENT
+  reduce(o,a) ∥ reduce(o,b)  — INDEPENDENT
   Then: apply op
 
 Pattern 4 (branch):   [4 [t [c d]]]
-  reduce(s,t) first — MUST evaluate test before choosing
-  Then: ONE of reduce(s,c) or reduce(s,d)  — NOT parallel (lazy)
+  reduce(o,t) first — MUST evaluate test before choosing
+  Then: ONE of reduce(o,c) or reduce(o,d)  — NOT parallel (lazy)
 ```
 
 all binary arithmetic and bitwise patterns can evaluate both operands in parallel. branch is the only pattern that enforces sequential evaluation (test before choice).
@@ -186,10 +186,10 @@ error kinds:
 errors propagate upward through the reduction tree. if any sub-expression produces ⊥_error or ⊥_unavailable, the parent expression produces the same error.
 
 ```
-reduce(s, [5 [a b]], f) =
-  let (v_a, f1) = reduce(s, a, f - 1)
+reduce(o, [5 [a b]], f) =
+  let (v_a, f1) = reduce(o, a, f - 1)
   if v_a is error → return error
-  let (v_b, f2) = reduce(s, b, f1)
+  let (v_b, f2) = reduce(o, b, f1)
   if v_b is error → return error
   ((v_a + v_b) mod p, f2)
 ```
@@ -218,7 +218,7 @@ the trace encodes Result in r15 (status) and r12 (error kind). the instance incl
 
 **rule: every reduce() call costs 1.**
 
-this is the entire cost model. when reduce(s, formula, f) is entered, 1 is deducted for dispatch (reading the tag, selecting the pattern). sub-expression reduce() calls deduct their own costs recursively. the total budget consumed by a computation is the total number of reduce() calls in its evaluation tree.
+this is the entire cost model. when reduce(o, formula, f) is entered, 1 is deducted for dispatch (reading the tag, selecting the pattern). sub-expression reduce() calls deduct their own costs recursively. the total budget consumed by a computation is the total number of reduce() calls in its evaluation tree.
 
 two patterns have multi-step overhead beyond the dispatch cost. the overhead is per-instantiation:
 
@@ -233,10 +233,10 @@ all other patterns cost exactly 1 per reduce() call.
 example: reduce([1,2], [5 [[0 2] [0 3]]], 100)
 
 reduce #1: dispatch pattern 5 (add), deduct 1 → f=99
-reduce #2: reduce(s, [0 2], 99)
+reduce #2: reduce(o, [0 2], 99)
   dispatch pattern 0 (axis), deduct 1 → f=98
   axis(cell(1,2), 2) = 1
-reduce #3: reduce(s, [0 3], 98)
+reduce #3: reduce(o, [0 3], 98)
   dispatch pattern 0 (axis), deduct 1 → f=97
   axis(cell(1,2), 3) = 2
 apply: 1 + 2 = 3
@@ -249,13 +249,13 @@ result: (3, 97)
 example: reduce([1,2], [4 [[9 [[0 2] [0 3]]] [[1 100] [1 200]]]], 100)
 
 reduce #1: dispatch pattern 4 (branch), deduct 1 → f=99
-reduce #2: reduce(s, [9 [[0 2] [0 3]]], 99)
+reduce #2: reduce(o, [9 [[0 2] [0 3]]], 99)
   dispatch pattern 9 (eq), deduct 1 → f=98
-  reduce #3: reduce(s, [0 2], 98) → axis → 1, f=97
-  reduce #4: reduce(s, [0 3], 97) → axis → 2, f=96
+  reduce #3: reduce(o, [0 2], 98) → axis → 1, f=97
+  reduce #4: reduce(o, [0 3], 97) → axis → 2, f=96
   eq(1, 2) = 1 (not equal)
 branch: t=1 ≠ 0, take no-branch
-reduce #5: reduce(s, [1 200], 96)
+reduce #5: reduce(o, [1 200], 96)
   dispatch pattern 1 (quote), deduct 1 → f=95
   result: 200
 result: (200, 95)

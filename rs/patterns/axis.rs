@@ -7,25 +7,25 @@
 use crate::noun::{Order, NounId, Noun};
 use crate::reduce::{Outcome, ErrorKind};
 
-pub fn axis<const N: usize>(arena: &mut Order<N>, subject: NounId, addr_ref: NounId, budget: u64) -> Outcome {
-    let addr = match arena.atom_value(addr_ref) {
+pub fn axis<const N: usize>(order: &mut Order<N>, object: NounId, addr_ref: NounId, budget: u64) -> Outcome {
+    let addr = match order.atom_value(addr_ref) {
         Some((v, _)) => v.as_u64(),
         None => return Outcome::Error(ErrorKind::Malformed),
     };
     match addr {
         0 => {
-            let digest = *arena.digest(subject);
-            match arena.hash_noun(&digest) {
+            let digest = *order.digest(object);
+            match order.hash_noun(&digest) {
                 Some(r) => Outcome::Ok(r, budget),
                 None => Outcome::Error(ErrorKind::Unavailable),
             }
         }
-        1 => Outcome::Ok(subject, budget),
+        1 => Outcome::Ok(object, budget),
         _ => {
             let bits = 64 - addr.leading_zeros() - 1;
-            let mut node = subject;
+            let mut node = object;
             for i in (0..bits).rev() {
-                match arena.get(node).inner {
+                match order.get(node).inner {
                     Noun::Cell { left, right } => {
                         node = if (addr >> i) & 1 == 1 { right } else { left };
                     }
@@ -47,10 +47,10 @@ mod tests {
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn make_axis<const N: usize>(arena: &mut Order<N>, n: u64) -> NounId {
-        let tag = arena.atom(g(0), Tag::Field).unwrap();
-        let addr = arena.atom(g(n), Tag::Field).unwrap();
-        arena.cell(tag, addr).unwrap()
+    fn make_axis<const N: usize>(order: &mut Order<N>, n: u64) -> NounId {
+        let tag = order.atom(g(0), Tag::Field).unwrap();
+        let addr = order.atom(g(n), Tag::Field).unwrap();
+        order.cell(tag, addr).unwrap()
     }
 
     #[test]

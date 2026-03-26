@@ -4,7 +4,7 @@
 algebra-independent.
 
 ```
-reduce(s, [1 c], f) = (c, f - 1)
+reduce(o, [1 c], f) = (c, f - 1)
 ```
 
 returns c literally, unevaluated. the only pattern that ignores the object.

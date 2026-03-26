@@ -6,11 +6,11 @@ use crate::reduce::{Outcome, ErrorKind, evaluate};
 use crate::hint::HintProvider;
 
 pub fn hash<const N: usize>(
-    arena: &mut Order<N>, subject: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
 ) -> Outcome {
-    let (input, budget) = match evaluate(arena, subject, body, budget, hints) { Ok(v) => v, Err(o) => return o };
-    let digest = *arena.digest(input);
-    match arena.hash_noun(&digest) {
+    let (input, budget) = match evaluate(order, object, body, budget, hints) { Ok(v) => v, Err(o) => return o };
+    let digest = *order.digest(input);
+    match order.hash_noun(&digest) {
         Some(r) => Outcome::Ok(r, budget),
         None => Outcome::Error(ErrorKind::Unavailable),
     }

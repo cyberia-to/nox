@@ -13,13 +13,13 @@ use crate::noun::{Order, NounId};
 
 /// hint provider trait — the prover's interface to inject witnesses
 pub trait HintProvider<const N: usize> {
-    /// provide a witness for the given tag and subject
+    /// provide a witness for the given tag and object
     ///
     /// tag: field element identifying WHICH hint (e.g., 0x01 = private key)
-    /// subject: the current computation subject
+    /// object: the data the formula operates on
     ///
     /// returns Some(witness_noun) or None (= halt, prover doesn't know)
-    fn provide(&self, arena: &mut Order<N>, tag: Goldilocks, subject: NounId) -> Option<NounId>;
+    fn provide(&self, order: &mut Order<N>, tag: Goldilocks, object: NounId) -> Option<NounId>;
 }
 
 /// null hint provider — always returns None (no hints available)
@@ -27,7 +27,7 @@ pub trait HintProvider<const N: usize> {
 pub struct NullHints;
 
 impl<const N: usize> HintProvider<N> for NullHints {
-    fn provide(&self, _arena: &mut Order<N>, _tag: Goldilocks, _subject: NounId) -> Option<NounId> {
+    fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
         None
     }
 }
