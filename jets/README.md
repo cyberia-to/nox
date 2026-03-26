@@ -11,15 +11,15 @@ see [[reference/jets|jets spec]] for principles, semantic contract, recognition 
 
 ## registry
 
-| group | algebra | jets | PCS backend | spec |
-|-------|---------|------|-------------|------|
-| [[nebu]] | F_p (Goldilocks) | 5 | PCS₁: Brakedown | [[nebu]] |
-| [[kuro]] | F₂ (binary tower) | 8 | PCS₂: Binius | [[kuro]] |
-| [[jali]] | R_q (polynomial ring) | 5 | PCS₃: Ring-aware | [[jali]] |
-| [[genies]] | F_q (isogeny curves) | 5 (incl. secret_hash boundary) | PCS₄: Isogeny | [[genies]] |
-| [[trop]] | (min,+) (tropical) | 6 (incl. witness_commit boundary) | PCS₅: Tropical | [[trop]] |
-| [[state]] | F_p (polynomial nouns) | level 1-3 (unlimited) | PCS₁: Brakedown | [[state]] |
-| [[decider]] | F_p (accumulator) | 1 | PCS₁: Brakedown | [[decider]] |
+| group | algebra | jets | [[lens]] | spec |
+|-------|---------|------|----------|------|
+| [[nebu]] | F_p (Goldilocks) | 5 | Brakedown | [[nebu]] |
+| [[kuro]] | F₂ (binary tower) | 8 | Binius | [[kuro]] |
+| [[jali]] | R_q (polynomial ring) | 5 | Ring-aware | [[jali]] |
+| [[genies]] | F_q (isogeny curves) | 5 (incl. secret_hash boundary) | Isogeny | [[genies]] |
+| [[trop]] | (min,+) (tropical) | 6 (incl. witness_commit boundary) | Tropical | [[trop]] |
+| [[state]] | F_p (polynomial nouns) | level 1-3 (unlimited) | Brakedown | [[state]] |
+| [[decider]] | F_p (accumulator) | 1 | Brakedown | [[decider]] |
 
 boundary jets (quantize, dequantize, gadget_decompose, secret_hash, witness_commit) live within their parent algebra — kuro, genies, and trop respectively.
 
