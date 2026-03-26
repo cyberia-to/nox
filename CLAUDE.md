@@ -355,7 +355,7 @@ conventions for organizing repositories.
 ```
 project/
 ├── src/                 implementation source code
-├── reference/           canonical specification (source of truth)
+├── specs/           canonical specification (source of truth)
 │   ├── language.md      core language/API spec
 │   ├── grammar.md       formal grammar (if applicable)
 │   ├── ir.md            internal representations
@@ -387,9 +387,9 @@ four namespaces partition functionality:
 
 source code mirrors namespaces as directories.
 
-## reference/ vs docs/
+## specs/ vs docs/
 
-reference/ is specification — defines what the system does. austere,
+specs/ is specification — defines what the system does. austere,
 complete, organized by system structure. this is the source of truth.
 when code and reference disagree, fix reference first, then propagate.
 
@@ -398,10 +398,10 @@ reader's needs (Diataxis). references spec but does not duplicate it.
 
 ## design proposals
 
-`reference/props/` holds proposals for changes not yet committed to
+`specs/props/` holds proposals for changes not yet committed to
 the spec. each proposal has status frontmatter (draft, accepted,
 rejected, implemented). proposals document desire before commitment.
-accepted proposals migrate to the relevant reference/ file.
+accepted proposals migrate to the relevant specs/ file.
 rejected proposals stay for rationale.
 
 ## agent state
@@ -486,7 +486,7 @@ docs/
 ├── explanation/     conceptual understanding
 └── README.md        index with links to all four quadrants
 
-reference/           canonical specification (separate from docs/)
+specs/           canonical specification (separate from docs/)
 ├── language.md      types, operators, builtins
 ├── grammar.md       formal grammar
 ├── ir.md            intermediate representation
@@ -497,17 +497,17 @@ reference/           canonical specification (separate from docs/)
 
 ## source of truth
 
-`reference/` is canonical. if reference/ and code disagree, resolve
-in reference/ first, then propagate to code. if implementation reveals
+`specs/` is canonical. if specs/ and code disagree, resolve
+in specs/ first, then propagate to code. if implementation reveals
 the reference is wrong or incomplete, update the reference to match
 reality.
 
-reference/ is not documentation — it is specification. docs/ explains
-and teaches. reference/ defines.
+specs/ is not documentation — it is specification. docs/ explains
+and teaches. specs/ defines.
 
 ## design proposals
 
-proposals for future changes live in `reference/props/`. each proposal
+proposals for future changes live in `specs/props/`. each proposal
 is a standalone markdown file with status frontmatter:
 
 | status | meaning |
@@ -570,4 +570,4 @@ Layer 3: 5 jets (hash, poly_eval, merkle_verify, fri_fold, ntt) — optimization
 ## do not touch zones
 
 - `Cargo.toml` dependency versions — discuss before changing
-- `reference/` — canonical spec, change there first then propagate
+- `specs/` — canonical spec, change there first then propagate
