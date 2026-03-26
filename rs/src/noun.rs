@@ -7,6 +7,9 @@
 //!
 //! everything in nox is a noun: atom(F) | cell(noun, noun)
 //! stored in a flat arena with hash-consing (DAG, not tree)
+//!
+//! hash noun (4 field elements) represented as cell(cell(h0,h1), cell(h2,h3))
+//! — preserves atom|cell axiom without extending NounInner
 
 use nebu::Goldilocks;
 
@@ -22,26 +25,20 @@ pub const NIL: NounRef = u32::MAX;
 pub enum Tag {
     Field = 0x00,
     Word = 0x01,
-    Hash = 0x02,
 }
 
-/// atom or cell — the two kinds of noun
+/// atom or cell — the two kinds of noun. nothing else.
 #[derive(Debug, Clone, Copy)]
 pub enum NounInner {
-    Atom {
-        value: Goldilocks,
-        tag: Tag,
-    },
-    Cell {
-        left: NounRef,
-        right: NounRef,
-    },
+    Atom { value: Goldilocks, tag: Tag },
+    Cell { left: NounRef, right: NounRef },
 }
 
-/// hash digest — 4 Goldilocks elements = 32 bytes
+/// hash identity — 4 Goldilocks elements = 32 bytes (truncated from hemera's 64-byte output)
+/// 128-bit collision security (birthday bound 2^64). intentional truncation per trace.md.
 pub type Digest = [Goldilocks; 4];
 
-/// arena entry — noun inner + cached hash
+/// arena entry — noun inner + cached identity hash
 #[derive(Debug, Clone, Copy)]
 pub struct NounEntry {
     pub inner: NounInner,
@@ -53,10 +50,12 @@ pub struct NounEntry {
 /// one arena per ask() invocation. freed when ask() returns.
 /// hash-consing ensures identical sub-expressions share one slot.
 pub struct Arena<const N: usize> {
+    // SAFETY: entries[0..count] are initialized. entries[count..N] are uninit.
     entries: [core::mem::MaybeUninit<NounEntry>; N],
     count: u32,
-    // hash-cons index: maps truncated hash → NounRef
-    // simple open-addressing hash table
+    // hash-cons index: open-addressing hash table, N slots
+    // load factor approaches 1.0 near capacity — acceptable because
+    // arena-full check in alloc_raw prevents insertion at 100%
     index_keys: [Digest; N],
     index_vals: [NounRef; N],
     index_mask: u32,
@@ -65,9 +64,10 @@ pub struct Arena<const N: usize> {
 impl<const N: usize> Arena<N> {
     /// create a new empty arena
     pub fn new() -> Self {
-        // N must be power of 2 for hash table
-        debug_assert!(N.is_power_of_two());
+        assert!(N.is_power_of_two(), "arena size must be power of 2");
         Self {
+            // SAFETY: MaybeUninit<T> does not require initialization.
+            // array of MaybeUninit is always valid to create uninit.
             entries: unsafe { core::mem::MaybeUninit::uninit().assume_init() },
             count: 0,
             index_keys: [[Goldilocks::ZERO; 4]; N],
@@ -78,8 +78,8 @@ impl<const N: usize> Arena<N> {
 
     /// allocate a raw noun (no hash-consing check)
     fn alloc_raw(&mut self, entry: NounEntry) -> Option<NounRef> {
-        if (self.count as usize) >= N {
-            return None; // arena full
+        if (self.count as usize) >= N - 1 {
+            return None; // leave one slot empty for hash table termination
         }
         let idx = self.count;
         self.entries[idx as usize] = core::mem::MaybeUninit::new(entry);
@@ -89,20 +89,18 @@ impl<const N: usize> Arena<N> {
 
     /// get noun entry by reference
     pub fn get(&self, r: NounRef) -> &NounEntry {
-        debug_assert!((r as usize) < self.count as usize);
+        assert!((r as usize) < self.count as usize, "NounRef out of bounds");
+        // SAFETY: entries[0..count] are initialized, and r < count
         unsafe { self.entries[r as usize].assume_init_ref() }
     }
 
-    /// allocate an atom
+    /// allocate a field-type atom
     pub fn atom(&mut self, value: Goldilocks, tag: Tag) -> Option<NounRef> {
         let inner = NounInner::Atom { value, tag };
         let hash = hash_atom(value, tag);
-
-        // check hash-cons index
         if let Some(existing) = self.index_lookup(&hash) {
             return Some(existing);
         }
-
         let r = self.alloc_raw(NounEntry { inner, hash })?;
         self.index_insert(&hash, r);
         Some(r)
@@ -110,34 +108,61 @@ impl<const N: usize> Arena<N> {
 
     /// allocate a cell (hash-consed)
     pub fn cell(&mut self, left: NounRef, right: NounRef) -> Option<NounRef> {
-        let lh = &self.get(left).hash;
-        let rh = &self.get(right).hash;
-        let hash = hash_cell(lh, rh);
-
-        // check hash-cons index — identical cells reuse existing slot
+        let lh = self.get(left).hash;
+        let rh = self.get(right).hash;
+        let hash = hash_cell(&lh, &rh);
         if let Some(existing) = self.index_lookup(&hash) {
             return Some(existing);
         }
-
         let inner = NounInner::Cell { left, right };
         let r = self.alloc_raw(NounEntry { inner, hash })?;
         self.index_insert(&hash, r);
         Some(r)
     }
 
+    /// build a hash noun: cell(cell(h0, h1), cell(h2, h3))
+    /// hash "atoms" are structured cells — preserves atom|cell axiom
+    pub fn hash_noun(&mut self, digest: &Digest) -> Option<NounRef> {
+        let h0 = self.atom(digest[0], Tag::Field)?;
+        let h1 = self.atom(digest[1], Tag::Field)?;
+        let h2 = self.atom(digest[2], Tag::Field)?;
+        let h3 = self.atom(digest[3], Tag::Field)?;
+        let left = self.cell(h0, h1)?;
+        let right = self.cell(h2, h3)?;
+        self.cell(left, right)
+    }
+
+    /// extract digest from a hash noun: cell(cell(h0, h1), cell(h2, h3)) → [h0, h1, h2, h3]
+    pub fn read_hash_noun(&self, r: NounRef) -> Option<Digest> {
+        let (left, right) = match self.get(r).inner {
+            NounInner::Cell { left, right } => (left, right),
+            _ => return None,
+        };
+        let (h0r, h1r) = match self.get(left).inner {
+            NounInner::Cell { left, right } => (left, right),
+            _ => return None,
+        };
+        let (h2r, h3r) = match self.get(right).inner {
+            NounInner::Cell { left, right } => (left, right),
+            _ => return None,
+        };
+        let h0 = self.atom_value(h0r)?.0;
+        let h1 = self.atom_value(h1r)?.0;
+        let h2 = self.atom_value(h2r)?.0;
+        let h3 = self.atom_value(h3r)?.0;
+        Some([h0, h1, h2, h3])
+    }
+
     /// hash-cons index lookup
     fn index_lookup(&self, hash: &Digest) -> Option<NounRef> {
         let mut slot = (hash[0].as_u64() as u32) & self.index_mask;
-        loop {
+        for _ in 0..N {
             let val = self.index_vals[slot as usize];
-            if val == NIL {
-                return None;
-            }
-            if self.index_keys[slot as usize] == *hash {
-                return Some(val);
-            }
+            if val == NIL { return None; }
+            if self.index_keys[slot as usize] == *hash { return Some(val); }
             slot = (slot + 1) & self.index_mask;
         }
+        None // table full — should not happen due to alloc_raw guard
     }
 
     /// hash-cons index insert
@@ -153,85 +178,81 @@ impl<const N: usize> Arena<N> {
         }
     }
 
-    /// how many nouns allocated
-    pub fn count(&self) -> u32 {
-        self.count
-    }
+    pub fn count(&self) -> u32 { self.count }
 
-    /// is this noun an atom?
     pub fn is_atom(&self, r: NounRef) -> bool {
         matches!(self.get(r).inner, NounInner::Atom { .. })
     }
 
-    /// is this noun a cell?
     pub fn is_cell(&self, r: NounRef) -> bool {
         matches!(self.get(r).inner, NounInner::Cell { .. })
     }
 
-    /// get head (left child) of a cell
     pub fn head(&self, r: NounRef) -> Option<NounRef> {
         match self.get(r).inner {
             NounInner::Cell { left, .. } => Some(left),
-            NounInner::Atom { .. } => None,
+            _ => None,
         }
     }
 
-    /// get tail (right child) of a cell
     pub fn tail(&self, r: NounRef) -> Option<NounRef> {
         match self.get(r).inner {
             NounInner::Cell { right, .. } => Some(right),
-            NounInner::Atom { .. } => None,
+            _ => None,
         }
     }
 
-    /// get atom value
     pub fn atom_value(&self, r: NounRef) -> Option<(Goldilocks, Tag)> {
         match self.get(r).inner {
             NounInner::Atom { value, tag } => Some((value, tag)),
-            NounInner::Cell { .. } => None,
+            _ => None,
         }
     }
 
-    /// get the hash/identity of a noun
-    pub fn hash(&self, r: NounRef) -> &Digest {
+    pub fn digest(&self, r: NounRef) -> &Digest {
         &self.get(r).hash
     }
 }
 
-/// hash an atom via hemera with domain separation
+/// hash an atom using hemera tree leaf mode (capacity-based domain separation)
 fn hash_atom(value: Goldilocks, tag: Tag) -> Digest {
-    // hemera capacity[14] = type_tag, capacity[9] = FLAG_CHUNK
-    // simplified: hash the value with tag as domain separator
-    let mut data = [0u8; 16];
+    let mut data = [0u8; 9];
     data[0..8].copy_from_slice(&value.as_u64().to_le_bytes());
     data[8] = tag as u8;
-    let h = hemera::hash(&data);
+    // hemera::tree::hash_leaf sets capacity[9] = FLAG_CHUNK
+    // counter = tag as domain separator in the capacity region
+    let h = hemera::tree::hash_leaf(&data, tag as u64, false);
     extract_digest(&h)
 }
 
-/// hash a cell via hemera (hash two child hashes together)
+/// hash a cell using hemera tree node mode (capacity-based domain separation)
 fn hash_cell(left: &Digest, right: &Digest) -> Digest {
-    // hemera capacity[9] = FLAG_PARENT
-    let mut data = [0u8; 64];
-    for i in 0..4 {
-        data[i * 8..(i + 1) * 8].copy_from_slice(&left[i].as_u64().to_le_bytes());
-    }
-    for i in 0..4 {
-        data[32 + i * 8..32 + (i + 1) * 8].copy_from_slice(&right[i].as_u64().to_le_bytes());
-    }
-    let h = hemera::hash(&data);
+    let lh = pack_digest(left);
+    let rh = pack_digest(right);
+    // hemera::tree::hash_node sets capacity[9] = FLAG_PARENT
+    let h = hemera::tree::hash_node(&lh, &rh, false);
     extract_digest(&h)
 }
 
-/// extract 4 Goldilocks elements from hemera output
+/// pack digest into hemera Hash for node hashing
+fn pack_digest(d: &Digest) -> hemera::Hash {
+    let mut bytes = [0u8; 64];
+    for i in 0..4 {
+        bytes[i * 8..(i + 1) * 8].copy_from_slice(&d[i].as_u64().to_le_bytes());
+    }
+    // pad remaining 32 bytes with zeros
+    hemera::Hash::from_bytes(bytes)
+}
+
+/// extract first 4 Goldilocks elements from hemera 64-byte output
+/// intentional truncation: 128-bit collision security (per trace.md)
 fn extract_digest(h: &hemera::Hash) -> Digest {
     let bytes = h.as_bytes();
     let mut digest = [Goldilocks::ZERO; 4];
     for i in 0..4 {
         let mut buf = [0u8; 8];
         buf.copy_from_slice(&bytes[i * 8..(i + 1) * 8]);
-        let val = u64::from_le_bytes(buf);
-        digest[i] = Goldilocks::new(val);
+        digest[i] = Goldilocks::new(u64::from_le_bytes(buf));
     }
     digest
 }
@@ -241,7 +262,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_atom_allocation() {
+    fn atom_allocation() {
         let mut arena = Arena::<1024>::new();
         let a = arena.atom(Goldilocks::new(42), Tag::Field).unwrap();
         assert!(arena.is_atom(a));
@@ -252,7 +273,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cell_allocation() {
+    fn cell_allocation() {
         let mut arena = Arena::<1024>::new();
         let a = arena.atom(Goldilocks::new(1), Tag::Field).unwrap();
         let b = arena.atom(Goldilocks::new(2), Tag::Field).unwrap();
@@ -263,32 +284,50 @@ mod tests {
     }
 
     #[test]
-    fn test_hash_consing() {
+    fn hash_consing_atoms() {
         let mut arena = Arena::<1024>::new();
         let a = arena.atom(Goldilocks::new(42), Tag::Field).unwrap();
         let b = arena.atom(Goldilocks::new(42), Tag::Field).unwrap();
-        // same value, same tag → same NounRef (hash-consed)
         assert_eq!(a, b);
         assert_eq!(arena.count(), 1);
     }
 
     #[test]
-    fn test_cell_hash_consing() {
+    fn hash_consing_cells() {
         let mut arena = Arena::<1024>::new();
         let x = arena.atom(Goldilocks::new(1), Tag::Field).unwrap();
         let y = arena.atom(Goldilocks::new(2), Tag::Field).unwrap();
         let c1 = arena.cell(x, y).unwrap();
         let c2 = arena.cell(x, y).unwrap();
         assert_eq!(c1, c2);
-        assert_eq!(arena.count(), 3); // 2 atoms + 1 cell
+        assert_eq!(arena.count(), 3);
     }
 
     #[test]
-    fn test_different_tags_different_nouns() {
+    fn different_tags_different_nouns() {
         let mut arena = Arena::<1024>::new();
         let a = arena.atom(Goldilocks::new(42), Tag::Field).unwrap();
         let b = arena.atom(Goldilocks::new(42), Tag::Word).unwrap();
         assert_ne!(a, b);
         assert_eq!(arena.count(), 2);
+    }
+
+    #[test]
+    fn hash_noun_roundtrip() {
+        let mut arena = Arena::<1024>::new();
+        let d = [Goldilocks::new(11), Goldilocks::new(22), Goldilocks::new(33), Goldilocks::new(44)];
+        let h = arena.hash_noun(&d).unwrap();
+        assert!(arena.is_cell(h));
+        let read = arena.read_hash_noun(h).unwrap();
+        assert_eq!(read, d);
+    }
+
+    #[test]
+    fn hash_noun_is_hash_consed() {
+        let mut arena = Arena::<1024>::new();
+        let d = [Goldilocks::new(1), Goldilocks::new(2), Goldilocks::new(3), Goldilocks::new(4)];
+        let h1 = arena.hash_noun(&d).unwrap();
+        let h2 = arena.hash_noun(&d).unwrap();
+        assert_eq!(h1, h2); // same digest → same NounRef
     }
 }
