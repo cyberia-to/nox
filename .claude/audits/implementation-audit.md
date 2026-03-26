@@ -73,7 +73,7 @@ for Rs this would be a trait:
 
 ```rust
 trait HintProvider {
-    fn provide_hint(&self, subject: &Noun, tag: u64) -> Option<Noun>;
+    fn provide_hint(&self, object: &Noun, tag: u64) -> Option<Noun>;
 }
 ```
 
@@ -146,7 +146,7 @@ note: Rs Address (32 bytes) now matches hemera output (32 bytes). Address = Part
 nox/src/
 ├── lib.rs          mod exports
 ├── noun.rs         NounRef, NounInner, NounArena<N>
-├── reduce.rs       reduce(subject, formula, budget) → Result
+├── reduce.rs       reduce(object, formula, budget) → Result
 ├── hint.rs         HintProvider trait
 ├── jet.rs          JetRegistry (const table of formula_hash → fn)
 ├── trace.rs        TraceRow, TraceWriter (streaming)

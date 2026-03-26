@@ -10,7 +10,7 @@
 //!   nox -e '[5 [[1 3] [1 5]]]' # evaluate inline formula
 //!   echo '[1 42]' | nox        # evaluate from stdin
 //!
-//! Subject defaults to atom 0. Override with --subject.
+//! Object defaults to atom 0. Override with --object.
 //! Budget defaults to 1_000_000. Override with --budget.
 
 use std::io::Read;
@@ -130,7 +130,7 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
 
     let mut formula_text = String::new();
-    let mut subject_text = String::from("0");
+    let mut object_text = String::from("0");
     let mut budget: u64 = 1_000_000;
 
     let mut i = 1;
@@ -145,12 +145,12 @@ fn main() {
                     std::process::exit(1);
                 }
             }
-            "--subject" | "-s" => {
+            "--object" | "-s" => {
                 i += 1;
                 if i < args.len() {
-                    subject_text = args[i].clone();
+                    object_text = args[i].clone();
                 } else {
-                    eprintln!("error: --subject requires an argument");
+                    eprintln!("error: --object requires an argument");
                     std::process::exit(1);
                 }
             }
@@ -203,8 +203,8 @@ fn main() {
     let mut order = Order::<ORDER_SIZE>::new();
     let hints = NullHints;
 
-    let subject = parse_noun(&mut order, &subject_text).unwrap_or_else(|e| {
-        eprintln!("error parsing subject: {}", e);
+    let object = parse_noun(&mut order, &object_text).unwrap_or_else(|e| {
+        eprintln!("error parsing object: {}", e);
         std::process::exit(1);
     });
 
@@ -213,7 +213,7 @@ fn main() {
         std::process::exit(1);
     });
 
-    match reduce(&mut order, subject, formula, budget, &hints) {
+    match reduce(&mut order, object, formula, budget, &hints) {
         Outcome::Ok(result, remaining) => {
             println!("{}", print_noun(&order, result));
             eprintln!("cost: {} (budget remaining: {})", budget - remaining, remaining);
@@ -249,7 +249,7 @@ fn print_usage() {
   nox -e '[5 [[1 3] [1 5]]]'    evaluate inline formula
   echo '[1 42]' | nox            evaluate from stdin
 
-  -s, --subject <noun>    subject (default: 0)
+  -s, --object <noun>    object (default: 0)
   -b, --budget <n>        budget (default: 1000000)
   -e <formula>            inline formula
 "

@@ -15,9 +15,9 @@ nox replaces Nock's natural numbers with [[Goldilocks field]] elements and decre
 
 ## why nox is amazing
 
-computation IS linking. `ask(ν, subject, formula, τ, a, v, t)` has seven arguments — the seven fields of a [[cyberlink]]. ordering a computation and asserting knowledge are the same act. the [[cybergraph]] is simultaneously a knowledge base and a universal memo cache. every computation anyone ever did is reusable by everyone. the more the graph grows, the fewer computations actually execute. nox does not just compute — it remembers.
+computation IS linking. `ask(ν, object, formula, τ, a, v, t)` has seven arguments — the seven fields of a [[cyberlink]]. ordering a computation and asserting knowledge are the same act. the [[cybergraph]] is simultaneously a knowledge base and a universal memo cache. every computation anyone ever did is reusable by everyone. the more the graph grows, the fewer computations actually execute. nox does not just compute — it remembers.
 
-proof-native execution. most virtual machines bolt proofs onto execution after the fact — run the program, then arithmetize the trace, then prove. nox skips the middle step. the execution trace is already a valid STARK witness. `reduce(subject, formula)` simultaneously computes the result and generates the proof artifact.
+proof-native execution. most virtual machines bolt proofs onto execution after the fact — run the program, then arithmetize the trace, then prove. nox skips the middle step. the execution trace is already a valid STARK witness. `reduce(object, formula)` simultaneously computes the result and generates the proof artifact.
 
 algebra polymorphism. the same 16 reduction patterns work over any field, any word width, any hash function. pattern semantics are universal — algebra is a parameter. a single nox program runs over Goldilocks (STARKs), F₂ (Binius), or F_{p³} (recursive composition) by selecting a different instantiation. one spec, many proof systems.
 
@@ -36,15 +36,15 @@ unified IR. nox is simultaneously the intermediate representation (all [[cyber]]
 ## architecture
 
 ```
-ask(ν, subject, formula, τ, a, v, t) → answer
+ask(ν, object, formula, τ, a, v, t) → answer
 ```
 
 the seven arguments of `ask` are the seven fields of a [[cyberlink]]. computation IS linking. the function:
 
-1. compute `order_axon = H(formula, subject)`
-2. lookup: does `axon(formula, subject)` have a verified result in the [[cybergraph]]?
+1. compute `order_axon = H(formula, object)`
+2. lookup: does `axon(formula, object)` have a verified result in the [[cybergraph]]?
    → yes: return cached result (zero computation — memoized)
-   → no: `reduce(subject, formula, focus=(τ,a))`, prove via [[zheng|STARK]]
+   → no: `reduce(object, formula, focus=(τ,a))`, prove via [[zheng|STARK]]
 3. link `order_axon → result` (with proof)
 4. return result
 
@@ -54,10 +54,10 @@ two [[cyberlinks]] per computation:
 
 | Link | From | To | Who | What it records |
 |------|------|----|-----|----------------|
-| order | formula | subject | neuron | "compute this" + payment |
+| order | formula | object | neuron | "compute this" + payment |
 | answer | order_axon | result | device | "here is the result" + proof |
 
-the order axon `H(formula, subject)` is itself a [[particle]] (axiom A6). anyone can query backlinks to it — "what results exist for this computation?" multiple devices can answer the same order. the [[coupling|ICBS]] market determines which answer the graph trusts
+the order axon `H(formula, object)` is itself a [[particle]] (axiom A6). anyone can query backlinks to it — "what results exist for this computation?" multiple devices can answer the same order. the [[coupling|ICBS]] market determines which answer the graph trusts
 
 everything is a noun — a binary tree of [[Goldilocks field]] elements. programs are nouns. data is nouns. the result is a noun.
 
