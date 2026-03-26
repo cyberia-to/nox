@@ -15,7 +15,7 @@ generic cost: ~8K constraints. with three stacked optimizations: 89 constraints 
 ```
 name:          decider
 recognition:   level 1 CCS jet (exact formula match)
-input:         HyperNova accumulator (~200 bytes) + PCS commitments
+input:         HyperNova accumulator (~200 bytes) + Lens commitments
 output:        accept / reject
 constraints:   89 (optimistic) or 825 (conservative)
 ```
@@ -26,7 +26,7 @@ constraints:   89 (optimistic) or 825 (conservative)
 |---|---|---|---|
 | 1 | CCS jet encoding | direct CCS matrix instead of nox trace | ~8K → ~2,070 (4×) |
 | 2 | batched spot-checks | 640 Brakedown checks → 1 batched sumcheck | ~1,280 → ~35 (36×) |
-| 3 | algebraic Fiat-Shamir | derive challenges from PCS commitments, zero hemera | ~736 → 0 |
+| 3 | algebraic Fiat-Shamir | derive challenges from Lens commitments, zero hemera | ~736 → 0 |
 
 ## constraint breakdown
 
@@ -64,6 +64,6 @@ light client join:
 
 ## open questions
 
-1. algebraic Fiat-Shamir soundness — formal proof that challenge derivation from PCS commitments satisfies FS security model
+1. algebraic Fiat-Shamir soundness — formal proof that challenge derivation from Lens commitments satisfies FS security model
 2. batched sumcheck interaction — can it share challenges with the main SuperSpartan sumcheck?
 3. decider jet equivalence — one-time formal verification that 89-constraint CCS = full decider

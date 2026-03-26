@@ -9,7 +9,7 @@
 | binary-jets | reference/jets.md + jets/kuro.md | 8 binary jets, 32-90× quantized inference |
 | decider-jet | reference/jets.md + jets/decider.md | 89-constraint all-history verification |
 
-ring (jali), isogeny (genies), and tropical (trop) jets specified directly in jets/ alongside their PCS backends in zheng.
+ring (jali), isogeny (genies), and tropical (trop) jets specified directly in jets/ alongside their lenses in zheng.
 
 ## active
 

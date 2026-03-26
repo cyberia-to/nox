@@ -10,7 +10,7 @@ jets that optimize PROVING state transitions. verifier jets reduce trace length 
 
 a state transition is a nox program that reads polynomial state, validates changes, and writes updated values. the 5 primitive state operations (see [[state-operations]]) are nox patterns: READ/WRITE (polynomial evaluation), ASSERT_EQ (pattern 9), ADD (pattern 5), MUL (pattern 7).
 
-with polynomial nouns, READ is O(1) polynomial evaluation via PCS opening — every table lookup is O(1) regardless of table size.
+with polynomial nouns, READ is O(1) polynomial evaluation via Lens opening — every table lookup is O(1) regardless of table size.
 
 ## recognition hierarchy
 

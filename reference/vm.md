@@ -24,7 +24,7 @@ structural patterns (0-4) are identical across all instantiations. field pattern
 
 ## execution regimes
 
-eight instantiations across five arithmetics. flat table — no hierarchy. each regime has its own field, costs, jets, and PCS backend. see [[five algebras]] for the independence criteria.
+eight instantiations across five arithmetics. flat table — no hierarchy. each regime has its own field, costs, jets, and lens. see [[five algebras]] for the independence criteria.
 
 | regime | field | repo | [[lens]] | jets | mul cost | constraints/mul | role |
 |--------|-------|------|----------|------|----------|-----------------|------|
@@ -37,7 +37,7 @@ eight instantiations across five arithmetics. flat table — no hierarchy. each 
 | trop | (min,+) | [[trop]] | Tropical | 6 tropical | — | O(\|witness\|) | choice |
 | genies | F_q (512-bit) | [[genies]] | Isogeny | 5 isogeny | 1 F_q | 1 F_q | shadow |
 
-mul cost = base F_p multiplications per one regime-native multiply. constraints/mul = STARK constraints per multiply with regime-native PCS (with jets). jali batching: N individual commitments → 1 batch via PCS₃.
+mul cost = base F_p multiplications per one regime-native multiply. constraints/mul = STARK constraints per multiply with regime-native lens (with jets). jali batching: N individual commitments → 1 batch via jali lens.
 
 ### per-regime cost table
 
@@ -57,7 +57,7 @@ mul cost = base F_p multiplications per one regime-native multiply. constraints/
 "—" = operation not defined or not meaningful for this regime. n = ring degree (1024). deferred = hemera computed at settlement boundary (~766 constraints). all costs are execution focus; STARK constraint counts are per-instantiation (see [[patterns]]).
 
 five arithmetics (repos): nebu (4 regimes), kuro (1), jali (1), trop (1), genies (1).
-five PCS backends (zheng): Brakedown (4 regimes), Binius (1), Ring-aware (1), Isogeny (1), Tropical (1).
+five lenss (zheng): Brakedown (4 regimes), Binius (1), Ring-aware (1), Isogeny (1), Tropical (1).
 
 ### type-driven regime dispatch
 
@@ -151,7 +151,7 @@ the operations are identical. the algebra is a parameter. the programmer writes 
 
 ### polynomial nouns and axis
 
-every noun is a multilinear polynomial (see nouns.md polynomial representation). axis — the fundamental navigation operation — becomes polynomial evaluation at a binary point. a PCS opening proves the evaluation in O(1) (~75 bytes proof), replacing O(depth) tree traversal. the 16 patterns are unchanged semantically — axis still navigates nouns. the implementation changes from pointer-following to polynomial evaluation. this applies across all instantiations: the noun polynomial is over the instantiated field F, and the PCS commitment uses the same field.
+every noun is a multilinear polynomial (see nouns.md polynomial representation). axis — the fundamental navigation operation — becomes polynomial evaluation at a binary point. a Lens opening proves the evaluation in O(1) (~75 bytes proof), replacing O(depth) tree traversal. the 16 patterns are unchanged semantically — axis still navigates nouns. the implementation changes from pointer-following to polynomial evaluation. this applies across all instantiations: the noun polynomial is over the instantiated field F, and the Lens commitment uses the same field.
 
 ## proof-system polymorphism
 

@@ -51,7 +51,7 @@ a phone joins the network. downloads 240 bytes. verifies in 100 nanoseconds. has
 
 ## the conservative tier
 
-the algebraic Fiat-Shamir optimization (zero hemera) requires that deriving challenges from PCS commitments satisfies the Fiat-Shamir security model. this is believed sound but not yet formally proven for this specific construction.
+the algebraic Fiat-Shamir optimization (zero hemera) requires that deriving challenges from Lens commitments satisfies the Fiat-Shamir security model. this is believed sound but not yet formally proven for this specific construction.
 
 if independent randomness is required, one hemera call remains: 89 + 736 = 825 constraints. still 10× better than the generic 8K. still cheaper than hashing a kilobyte.
 

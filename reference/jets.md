@@ -60,15 +60,15 @@ jet entry format:
 
 individual jet specifications live in `jets/`. see [[jets/README|jet registry index]] for the full table.
 
-| group | algebra | jets | PCS | spec |
+| group | algebra | jets | lens | spec |
 |-------|---------|------|-----|------|
-| nebu | F_p | 5 | PCS₁: Brakedown | [[jets/nebu]] |
-| kuro | F₂ | 8 | PCS₂: Binius | [[jets/kuro]] |
-| jali | R_q | 5 | PCS₃: Ring-aware | [[jets/jali]] |
-| genies | F_q | 5 | PCS₄: Isogeny | [[jets/genies]] |
-| trop | (min,+) | 6 | PCS₅: Tropical | [[jets/trop]] |
-| state | F_p | level 1-3 | PCS₁ | [[jets/state]] |
-| decider | F_p | 1 | PCS₁ | [[jets/decider]] |
+| nebu | F_p | 5 | nebu lens | [[jets/nebu]] |
+| kuro | F₂ | 8 | kuro lens | [[jets/kuro]] |
+| jali | R_q | 5 | jali lens | [[jets/jali]] |
+| genies | F_q | 5 | genies lens | [[jets/genies]] |
+| trop | (min,+) | 6 | trop lens | [[jets/trop]] |
+| state | F_p | level 1-3 | nebu lens | [[jets/state]] |
+| decider | F_p | 1 | nebu lens | [[jets/decider]] |
 
 boundary jets (quantize, dequantize, gadget_decompose, secret_hash, witness_commit) live within their parent algebra — not a separate group.
 

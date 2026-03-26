@@ -65,7 +65,7 @@ step 3: key switching           → nebu (F_p)
 step 4: modulus switching       → nebu (F_p)
 ```
 
-each step proves via its native PCS backend in zheng. HyperNova folds all sub-traces into one F_p accumulator. one decider, one proof. boundary cost: ~766 F_p constraints per algebra crossing.
+each step proves via its native lens in zheng. HyperNova folds all sub-traces into one F_p accumulator. one decider, one proof. boundary cost: ~766 F_p constraints per algebra crossing.
 
 ## the decider: 89 constraints
 
@@ -73,10 +73,10 @@ the universal accumulator (~200 bytes) folds all history from genesis. the decid
 
 ## the correspondence
 
-five algebras, five PCS backends in zheng, five jet families in nox, four GFP hardware primitives:
+five algebras, five lenses in zheng, five jet families in nox, four GFP hardware primitives:
 
 ```
-algebra → jets → PCS → hardware
+algebra → jets → lens → hardware
 nebu    → 5    → Brakedown     → fma, ntt, p2r, lut
 kuro    → 8    → Binius        → lut (SIMD packed)
 jali    → 5    → Ring-aware    → fma, ntt
@@ -84,4 +84,4 @@ trop    → 5    → Tropical      → lut (comparisons)
 genies  → 4    → Isogeny       → fma
 ```
 
-the stack is continuous at every level. pattern → jet → PCS → silicon. identical semantics, increasing speed. this continuity is the design invariant.
+the stack is continuous at every level. pattern → jet → lens → silicon. identical semantics, increasing speed. this continuity is the design invariant.
