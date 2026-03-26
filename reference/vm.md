@@ -34,12 +34,13 @@ five execution regimes, each with its own nox instantiation, arithmetic repo, PC
 | trop | nox<Goldilocks, Z/2^32, Hemera> | F_p (min,+ via branch+lt) | Z/2^32 | Hemera | [[trop]] | PCS₅: Tropical | 6 tropical |
 | genies | nox<F_q, Z/2^512, Hemera> | F_q (q = 4·ℓ₁·...·ℓₙ - 1) | Z/2^512 | Hemera | [[genies]] | PCS₄: Isogeny | 5 isogeny |
 
-extension instantiations for proof recursion and quantum simulation:
+extension instantiations (all provided by nebu):
 
-| instantiation | F | role |
-|--------------|---|------|
-| nox<F_{p³}, Z/2^32, Hemera> | cubic extension of Goldilocks | zheng recursive proof soundness |
-| nox<F_{p²}, Z/2^32, Hemera> | quadratic extension of Goldilocks | quantum circuit simulation |
+| instantiation | F | nebu type | role |
+|--------------|---|-----------|------|
+| nox<F_{p²}, Z/2^32, Hemera> | F_p[u]/(u²−7) | `Fp2` | quantum circuit simulation, 128-bit security |
+| nox<F_{p³}, Z/2^32, Hemera> | F_p[t]/(t³−t−1) | `Fp3` | zheng recursive proof soundness |
+| nox<F_{p⁴}, Z/2^32, Hemera> | F_p[w]/(w⁴−7) | `Fp4` | 256-bit security, recursion tower |
 
 ### how the five algebras enter nox
 
