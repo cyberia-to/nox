@@ -28,14 +28,14 @@ eight instantiations across five arithmetics. flat table — no hierarchy. each 
 
 | regime | field | repo | [[lens]] | jets | mul cost | constraints/mul | role |
 |--------|-------|------|----------|------|----------|-----------------|------|
-| nebu | F_p scalar | [[nebu]] | Brakedown | 5 verifier | 1 | 1 | truth (canonical) |
-| nebu² | F_p[u]/(u²−7) | [[nebu]]::Fp2 | Brakedown (2× wide) | fp2_mul, fp2_inv | 3 | 3 | quantum, 128-bit |
-| nebu³ | F_p[t]/(t³−t−1) | [[nebu]]::Fp3 | Brakedown (3× wide) | fp3_mul, fp3_inv | 6 | 6 | recursion soundness |
-| nebu⁴ | F_p[w]/(w⁴−7) | [[nebu]]::Fp4 | Brakedown (4× wide) | fp4_mul, fp4_inv | 9 | 9 | 256-bit, recursion tower |
-| kuro | F₂ tower | [[kuro]] | Binius | 8 binary | 1 | 1 | efficiency |
-| jali | R_q (n=1024) | [[jali]] | Ring-aware | 5 ring | 3072 | ~N (batched) | veil |
-| trop | (min,+) | [[trop]] | Tropical | 6 tropical | — | O(\|witness\|) | choice |
-| genies | F_q (512-bit) | [[genies]] | Isogeny | 5 isogeny | 1 F_q | 1 F_q | shadow |
+| nebu | scalar field | [[nebu]] | Brakedown | 5 verifier | 1 | 1 | truth (canonical) |
+| nebu² | scalar field (F_p²) | [[nebu]]::Fp2 | Brakedown (2× wide) | fp2_mul, fp2_inv | 3 | 3 | quantum, 128-bit |
+| nebu³ | scalar field (F_p³) | [[nebu]]::Fp3 | Brakedown (3× wide) | fp3_mul, fp3_inv | 6 | 6 | recursion soundness |
+| nebu⁴ | scalar field (F_p⁴) | [[nebu]]::Fp4 | Brakedown (4× wide) | fp4_mul, fp4_inv | 9 | 9 | 256-bit, recursion tower |
+| kuro | binary tower | [[kuro]] | Binius | 8 binary | 1 | 1 | efficiency |
+| jali | polynomial ring | [[jali]] | Ikat | 5 ring | 3072 | ~N (batched) | veil |
+| trop | tropical semiring | [[trop]] | Assayer | 6 tropical | — | O(\|witness\|) | choice |
+| genies | isogeny curves | [[genies]] | Porphyry | 5 isogeny | 1 F_q | 1 F_q | shadow |
 
 mul cost = base F_p multiplications per one regime-native multiply. constraints/mul = STARK constraints per multiply with regime-native lens (with jets). jali batching: N individual commitments → 1 batch via jali lens.
 
