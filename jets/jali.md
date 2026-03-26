@@ -6,7 +6,7 @@ alias: ring jets, jali jets, R_q jets, FHE jets
 ---
 # jali jets — ring (R_q)
 
-five jets for polynomial ring operations over R_q = F_p[x]/(x^n+1). FHE bootstrapping, lattice KEM, and ring convolution. proved via PCS₃ (ring-aware) in zheng.
+five jets for polynomial ring operations over R_q = F_p[x]/(x^n+1). FHE bootstrapping, lattice KEM, and ring convolution. proved via Lens₃ (ring-aware) in zheng.
 
 ## jets
 
@@ -14,7 +14,7 @@ five jets for polynomial ring operations over R_q = F_p[x]/(x^n+1). FHE bootstra
 |---|------|----------------|-----------|----------|------------------|
 | 0 | ntt_batch | n polys sharing ring → batched NTT | n×N×log(N) | n×N | blind rotation (n poly muls batched) |
 | 1 | key_switch | ct, ks_key, k → switched ct | k×N | k×log(N) | FHE key switching via automorphisms |
-| 2 | gadget_decomp | coeff, base, digits → digit sequence | ~k² | ~k | FHE bootstrapping phase 1 (→ PCS₂ boundary) |
+| 2 | gadget_decomp | coeff, base, digits → digit sequence | ~k² | ~k | FHE bootstrapping phase 1 (→ Lens₂ boundary) |
 | 3 | noise_track | bound, operation → updated bound | ~64n per op | ~30 per fold | FHE noise budget tracking |
 | 4 | blind_rotate | decomposed, bsk → rotated ct | n×N×log(N) | n×N (batched) | full blind rotation step |
 
@@ -30,7 +30,7 @@ savings:     ~log(n) factor on commitment, ~n factor on NTT correctness
 
 ## cross-algebra
 
-gadget_decomp (jet 2) crosses to F₂ (PCS₂ boundary). the digit sequence is binary — proved via Binius. HyperNova folds the F₂ sub-trace back into the F_p accumulator (~766 constraints per crossing).
+gadget_decomp (jet 2) crosses to F₂ (Lens₂ boundary). the digit sequence is binary — proved via Binius. HyperNova folds the F₂ sub-trace back into the F_p accumulator (~766 constraints per crossing).
 
 FHE bootstrapping crosses three algebras:
 ```
@@ -45,6 +45,6 @@ step 4: mod_switch        → nebu (F_p, Brakedown)
 - ntt_batch, blind_rotate → ntt (NTT butterfly engine)
 - key_switch, noise_track → fma (field multiply-accumulate)
 
-## PCS backend
+## lens
 
-PCS₃: Ring-aware (Brakedown with NTT batching, automorphism exploitation, noise accumulator)
+Lens₃: Ring-aware (Brakedown with NTT batching, automorphism exploitation, noise accumulator)

@@ -285,7 +285,7 @@ this is the entire cost model. when reduce(s, formula, f) is entered, 1 focus is
 two patterns have multi-step overhead beyond the dispatch cost. the overhead is per-instantiation:
 
 canonical (nox<Goldilocks, Z/2^32, Hemera>):
-- axis: 1 (O(1) polynomial evaluation via PCS opening — replaces legacy depth traversal)
+- axis: 1 (O(1) polynomial evaluation via Lens opening — replaces legacy depth traversal)
 - inv: 64 (square-and-multiply chain — 64 sequential multiplications)
 - hash: 300 (Poseidon2 permutation — 72 rounds + absorption/squeeze)
 
@@ -340,7 +340,7 @@ reduce_with_proof(s, formula, f, acc) =
 
 at computation end, the accumulator IS the proof. run one decider to produce the final verifiable [[zheng]] proof. no separate proving phase — proving overhead is ~30 field operations per reduce() call, folded into execution.
 
-with polynomial nouns, hemera drops to ~3 calls per execution: (1) domain separation wrap for noun identity, (2) Fiat-Shamir seed for the proof, (3) Brakedown binding for the PCS commitment. the legacy model required hundreds of hemera calls for recursive tree hashing (one permutation per cell in the noun). polynomial commitment replaces recursive hashing with O(N) field operations + 1 hemera call per identity.
+with polynomial nouns, hemera drops to ~3 calls per execution: (1) domain separation wrap for noun identity, (2) Fiat-Shamir seed for the proof, (3) Brakedown binding for the Lens commitment. the legacy model required hundreds of hemera calls for recursive tree hashing (one permutation per cell in the noun). polynomial commitment replaces recursive hashing with O(N) field operations + 1 hemera call per identity.
 
 hemera hash operations (pattern 15) during execution also fold via the sponge construction: each absorption block folds into the accumulator (~30 field ops) instead of being proved independently. a 4 KiB particle hash: ~2,956 constraints folded (was ~54,464 with independent permutations, 18× savings).
 

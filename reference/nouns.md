@@ -89,7 +89,7 @@ capacity layout for noun hashing:
 
 the hash output is 32 bytes (4 field elements). no prefix bytes, no framing — the type is inside the permutation.
 
-NOTE: the recursive hemera hash described above is the legacy structural hash. the canonical identity computation uses PCS commitments — see "polynomial representation" section. the recursive hash remains as the semantic definition (what the identity means). the PCS-based computation is the implementation (how it is computed efficiently). both produce the same identity for the same noun.
+NOTE: the recursive hemera hash described above is the legacy structural hash. the canonical identity computation uses Lens commitments — see "polynomial representation" section. the recursive hash remains as the semantic definition (what the identity means). the Lens-based computation is the implementation (how it is computed efficiently). both produce the same identity for the same noun.
 
 properties:
 - deterministic: same noun always produces same hash
@@ -113,20 +113,20 @@ cell construction is variable prepend: the first variable selects which subtree 
 every noun's identity is computed as:
 
 ```
-identity = hemera(PCS.commit(noun_polynomial) ‖ domain_tag)     32 bytes
+identity = hemera(Lens.commit(noun_polynomial) ‖ domain_tag)     32 bytes
 ```
 
-one hemera call wraps the PCS commitment with a domain separation tag. the PCS commitment itself is O(d × N) field operations where d = expander degree (~6-10) and N = number of leaves. this is the Brakedown linear-time commitment.
+one hemera call wraps the Lens commitment with a domain separation tag. the Lens commitment itself is O(d × N) field operations where d = expander degree (~6-10) and N = number of leaves. this is the Brakedown linear-time commitment.
 
-for small nouns (≤56 bytes / ≤7 field elements): cost is comparable to a direct hemera absorption — the PCS commitment over a few elements is negligible.
+for small nouns (≤56 bytes / ≤7 field elements): cost is comparable to a direct hemera absorption — the Lens commitment over a few elements is negligible.
 
-for large nouns (>56 bytes): cheaper than recursive hemera hashing. field operations replace multiple hemera permutation calls. a 4 KiB noun: ~512 leaves × ~8 field ops = ~4,096 field ops for PCS.commit, plus 1 hemera call for the identity wrap. recursive hemera would require ~64 permutations × ~200 field ops = ~12,800 field ops.
+for large nouns (>56 bytes): cheaper than recursive hemera hashing. field operations replace multiple hemera permutation calls. a 4 KiB noun: ~512 leaves × ~8 field ops = ~4,096 field ops for Lens.commit, plus 1 hemera call for the identity wrap. recursive hemera would require ~64 permutations × ~200 field ops = ~12,800 field ops.
 
-one identity scheme for ALL nouns. no size threshold. no dual paths. atom or cell, 8 bytes or 8 MiB — same computation: PCS.commit the polynomial, hemera-wrap the commitment.
+one identity scheme for ALL nouns. no size threshold. no dual paths. atom or cell, 8 bytes or 8 MiB — same computation: Lens.commit the polynomial, hemera-wrap the commitment.
 
 ### axis as polynomial evaluation
 
-axis(s, n) on a polynomial noun is a polynomial evaluation at a binary point in {0,1}^k. the binary encoding of the axis address selects the evaluation point. PCS opening proves the evaluation in O(1) — a ~75 byte proof regardless of noun depth. this replaces O(depth) tree traversal with O(1) polynomial evaluation.
+axis(s, n) on a polynomial noun is a polynomial evaluation at a binary point in {0,1}^k. the binary encoding of the axis address selects the evaluation point. Lens opening proves the evaluation in O(1) — a ~75 byte proof regardless of noun depth. this replaces O(depth) tree traversal with O(1) polynomial evaluation.
 
 ## formulas
 

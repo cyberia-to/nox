@@ -39,10 +39,10 @@ TOTAL                   |   ~400,000   |   ~50,000  | ~8×
 - ntt → ntt (direct correspondence)
 - fri_fold → ntt + fma
 
-## PCS backend
+## lens
 
-PCS₁: Brakedown (expander-graph linear codes, Merkle-free)
+Lens₁: Brakedown (expander-graph linear codes, Merkle-free)
 
 ## note on merkle_verify
 
-with polynomial nouns, most data authenticated via PCS openings (O(1) field ops) rather than Merkle paths. merkle_verify remains for backward compatibility and cross-system interop.
+with polynomial nouns, most data authenticated via Lens openings (O(1) field ops) rather than Merkle paths. merkle_verify remains for backward compatibility and cross-system interop.

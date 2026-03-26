@@ -15,13 +15,13 @@ the [[BBG]] polynomial evaluation table is a NOUN — a binary tree of [[Goldilo
 
 | state operation | nox patterns used | what it does |
 |---|---|---|
-| READ | PCS.open (polynomial evaluation) | O(1) evaluation at (dimension, key) via PCS opening |
+| READ | Lens.open (polynomial evaluation) | O(1) evaluation at (dimension, key) via Lens opening |
 | WRITE | pattern 0 (axis) + pattern 3 (cons) | navigate to position, build updated tree |
 | ASSERT_EQ | pattern 9 (eq) | check two field values are equal |
 | ADD | pattern 5 (add) | field addition on state values |
 | MUL | pattern 7 (mul) | field multiplication on state values |
 
-PCS verification (proving READ is correct) decomposes into: field arithmetic (patterns 5-8) + hemera hash (pattern 15). also from the 16.
+Lens verification (proving READ is correct) decomposes into: field arithmetic (patterns 5-8) + hemera hash (pattern 15). also from the 16.
 
 **16 patterns are the axiom. state operations are derived. no new instructions.**
 
@@ -31,11 +31,11 @@ PCS verification (proving READ is correct) decomposes into: field arithmetic (pa
 
 **READ(dimension, key) → value**
 
-O(1) polynomial evaluation via PCS opening. with polynomial nouns, the evaluation table is a multilinear polynomial — READ evaluates it at a binary point corresponding to (dimension, key). the PCS opening proof (~75 bytes) certifies the result. this is direct polynomial evaluation, not axis-on-evaluation-table-noun (tree walk).
+O(1) polynomial evaluation via Lens opening. with polynomial nouns, the evaluation table is a multilinear polynomial — READ evaluates it at a binary point corresponding to (dimension, key). the Lens opening proof (~75 bytes) certifies the result. this is direct polynomial evaluation, not axis-on-evaluation-table-noun (tree walk).
 
 ```
-nox decomposition:  PCS.open(BBG_poly, (dimension, key)) → value + proof
-constraints:        1 (PCS evaluation binding)
+nox decomposition:  Lens.open(BBG_poly, (dimension, key)) → value + proof
+constraints:        1 (Lens evaluation binding)
 ```
 
 **WRITE(dimension, key, value)**

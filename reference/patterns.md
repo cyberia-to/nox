@@ -51,9 +51,9 @@ reduce(s, [0 a], f) = (axis(s, eval(a)), f - depth)
 
 the evaluated axis index must be a field-type or word-type atom, interpreted as an integer. if eval(a) produces a cell or hash-type atom → ⊥_error.
 
-with polynomial nouns (see nouns.md polynomial representation), axis is O(1) via PCS opening: the binary encoding of the axis address is the evaluation point, and the PCS opening proof (~75 bytes) certifies the result. this replaces O(depth) tree traversal with a single polynomial evaluation. the semantic definition (recursive tree walk) is unchanged — the PCS evaluation computes the same value.
+with polynomial nouns (see nouns.md polynomial representation), axis is O(1) via Lens opening: the binary encoding of the axis address is the evaluation point, and the Lens opening proof (~75 bytes) certifies the result. this replaces O(depth) tree traversal with a single polynomial evaluation. the semantic definition (recursive tree walk) is unchanged — the Lens evaluation computes the same value.
 
-cost: 1 (polynomial evaluation via PCS opening). stark constraints: 1 (PCS evaluation binding). legacy cost model (tree traversal): depth.
+cost: 1 (polynomial evaluation via Lens opening). stark constraints: 1 (Lens evaluation binding). legacy cost model (tree traversal): depth.
 
 ### pattern 1: quote
 
@@ -238,13 +238,13 @@ reduce(s, [15 a], f) →
   (H(v_a), f1)
 ```
 
-computes the identity of the evaluated operand. with polynomial nouns, this is hemera(PCS.commit(input_polynomial) ‖ domain_tag) — the PCS commitment wrapped with domain separation. result type depends on H's output size.
+computes the identity of the evaluated operand. with polynomial nouns, this is hemera(Lens.commit(input_polynomial) ‖ domain_tag) — the Lens commitment wrapped with domain separation. result type depends on H's output size.
 
 ### canonical (Hemera-2)
 
 result is a 4-element hash (32 bytes, type tag 0x02).
 
-the hash pattern computes: PCS.commit the input noun's polynomial (O(N) field ops), then hemera-wrap the commitment with the domain tag (1 hemera call). for small inputs this is comparable to a direct hemera permutation. for large inputs it is cheaper than recursive hemera hashing.
+the hash pattern computes: Lens.commit the input noun's polynomial (O(N) field ops), then hemera-wrap the commitment with the domain tag (1 hemera call). for small inputs this is comparable to a direct hemera permutation. for large inputs it is cheaper than recursive hemera hashing.
 
 hash CAN be expressed as pure Layer 1 patterns (~1000 field ops for the Poseidon2 permutation with 24 rounds, x⁻¹ S-box in partial rounds). pattern 15 is simultaneously a Layer 1 pattern and the first Layer 3 jet. the jet accelerates; semantics unchanged.
 
@@ -298,7 +298,7 @@ optimization:     hint injects an optimal solution
 ```
 Layer │ Pattern      │ Exec Cost      │ STARK Constraints │ Rationale
 ──────┼──────────────┼────────────────┼───────────────────┼─────────────────────
-  1   │ 0 axis       │ 1              │ 1                 │ O(1) PCS opening (polynomial evaluation)
+  1   │ 0 axis       │ 1              │ 1                 │ O(1) Lens opening (polynomial evaluation)
   1   │ 1 quote      │ 1              │ 1                 │ literal return
   1   │ 2 compose    │ 1              │ 1                 │ dispatch only
   1   │ 3 cons       │ 1              │ 1                 │ cell construction

@@ -34,6 +34,6 @@ quantize (jet 3) and dequantize (jet 4) handle the nebu ↔ kuro boundary. gadge
 - all jets → lut (lookup table) engine, SIMD packed
 - quantize/dequantize → fma + lut (boundary conversion)
 
-## PCS backend
+## lens
 
-PCS₂: Binius (binary Reed-Solomon over F₂ tower via kuro)
+Lens₂: Binius (binary Reed-Solomon over F₂ tower via kuro)

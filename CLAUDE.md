@@ -560,6 +560,7 @@ Layer 3: 5 jets (hash, poly_eval, merkle_verify, fri_fold, ntt) — optimization
 | nebu | `~/git/nebu/` | Goldilocks field arithmetic |
 | hemera | `~/git/hemera/` | hash function (Poseidon2) |
 | nox | `~/git/nox/` | VM (this repo) |
+| lens | `~/git/lens/` | polynomial commitment (5 lenses) |
 | zheng | `~/git/zheng/` | proof system (SuperSpartan + WHIR) |
 | mudra | `~/git/mudra/` | crypto primitives (KEM, dCTIDH, TFHE, threshold) |
 | bbg | `~/git/bbg/` | authenticated state (Big Badass Graph) |

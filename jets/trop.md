@@ -8,7 +8,7 @@ alias: tropical jets, trop jets, optimization jets
 
 five jets for (min,+) semiring operations. optimization, assignment, decoding. no separate nox instantiation — tropical operations decompose to existing patterns (branch + lt). jets accelerate common compositions.
 
-proved via PCS₅ (tropical witness-verify) in zheng.
+proved via Lens₅ (tropical witness-verify) in zheng.
 
 ## jets
 
@@ -19,7 +19,7 @@ proved via PCS₅ (tropical witness-verify) in zheng.
 | 2 | trop_hungarian | cost matrix → assignment + cost | O(n³) branch+lt | O(n³) tmin | optimal assignment |
 | 3 | trop_viterbi | HMM, observations → state sequence | O(S²×T) branch+lt | O(S²×T) tmin | optimal sequence decoding |
 | 4 | trop_transport | μ, ν, cost matrix → transport plan | O(n³×log(n)) | O(n³×log(n)) tmin | optimal transport |
-| 5 | witness_commit | tropical witness → F_p PCS commitment | O(|witness|) | O(|witness|) | trop → nebu boundary |
+| 5 | witness_commit | tropical witness → F_p Lens commitment | O(|witness|) | O(|witness|) | trop → nebu boundary |
 
 ## execution vs proof cost
 
@@ -36,12 +36,12 @@ with jet:    tropical computation produces witness
 
 ## cross-algebra
 
-tropical witness commits via PCS₁ (Brakedown) at the boundary:
+tropical witness commits via Lens₁ (Brakedown) at the boundary:
 
 ```
 trop computation → witness (assignment, cost, dual certificate)
   ↓
-witness_commit boundary jet: PCS₁.commit(witness) → F_p commitment
+witness_commit boundary jet: Lens₁.commit(witness) → F_p commitment
   ↓
 zheng verification in F_p (structural + cost + optimality checks)
 ```
@@ -50,6 +50,6 @@ zheng verification in F_p (structural + cost + optimality checks)
 
 - all comparisons → lut (lookup table for branch+lt composition)
 
-## PCS backend
+## lens
 
-PCS₅: Tropical (witness-verify protocol, delegates commitment to PCS₁)
+Lens₅: Tropical (witness-verify protocol, delegates commitment to Lens₁)
