@@ -22,8 +22,8 @@ columns (16 = 2⁴ registers, each one F element):
   r6:   operand B value
   r7:   result value (atom value for atoms, H(result)[0] for cells,
                        or Lens commitment element for polynomial noun references)
-  r8:   focus before
-  r9:   focus after
+  r8:   budget before
+  r9:   budget after
   r10:  type tag A (0x00 field, 0x01 word, 0x02 hash)
   r11:  type tag result
   r12:  auxiliary 0 (pattern-specific)
@@ -70,7 +70,7 @@ each reduce() call produces 1 trace row. operand values (r5, r6) are connected t
 ```
 pattern 5 (add):
   r7 = r5 + r6                              degree 1
-  r9 = r8 - 1                               focus decrement
+  r9 = r8 - 1                               budget decrement
 
 pattern 7 (mul):
   r7 = r5 × r6                              degree 2
@@ -139,24 +139,24 @@ same formula: r3_{t+1} = r3_t AND r4_{t+1} = r4_t
 new formula:  r3_{t+1}, r4_{t+1} set by sub-expression dispatch
 ```
 
-## focus decrement constraints
+## budget decrement constraints
 
 ```
-single-row patterns:  r9 = r8 - 1            (1 focus per reduce call)
-axis:                 r9 = r8 - 1            (1 focus — O(1) Lens opening)
-inv:                  r9 = r8 - 64           (64 focus for square-and-multiply)
-hash:                 r9 = r8 - 200          (200 focus for Poseidon2 hemera)
+single-row patterns:  r9 = r8 - 1            (1 per reduce call)
+axis:                 r9 = r8 - 1            (1 — O(1) Lens opening)
+inv:                  r9 = r8 - 64           (64 for square-and-multiply)
+hash:                 r9 = r8 - 200          (200 for Poseidon2 hemera)
 ```
 
 ## error and halt encoding
 
 ```
 r15 = 0: ok — pattern completed successfully
-r15 = 1: halt — focus exhausted (r8 < cost)
+r15 = 1: halt — budget exhausted (r8 < cost)
 r15 = 2: error — type/semantic error
 
 when r15 = 1 (halt):
-  r8 = remaining focus (insufficient for next pattern)
+  r8 = remaining budget (insufficient for next pattern)
   r7 = 0 (no result)
 
 when r15 = 2 (error):

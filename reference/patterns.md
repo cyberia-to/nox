@@ -273,7 +273,7 @@ PROVER_INJECT: → Noun
   verifier: checks via stark (multilinear trace + sumcheck)
   cost:     hint dispatch costs 1. the two sub-reductions (constraint
             evaluation and check application) cost whatever they cost.
-            witness search (PROVER_INJECT) is external — zero focus cost.
+            witness search (PROVER_INJECT) is external — zero budget cost.
   memo:     NOT memoizable (different provers may inject different valid witnesses)
 ```
 
@@ -314,7 +314,7 @@ Layer │ Pattern      │ Exec Cost      │ STARK Constraints │ Rationale
   2   │ 16 hint      │ 1              │ 1                 │ inject + dispatch
 ```
 
-the exec cost is the focus deducted for THIS pattern's dispatch. sub-expression
+the exec cost is the budget deducted for THIS pattern's dispatch. sub-expression
 reduce() calls deduct their own costs separately. three patterns have multi-step
 overhead (axis: depth traversal steps, inv: 64 sequential multiplications,
 hash: 200 Poseidon2 round rows). all other patterns cost exactly 1.
@@ -330,15 +330,15 @@ inv(2) = 9223372034707292161
 inv(0) = ⊥_error
 
 reduce([1,2], [5 [[0 2] [0 3]]], 100) = (3, 97)
-  // add(1) + axis(1) + axis(1) = 3 reduce() calls, 3 focus
+  // add(1) + axis(1) + axis(1) = 3 reduce() calls, 3 budget
 
 reduce(42, [1 7], 10) = (7, 9)
-  // quote(1) = 1 reduce() call, 1 focus
+  // quote(1) = 1 reduce() call, 1 budget
 
 reduce([1,2], [3 [[0 2] [0 3]]], 100) = (cell(1, 2), 97)
-  // cons(1) + axis(1) + axis(1) = 3 reduce() calls, 3 focus
+  // cons(1) + axis(1) + axis(1) = 3 reduce() calls, 3 budget
 
 reduce([1,2], [4 [[9 [[0 2] [0 3]]] [[1 100] [1 200]]]], 100)
   = (200, 95)
-  // branch(1) + eq(1) + axis(1) + axis(1) + quote(1) = 5 reduce() calls, 5 focus
+  // branch(1) + eq(1) + axis(1) + axis(1) + quote(1) = 5 reduce() calls, 5 budget
 ```

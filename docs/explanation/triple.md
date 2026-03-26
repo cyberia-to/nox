@@ -1,8 +1,8 @@
 # the triple
 
-object, formula, focus — the three inputs to every nox computation. the first two come from [[Nock]]. the third is new, and it changes everything.
+object, formula, budget — the three inputs to every nox computation. the first two come from [[Nock]]. the third is new, and it changes everything.
 
-## reduce(object, formula, focus) → result
+## reduce(object, formula, budget) → result
 
 every nox reduction takes exactly three inputs.
 
@@ -10,14 +10,14 @@ object is what the program knows — the environment, the data, the context. in 
 
 formula is what the program does — the code, the instructions, the transformation. a formula is a noun of the form `(tag . body)` where tag selects one of seventeen patterns. the formula transforms the object into a result.
 
-focus is what the program costs — the resource budget, the attention bound. every pattern deducts from focus. when focus reaches zero, computation halts.
+budget is what the program costs — a resource counter. every pattern deducts from budget. when budget reaches zero, computation halts. the protocol decides what token denominates the budget.
 
 ## object-formula duality
 
 in nox, programs are nouns. data is nouns. the distinction between code and data is purely contextual — the same noun can be an object in one reduction and a formula in another.
 
 ```
-reduce(object, formula, focus)
+reduce(object, formula, budget)
 
 object = noun     (the data)
 formula = noun     (the code)
@@ -28,11 +28,11 @@ this duality is structural, not semantic. the VM does not "know" which noun is c
 
 the consequence: self-modifying programs, interpreters, compilers, and proof verifiers are all ordinary nox computations. a nox program that takes another nox program as its object and executes it is just pattern 2 (compose) — evaluate the formula-noun to get a new formula, then apply it to the object. there is no special "eval" mechanism. the universality is built in.
 
-## focus: the third element
+## budget: the third element
 
-[[Nock]] has object and formula. nox adds focus. this addition is what makes nox suitable for a decentralized network where computation must be bounded and priced.
+[[Nock]] has object and formula. nox adds budget. this addition is what makes nox suitable for a decentralized network where computation must be bounded and priced.
 
-without focus, a formula can loop forever. `[2 [[1 [2 [[0 1] [0 1]]]] [1 [2 [[0 1] [0 1]]]]]]` — compose applied to a self-referencing formula — never terminates. in a single-machine system, you kill the process. in a decentralized network, who decides when to stop? focus solves this: every pattern costs focus, the budget is finite, termination is guaranteed.
+without budget, a formula can loop forever. `[2 [[1 [2 [[0 1] [0 1]]]] [1 [2 [[0 1] [0 1]]]]]]` — compose applied to a self-referencing formula — never terminates. in a single-machine system, you kill the process. in a decentralized network, who decides when to stop? budget solves this: every pattern costs, the budget is finite, termination is guaranteed.
 
 ```
 reduce(s, [5 [a b]], f) =
@@ -42,7 +42,7 @@ reduce(s, [5 [a b]], f) =
   ((v_a + v_b) mod p, f2)
 ```
 
-focus is not gas (Ethereum). gas is an economic mechanism bolted onto a virtual machine that was designed without it. focus is a semantic parameter of reduction — it appears in the type signature, it affects the result (Halt vs value), it is part of the computation's identity.
+budget is not gas (Ethereum). gas is an economic mechanism bolted onto a virtual machine that was designed without it. budget is a semantic parameter of reduction — it appears in the type signature, it affects the result (Halt vs value), it is part of the computation's identity.
 
 ## focus as attention
 
@@ -50,7 +50,7 @@ in [[cyber]], focus is the same resource that weights [[cyberlinks]] in the [[cy
 
 this is the resource theory of nox. a neuron that runs an expensive computation pays the same focus it would spend creating thousands of cyberlinks. the network does not distinguish between "processing" and "communicating" — both consume the same resource, both are metered by the same mechanism, both contribute to the same focus-weighted graph.
 
-the focus budget also determines [[cyberank]] influence. a neuron's links are weighted by the focus spent on them. a neuron that exhausts its focus on computation has less influence in the knowledge graph. a neuron that prioritizes linking has less computation available. the tradeoff is fundamental — it forces neurons to allocate attention between thinking and speaking, between private computation and public knowledge.
+the budget also determines [[cyberank]] influence. a neuron's links are weighted by the focus spent on them. a neuron that exhausts its focus on computation has less influence in the knowledge graph. a neuron that prioritizes linking has less computation available. the tradeoff is fundamental — it forces neurons to allocate attention between thinking and speaking, between private computation and public knowledge.
 
 ## the triple and the stark
 

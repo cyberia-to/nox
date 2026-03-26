@@ -54,7 +54,7 @@ mul cost = base F_p multiplications per one regime-native multiply. constraints/
 | hash | 300 | 300 | 300 | 300 | deferred | 300 | 300 | deferred |
 | STARK/mul | ~32 | 3 | 6 | 9 | 1 | ~N (batch) | O(w) | 1 F_q |
 
-"—" = operation not defined or not meaningful for this regime. n = ring degree (1024). deferred = hemera computed at settlement boundary (~766 constraints). all costs are execution focus; STARK constraint counts are per-instantiation (see [[patterns]]).
+"—" = operation not defined or not meaningful for this regime. n = ring degree (1024). deferred = hemera computed at settlement boundary (~766 constraints). all costs are execution budget; STARK constraint counts are per-instantiation (see [[patterns]]).
 
 five arithmetics (repos): nebu (4 regimes), kuro (1), jali (1), trop (1), genies (1).
 five lenses (zheng): Brakedown (4 regimes), Binius (1), Ikat (1), Porphyry (1), Assayer (1).
@@ -223,7 +223,7 @@ all algebras settle through Goldilocks via Hemera (Poseidon2 over Goldilocks). t
 
 - nox<F₂> programs must defer Hemera to settlement (~10 constraints deferred, ~736 at settlement)
 - nox<F_{p³}> programs compute Hemera natively (Hemera operates over base field F_p)
-- nox<F_p> programs compute Hemera natively (200 focus cost)
+- nox<F_p> programs compute Hemera natively (200 budget cost)
 
 the polymorphism is real for computation but asymmetric for commitment. Goldilocks is the anchor field. all algebras settle through it.
 
@@ -257,7 +257,7 @@ remove Layer 3: identical results, orders of magnitude slower. remove Layer 2: n
 
 ## adding new instantiations
 
-the 4-bit encoding, the trace layout, the focus metering, the confluence property — all are properties of the abstract pattern set, not of a specific field. a new instantiation reuses the same spec with different F, W, H parameters. see the five algebras section for the current instantiation table and cross-algebra composition.
+the 4-bit encoding, the trace layout, the budget metering, the confluence property — all are properties of the abstract pattern set, not of a specific field. a new instantiation reuses the same spec with different F, W, H parameters. see the five algebras section for the current instantiation table and cross-algebra composition.
 
 ## specification index
 

@@ -45,7 +45,7 @@ in conventional architectures, memory is a flat array of bytes. addresses are in
 
 in nox, memory is a binary tree. addresses are axis paths — binary numbers that trace a route from root to leaf. access is O(depth). the model has different tradeoffs: no aliasing (trees are persistent), no mutation (new trees share structure with old trees), no garbage collection (reference counting on tree nodes, or structural sharing with copy-on-write).
 
-the O(depth) access cost is real. but depth grows logarithmically with the number of leaves — a tree with a million leaves has depth ~20. and the cost is explicit in the focus budget: axis costs 1 + depth. the programmer and the [[stark]] prover both see the same cost model. there are no hidden memory operations behind an O(1) abstraction.
+the O(depth) access cost is real. but depth grows logarithmically with the number of leaves — a tree with a million leaves has depth ~20. and the cost is explicit in the budget: axis costs 1 + depth. the programmer and the [[stark]] prover both see the same cost model. there are no hidden memory operations behind an O(1) abstraction.
 
 ## homoiconicity
 

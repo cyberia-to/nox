@@ -23,7 +23,7 @@ nox has 7 canonical spec files (vm, nouns, patterns, reduction, jets, trace, enc
 |-----------|--------|----------------------|
 | nouns.md | canonical v0.2 | **yes** — atom\|cell, type tags, axis addressing, coercion rules all defined |
 | patterns.md | canonical v0.2 | **yes** — 17 patterns with semantics, types, costs, test vectors |
-| reduction.md | canonical v0.2 | **yes** — ask()/reduce() interface, focus metering, confluence proof, error types |
+| reduction.md | canonical v0.2 | **yes** — ask()/reduce() interface, budget metering, confluence proof, error types |
 | encoding.md | canonical v0.2 | **yes** — 3 sizes (8/32/64), content addressing, canonical invariants |
 | trace.md | canonical v0.2 | **yes** — 16 registers, per-pattern row layout, constraint structure |
 | vm.md | canonical v0.2 | **mostly** — hemera params updated, see gaps below |
@@ -97,7 +97,7 @@ the spec mentions `(H(obj), H(formula)) → H(result)` caching but doesn't speci
 
 ### G7: multi-computation batch API (low)
 
-the ask() interface handles one computation. how does the VM process a batch (e.g., a block of signals)? is focus shared across computations or per-computation?
+the ask() interface handles one computation. how does the VM process a batch (e.g., a block of signals)? is budget shared across computations or per-computation?
 
 **action**: define multi-computation interface in nox/reference/vm.md
 
@@ -146,13 +146,13 @@ note: Rs Address (32 bytes) now matches hemera output (32 bytes). Address = Part
 nox/src/
 ├── lib.rs          mod exports
 ├── noun.rs         NounRef, NounInner, NounArena<N>
-├── reduce.rs       reduce(subject, formula, focus) → Result
+├── reduce.rs       reduce(subject, formula, budget) → Result
 ├── hint.rs         HintProvider trait
 ├── jet.rs          JetRegistry (const table of formula_hash → fn)
 ├── trace.rs        TraceRow, TraceWriter (streaming)
 ├── encode.rs       Noun → [u8; 8|32|64], [u8] → Noun
 ├── memo.rs         MemoCache<N> (BoundedMap-based)
-└── focus.rs        Focus type (nebu field element or u64)
+└── budget.rs       Budget type (nebu field element or u64)
 ```
 
 dependencies: nebu (field arithmetic), hemera (hash)

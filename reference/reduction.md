@@ -5,7 +5,7 @@ status: canonical
 
 ## overview
 
-reduction is the execution model of nox. a formula is applied to an object under a focus budget, producing a result. the reduction rules are algebra-independent — they work identically across all nox<F, W, H> instantiations. pattern dispatch costs and constraint counts are per-instantiation (see patterns.md).
+reduction is the execution model of nox. a formula is applied to an object under a resource budget, producing a result. the reduction rules are algebra-independent — they work identically across all nox<F, W, H> instantiations. pattern dispatch costs and constraint counts are per-instantiation (see patterns.md).
 
 ## interface
 
@@ -18,7 +18,7 @@ ask : (ν, Object, Formula, τ, a, v, t) → Answer
   Object   : Noun    — the environment, the data, the context
   Formula  : Noun    — the code (cell of form [tag body])
   τ        : Token   — denomination of payment
-  a        : Amount  — how much to pay (focus budget)
+  a        : Amount  — how much to pay (resource budget)
   v        : Valence — prediction about result quality {-1, 0, +1}
   t        : Time    — block height
 ```
@@ -30,26 +30,26 @@ ask : (ν, Object, Formula, τ, a, v, t) → Answer
 the internal execution engine:
 
 ```
-reduce : (Object, Formula, Focus) → Result
+reduce : (Object, Formula, Budget) → Result
 
   Object   : Noun    — the environment, the data, the context
   Formula  : Noun    — the code (cell of form [tag body])
-  Focus    : F       — resource budget (element of the instantiated field),
+  Budget   : F       — resource budget (element of the instantiated field),
                        decremented per pattern
                        comparison (f < cost) uses integer ordering on canonical representatives
                        the Halt guard prevents subtraction from ever wrapping
 
-Result = (Noun, Focus')     — success with remaining focus
-       | Halt               — focus exhausted (f < cost of next pattern)
+Result = (Noun, Budget')     — success with remaining budget
+       | Halt               — budget exhausted (f < cost of next pattern)
        | ⊥_error            — type/semantic error (bitwise on hash, inv(0), axis on atom)
        | ⊥_unavailable      — referenced content not retrievable (network partition)
 ```
 
-in the canonical instantiation (nox<Goldilocks>), Focus is an F_p element with comparison on [0, p).
+in the canonical instantiation (nox<Goldilocks>), Budget is an F_p element with comparison on [0, p).
 
-## focus metering
+## budget metering
 
-every reduce() call costs 1 focus, deducted before the pattern executes. if remaining focus is less than 1 (or less than the multi-step cost for axis/inv/hash), reduction halts.
+every reduce() call costs 1, deducted before the pattern executes. if remaining budget is less than 1 (or less than the multi-step cost for axis/inv/hash), reduction halts.
 
 ```
 reduce(s, formula, f) =
@@ -58,7 +58,7 @@ reduce(s, formula, f) =
   ... dispatch by tag, deducting cost from f ...
 ```
 
-focus is the same resource that weights cyberlinks in the cybergraph. a neuron spends focus to think (run nox programs) and to speak (create cyberlinks). the budget is unified — attention and computation are the same currency.
+the budget is a resource counter. the protocol decides what token denominates it (will, CYB, or another). the VM does not know — it only decrements.
 
 ## evaluation order
 
@@ -91,9 +91,9 @@ Layer 1 patterns form an orthogonal rewrite system:
 
 by the Huet-Levy theorem (1980), orthogonal term rewriting systems are confluent without requiring termination.
 
-confluence holds for the term rewriting system (the pure reduction rules). with finite focus, the full reduce() function is confluent only when focus is sufficient for all reduction paths to reach a normal form. with insufficient focus, different evaluation strategies may halt at different points — one path may succeed where another exhausts focus. the result noun, when produced, is always the same; whether it is produced depends on evaluation strategy and available focus.
+confluence holds for the term rewriting system (the pure reduction rules). with finite budget, the full reduce() function is confluent only when budget is sufficient for all reduction paths to reach a normal form. with insufficient budget, different evaluation strategies may halt at different points — one path may succeed where another exhausts budget. the result noun, when produced, is always the same; whether it is produced depends on evaluation strategy and available budget.
 
-consequence: for any (object, formula) pair with sufficient focus, the result depends only on what the program IS, never on how it was evaluated. parallel reduction, lazy reduction, eager reduction, any mixture — the answer is the same.
+consequence: for any (object, formula) pair with sufficient budget, the result depends only on what the program IS, never on how it was evaluated. parallel reduction, lazy reduction, eager reduction, any mixture — the answer is the same.
 
 consequence: content-addressed memoization is sound. `(H(object), H(formula))` uniquely determines `H(result)` for successful completions. the memo table caches only successful results (status = 0).
 
@@ -125,7 +125,7 @@ Pattern 4 (branch):   [4 [t [c d]]]
 
 all binary arithmetic and bitwise patterns can evaluate both operands in parallel. branch is the only pattern that enforces sequential evaluation (test before choice).
 
-NOTE on focus and parallelism: the formal reduction rules thread focus sequentially (f → f1 → f2), which contradicts parallel evaluation of sub-expressions. for parallelism to work, the focus budget must be partitioned between parallel branches (e.g. split f equally, or pre-compute sub-expression costs). the partitioning scheme is not yet specified. confluence guarantees the result is identical regardless of evaluation order, but the focus accounting must produce the same final value. this is an open specification gap.
+NOTE on budget and parallelism: the formal reduction rules thread budget sequentially (f → f1 → f2), which contradicts parallel evaluation of sub-expressions. for parallelism to work, the resource budget must be partitioned between parallel branches (e.g. split f equally, or pre-compute sub-expression costs). the partitioning scheme is not yet specified. confluence guarantees the result is identical regardless of evaluation order, but the budget accounting must produce the same final value. this is an open specification gap.
 
 ## global memoization via cybergraph
 
@@ -144,7 +144,7 @@ ask(ν, object, formula, τ, a, v, t) → answer
   1. order_axon = H(formula, object)
   2. lookup axon in cybergraph
      → verified result exists: return cached (zero compute)
-     → no result: reduce(object, formula, focus=(τ,a)), prove
+     → no result: reduce(object, formula, budget=(τ,a)), prove
   3. link order_axon → result (with stark proof)
   4. return result
 ```
@@ -194,7 +194,7 @@ reduce(s, [5 [a b]], f) =
   ((v_a + v_b) mod p, f2)
 ```
 
-Halt propagates identically — if a sub-expression exhausts focus, the parent halts.
+Halt propagates identically — if a sub-expression exhausts budget, the parent halts.
 
 ## pattern 16: hint interface
 
@@ -222,7 +222,7 @@ reduce(s, [16 [tag_f check_f]], f):
   1. tag = reduce(s, tag_f, f - 1)           // evaluate tag expression
      if tag is error/halt → propagate
   2. witness = provider.provide(tag, s)       // ask prover
-     if witness == Halt → return Halt(f')     // clean halt, focus preserved
+     if witness == Halt → return Halt(f')     // clean halt, budget preserved
   3. result = reduce([witness s], check_f, f')  // validate: check runs on [witness subject]
      if result is error → return Error(HintRejected)
   4. return result
@@ -252,23 +252,23 @@ if check fails (error) → HintRejected. the witness was invalid.
 ### properties
 
 - **synchronous**: hint is a function call, not an event
-- **no hint = halt**: not an error. the prover simply doesn't know. focus preserved for caller
+- **no hint = halt**: not an error. the prover simply doesn't know. budget preserved for caller
 - **hint rejected = error**: the witness failed validation. prover bug
 - **not memoizable**: different provers provide different valid witnesses. hint-tainted computation trees excluded from global cache. pure sub-expressions within remain memoizable
 - **confluence broken intentionally**: multiple valid witnesses may satisfy the same check. this is correct — it is what makes zero-knowledge possible
 - **verifier never calls provide()**: the zheng proof covers steps 1 and 3. the witness enters the trace as a value; constraints verify the check formula
 
-### focus cost
+### budget cost
 
-hint dispatch: 1 focus (same as all patterns). tag evaluation: cost of tag_f. check evaluation: cost of check_f. total: 1 + cost(tag_f) + cost(check_f). if hint halts, only 1 + cost(tag_f) consumed.
+hint dispatch: 1 (same as all patterns). tag evaluation: cost of tag_f. check evaluation: cost of check_f. total: 1 + cost(tag_f) + cost(check_f). if hint halts, only 1 + cost(tag_f) consumed.
 
 ## Result encoding
 
 Result is not a noun. it is the return type of reduce(). in the content-addressed protocol:
 
 ```
-success:     (status=0, H(result), focus_remaining)   — noun identity + focus
-halt:        (status=1, focus_remaining)               — no result noun
+success:     (status=0, H(result), budget_remaining)   — noun identity + remaining budget
+halt:        (status=1, budget_remaining)               — no result noun
 error:       (status=2, error_kind)                    — no result noun
 ```
 
@@ -276,11 +276,11 @@ unavailable is an error (status=2) with error_kind=3. it is not a separate statu
 
 the trace encodes Result in r15 (status) and r12 (error kind). the instance includes status and H(result) for success cases (H(result) = 0 when status ≠ 0, see trace.md). errors are transient computation outcomes, not persistent data — they have no content-addressed storage entry.
 
-## focus accounting
+## budget accounting
 
-**rule: every reduce() call costs 1 focus.**
+**rule: every reduce() call costs 1.**
 
-this is the entire cost model. when reduce(s, formula, f) is entered, 1 focus is deducted for dispatch (reading the tag, selecting the pattern). sub-expression reduce() calls deduct their own costs recursively. the total focus consumed by a computation is the total number of reduce() calls in its evaluation tree.
+this is the entire cost model. when reduce(s, formula, f) is entered, 1 is deducted for dispatch (reading the tag, selecting the pattern). sub-expression reduce() calls deduct their own costs recursively. the total budget consumed by a computation is the total number of reduce() calls in its evaluation tree.
 
 two patterns have multi-step overhead beyond the dispatch cost. the overhead is per-instantiation:
 
@@ -305,7 +305,7 @@ apply: 1 + 2 = 3
 result: (3, 97)
 ```
 
-3 reduce() calls = 3 focus consumed. matches test vector.
+3 reduce() calls = 3 budget consumed. matches test vector.
 
 ```
 example: reduce([1,2], [4 [[9 [[0 2] [0 3]]] [[1 100] [1 200]]]], 100)
@@ -323,7 +323,7 @@ reduce #5: reduce(s, [1 200], 96)
 result: (200, 95)
 ```
 
-5 reduce() calls = 5 focus consumed. matches test vector.
+5 reduce() calls = 5 budget consumed. matches test vector.
 
 ## proof-carrying reduction
 
@@ -363,7 +363,7 @@ signal = {
 σ is the proof-carrying accumulator. it proves:
   - all reduce() calls were valid (correct pattern dispatch)
   - all hemera hashes were computed correctly (folded sponge)
-  - focus was sufficient and correctly metered
+  - budget was sufficient and correctly metered
   - the result noun has the claimed identity H(result)
 
 verification: one zheng decider call (10-50 μs), independent of computation size.
