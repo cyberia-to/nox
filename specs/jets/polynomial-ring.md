@@ -2,7 +2,7 @@
 tags: nox, jets
 crystal-type: entity
 crystal-domain: comp
-alias: ring jets, jali jets, R_q jets, FHE jets
+alias: ring jets, polynomial ring jets, R_q jets, FHE jets
 ---
 # jali jets — ring (R_q)
 

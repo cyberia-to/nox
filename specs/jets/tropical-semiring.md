@@ -2,7 +2,7 @@
 tags: nox, jets
 crystal-type: entity
 crystal-domain: comp
-alias: tropical jets, trop jets, optimization jets
+alias: tropical jets, tropical semiring jets, optimization jets
 ---
 # trop jets — tropical (min,+)
 

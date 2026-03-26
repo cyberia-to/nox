@@ -276,4 +276,4 @@ the 4-bit encoding, the trace layout, the budget metering, the confluence proper
 |-------|------|----------|----------|
 | nebu | ~/git/nebu/rs | Goldilocks field arithmetic | F_p type, add, sub, mul, inv, roots of unity |
 | hemera | ~/git/hemera/rs | Hemera hash (Poseidon2-Goldilocks) | H(), domain separation, Merkle mode |
-| zheng | ~/git/zheng/ | proof system (SuperSpartan + WHIR) | stark proving/verifying (downstream consumer of trace) |
+| zheng | ~/git/zheng/ | proof system (SuperSpartan + Brakedown) | stark proving/verifying (downstream consumer of trace) |

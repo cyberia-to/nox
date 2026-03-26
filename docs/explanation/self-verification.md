@@ -26,7 +26,7 @@ the trust chain does not end at an unauditable layer. it ends at the mathematics
 
 level 0: a nox program runs. it produces an execution trace. the trace is proved by the [[stark]] prover. output: a proof P₀ of ~60-157 KiB.
 
-level 1: the verifier (a nox program) takes P₀ as its object and the verification formula as its formula. it runs (~70,000 patterns with jets). it produces an execution trace. that trace is proved. output: a proof P₁ of ~60-157 KiB.
+level 1: the verifier (a nox program) takes P₀ as its object and the verification formula as its formula. it runs (~825 constraints with CCS jet). it produces an execution trace. that trace is proved. output: a proof P₁ of ~2 KiB.
 
 level 2: the verifier takes P₁ as its object. it runs. it produces P₂ of ~60-157 KiB.
 
@@ -50,20 +50,15 @@ this is the scalability mechanism of [[cyber]]. the chain does not re-execute tr
 
 ## the verifier's cost
 
-with jets, the stark verifier costs ~70,000 patterns per recursion level:
+with Brakedown (Merkle-free PCS), the zheng verifier is pure field arithmetic. canonical costs from zheng/specs/verifier.md:
 
 ```
-parse proof:            ~1,000 patterns
-Fiat-Shamir challenges: ~5,000 patterns  (hash jet)
-Merkle verification:    ~50,000 patterns (merkle_verify jet)
-constraint evaluation:  ~3,000 patterns  (poly_eval jet)
-WHIR verification:      ~10,000 patterns (fri_fold jet)
-total:                  ~70,000 patterns
+generic (no jets):           ~8,000 constraints
+CCS jet + batch Brakedown:      ~825 constraints
++ algebraic Fiat-Shamir:          ~89 constraints
 ```
 
-without jets, the same verification costs ~600,000 patterns. the 8.5× jet improvement is what makes recursive composition practical — each recursion level must be cheap enough that the proving cost does not dominate block production time.
-
-at ~70,000 patterns per level, a two-level recursion (proof-of-proof) costs ~140,000 patterns. a three-level recursion (proof-of-proof-of-proof, used for aggregation of aggregations) costs ~210,000 patterns. the cost scales linearly with recursion depth, and each level produces a constant-size proof.
+per-fold cost: ~30 field ops + 1 hemera hash. the cost scales linearly with recursion depth, and each level produces a constant-size proof (~2 KiB).
 
 ## the verifier as a program
 

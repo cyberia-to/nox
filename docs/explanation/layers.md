@@ -55,17 +55,17 @@ without Layer 2, nox would be fully transparent. every computation would be publ
 
 five jets: hash, poly_eval, merkle_verify, fri_fold, ntt. each is observationally equivalent to a composition of Layer 1 patterns — same input, same output, different speed.
 
-the selection criterion is specific: recursive [[stark]] verification. running the [[stark]] verifier inside nox (to produce a proof-of-proof) costs ~600,000 Layer 1 patterns without jets, ~70,000 with jets. this 8.5× reduction is what makes recursive proof composition practical.
+the selection criterion is specific: recursive [[stark]] verification and general-purpose computation. with Brakedown (Merkle-free PCS), the zheng verifier costs ~8,000 constraints (generic) or ~825 (CCS jet + batch). see zheng/specs/verifier.md for canonical costs.
 
 Layer 3 preserves confluence. a jet is a semantic no-op — replacing it with its Layer 1 expansion produces identical results on all inputs. the test is automated: a harness runs both versions on random inputs and checks equality. if any jet ever disagrees with its pure equivalent, the jet is buggy and must be fixed or removed.
 
-the ontological status of Layer 3 is "pragmatics." Layer 1 defines what is true. Layer 2 defines what is possible. Layer 3 defines what is fast. speed matters for engineering — recursive verification at 600K patterns per level is too expensive for practical block production. but speed does not affect meaning. remove all jets and every program still produces the same result.
+the ontological status of Layer 3 is "pragmatics." Layer 1 defines what is true. Layer 2 defines what is possible. Layer 3 defines what is fast. speed matters for engineering — but speed does not affect meaning. remove all jets and every program still produces the same result.
 
 ## the removal test
 
 the three layers are distinguished by what happens when you remove them:
 
-remove Layer 3 (jets): every program still runs, every proof still verifies. the system is approximately 8.5× slower for recursive verification. no functionality is lost. this is why jets are "optimization without compromise."
+remove Layer 3 (jets): every program still runs, every proof still verifies. the system is slower. no functionality is lost. this is why jets are "optimization without compromise."
 
 remove Layer 2 (hint): the system loses privacy and search. every computation becomes fully transparent — no ZK proofs, no private transactions, no ability to prove without revealing. but the deterministic core remains complete. Layer 1 is still Turing-complete, still provable.
 

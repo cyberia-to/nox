@@ -2,7 +2,7 @@
 tags: nox, jets
 crystal-type: entity
 crystal-domain: comp
-alias: binary jets, kuro jets, F2 jets, Bt jets
+alias: binary jets, binary tower jets, F2 jets
 ---
 # kuro jets — binary (F₂)
 

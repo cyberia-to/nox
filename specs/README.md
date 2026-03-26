@@ -10,7 +10,9 @@ canonical specification of the nox virtual machine. this is the source of truth 
 | nouns.md | data model: atom, cell, type tags, coercion, structural hash | canonical |
 | patterns.md | all 17 patterns: Layer 1 (0-15) + Layer 2 hint (16) | canonical |
 | reduction.md | reduction semantics, confluence, parallelism, memoization | canonical |
-| jets.md | Layer 3: pure equivalents, hardware mapping, verifier costs | canonical |
+| jets.md | Layer 3: genesis jet registry, semantic contract, hardware mapping | canonical |
+| jets/ | per-algebra genesis jet specs (nebu, kuro, jali, trop, genies, state, decider) | canonical |
+| state-operations.md | BBG polynomial state primitives (READ, WRITE, ASSERT_EQ, ADD, MUL) | canonical |
 | trace.md | execution trace layout, AIR constraints, polynomial encoding | canonical |
 | encoding.md | canonical noun serialization, wire format, content addressing | canonical |
 
@@ -33,6 +35,4 @@ nox depends on two companion crates:
 
 zheng (~/git/zheng/) is a downstream consumer — it takes nox execution traces and produces stark proofs.
 
-## design proposals
-
-`props/` holds proposals for changes not yet committed to the spec. each proposal is a standalone markdown file with status frontmatter (draft, accepted, rejected, implemented). proposals document desire before commitment.
+nox is frozen. no roadmap, no proposals. the specification is complete.

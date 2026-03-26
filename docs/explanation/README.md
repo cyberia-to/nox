@@ -25,3 +25,4 @@ these pages illuminate the architecture. for formal definitions, see reference/.
 | self-verification.md | the system that verifies itself — recursive proof composition to arbitrary depth |
 | five-algebras.md | one VM, five algebras — nebu, kuro, jali, trop, genies and why each is irreducible |
 | decider.md | 89 constraints — verifying all history from genesis cheaper than one hash call |
+| transformer-jets.md | compiled cybergraph inference — 7 composite jets across 6 languages |

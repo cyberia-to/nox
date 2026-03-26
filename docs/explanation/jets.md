@@ -6,7 +6,7 @@ optimization without compromise — from sixteen patterns to silicon, preserving
 
 the [[stark]] verifier for nox is itself a nox program. to achieve recursive proof composition — proving that a proof is valid — the network runs the verifier inside the VM and proves THAT execution.
 
-without optimization, the verifier costs ~600,000 Layer 1 patterns. at current proving speeds, this makes recursive composition impractical for block production. the verifier is dominated by three operations: hashing (~83% of cost), Merkle path verification, and polynomial evaluation. all three involve repeated field arithmetic — thousands of multiplications and additions in tight loops.
+with Brakedown (Merkle-free PCS), the verifier is pure field arithmetic. canonical verifier cost: ~8,000 constraints (generic), ~825 (CCS jet + batch), ~89 (algebraic Fiat-Shamir). see zheng/specs/verifier.md for the canonical breakdown. the five nebu jets accelerate both verification and general-purpose computation.
 
 the sixteen patterns can express these operations. the patterns are Turing-complete. but expressing a Poseidon2 permutation as ~2,800 individual add/mul patterns produces ~2,800 rows in the trace, each requiring separate constraint verification. the proof is correct but enormous.
 
@@ -39,27 +39,21 @@ for all inputs x:
   jet_ntt(values, direction) == layer1_ntt(values, direction)
 ```
 
-remove all jets → identical results, ~8.5× slower. this is the test of the contract: the system must function correctly with no jets at all.
+remove all jets → identical results, slower. this is the test of the contract: the system must function correctly with no jets at all.
 
 ## why these five
 
-the selection is driven by one analysis: profile the stark verifier, find the bottlenecks, jet those.
+the selection serves two purposes: verifier acceleration and general-purpose computation.
 
-```
-Component               │ Layer 1 only │ With jets  │ Reduction
-────────────────────────┼──────────────┼────────────┼──────────
-Parse proof             │     ~1,000   │    ~1,000  │  1×
-Fiat-Shamir challenges  │    ~30,000   │    ~5,000  │  6×
-Merkle verification     │   ~500,000   │   ~50,000  │ 10×
-Constraint evaluation   │    ~10,000   │    ~3,000  │  3×
-WHIR verification       │    ~50,000   │   ~10,000  │  5×
-────────────────────────┼──────────────┼────────────┼──────────
-TOTAL                   │   ~600,000   │   ~70,000  │ ~8.5×
-```
+with Brakedown, the verifier bottleneck shifted from Merkle paths (eliminated) to Fiat-Shamir hashing and polynomial evaluation. hash and poly_eval are verifier-critical. merkle_verify, fri_fold, and ntt are retained for general-purpose acceleration and cross-system interoperability.
 
-Merkle verification alone accounts for 83% of the unjetted verifier cost, dominated by hash operations. the hash jet provides the largest single improvement. poly_eval and fri_fold target the WHIR protocol's polynomial operations. ntt handles polynomial multiplication for commitment and aggregation.
-
-the jets are not general-purpose optimizations. they are surgical: five operations that together reduce the recursive verifier cost from "impractical" to "routine."
+| jet | verifier role | general role |
+|-----|--------------|--------------|
+| hash | Fiat-Shamir challenges | content addressing, commitments |
+| poly_eval | Brakedown opening verification | any polynomial evaluation |
+| merkle_verify | not used by Brakedown | cross-system interop, legacy proofs |
+| fri_fold | not used by Brakedown | FRI-based protocols, cross-system |
+| ntt | not used by Brakedown | polynomial multiplication, ring ops |
 
 ## from patterns to silicon
 
@@ -82,7 +76,7 @@ software jet   →  Layer 3         (optimized constraint layout, 300 cost)
 GFP primitive  →  hardware        (single-cycle Poseidon2 round)
 ```
 
-the same computation at three speeds. identical results at every level. a nox program written today runs on pure Layer 1 patterns. when jets are available, it runs ~8.5× faster with the same semantics. when GFP hardware exists, the jets map directly to silicon primitives for another order-of-magnitude improvement.
+the same computation at three speeds. identical results at every level. a nox program written today runs on pure Layer 1 patterns. when jets are available, it runs faster with the same semantics. when GFP hardware exists, the jets map directly to silicon primitives for another order-of-magnitude improvement.
 
 this continuity is by design. the jet selection was guided by the hardware architecture, and the hardware architecture was guided by the jet requirements. they co-evolved to ensure that the optimization path from VM instruction to silicon gate has no semantic gaps.
 

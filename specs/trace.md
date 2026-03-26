@@ -178,22 +178,22 @@ where:
   x_{n+1}..x_{n+4}  select the column (register index)
 ```
 
-WHIR commits to f. sumcheck verifies transition constraints. the verifier checks O(log n) evaluation queries.
+Brakedown commits to f. sumcheck verifies transition constraints. the verifier checks O(log n) evaluation queries.
 
 ## self-verification
 
-the stark verifier is a nox program. it reads a proof (a noun), computes Fiat-Shamir challenges (hash jet), verifies Merkle paths (merkle_verify jet), checks polynomial evaluations (poly_eval jet), and performs FRI folding (fri_fold jet).
+the stark verifier is a nox program. with Brakedown (Merkle-free PCS), the verifier is pure field arithmetic — no Merkle paths, no FRI folding. Fiat-Shamir via hemera hash is the only non-field operation.
+
+canonical verifier cost (from zheng specs):
 
 ```
-verifier cost without jets:  ~600,000 patterns
-verifier cost with jets:     ~70,000 patterns (8.5× reduction)
-
-breakdown:
-  parse proof:            ~1,000
-  Fiat-Shamir challenges: ~5,000  (was ~30,000)
-  Merkle verification:    ~50,000 (was ~500,000)
-  constraint evaluation:  ~3,000  (was ~10,000)
-  WHIR verification:      ~10,000 (was ~50,000)
+tier                        constraints
+──────────────────────────  ───────────
+generic (no jets)              ~8,000
+CCS jet + batch Brakedown        ~825
++ algebraic Fiat-Shamir            ~89
 ```
 
-recursive composition: prove the verifier's execution. proof-of-proof at every block. constant proof size at every recursion level (~1-5 KiB with zheng-2).
+see zheng/specs/verifier.md for the canonical breakdown.
+
+recursive composition: prove the verifier's execution. proof-of-proof at every block. constant proof size at every recursion level (~2 KiB with zheng). per-fold cost: ~30 field ops + 1 hemera hash.

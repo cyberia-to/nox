@@ -28,9 +28,11 @@ if yes: execute the jet (same result, fewer trace rows).
 if no:  dispatch normally via Layer 1 patterns.
 ```
 
-the jet registry is hardcoded — it is a protocol constant, not configurable. every conforming implementation MUST recognize the same set of jets. the canonical formula trees and their hashes are computed at build time from the pure Layer 1 definitions and committed as constants.
+the jet registry lives on the cybergraph. genesis jets are committed in the genesis BBG state — frozen by axiom A3 (append-only). every conforming implementation MUST recognize genesis jets.
 
-jet registry entries are generated, not hand-written: the build system constructs each jet's pure Layer 1 formula as a noun, computes its structural hash, and emits the registry as a constant table.
+genesis jet entries are generated, not hand-written: the build system constructs each jet's pure Layer 1 formula as a noun, computes its structural hash, and commits them as particles in the genesis state.
+
+post-genesis jet registration through cyberlinks is a separate mechanism — design deferred. the semantic contract (pure Layer 1 equivalent) applies to all jets regardless of origin.
 
 ## per-instantiation dispatch
 
@@ -41,14 +43,16 @@ jet implementations are per-instantiation. the same formula hash dispatches to:
 
 each nox instantiation defines its own jet registry. formula hashes may differ across algebras if the same source operation compiles to different pattern trees.
 
-## adding a new jet
+## adding a new genesis jet
+
+genesis jets are frozen at launch. the process before genesis:
 
 1. **write the pure Layer 1 formula** — semantics defined by this formula, patterns 0-16 only
 2. **compute the formula hash** — build system does this automatically
 3. **implement the optimized version** — software, constraint (CCS), hardware (GFP)
-4. **add to the jet registry** — protocol constant, requires protocol upgrade
+4. **commit to genesis state** — jet particle in genesis BBG state
 5. **write the test harness** — `∀ inputs: jet(input) == pure_formula(input)`
-6. **document** — create a spec page in [[jets/]] with the standard format
+6. **document** — create a spec page in jets/ with the standard format
 
 ```
 jet entry format:
@@ -56,23 +60,24 @@ jet entry format:
   constraints, accelerates, hardware_mapping
 ```
 
-## jet registry — five algebras
+## genesis jet registry — five algebras
 
-individual jet specifications live in `jets/`. see [[jets/README|jet registry index]] for the full table.
+individual jet specifications live in `jets/` (within specs/). see [[jets/README|jet registry index]] for the full table.
 
-| group | algebra | jets | lens | spec |
+| group | algebra | jets | PCS | spec |
 |-------|---------|------|-----|------|
-| nebu | F_p | 5 | Brakedown | [[jets/nebu]] |
-| kuro | F₂ | 8 | Binius | [[jets/kuro]] |
-| jali | R_q | 5 | Ikat | [[jets/jali]] |
-| genies | F_q | 5 | Porphyry | [[jets/genies]] |
-| trop | (min,+) | 6 | Assayer | [[jets/trop]] |
-| state | F_p | level 1-3 | Brakedown | [[jets/state]] |
+| hash | all (Hemera anchor) | 1 | — | [[jets/hash]] |
+| recursion | F_p | 4 | Brakedown | [[jets/recursion]] |
+| binary-tower | F₂ | 8 | Binius | [[jets/binary-tower]] |
+| polynomial-ring | R_q | 5 | Ikat | [[jets/polynomial-ring]] |
+| isogeny-curves | F_q | 5 | Porphyry | [[jets/isogeny-curves]] |
+| tropical-semiring | (min,+) | 6 | Assayer | [[jets/tropical-semiring]] |
+| state | F_p | 6 (1 exact + 5 templates) | Brakedown | [[jets/state]] |
 | decider | F_p | 1 | Brakedown | [[jets/decider]] |
 
 boundary jets (quantize, dequantize, gadget_decompose, secret_hash, witness_commit) live within their parent algebra — not a separate group.
 
-total: 30 named jets across 5 algebras + state jets (unlimited) + 1 decider.
+total genesis: 1 hash (universal) + 4 recursion + 8 binary-tower + 5 polynomial-ring + 5 isogeny-curves + 6 tropical-semiring + state jets (unlimited) + 1 decider. all committed in genesis BBG state.
 
 ## hardware mapping
 
@@ -89,7 +94,7 @@ the stack is continuous: nox pattern → software jet → GFP hardware primitive
 
 ## self-verification
 
-the stark verifier for nox is itself a nox program. the VM can verify proofs about its own executions. recursion to arbitrary depth, constant proof size at every level. the decider jet reduces all-history verification to 89 constraints — less than one hemera permutation.
+the stark verifier for nox is itself a nox program. with Brakedown (Merkle-free PCS), the verifier is pure field arithmetic — ~825 constraints (CCS jet + batch) or ~89 (algebraic Fiat-Shamir). recursion to arbitrary depth, constant proof size at every level. the decider jet reduces all-history verification to 89 constraints. see zheng/specs/verifier.md for canonical costs.
 
 ## domain-specific jets
 
@@ -106,4 +111,4 @@ Ren: geometric_product   mul/add over components      geo_mul jet   fma array
 Wav: polynomial_mul      NTT + pointwise + iNTT       ntt jet       ntt engine
 ```
 
-domain-specific jets follow the same semantic contract. the jet registry is per-instantiation.
+domain-specific jets follow the same semantic contract. the genesis jet registry is per-instantiation. post-genesis jets inherit the same contract — design deferred.

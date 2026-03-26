@@ -2,7 +2,7 @@
 tags: nox, jets
 crystal-type: entity
 crystal-domain: comp
-alias: isogeny jets, genies jets, F_q jets, privacy jets
+alias: isogeny jets, isogeny curve jets, F_q jets, privacy jets
 ---
 # genies jets — isogeny (F_q)
 
