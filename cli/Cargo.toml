@@ -12,7 +12,7 @@ license = "Cyber"
 
 [[bin]]
 name = "nox"
-path = "src/main.rs"
+path = "main.rs"
 
 [dependencies]
 nox = { path = "../rs" }
