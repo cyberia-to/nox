@@ -29,7 +29,7 @@ pub fn hash_cell(left: &Digest, right: &Digest) -> Digest {
 }
 
 fn pack_digest(d: &Digest) -> hemera::Hash {
-    let mut bytes = [0u8; 64];
+    let mut bytes = [0u8; 32];
     for i in 0..4 {
         bytes[i * 8..(i + 1) * 8].copy_from_slice(&d[i].as_u64().to_le_bytes());
     }

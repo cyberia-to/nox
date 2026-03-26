@@ -13,6 +13,10 @@ license = "Cyber"
 [lib]
 path = "lib.rs"
 
+[[bin]]
+name = "nox"
+path = "main.rs"
+
 [dependencies]
 nebu = { path = "../../nebu/rs" }
 hemera = { package = "cyber-hemera", path = "../../hemera/rs" }

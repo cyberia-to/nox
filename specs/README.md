@@ -4,24 +4,24 @@ canonical specification of the nox virtual machine. this is the source of truth 
 
 ## specifications
 
-| page | scope | status |
-|------|-------|--------|
-| vm.md | overview, field (nebu), hash (hemera), dependencies | canonical |
-| nouns.md | data model: atom, cell, type tags, coercion, structural hash | canonical |
-| patterns.md | all 17 patterns: Layer 1 (0-15) + Layer 2 hint (16) | canonical |
-| reduction.md | reduction semantics, confluence, parallelism, memoization | canonical |
-| jets.md | Layer 3: genesis jet registry, semantic contract, hardware mapping | canonical |
-| jets/ | per-group genesis jet specs (hash, recursion, binary-tower, polynomial-ring, isogeny-curves, tropical-semiring, state, decider) | canonical |
-| trace.md | execution trace layout, AIR constraints, polynomial encoding | canonical |
-| encoding.md | canonical noun serialization, wire format, content addressing | canonical |
+| page | scope | rs module | status |
+|------|-------|-----------|--------|
+| vm.md | overview, field, hash, algebra polymorphism, dependencies | lib.rs | canonical |
+| noun/ | data model: atom, cell, type tags, arena, hash, polynomial representation | noun/ | canonical |
+| patterns/ | all 17 patterns: structural (0-4), field (5-10), bitwise (11-14), hash (15), hint (16) | patterns/ | canonical |
+| reduction.md | reduce(), ask(), budget, confluence, memoization, proof-carrying, signal assembly | reduce.rs | canonical |
+| jets.md | Layer 3: genesis jet registry, semantic contract, hardware mapping | — | canonical |
+| jets/ | per-group genesis jet specs (hash, recursion, binary-tower, polynomial-ring, isogeny-curves, tropical-semiring, state, decider) | — | canonical |
+| trace.md | execution trace layout, AIR constraints, polynomial encoding | — | canonical |
+| encoding.md | canonical noun serialization, wire format, content addressing | — | canonical |
 
 ## reading order
 
 1. vm.md — field, hash, and dependencies (what nox computes over)
-2. nouns.md — the data model (what nox operates on)
-3. patterns.md — the instruction set (what nox can do)
+2. noun/ — the data model (what nox operates on)
+3. patterns/ — the instruction set (what nox can do)
 4. reduction.md — the execution model (how nox evaluates)
-5. jets.md — the optimization layer (how nox goes fast)
+5. jets.md + jets/ — the optimization layer (how nox goes fast)
 6. trace.md — the proof witness (how nox proves)
 7. encoding.md — the wire format (how nox serializes)
 
