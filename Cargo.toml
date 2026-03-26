@@ -1,0 +1,3 @@
+[workspace]
+members = ["rs", "cli"]
+resolver = "3"

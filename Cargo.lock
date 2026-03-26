@@ -17,3 +17,11 @@ dependencies = [
  "cyber-hemera",
  "nebu",
 ]
+
+[[package]]
+name = "nox-cli"
+version = "0.1.0"
+dependencies = [
+ "nebu",
+ "nox",
+]

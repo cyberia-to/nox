@@ -4,15 +4,16 @@
 # crystal-domain: comp
 # ---
 [package]
-name = "nox"
+name = "nox-cli"
 version = "0.1.0"
 edition = "2024"
-description = "proof-native virtual machine over the Goldilocks field"
+description = "nox command-line interface"
 license = "Cyber"
 
-[lib]
-path = "lib.rs"
+[[bin]]
+name = "nox"
+path = "src/main.rs"
 
 [dependencies]
+nox = { path = "../rs" }
 nebu = { path = "../../nebu/rs" }
-hemera = { package = "cyber-hemera", path = "../../hemera/rs" }
