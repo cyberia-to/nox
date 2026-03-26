@@ -84,15 +84,15 @@ boundary cost: ~766 F_p constraints per type transition (30 field ops + 1 hemera
 
 **nebu (F_p):** canonical instantiation. all patterns operate natively. all costs in this spec refer to this regime.
 
-**nebu², nebu³, nebu⁴:** same nox parameterization, wider field elements. one F_p² mul = 3 base muls (Karatsuba). one F_p³ mul = 6 base muls. one F_p⁴ mul = 9 base muls (tower Fp2→Fp4). extension jets recognize these structured compositions. all use Brakedown lens with proportionally wider columns.
+**nebu², nebu³, nebu⁴:** same nox parameterization, wider field elements. one F_p² mul = 3 base muls (Karatsuba). one F_p³ mul = 6 base muls. one F_p⁴ mul = 9 base muls (tower Fp2→Fp4). extension jets recognize these structured compositions. all use nebu lens with proportionally wider columns.
 
 **kuro (F₂):** separate instantiation. field patterns (add = XOR, mul = AND) are native binary operations at 1 constraint each (vs ~32 in F_p). bitwise patterns collapse to field operations. hash deferred to hemera at settlement boundary.
 
-**jali (R_q):** runs on the SAME nebu instantiation (F_p). R_q = F_p[x]/(x^n+1) is a polynomial RING over F_p. ring operations decompose to F_p operations via NTT. dedicated jets commit them as batched ring operations in zheng Ring-aware lens.
+**jali (R_q):** runs on the SAME nebu instantiation (F_p). R_q = F_p[x]/(x^n+1) is a polynomial RING over F_p. ring operations decompose to F_p operations via NTT. dedicated jets commit them as batched ring operations in zheng jali lens.
 
-**trop (min,+):** runs on the SAME nebu instantiation (F_p). tropical operations decompose to existing patterns: min(a,b) = branch(lt(a,b), a, b). dedicated jets produce structured witnesses verified via zheng Tropical lens.
+**trop (min,+):** runs on the SAME nebu instantiation (F_p). tropical operations decompose to existing patterns: min(a,b) = branch(lt(a,b), a, b). dedicated jets produce structured witnesses verified via zheng trop lens.
 
-**genies (F_q):** separate instantiation with a DIFFERENT prime q. the only regime with a foreign field. F_q elements are multi-limb (8 × 64-bit for CSIDH-512). patterns 5-10 dispatch to F_q arithmetic. dedicated Isogeny lens in zheng.
+**genies (F_q):** separate instantiation with a DIFFERENT prime q. the only regime with a foreign field. F_q elements are multi-limb (8 × 64-bit for CSIDH-512). patterns 5-10 dispatch to F_q arithmetic. dedicated genies lens in zheng.
 
 ### cross-regime composition
 
