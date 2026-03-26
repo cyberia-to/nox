@@ -10,6 +10,9 @@ edition = "2024"
 description = "proof-native virtual machine over the Goldilocks field"
 license = "Cyber"
 
+[lib]
+path = "lib.rs"
+
 [dependencies]
 nebu = { path = "../../nebu/rs" }
 hemera = { package = "cyber-hemera", path = "../../hemera/rs" }

@@ -8,7 +8,7 @@
 //! 16 deterministic patterns + 1 non-deterministic hint.
 //! every execution produces a trace that IS the STARK witness.
 //!
-//! reduce(object, formula, budget) → Result
+//! reduce(object, formula, budget) → Outcome
 
 #![no_std]
 
@@ -17,6 +17,7 @@ extern crate alloc;
 pub mod noun;
 pub mod reduce;
 pub mod hint;
+pub mod patterns;
 
 pub use noun::{Arena, NounRef, NounInner, Tag, Digest, NIL};
 pub use reduce::{reduce, Outcome, ErrorKind};
