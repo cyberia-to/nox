@@ -1,4 +1,4 @@
-//! pattern 13: not — bitwise complement (32-bit word)
+//! pattern 13: not — bitwise complement (word type)
 
 use crate::noun::{Arena, NounRef};
 use crate::reduce::{Outcome, evaluate_word, make_word};

@@ -5,8 +5,8 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Tag {
-    /// Goldilocks field element, full range [0, p)
+    /// field element of the instantiated field F
     Field = 0x00,
-    /// 32-bit word, range [0, 2^32), bitwise operations
+    /// word element of the instantiated word width W
     Word = 0x01,
 }

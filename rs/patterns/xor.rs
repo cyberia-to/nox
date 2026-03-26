@@ -1,4 +1,4 @@
-//! pattern 11: xor — bitwise XOR (32-bit word)
+//! pattern 11: xor — bitwise XOR (word type)
 
 use crate::noun::{Arena, NounRef};
 use crate::reduce::{Outcome, word_binary_op};

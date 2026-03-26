@@ -1,4 +1,4 @@
-//! pattern 15: hash — hemera structural hash (cost 300)
+//! pattern 15: hash — structural hash via H (dispatched by hash function)
 //! returns hash noun: cell(cell(h0,h1), cell(h2,h3))
 
 use crate::noun::{Arena, NounRef};

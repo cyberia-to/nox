@@ -3,7 +3,7 @@
 // crystal-type: source
 // crystal-domain: comp
 // ---
-//! nox — proof-native virtual machine over the Goldilocks field
+//! nox — proof-native virtual machine — algebra-parameterized
 //!
 //! 16 deterministic patterns + 1 non-deterministic hint.
 //! every execution produces a trace that IS the STARK witness.

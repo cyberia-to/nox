@@ -1,4 +1,4 @@
-//! pattern 12: and — bitwise AND (32-bit word)
+//! pattern 12: and — bitwise AND (word type)
 
 use crate::noun::{Arena, NounRef};
 use crate::reduce::{Outcome, word_binary_op};
