@@ -22,37 +22,39 @@ nox<F, W, H> where:
 
 structural patterns (0-4) are identical across all instantiations. field patterns (5-10) dispatch to the instantiated field. bitwise patterns (11-14) dispatch to the instantiated word width. hash (15) dispatches to the instantiated hash function. jets are per-instantiation — each algebra has its own jet registry with its own formula hashes.
 
-## five algebras — key instantiations
+## execution regimes
 
-five execution regimes, each with its own nox instantiation, arithmetic repo, PCS backend in zheng, and jet family. see [[five algebras]] for the independence criteria.
+eight instantiations across five arithmetics. flat table — no hierarchy. each regime has its own field, costs, jets, and PCS backend. see [[five algebras]] for the independence criteria.
 
-| algebra | instantiation | F | W | H | repo | PCS | jets |
-|---------|--------------|---|---|---|------|-----|------|
-| nebu | nox<Goldilocks, Z/2^32, Hemera> | F_p (p = 2^64 - 2^32 + 1) | Z/2^32 | Hemera | [[nebu]] | PCS₁: Brakedown | 5 verifier |
-| kuro | nox<F₂, Z/2, external> | F₂ | Z/2 | external (hemera at settlement) | [[kuro]] | PCS₂: Binius | 8 binary |
-| jali | nox<Goldilocks, Z/2^32, Hemera> | F_p (R_q operations via jets) | Z/2^32 | Hemera | [[jali]] | PCS₃: Ring-aware | 5 ring |
-| trop | nox<Goldilocks, Z/2^32, Hemera> | F_p (min,+ via branch+lt) | Z/2^32 | Hemera | [[trop]] | PCS₅: Tropical | 6 tropical |
-| genies | nox<F_q, Z/2^512, Hemera> | F_q (q = 4·ℓ₁·...·ℓₙ - 1) | Z/2^512 | Hemera | [[genies]] | PCS₄: Isogeny | 5 isogeny |
+| regime | instantiation | field | repo | PCS | jets | role |
+|--------|--------------|-------|------|-----|------|------|
+| nebu | nox<F_p, Z/2^32, Hemera> | Goldilocks scalar | [[nebu]] | PCS₁: Brakedown | 5 verifier | truth (canonical) |
+| nebu² | nox<F_p², Z/2^32, Hemera> | F_p[u]/(u²−7) | [[nebu]]::Fp2 | PCS₁ (2× wide) | fp2_mul, fp2_inv | quantum, 128-bit |
+| nebu³ | nox<F_p³, Z/2^32, Hemera> | F_p[t]/(t³−t−1) | [[nebu]]::Fp3 | PCS₁ (3× wide) | fp3_mul, fp3_inv | recursion soundness |
+| nebu⁴ | nox<F_p⁴, Z/2^32, Hemera> | F_p[w]/(w⁴−7) | [[nebu]]::Fp4 | PCS₁ (4× wide) | fp4_mul, fp4_inv | 256-bit, recursion tower |
+| kuro | nox<F₂, Z/2, external> | F₂ binary tower | [[kuro]] | PCS₂: Binius | 8 binary | efficiency |
+| jali | nox<F_p, Z/2^32, Hemera> | R_q via jets | [[jali]] | PCS₃: Ring-aware | 5 ring | veil |
+| trop | nox<F_p, Z/2^32, Hemera> | min,+ via patterns | [[trop]] | PCS₅: Tropical | 6 tropical | choice |
+| genies | nox<F_q, Z/2^512, Hemera> | F_q isogeny prime | [[genies]] | PCS₄: Isogeny | 5 isogeny | shadow |
 
-extension instantiations (all provided by nebu):
-
-| instantiation | F | nebu type | role |
-|--------------|---|-----------|------|
-| nox<F_{p²}, Z/2^32, Hemera> | F_p[u]/(u²−7) | `Fp2` | quantum circuit simulation, 128-bit security |
-| nox<F_{p³}, Z/2^32, Hemera> | F_p[t]/(t³−t−1) | `Fp3` | zheng recursive proof soundness |
-| nox<F_{p⁴}, Z/2^32, Hemera> | F_p[w]/(w⁴−7) | `Fp4` | 256-bit security, recursion tower |
+five arithmetics (repos): nebu (4 regimes), kuro (1), jali (1), trop (1), genies (1).
+five PCS backends (zheng): Brakedown (4 regimes), Binius (1), Ring-aware (1), Isogeny (1), Tropical (1).
 
 ### how the five algebras enter nox
 
-**nebu (F_p):** the canonical instantiation. all patterns operate natively. all costs in this spec refer to this instantiation.
+### how the eight regimes enter nox
+
+**nebu (F_p):** canonical instantiation. all patterns operate natively. all costs in this spec refer to this regime.
+
+**nebu², nebu³, nebu⁴:** same nox parameterization pattern, wider field elements. one F_p² mul = 3 base muls (Karatsuba). one F_p³ mul = 6 base muls. one F_p⁴ mul = 9 base muls (tower Fp2→Fp4). extension jets (fp2_mul, fp3_mul, fp4_mul, inverses) recognize these structured compositions. all use Brakedown PCS₁ with proportionally wider columns.
 
 **kuro (F₂):** separate instantiation. field patterns (add = XOR, mul = AND) are native binary operations at 1 constraint each (vs ~32 in F_p). bitwise patterns collapse to field operations (and = mul in characteristic 2). hash deferred to hemera at settlement boundary (~766 constraints per crossing).
 
-**jali (R_q):** runs on the SAME canonical instantiation (F_p). R_q = F_p[x]/(x^n+1) is a polynomial RING over F_p, not a separate field. ring operations decompose to F_p operations via NTT. dedicated jets (ntt_batch, key_switch, blind_rotate) recognize structured compositions and commit them as batched ring operations in zheng PCS₃.
+**jali (R_q):** runs on the SAME nebu instantiation (F_p). R_q = F_p[x]/(x^n+1) is a polynomial RING over F_p, not a separate field. ring operations decompose to F_p operations via NTT. dedicated jets (ntt_batch, key_switch, blind_rotate) recognize structured compositions and commit them as batched ring operations in zheng PCS₃.
 
-**trop (min,+):** runs on the SAME canonical instantiation (F_p). tropical operations decompose to existing patterns: min(a,b) = branch(lt(a,b), a, b). dedicated jets produce structured witnesses (assignment + cost + dual certificate) verified in F_p via zheng PCS₅.
+**trop (min,+):** runs on the SAME nebu instantiation (F_p). tropical operations decompose to existing patterns: min(a,b) = branch(lt(a,b), a, b). dedicated jets produce structured witnesses (assignment + cost + dual certificate) verified in F_p via zheng PCS₅.
 
-**genies (F_q):** separate instantiation with a DIFFERENT prime q. the only algebra with a foreign field. F_q elements are multi-limb (8 × 64-bit for CSIDH-512). patterns 5-10 dispatch to F_q arithmetic (Montgomery multiplication). hash remains hemera (at settlement boundary). dedicated PCS₄ in zheng (Brakedown over F_q).
+**genies (F_q):** separate instantiation with a DIFFERENT prime q. the only regime with a foreign field. F_q elements are multi-limb (8 × 64-bit for CSIDH-512). patterns 5-10 dispatch to F_q arithmetic (Montgomery multiplication). hash remains hemera (at settlement boundary). dedicated PCS₄ in zheng (Brakedown over F_q).
 
 ### cross-algebra composition
 
