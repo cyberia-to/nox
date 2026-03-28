@@ -41,7 +41,7 @@ pub fn axis<const N: usize>(order: &mut Order<N>, object: NounId, addr_ref: Noun
 mod tests {
     use super::*;
     use crate::reduce::reduce;
-    use crate::hint::NullHints;
+    use crate::call::NullCalls;
     use crate::noun::{Order, Tag};
     use nebu::Goldilocks;
 
@@ -60,7 +60,7 @@ mod tests {
         let b = ar.atom(g(20), Tag::Field).unwrap();
         let s = ar.cell(a, b).unwrap();
         let f = make_axis(&mut ar, 2);
-        match reduce(&mut ar, s, f, 100, &NullHints) {
+        match reduce(&mut ar, s, f, 100, &NullCalls) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(10)),
             o => panic!("{:?}", o),
         }
@@ -73,7 +73,7 @@ mod tests {
         let b = ar.atom(g(20), Tag::Field).unwrap();
         let s = ar.cell(a, b).unwrap();
         let f = make_axis(&mut ar, 3);
-        match reduce(&mut ar, s, f, 100, &NullHints) {
+        match reduce(&mut ar, s, f, 100, &NullCalls) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(20)),
             o => panic!("{:?}", o),
         }
@@ -84,7 +84,7 @@ mod tests {
         let mut ar = Order::<1024>::new();
         let s = ar.atom(g(42), Tag::Field).unwrap();
         let f = make_axis(&mut ar, 1);
-        match reduce(&mut ar, s, f, 100, &NullHints) {
+        match reduce(&mut ar, s, f, 100, &NullCalls) {
             Outcome::Ok(r, _) => assert_eq!(r, s),
             o => panic!("{:?}", o),
         }
@@ -95,7 +95,7 @@ mod tests {
         let mut ar = Order::<1024>::new();
         let s = ar.atom(g(42), Tag::Field).unwrap();
         let f = make_axis(&mut ar, 0);
-        match reduce(&mut ar, s, f, 100, &NullHints) {
+        match reduce(&mut ar, s, f, 100, &NullCalls) {
             Outcome::Ok(r, _) => {
                 assert!(ar.is_cell(r));
                 let d = ar.read_hash_noun(r).unwrap();
@@ -110,7 +110,7 @@ mod tests {
         let mut ar = Order::<1024>::new();
         let s = ar.atom(g(42), Tag::Field).unwrap();
         let f = make_axis(&mut ar, 2); // head of atom → error
-        match reduce(&mut ar, s, f, 100, &NullHints) {
+        match reduce(&mut ar, s, f, 100, &NullCalls) {
             Outcome::Error(ErrorKind::AxisError) => {}
             o => panic!("{:?}", o),
         }
@@ -129,7 +129,7 @@ mod tests {
         let s = ar.cell(left, right).unwrap();
         // axis 7 = tail of tail = right of right = 4
         let f = make_axis(&mut ar, 7);
-        match reduce(&mut ar, s, f, 100, &NullHints) {
+        match reduce(&mut ar, s, f, 100, &NullCalls) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(4)),
             o => panic!("{:?}", o),
         }

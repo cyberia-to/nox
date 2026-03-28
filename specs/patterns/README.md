@@ -5,9 +5,9 @@ status: canonical
 
 ## overview
 
-seventeen patterns: sixteen deterministic (Layer 1), one non-deterministic (Layer 2). four bits index the Layer 1 patterns (0-15). pattern 16 (hint) is Layer 2.
+eighteen patterns: sixteen deterministic compute (Layer 1), one non-deterministic witness injection (Layer 2), one deterministic BBG read. 16 compute + call + look = 18.
 
-the 16 deterministic patterns are algebra-polymorphic — parameterized by field F, word width W, and hash function H. see vm.md for the instantiation model.
+the 16 deterministic compute patterns are algebra-polymorphic — parameterized by field F, word width W, and hash function H. see vm.md for the instantiation model.
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════╗
@@ -26,7 +26,8 @@ the 16 deterministic patterns are algebra-polymorphic — parameterized by field
 ║  13: not    14: shl                                                       ║
 ╠═══════════════════════════════════════════════════════════════════════════╣
 ║  LAYER 2                                                                  ║
-║  16: hint — non-deterministic witness injection                           ║
+║  16: call — non-deterministic witness injection (prover → formula)        ║
+║  17: look — deterministic read from BBG                                   ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 ```
 
@@ -52,7 +53,8 @@ all concrete costs and constraint counts refer to the canonical instantiation: n
 | 13-not.md | 13 | not |
 | 14-shl.md | 14 | shl |
 | 15-hash.md | 15 | hash |
-| 16-hint.md | 16 | hint |
+| 16-call.md | 16 | call |
+| 17-look.md | 17 | look |
 
 ## cost table (canonical: nox<Goldilocks, Z/2^32, Hemera>)
 
@@ -72,7 +74,8 @@ Layer │ Pattern      │ Exec Cost      │ STARK Constraints │ Rationale
   1   │ 10 lt        │ 1              │ ~64               │ range decomposition
   1   │ 11-14 bit    │ 1              │ ~32 each          │ bit decomposition
   1   │ 15 hash      │ 200            │ ~736              │ Hemera permutation
-  2   │ 16 hint      │ 1              │ 1                 │ inject + dispatch
+  2   │ 16 call      │ 1              │ 1                 │ inject + dispatch
+  2   │ 17 look      │ 1              │ 1                 │ BBG read + verify
 ```
 
 ## test vectors (canonical: nox<Goldilocks>)

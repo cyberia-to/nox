@@ -9,10 +9,10 @@ reduction is the execution model of nox. a formula is applied to an object under
 
 ## interface
 
-the top-level invocation is `ask` — the seven fields of a [[cyberlink]]:
+the top-level invocation is `order` — the seven fields of a [[cyberlink]]:
 
 ```
-ask : (ν, Object, Formula, τ, a, v, t) → Answer
+order : (ν, Object, Formula, τ, a, v, t) → Result
 
   ν        : Neuron  — who orders the computation
   Object   : Noun    — the environment, the data, the context
@@ -23,7 +23,7 @@ ask : (ν, Object, Formula, τ, a, v, t) → Answer
   t        : Time    — block height
 ```
 
-`ask` checks the [[cybergraph]] memo cache before executing. if `axon(Formula, Object)` has a verified result → return it. otherwise → `reduce`, prove, link.
+`order` checks the [[cybergraph]] memo cache before executing. if `axon(Formula, Object)` has a verified result → return it. otherwise → `reduce`, prove, link.
 
 ## reduction signature
 
@@ -76,7 +76,8 @@ dispatch(s, formula, f) =
     5  → add(s, body, f)
     ...
     15 → hash(s, body, f)
-    16 → hint(s, body, f)
+    16 → call(s, body, f)
+    17 → look(s, body, f)
     _  → ⊥_error                   — unknown pattern tag
 ```
 
@@ -97,7 +98,7 @@ consequence: for any (object, formula) pair with sufficient budget, the result d
 
 consequence: content-addressed memoization is sound. `(H(object), H(formula))` uniquely determines `H(result)` for successful completions. the memo table caches only successful results (status = 0).
 
-Layer 2 (`hint`) breaks confluence intentionally — multiple valid witnesses may satisfy the same constraints. soundness is preserved: any witness that passes the Layer 1 constraint check is valid. hint is the deliberate injection point for non-determinism.
+Layer 2 (`call`) breaks confluence intentionally — multiple valid witnesses may satisfy the same constraints. soundness is preserved: any witness that passes the Layer 1 constraint check is valid. call is the deliberate injection point for non-determinism. `look` (pattern 17) is deterministic — it reads from BBG authenticated state and preserves confluence.
 
 Layer 3 (jets) preserves confluence — jets are observationally equivalent to their Layer 1 expansions. replacing a jet with its pure equivalent produces identical results.
 
@@ -136,10 +137,10 @@ Key:   axon(formula, object) = H(formula, object)
 Value: result particle linked to the axon
 ```
 
-before executing, `ask` checks whether `axon(formula, object)` already has a verified result linked to it in the graph. if yes → zero computation, return the cached result. if no → reduce, prove, link `axon → result`.
+before executing, `order` checks whether `axon(formula, object)` already has a verified result linked to it in the graph. if yes → zero computation, return the cached result. if no → reduce, prove, link `axon → result`.
 
 ```
-ask(ν, object, formula, τ, a, v, t) → answer
+order(ν, object, formula, τ, a, v, t) → result
 
   1. order_axon = H(formula, object)
   2. lookup axon in cybergraph
@@ -163,10 +164,11 @@ properties:
 
 layer scope:
 - Layer 1: fully memoizable (deterministic)
-- Layer 2: NOT memoizable (hint results are prover-specific)
+- Layer 2 (call): NOT memoizable (call results are prover-specific)
+- Layer 2 (look): fully memoizable (deterministic BBG read)
 - Layer 3: fully memoizable (jets are deterministic)
 
-computations containing hint anywhere in their reduction tree are excluded from the global cache. pure sub-expressions within a hint-containing computation remain memoizable — the exclusion applies to the hint-tainted root, not to its pure children.
+computations containing call anywhere in their reduction tree are excluded from the global cache. pure sub-expressions within a call-containing computation remain memoizable — the exclusion applies to the call-tainted root, not to its pure children. computations containing only look (no call) remain fully memoizable.
 
 ## error specification
 
@@ -196,9 +198,13 @@ reduce(o, [5 [a b]], f) =
 
 Halt propagates identically — if a sub-expression exhausts budget, the parent halts.
 
-## hint
+## call
 
-hint (pattern 16) is the non-deterministic witness injection point. see patterns/hint.md for the full specification, provider interface, tag conventions, and properties.
+call (pattern 16) is the non-deterministic witness injection point. see patterns/16-call.md for the full specification, provider interface, tag conventions, and properties.
+
+## look
+
+look (pattern 17) is the deterministic BBG read. see patterns/17-look.md for the full specification, key space, and properties.
 
 ## Result encoding
 
@@ -284,11 +290,11 @@ hemera hash operations (pattern 15) during execution also fold via the sponge co
 
 ### signal assembly
 
-the output of a complete ask() with proof-carrying is a [[signal]]:
+the output of a complete order() with proof-carrying is a [[signal]]:
 
 ```
 signal = {
-  ν:    neuron_id                          from ask() argument
+  ν:    neuron_id                          from order() argument
   l⃗:    [cyberlink]                        the batch (from computation results)
   π_Δ:  [(particle, F_p)]                  impulse (focus shift)
   σ:    accumulator                        the proof (from proof-carrying reduction)

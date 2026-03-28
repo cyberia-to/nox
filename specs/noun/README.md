@@ -21,7 +21,7 @@ the noun model is parameterized by the field F. in the canonical instantiation (
 
 ## formulas
 
-a formula is a noun of the form `cell(tag, body)` where tag is an atom encoding the pattern number (0-16).
+a formula is a noun of the form `cell(tag, body)` where tag is an atom encoding the pattern number (0-17).
 
 ```
 cell(0, a)              axis
@@ -40,7 +40,8 @@ cell(12, cell(a, b))   and
 cell(13, a)             not
 cell(14, cell(a, n))   shl
 cell(15, a)             hash
-cell(16, constraint)    hint
+cell(16, constraint)    call
+cell(17, key)           look
 ```
 
 the distinction between code and data is purely contextual — the same noun can be an object in one reduction and a formula in another. this homoiconicity extends to the proof system: the stark proves that a specific noun (the formula) was applied to a specific noun (the object). the proof refers to the same binary tree structure that the execution operated on.

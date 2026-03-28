@@ -8,7 +8,7 @@
 
 use nebu::Goldilocks;
 use crate::noun::{Order, NounId, Noun, Tag};
-use crate::hint::HintProvider;
+use crate::call::CallProvider;
 use crate::patterns;
 
 #[derive(Debug)]
@@ -25,7 +25,7 @@ pub enum ErrorKind {
     InvZero,
     Unavailable,
     Malformed,
-    HintRejected,
+    CallRejected,
 }
 
 fn cost(tag: u64) -> u64 {
@@ -33,7 +33,7 @@ fn cost(tag: u64) -> u64 {
 }
 
 pub fn reduce<const N: usize>(
-    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn CallProvider<N>,
 ) -> Outcome {
     let (tag_ref, body) = match order.get(formula).inner {
         Noun::Cell { left, right } => (left, right),
@@ -63,7 +63,8 @@ pub fn reduce<const N: usize>(
         13 => patterns::not::not(order, object, body, budget, hints),
         14 => patterns::shl::shl(order, object, body, budget, hints),
         15 => patterns::hash::hash(order, object, body, budget, hints),
-        16 => patterns::hint::hint(order, object, body, budget, hints),
+        16 => patterns::call::call_witness(order, object, body, budget, hints),
+        17 => patterns::look::look(order, object, body, budget, hints),
         _  => Outcome::Error(ErrorKind::Malformed),
     }
 }
@@ -78,7 +79,7 @@ pub fn cell_pair<const N: usize>(order: &Order<N>, r: NounId) -> Option<(NounId,
 }
 
 pub fn evaluate<const N: usize>(
-    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn CallProvider<N>,
 ) -> core::result::Result<(NounId, u64), Outcome> {
     match reduce(order, object, formula, budget, hints) {
         Outcome::Ok(r, b) => Ok((r, b)),
@@ -87,7 +88,7 @@ pub fn evaluate<const N: usize>(
 }
 
 pub fn evaluate_field<const N: usize>(
-    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn CallProvider<N>,
 ) -> core::result::Result<(Goldilocks, u64), Outcome> {
     let (result, budget) = evaluate(order, object, formula, budget, hints)?;
     match order.atom_value(result) {
@@ -97,7 +98,7 @@ pub fn evaluate_field<const N: usize>(
 }
 
 pub fn evaluate_word<const N: usize>(
-    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64, hints: &dyn CallProvider<N>,
 ) -> core::result::Result<(u64, u64), Outcome> {
     let (result, budget) = evaluate(order, object, formula, budget, hints)?;
     match order.atom_value(result) {
@@ -116,7 +117,7 @@ pub fn make_word<const N: usize>(order: &mut Order<N>, v: u64, budget: u64) -> O
 }
 
 pub fn field_binary_op<const N: usize>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn CallProvider<N>,
     op: fn(Goldilocks, Goldilocks) -> Goldilocks,
 ) -> Outcome {
     let (a, b) = match cell_pair(order, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
@@ -126,7 +127,7 @@ pub fn field_binary_op<const N: usize>(
 }
 
 pub fn word_binary_op<const N: usize>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn CallProvider<N>,
     op: fn(u64, u64) -> u64,
 ) -> Outcome {
     let (a, b) = match cell_pair(order, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };

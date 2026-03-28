@@ -47,7 +47,7 @@ each nox instantiation defines its own jet registry. formula hashes may differ a
 
 genesis jets are frozen at launch. the process before genesis:
 
-1. **write the pure Layer 1 formula** — semantics defined by this formula, patterns 0-16 only
+1. **write the pure Layer 1 formula** — semantics defined by this formula, patterns 0-17 only
 2. **compute the formula hash** — build system does this automatically
 3. **implement the optimized version** — software, constraint (CCS), hardware (GFP)
 4. **commit to genesis state** — jet particle in genesis BBG state

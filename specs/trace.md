@@ -13,7 +13,7 @@ the trace layout is algebra-independent in structure (16 registers, power-of-2 r
 
 ```
 columns (16 = 2⁴ registers, each one F element):
-  r0:   pattern tag (0-16)
+  r0:   pattern tag (0-17)
   r1:   object hash[0]          ┐ 128-bit compressed identity
   r2:   object hash[1]          ┘ (first 2 of 4 elements)
   r3:   formula hash[0]         ┐ 128-bit compressed identity
@@ -118,7 +118,7 @@ most patterns produce exactly 1 trace row per reduce() call. two patterns produc
 
 ```
 single-row (cost 1): axis, quote, compose, cons, branch, add, sub, mul,
-                     eq, lt, xor, and, not, shl, hint
+                     eq, lt, xor, and, not, shl, call, look
 
 multi-row:
   axis: 1 row — O(1) polynomial evaluation via Lens opening (legacy: d rows for tree traversal)

@@ -1,0 +1,16 @@
+# ---
+# tags: nox, metal, config
+# crystal-type: source
+# crystal-domain: comp
+# ---
+[package]
+name = "nox-metal"
+version = "0.1.0"
+edition = "2024"
+description = "nox on bare metal — no OS, direct hardware"
+license = "Cyber"
+
+[dependencies]
+nox = { path = "../rs" }
+nebu = { path = "../../nebu/rs" }
+uefi = { version = "0.34", features = ["alloc"] }

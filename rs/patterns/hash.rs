@@ -3,10 +3,10 @@
 
 use crate::noun::{Order, NounId};
 use crate::reduce::{Outcome, ErrorKind, evaluate};
-use crate::hint::HintProvider;
+use crate::call::CallProvider;
 
 pub fn hash<const N: usize>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn CallProvider<N>,
 ) -> Outcome {
     let (input, budget) = match evaluate(order, object, body, budget, hints) { Ok(v) => v, Err(o) => return o };
     let digest = *order.digest(input);

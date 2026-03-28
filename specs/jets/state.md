@@ -22,7 +22,7 @@ the BBG polynomial evaluation table is a noun. state operations are standard nox
 | ADD(a, b) → c | add (5) | field addition on state values | 1 |
 | MUL(a, b) → c | mul (7) | field multiplication on state values | 1 |
 
-16 patterns are the axiom. state operations are derived. no new instructions.
+18 patterns are the axiom. state operations are derived. no new instructions.
 
 ### irreducibility
 

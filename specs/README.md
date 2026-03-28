@@ -8,8 +8,8 @@ canonical specification of the nox virtual machine. this is the source of truth 
 |------|-------|--------|
 | vm.md | overview, field, hash, algebra polymorphism, dependencies | canonical |
 | noun/ | data model: atom, cell, type tags, order, hash, polynomial representation | canonical |
-| patterns/ | all 17 patterns: structural (0-4), field (5-10), bitwise (11-14), hash (15), hint (16) | canonical |
-| reduction.md | reduce(), ask(), budget, confluence, memoization, proof-carrying, signal assembly | canonical |
+| patterns/ | all 18 patterns: structural (0-4), field (5-10), bitwise (11-14), hash (15), call (16), look (17) | canonical |
+| reduction.md | reduce(), order(), budget, confluence, memoization, proof-carrying, signal assembly | canonical |
 | jets.md | Layer 3: genesis jet registry, semantic contract, hardware mapping | canonical |
 | jets/ | per-group genesis jet specs (hash, recursion, binary-tower, polynomial-ring, isogeny-curves, tropical-semiring, state, decider) | canonical |
 | trace.md | execution trace layout, AIR constraints, polynomial encoding | canonical |

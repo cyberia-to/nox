@@ -5,7 +5,7 @@ status: canonical
 
 ## overview
 
-nox is a proof-native virtual machine. sixteen deterministic reduction patterns parameterized by algebra, plus one non-deterministic witness injection pattern and five jets for efficient recursive stark verification.
+nox is a proof-native virtual machine. sixteen deterministic compute patterns parameterized by algebra, plus call (non-deterministic witness injection) and look (deterministic BBG read), and five jets for efficient recursive stark verification. 16 compute + call + look = 18 patterns.
 
 every nox execution produces a trace that IS the stark witness. there is no separate arithmetization step.
 
@@ -76,7 +76,7 @@ Cost, Gain         trop        Tropical        branch + lt (witness jets)
 Iso, Shade         genies      Isogeny         isogeny jets (group_action, ...)
 ```
 
-cross-regime boundary: where types change. the Trident compiler inserts hemera commitments at type transitions — no manual boundary management. nox VM executes uniformly (16 patterns). zheng partitions the trace by operand types and proves each partition through its native lens. HyperNova folds all into one accumulator.
+cross-regime boundary: where types change. the Trident compiler inserts hemera commitments at type transitions — no manual boundary management. nox VM executes uniformly (18 patterns). zheng partitions the trace by operand types and proves each partition through its native lens. HyperNova folds all into one accumulator.
 
 boundary cost: ~766 F_p constraints per type transition (30 field ops + 1 hemera hash).
 
@@ -126,7 +126,7 @@ sel_trop: 1 for Cost/Gain operands (trop)
 
 ## algebra-polymorphic patterns
 
-the 16 patterns are abstract operations parameterized by algebra, not tied to a specific field. the pattern semantics are universal — the algebra is a parameter.
+the 16 compute patterns are abstract operations parameterized by algebra, not tied to a specific field. the pattern semantics are universal — the algebra is a parameter. call (16) and look (17) are algebra-independent.
 
 three groups map to algebraic domains:
 
@@ -151,7 +151,7 @@ the operations are identical. the algebra is a parameter. the programmer writes 
 
 ### polynomial nouns and axis
 
-every noun is a multilinear polynomial (see nouns.md polynomial representation). axis — the fundamental navigation operation — becomes polynomial evaluation at a binary point. a Lens opening proves the evaluation in O(1) (~75 bytes proof), replacing O(depth) tree traversal. the 16 patterns are unchanged semantically — axis still navigates nouns. the implementation changes from pointer-following to polynomial evaluation. this applies across all instantiations: the noun polynomial is over the instantiated field F, and the Lens commitment uses the same field.
+every noun is a multilinear polynomial (see nouns.md polynomial representation). axis — the fundamental navigation operation — becomes polynomial evaluation at a binary point. a Lens opening proves the evaluation in O(1) (~75 bytes proof), replacing O(depth) tree traversal. the 16 compute patterns are unchanged semantically — axis still navigates nouns. the implementation changes from pointer-following to polynomial evaluation. this applies across all instantiations: the noun polynomial is over the instantiated field F, and the Lens commitment uses the same field.
 
 ## proof-system polymorphism
 
@@ -248,23 +248,23 @@ nox programs invoke domain-separated hashing via pattern 15 (hash) with the tag 
 ## three layers
 
 ```
-Layer 1: 16 deterministic patterns     — the ground truth of computation
-Layer 2: 1 non-deterministic hint      — the origin of privacy and search
-Layer 3: 30+ jets across 5 algebras   — optimization without changing meaning
+Layer 1: 16 deterministic compute patterns — the ground truth of computation
+Layer 2: call (non-deterministic) + look (deterministic BBG read)
+Layer 3: 30+ jets across 5 algebras       — optimization without changing meaning
 ```
 
-remove Layer 3: identical results, orders of magnitude slower. remove Layer 2: no privacy, no ZK. remove Layer 1: nothing remains. see [[jets/]] for the full jet registry.
+remove Layer 3: identical results, orders of magnitude slower. remove Layer 2: no privacy (call), no state access (look). remove Layer 1: nothing remains. see [[jets/]] for the full jet registry.
 
 ## adding new instantiations
 
-the 4-bit encoding, the trace layout, the budget metering, the confluence property — all are properties of the abstract pattern set, not of a specific field. a new instantiation reuses the same spec with different F, W, H parameters. see the five algebras section for the current instantiation table and cross-algebra composition.
+the 5-bit encoding, the trace layout, the budget metering, the confluence property — all are properties of the abstract pattern set, not of a specific field. a new instantiation reuses the same spec with different F, W, H parameters. see the five algebras section for the current instantiation table and cross-algebra composition.
 
 ## specification index
 
 | page | scope |
 |------|-------|
 | nouns.md | data model: atom, cell, type tags, coercion, structural hash |
-| patterns.md | all 17 patterns: Layer 1 (0-15) + Layer 2 hint (16) |
+| patterns.md | all 18 patterns: Layer 1 compute (0-15) + Layer 2 call (16) + look (17) |
 | reduction.md | reduction semantics, confluence, parallelism, memoization |
 | jets.md | Layer 3 jets, pure equivalents, hardware mapping, verifier costs |
 | trace.md | execution trace layout, AIR constraints, polynomial encoding |

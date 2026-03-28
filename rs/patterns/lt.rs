@@ -4,10 +4,10 @@
 use nebu::Goldilocks;
 use crate::noun::{Order, NounId};
 use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_field, make_field};
-use crate::hint::HintProvider;
+use crate::call::CallProvider;
 
 pub fn lt<const N: usize>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn CallProvider<N>,
 ) -> Outcome {
     let (a, b) = match cell_pair(order, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
     let (va, budget) = match evaluate_field(order, object, a, budget, hints) { Ok(v) => v, Err(o) => return o };

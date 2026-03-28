@@ -1,6 +1,6 @@
 # order
 
-an order is the execution context for one ask() — a neuron's command to apply a formula to an object. it holds all nouns created during the computation, provides hash-consed identity, and is freed when the computation completes.
+an order is the execution context for one order() — a neuron's command to apply a formula to an object. it holds all nouns created during the computation, provides hash-consed identity, and is freed when the computation completes.
 
 ```
 type NounId = u32;
@@ -54,6 +54,6 @@ hash-consing is required, not optional. it ensures that `H(noun)` = order identi
 
 ## lifecycle
 
-one order per ask() invocation. the order is allocated at entry, all nouns live in it, and it is freed when ask() returns. no cross-computation noun sharing — each order is isolated.
+one order per order() invocation. the order is allocated at entry, all nouns live in it, and it is freed when order() returns. no cross-computation noun sharing — each order is isolated.
 
 the memo cache stores (H(object), H(formula)) → H(result) — hashes, not NounIds. NounIds are order-local and meaningless outside their order.

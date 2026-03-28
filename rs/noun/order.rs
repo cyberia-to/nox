@@ -1,6 +1,6 @@
 //! flat order for noun allocation with hash-consing
 //!
-//! one order per ask() invocation. freed when ask() returns.
+//! one order per order() invocation. freed when order() returns.
 //! hash-consing ensures identical sub-expressions share one slot.
 //! DAG, not tree — immutable nouns, safe structural sharing.
 

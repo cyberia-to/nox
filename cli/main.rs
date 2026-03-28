@@ -18,7 +18,7 @@ use std::io::Read;
 use nebu::Goldilocks;
 use nox::noun::{Order, NounId, Noun, Tag};
 use nox::reduce::{reduce, Outcome};
-use nox::hint::NullHints;
+use nox::call::NullCalls;
 
 const ORDER_SIZE: usize = 1 << 16; // 64K nouns
 
@@ -201,7 +201,7 @@ fn main() {
     }
 
     let mut order = Order::<ORDER_SIZE>::new();
-    let hints = NullHints;
+    let hints = NullCalls;
 
     let object = parse_noun(&mut order, &object_text).unwrap_or_else(|e| {
         eprintln!("error parsing object: {}", e);

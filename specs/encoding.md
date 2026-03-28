@@ -78,7 +78,7 @@ each element is a canonical field element in [0, p), little-endian
 
 ## formula encoding
 
-a formula is a noun of the form `cell(tag, body)` where tag is an atom (pattern number 0-16).
+a formula is a noun of the form `cell(tag, body)` where tag is an atom (pattern number 0-17).
 
 ```
 [0 a]        axis
@@ -89,7 +89,8 @@ a formula is a noun of the form `cell(tag, body)` where tag is an atom (pattern 
 [5 [a b]]    add
 ...
 [15 a]       hash
-[16 c]       hint
+[16 c]       call
+[17 a]       look
 ```
 
 formulas are nouns. they are stored and resolved the same way as any other noun — by identity lookup, recursively.

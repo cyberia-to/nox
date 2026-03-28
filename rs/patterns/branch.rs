@@ -2,10 +2,10 @@
 
 use crate::noun::{Order, NounId};
 use crate::reduce::{reduce, Outcome, ErrorKind, cell_pair, evaluate};
-use crate::hint::HintProvider;
+use crate::call::CallProvider;
 
 pub fn branch<const N: usize>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn HintProvider<N>,
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn CallProvider<N>,
 ) -> Outcome {
     let (test_formula, rest) = match cell_pair(order, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
     let (yes_formula, no_formula) = match cell_pair(order, rest) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
