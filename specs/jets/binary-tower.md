@@ -4,7 +4,7 @@ crystal-type: entity
 crystal-domain: comp
 alias: binary jets, binary tower jets, F2 jets
 ---
-# kuro jets — binary (F₂)
+# binary-tower jets — binary (F₂)
 
 eight jets for nox<F₂> + Binius. quantized inference and tri-kernel SpMV at native binary cost. base operations (XOR, AND, NOT, SHL) already 1 constraint in F₂ — jets target composite operations that appear millions of times.
 
@@ -27,7 +27,7 @@ constraint count understates the jet advantage. Binius prover operates on packed
 
 ## cross-algebra
 
-quantize (jet 3) and dequantize (jet 4) handle the nebu ↔ kuro boundary. gadget_decompose (jet 6) handles the jali → kuro boundary for FHE bootstrapping.
+quantize (jet 3) and dequantize (jet 4) handle the recursion ↔ binary-tower boundary. gadget_decompose (jet 6) handles the polynomial-ring → binary-tower boundary for FHE bootstrapping.
 
 ## hardware mapping
 
@@ -36,4 +36,4 @@ quantize (jet 3) and dequantize (jet 4) handle the nebu ↔ kuro boundary. gadge
 
 ## lens
 
-Binius: Binius (binary Reed-Solomon over F₂ tower via kuro)
+Binius: Binius (binary Reed-Solomon over F₂ tower via binary-tower)

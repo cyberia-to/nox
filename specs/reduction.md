@@ -128,6 +128,84 @@ all binary arithmetic and bitwise patterns can evaluate both operands in paralle
 
 NOTE on budget and parallelism: the formal reduction rules thread budget sequentially (f → f1 → f2), which contradicts parallel evaluation of sub-expressions. for parallelism to work, the resource budget must be partitioned between parallel branches (e.g. split f equally, or pre-compute sub-expression costs). the partitioning scheme is not yet specified. confluence guarantees the result is identical regardless of evaluation order, but the budget accounting must produce the same final value. this is an open specification gap.
 
+## evaluation scope
+
+each pattern specifies which sub-expressions it evaluates, in what order, and whether evaluation is eager (always) or lazy (conditional).
+
+```
+tag  pattern   subs  strategy     parallel  reduction rule
+───  ────────  ────  ───────────  ────────  ─────────────────────────────────────────
+ 0   axis       0    —            —         body is literal axis address, no reduce()
+ 1   quote      0    —            —         body returned literally, no reduce()
+ 2   compose    2    eager+seq    yes*      reduce(o,x), reduce(o,y), then reduce(rx, ry)
+ 3   cons       2    eager        yes       reduce(o,a), reduce(o,b), then cell(ra, rb)
+ 4   branch     1+1  lazy         no        reduce(o,test), then ONE of reduce(o,yes) or reduce(o,no)
+ 5   add        2    eager        yes       reduce(o,a), reduce(o,b), then a + b
+ 6   sub        2    eager        yes       reduce(o,a), reduce(o,b), then a - b
+ 7   mul        2    eager        yes       reduce(o,a), reduce(o,b), then a * b
+ 8   inv        1    eager        —         reduce(o,a), then a⁻¹
+ 9   eq         2    eager        yes       reduce(o,a), reduce(o,b), then a = b
+10   lt         2    eager        yes       reduce(o,a), reduce(o,b), then a < b
+11   xor        2    eager        yes       reduce(o,a), reduce(o,b), then a ⊕ b
+12   and        2    eager        yes       reduce(o,a), reduce(o,b), then a ∧ b
+13   not        1    eager        —         reduce(o,a), then ¬a
+14   shl        2    eager        yes       reduce(o,a), reduce(o,n), then a << n
+15   hash       1    eager        —         reduce(o,a), then H(a)
+16   call       1+1  eager+lazy   no        reduce(o,tag_f), provider injects witness, reduce([w o],check_f)
+17   look       1    eager        —         reduce(o,key_f), then bbg.read(key)
+```
+
+column definitions:
+- **subs**: number of sub-expressions evaluated via recursive reduce() calls. "1+1" means two sub-expressions evaluated at different times (not both unconditionally).
+- **strategy**: eager = all sub-expressions always evaluated. lazy = some sub-expressions evaluated conditionally. "eager+seq" = all evaluated eagerly but the third step depends on the first two results.
+- **parallel**: whether sub-expression evaluations can run concurrently (confluence guarantees identical results regardless of order).
+
+### no sub-expression evaluation (tags 0-1)
+
+**axis** (0): body `a` is the axis address, interpreted as an integer literal. axis navigates the already-evaluated object `o` — it does not call reduce() on its body. cost is 1 (the dispatch).
+
+**quote** (1): body `c` is returned literally. the only pattern that touches neither the object nor any sub-formula via reduce(). cost is 1 (the dispatch).
+
+### unary eager evaluation (tags 8, 13, 15, 17)
+
+one sub-expression evaluated unconditionally, then the primitive operation applied to the result.
+
+```
+reduce(o, [8 a], f)  = let (v, f1) = reduce(o, a, f-1);  (v⁻¹, f1)
+reduce(o, [13 a], f) = let (v, f1) = reduce(o, a, f-1);  (¬v, f1)
+reduce(o, [15 a], f) = let (v, f1) = reduce(o, a, f-200); (H(v), f1)
+reduce(o, [17 k], f) = let (v, f1) = reduce(o, k, f-1);  bbg.read(v)
+```
+
+no parallelism question arises — single sub-expression.
+
+### binary eager evaluation (tags 5-7, 9-12, 14)
+
+two sub-expressions evaluated unconditionally, then the binary operation applied. both sub-expressions receive the same object `o` and do not depend on each other's results — they can be evaluated in parallel.
+
+```
+reduce(o, [op [a b]], f) =
+  let (v_a, f1) = reduce(o, a, f - 1)
+  let (v_b, f2) = reduce(o, b, f1)
+  (op(v_a, v_b), f2)
+```
+
+the sequential budget threading (f -> f1 -> f2) is a formalism. since reduce(o,a) and reduce(o,b) are independent computations on the same object, an implementation may evaluate them in parallel with budget partitioning.
+
+### structural evaluation (tags 2-4)
+
+**cons** (3): two sub-expressions evaluated eagerly. both receive the same object `o`, both are independent, both can run in parallel. results assembled into a cell.
+
+**compose** (2): two sub-expressions evaluated eagerly, but the pattern has a third step that creates a sequential dependency. reduce(o,x) produces a new object, reduce(o,y) produces a formula, then reduce(rx, ry) applies the formula to the new object. the first two evaluations are independent and parallelizable. the third evaluation depends on both results.
+
+**branch** (4): lazy. evaluates the test sub-expression first. based on the test result (0 or non-zero), evaluates exactly ONE of the two arm sub-expressions. the unchosen arm is never evaluated. this is the only pattern with conditional evaluation — it prevents infinite recursion (a recursive branch terminates as long as the base case arm is eventually chosen).
+
+### Layer 2 evaluation (tags 16-17)
+
+**call** (16): evaluates tag_f eagerly to obtain the tag. the prover injects a witness (external to the VM). then evaluates check_f with the witness prepended to the object: `reduce([witness o], check_f, f')`. the check evaluation is unconditional once the witness arrives, but the witness injection is an external step between the two reduce() calls. not parallelizable — tag must be known before the provider is called, and the witness must exist before check_f is evaluated.
+
+**look** (17): evaluates key_f eagerly to obtain the key, then reads from BBG. single sub-expression, no parallelism question.
+
 ## global memoization via cybergraph
 
 the [[cybergraph]] is the memo table. the cache key is the axon — the directed edge from formula to object:

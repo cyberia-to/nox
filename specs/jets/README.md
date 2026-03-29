@@ -46,5 +46,5 @@ fma              poly_eval, key_switch, noise_track,         recursion, polynomi
                  group_action, isogeny_walk, vrf_eval
 ntt              ntt, ntt_batch, blind_rotate                recursion, polynomial-ring
 p2r              hash, merkle_verify                         recursion
-lut              activation_lut, trop comparisons            binary-tower, tropical-semiring
+lut              activation_lut, tropical comparisons        binary-tower, tropical-semiring
 ```

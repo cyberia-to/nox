@@ -21,4 +21,4 @@ pub mod patterns;
 
 pub use noun::{Order, NounId, Noun, Tag, Digest, NIL};
 pub use reduce::{reduce, Outcome, ErrorKind};
-pub use call::{CallProvider, NullCalls};
+pub use call::{CallProvider, NullCalls, LookProvider, NullLooks};

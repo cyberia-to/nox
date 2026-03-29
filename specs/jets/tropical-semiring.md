@@ -4,7 +4,7 @@ crystal-type: entity
 crystal-domain: comp
 alias: tropical jets, tropical semiring jets, optimization jets
 ---
-# trop jets — tropical (min,+)
+# tropical-semiring jets — tropical (min,+)
 
 five jets for (min,+) semiring operations. optimization, assignment, decoding. no separate nox instantiation — tropical operations decompose to existing patterns (branch + lt). jets accelerate common compositions.
 
@@ -19,7 +19,7 @@ proved via Assayer (tropical witness-verify) in zheng.
 | 2 | trop_hungarian | cost matrix → assignment + cost | O(n³) branch+lt | O(n³) tmin | optimal assignment |
 | 3 | trop_viterbi | HMM, observations → state sequence | O(S²×T) branch+lt | O(S²×T) tmin | optimal sequence decoding |
 | 4 | trop_transport | μ, ν, cost matrix → transport plan | O(n³×log(n)) | O(n³×log(n)) tmin | optimal transport |
-| 5 | witness_commit | tropical witness → F_p Lens commitment | O(|witness|) | O(|witness|) | trop → nebu boundary |
+| 5 | witness_commit | tropical witness → F_p Lens commitment | O(|witness|) | O(|witness|) | tropical-semiring → recursion boundary |
 
 ## execution vs proof cost
 
@@ -39,7 +39,7 @@ with jet:    tropical computation produces witness
 tropical witness commits via Brakedown (Brakedown) at the boundary:
 
 ```
-trop computation → witness (assignment, cost, dual certificate)
+tropical-semiring computation → witness (assignment, cost, dual certificate)
   ↓
 witness_commit boundary jet: Brakedown.commit(witness) → F_p commitment
   ↓

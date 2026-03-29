@@ -84,10 +84,10 @@ total genesis: 1 hash (universal) + 4 recursion + 8 binary-tower + 5 polynomial-
 ```
 GFP primitive                    jets it accelerates                              algebras
 ────────────────────────────     ─────────────────────────────────────             ────────
-fma (field multiply-accumulate)  poly_eval, key_switch, noise_track, group_action  nebu, jali, genies
-ntt (NTT butterfly)              ntt, ntt_batch, blind_rotate                      nebu, jali
-p2r (Poseidon2 round)            hash, merkle_verify                               nebu
-lut (lookup table)               activation_lut, trop comparisons                  kuro, trop
+fma (field multiply-accumulate)  poly_eval, key_switch, noise_track, group_action  recursion, polynomial-ring, isogeny-curves
+ntt (NTT butterfly)              ntt, ntt_batch, blind_rotate                      recursion, polynomial-ring
+p2r (Poseidon2 round)            hash, merkle_verify                               recursion
+lut (lookup table)               activation_lut, tropical comparisons               binary-tower, tropical-semiring
 ```
 
 the stack is continuous: nox pattern → software jet → GFP hardware primitive. the same computation, three speeds, identical semantics at every level. all five algebras map to four GFP primitives.

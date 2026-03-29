@@ -4,7 +4,7 @@ crystal-type: entity
 crystal-domain: comp
 alias: ring jets, polynomial ring jets, R_q jets, FHE jets
 ---
-# jali jets — ring (R_q)
+# polynomial-ring jets — ring (R_q)
 
 five jets for polynomial ring operations over R_q = F_p[x]/(x^n+1). FHE bootstrapping, lattice KEM, and ring convolution. proved via Ikat (ring-aware) in zheng.
 
@@ -34,10 +34,10 @@ gadget_decomp (jet 2) crosses to F₂ (Binius boundary). the digit sequence is b
 
 FHE bootstrapping crosses three algebras:
 ```
-step 1: gadget_decomp    → kuro (F₂, Binius)
-step 2: blind_rotate     → jali (R_q, ring-aware)
-step 3: key_switch       → nebu (F_p, Brakedown)
-step 4: mod_switch        → nebu (F_p, Brakedown)
+step 1: gadget_decomp    → binary-tower (F₂, Binius)
+step 2: blind_rotate     → polynomial-ring (R_q, ring-aware)
+step 3: key_switch       → recursion (F_p, Brakedown)
+step 4: mod_switch        → recursion (F_p, Brakedown)
 ```
 
 ## hardware mapping
