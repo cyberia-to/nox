@@ -10,18 +10,20 @@
 use crate::noun::{Order, NounId};
 use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_field, make_field};
 use crate::call::CallProvider;
+use crate::trace::Tracer;
 
-pub fn look<const N: usize>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn CallProvider<N>,
+pub fn look<const N: usize, T: Tracer>(
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
+    hints: &dyn CallProvider<N>, tracer: &mut T,
 ) -> Outcome {
     let (ns_formula, key_formula) = match cell_pair(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (ns, budget) = match evaluate_field(order, object, ns_formula, budget, hints) {
+    let (ns, budget) = match evaluate_field(order, object, ns_formula, budget, hints, tracer) {
         Ok(v) => v, Err(o) => return o,
     };
-    let (key, budget) = match evaluate_field(order, object, key_formula, budget, hints) {
+    let (key, budget) = match evaluate_field(order, object, key_formula, budget, hints, tracer) {
         Ok(v) => v, Err(o) => return o,
     };
     match hints.look(ns, key) {
@@ -32,41 +34,33 @@ pub fn look<const N: usize>(
 
 #[cfg(test)]
 mod tests {
-    use crate::reduce::reduce;
+    use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::NullCalls;
+    use crate::trace::NoTrace;
     use crate::noun::{Order, Tag};
-    use crate::reduce::{Outcome, ErrorKind};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    /// look with NullCalls returns Unavailable — no BBG state attached
     #[test]
     fn look_null_provider_returns_unavailable() {
         let mut ar = Order::<1024>::new();
-        // object = atom 0 (dummy)
         let obj = ar.atom(g(0), Tag::Field).unwrap();
-        // body = [ns_formula key_formula] where both are quote-literals
-        // ns_formula = [1 0]  (quote 0 — namespace 0)
         let one = ar.atom(g(1), Tag::Field).unwrap();
         let zero = ar.atom(g(0), Tag::Field).unwrap();
         let ns_formula = ar.cell(one, zero).unwrap();
-        // key_formula = [1 42] (quote 42 — key 42)
         let forty_two = ar.atom(g(42), Tag::Field).unwrap();
         let key_formula = ar.cell(one, forty_two).unwrap();
-        // body = [ns_formula key_formula]
         let body = ar.cell(ns_formula, key_formula).unwrap();
-        // formula = [17 body]
         let tag = ar.atom(g(17), Tag::Field).unwrap();
         let formula = ar.cell(tag, body).unwrap();
 
-        match reduce(&mut ar, obj, formula, 1000, &NullCalls) {
+        match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
             Outcome::Error(ErrorKind::Unavailable) => {}
             other => panic!("expected Unavailable, got {:?}", other),
         }
     }
 
-    /// look with a provider that returns a value succeeds
     #[test]
     fn look_with_value_returns_atom() {
         use crate::call::{CallProvider, LookProvider};
@@ -95,7 +89,7 @@ mod tests {
         let tag = ar.atom(g(17), Tag::Field).unwrap();
         let formula = ar.cell(tag, body).unwrap();
 
-        match reduce(&mut ar, obj, formula, 1000, &TestLooks) {
+        match reduce(&mut ar, obj, formula, 1000, &TestLooks, &mut NoTrace) {
             Outcome::Ok(result, _budget) => {
                 let (v, _) = ar.atom_value(result).unwrap();
                 assert_eq!(v, Goldilocks::new(99));

@@ -19,7 +19,7 @@ extern crate alloc;
 use uefi::prelude::*;
 use uefi::println;
 use nebu::Goldilocks;
-use nox::{Order, Noun, Tag, reduce, Outcome, NullCalls};
+use nox::{Order, Noun, Tag, reduce, Outcome, NullCalls, NoTrace};
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // metal boundary — the irreducible interface
@@ -73,7 +73,7 @@ fn main() -> Status {
 
     // reduce
     let hints = NullCalls;
-    let result = reduce(&mut order, object, formula, 100, &hints);
+    let result = reduce(&mut order, object, formula, 100, &hints, &mut NoTrace);
 
     match result {
         Outcome::Ok(id, remaining) => {

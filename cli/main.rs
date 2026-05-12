@@ -19,6 +19,7 @@ use nebu::Goldilocks;
 use nox::noun::{Order, NounId, Noun, Tag};
 use nox::reduce::{reduce, Outcome};
 use nox::call::NullCalls;
+use nox::trace::NoTrace;
 
 const ORDER_SIZE: usize = 1 << 16; // 64K nouns
 
@@ -213,7 +214,7 @@ fn main() {
         std::process::exit(1);
     });
 
-    match reduce(&mut order, object, formula, budget, &hints) {
+    match reduce(&mut order, object, formula, budget, &hints, &mut NoTrace) {
         Outcome::Ok(result, remaining) => {
             println!("{}", print_noun(&order, result));
             eprintln!("cost: {} (budget remaining: {})", budget - remaining, remaining);

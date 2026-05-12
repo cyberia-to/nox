@@ -3,13 +3,22 @@
 use crate::noun::{Order, NounId};
 use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_word, make_word};
 use crate::call::CallProvider;
+use crate::trace::Tracer;
 
-pub fn shl<const N: usize>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn CallProvider<N>,
+pub fn shl<const N: usize, T: Tracer>(
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
+    hints: &dyn CallProvider<N>, tracer: &mut T,
 ) -> Outcome {
-    let (a, n) = match cell_pair(order, body) { Some(p) => p, None => return Outcome::Error(ErrorKind::Malformed) };
-    let (va, budget) = match evaluate_word(order, object, a, budget, hints) { Ok(v) => v, Err(o) => return o };
-    let (vn, budget) = match evaluate_word(order, object, n, budget, hints) { Ok(v) => v, Err(o) => return o };
+    let (a, n) = match cell_pair(order, body) {
+        Some(p) => p,
+        None => return Outcome::Error(ErrorKind::Malformed),
+    };
+    let (va, budget) = match evaluate_word(order, object, a, budget, hints, tracer) {
+        Ok(v) => v, Err(o) => return o,
+    };
+    let (vn, budget) = match evaluate_word(order, object, n, budget, hints, tracer) {
+        Ok(v) => v, Err(o) => return o,
+    };
     let result = if vn >= 32 { 0 } else { (va << vn) & 0xFFFF_FFFF };
     make_word(order, result, budget)
 }

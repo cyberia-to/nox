@@ -18,7 +18,9 @@ pub mod noun;
 pub mod reduce;
 pub mod call;
 pub mod patterns;
+pub mod trace;
 
 pub use noun::{Order, NounId, Noun, Tag, Digest, NIL};
 pub use reduce::{reduce, Outcome, ErrorKind};
 pub use call::{CallProvider, NullCalls, LookProvider, NullLooks};
+pub use trace::{TraceRow, Tracer, NoTrace, VecTrace};

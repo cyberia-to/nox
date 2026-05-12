@@ -4,11 +4,15 @@
 use crate::noun::{Order, NounId};
 use crate::reduce::{Outcome, ErrorKind, evaluate};
 use crate::call::CallProvider;
+use crate::trace::Tracer;
 
-pub fn hash<const N: usize>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, hints: &dyn CallProvider<N>,
+pub fn hash<const N: usize, T: Tracer>(
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
+    hints: &dyn CallProvider<N>, tracer: &mut T,
 ) -> Outcome {
-    let (input, budget) = match evaluate(order, object, body, budget, hints) { Ok(v) => v, Err(o) => return o };
+    let (input, budget) = match evaluate(order, object, body, budget, hints, tracer) {
+        Ok(v) => v, Err(o) => return o,
+    };
     let digest = *order.digest(input);
     match order.hash_noun(&digest) {
         Some(r) => Outcome::Ok(r, budget),

@@ -8,15 +8,17 @@ use nebu::Goldilocks;
 use crate::noun::{Order, NounId};
 use crate::reduce::{reduce, Outcome, ErrorKind, cell_pair, evaluate};
 use crate::call::CallProvider;
+use crate::trace::Tracer;
 
-pub fn call_witness<const N: usize>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64, calls: &dyn CallProvider<N>,
+pub fn call_witness<const N: usize, T: Tracer>(
+    order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
+    calls: &dyn CallProvider<N>, tracer: &mut T,
 ) -> Outcome {
     let (tag_formula, check_formula) = match cell_pair(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (tag_result, budget) = match evaluate(order, object, tag_formula, budget, calls) {
+    let (tag_result, budget) = match evaluate(order, object, tag_formula, budget, calls, tracer) {
         Ok(v) => v, Err(o) => return o,
     };
     let tag_value = match order.atom_value(tag_result) {
@@ -31,7 +33,7 @@ pub fn call_witness<const N: usize>(
         Some(c) => c,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
-    match reduce(order, witness_object, check_formula, budget, calls) {
+    match reduce(order, witness_object, check_formula, budget, calls, tracer) {
         Outcome::Ok(check_result, budget) => {
             match order.atom_value(check_result) {
                 Some((v, _)) if v == Goldilocks::ZERO => Outcome::Ok(witness, budget),
