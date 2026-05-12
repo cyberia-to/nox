@@ -35,9 +35,9 @@ this is the foundation for systems that run indefinitely without degradation. th
 confluence means the result is independent of evaluation order. any node, anywhere, evaluating the same formula on the same object will produce the same result. this is the mathematical guarantee that makes decentralized computation trustless.
 
 ```
-node A (Tokyo):      reduce(s, f, π) → r    ✓
-node B (São Paulo):  reduce(s, f, π) → r    ✓ (same r, guaranteed)
-node C (Nairobi):    reduce(s, f, π) → r    ✓ (same r, guaranteed)
+node A (Tokyo):      reduce(s, f, φ*) → r    ✓
+node B (São Paulo):  reduce(s, f, φ*) → r    ✓ (same r, guaranteed)
+node C (Nairobi):    reduce(s, f, φ*) → r    ✓ (same r, guaranteed)
 ```
 
 no coordination needed. no consensus protocol for computation results. the mathematics of orthogonal rewriting guarantees agreement. nodes can compute in parallel, asynchronously, on different hardware, with different evaluation strategies — the answer is the same.

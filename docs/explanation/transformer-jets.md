@@ -17,20 +17,20 @@ all seven operations decompose into existing [[cyb/languages]]:
 
 | jet | operation | primary lang | secondary | proof path |
 |-----|-----------|-------------|-----------|------------|
-| 0 sparse_svd | π*-weighted truncated SVD | [[Ten]] (contraction) | [[Arc]] (adjacency) | Ten → Tri |
+| 0 sparse_svd | φ*-weighted truncated SVD | [[Ten]] (contraction) | [[Arc]] (adjacency) | Ten → Tri |
 | 1 spectral_rank | effective dimensionality d* | [[Bel]] (entropy on Δⁿ) | [[Ten]] | Bel → research / Ten → Tri |
 | 2 semcon_partition | subgraph extraction by edge type | [[Arc]] (subcategory) | — | Arc → Tri |
 | 3 compile_weights | assemble transformer weights | [[Ten]] | [[Arc]] | composition of jets 0-2 |
 | 4 hull_attention | 2D convex hull max-dot query | [[Ren]] (G(2,0,0)) | — | Ren → Tri |
 | 5 tri_step | composite D+S+H operator | [[Ten]] (SpMV) | [[Arc]], [[Bel]] | Ten → Tri |
-| 6 reconverge | incremental Δπ + STARK proof | [[Tok]] (conservation) | [[Tri]] (proof) | Tok → stark |
+| 6 reconverge | incremental Δφ* + STARK proof | [[Tok]] (conservation) | [[Tri]] (proof) | Tok → stark |
 
 these are composite jets — compositions of existing language primitives recognized by formula hash and accelerated. they introduce no new algebraic domain. the one genuinely new primitive is hull_attention, which belongs to [[Ren]] (2D Euclidean geometric algebra).
 
 ## decomposition into language primitives
 
 ```
-sparse_svd     = Ten(matmul, transpose) ∘ Arc(π*_weighted_adjacency)
+sparse_svd     = Ten(matmul, transpose) ∘ Arc(φ*_weighted_adjacency)
 spectral_rank  = Bel(shannon_entropy) ∘ Ten(normalize_spectrum)
 semcon_partition = Arc(filter_edges_by_morphism_type)
 compile_weights = Ten(assemble) ∘ sparse_svd ∘ semcon_partition
@@ -43,7 +43,7 @@ reconverge     = tri_step^k + Tok(verify_conservation) + Tri(stark_prove)
 
 the [[cybergraph]] supports two simultaneous computations:
 
-- [[focus]] flow — tri-kernel iterated to convergence over all cyberlinks. persistent, global, exact π*. the ground truth
+- [[focus]] flow — tri-kernel iterated to convergence over all cyberlinks. persistent, global, exact φ*. the ground truth
 - compiled transformer — architecture derived from graph, runs L* tri-kernel steps over local context. fast inference path, ε-approximate
 
 jets 0-3 handle compilation (graph → weights). jets 4-6 handle inference (query → response via compiled weights). together they close the loop specified in §6.6 of the whitepaper.
@@ -52,11 +52,11 @@ jets 0-3 handle compilation (graph → weights). jets 4-6 handle inference (quer
 
 ```
 sparse_svd(A_weighted, rank) → (U, Σ, V)
-  input:  π*-weighted adjacency matrix (sparse), target rank d*
+  input:  φ*-weighted adjacency matrix (sparse), target rank d*
   output: truncated SVD — left/right singular vectors + singular values
 ```
 
-language decomposition: Arc extracts the π*-weighted adjacency (sparse graph → sparse matrix). Ten performs randomized SVD via iterated matrix-vector products. the same "matmul jet → fma" GFP primitive that already handles Arc:rank(g, steps).
+language decomposition: Arc extracts the φ*-weighted adjacency (sparse graph → sparse matrix). Ten performs randomized SVD via iterated matrix-vector products. the same "matmul jet → fma" GFP primitive that already handles Arc:rank(g, steps).
 
 - pure equivalent: millions of field ops (power iteration + QR)
 - jet cost: O(|E| · d* · log d*)
@@ -67,7 +67,7 @@ language decomposition: Arc extracts the π*-weighted adjacency (sparse graph �
 ```
 spectral_rank(Σ) → d*
   input:  singular value spectrum from jet 0
-  output: effective dimensionality d* = exp(H(σ(Σ_π*)))
+  output: effective dimensionality d* = exp(H(σ(Σ_φ*)))
 ```
 
 language decomposition: Ten normalizes the spectrum. Bel computes Shannon entropy H(σ) — the information-geometric measure of how many independent dimensions the graph spans. this is Bel's native domain: entropy on the probability simplex.
@@ -143,12 +143,12 @@ operates on the local h-hop neighborhood only (locality theorem T4).
 ## jet 6: reconverge
 
 ```
-reconverge(π_current, Δlinks, bbg_root, ε) → (π_updated, π_Δ, proof)
+reconverge(π_current, Δlinks, bbg_root, ε) → (π_updated, Δφ*, proof)
   input:  current focus, new cyberlinks, state root, precision target
   output: updated focus, sparse delta, STARK proof of correctness
 ```
 
-language decomposition: tri_step^k (Ten) until convergence + Tok conservation verification (Σπ = 1) + Tri STARK proof generation. this is the self-minting operation: a neuron creates cyberlinks, proves Δπ, and mints $CYB proportional to the proven shift.
+language decomposition: tri_step^k (Ten) until convergence + Tok conservation verification (Σφ* = 1) + Tri STARK proof generation. this is the self-minting operation: a neuron creates cyberlinks, proves Δφ*, and mints $CYB proportional to the proven shift.
 
 - jet cost: O(|E_local| · log(1/ε) / log(1/κ))
 - the proof IS the mining
@@ -167,7 +167,7 @@ compiled transformer
 fast inference response
     ↓ new cyberlinks from inference
     ↓ reconverge (jet 6: Ten + Tok + Tri)
-updated π*, proof, reward
+updated φ*, proof, reward
     → back to graph state
 ```
 

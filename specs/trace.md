@@ -441,21 +441,23 @@ r1  = object NounId
 r2  = formula NounId
 r3  = result NounId               — NounId of the looked-up value
 r4  = key value                    — result of reduce(o, key_f): the BBG lookup key
-r5  = commitment root              — BBG sub-root commitment (NMT root for the namespace)
-r6  = value                        — the looked-up value from BBG authenticated state
-r7  = opening proof element 0      — NMT inclusion proof data (deterministic)
+r5  = BBG_root                     — Hemera(Lens.commit(BBG_poly) || Lens.commit(A) || Lens.commit(N))
+r6  = value                        — the looked-up value: BBG_poly(eval(r4))
+r7  = opening proof element 0      — Brakedown/Lens opening proof (Lens.open(r5, eval(r4)) witness)
 r10 = opening proof element 1
 r11 = opening proof element 2
 
-constraint: NMT/Lens opening proof verifies r6 at key r4 under root r5 (degree 1)
+constraint: Lens.verify(r5, eval(r4), r6, proof) — 2 inline degree-1 wiring constraints
+            (key binding: eval(r4) wired to evaluation point; root binding: r5 = instance BBG_root);
+            Brakedown opening verification via folded CCS sub-instance (HyperNova, same as hint/call)
 budget: r9 = r8 - 1
-note: fully deterministic — r7, r10-r11 are the NMT inclusion proof, verifiable against
-      the BBG state commitment in the instance. memoizable at a given block height.
+note: fully deterministic — r7, r10-r11 are Brakedown opening proof elements verifiable against
+      the BBG_root in the instance. memoizable at a given block height.
 ```
 
 ### call vs look: trace difference
 
-call (16) has one non-deterministic column (r5 = prover witness); look (17) is fully deterministic (r5 = BBG commitment root, r7/r10-r11 = NMT proof). call results are not memoizable; look results are memoizable at a given block height.
+call (16) has one non-deterministic column (r5 = prover witness); look (17) is fully deterministic (r5 = BBG_root, r7/r10-r11 = Brakedown/Lens opening proof). call results are not memoizable; look results are memoizable at a given block height.
 
 ## constraint system
 
@@ -466,7 +468,8 @@ constraint degrees and counts are per-instantiation. the structure of the constr
 per-pattern constraints, register usage, and degrees are specified in the per-pattern register map above. summary of constraint degrees:
 
 ```
-degree 1: axis, quote, add, sub, look (linear constraints)
+degree 1: axis, quote, add, sub (linear constraints)
+degree 1 inline + folded sub-instance: look (wiring constraints inline; Brakedown verification folded via HyperNova)
 degree 2: mul, eq, lt, branch, call, compose, cons (quadratic constraints)
 degree 3: inv transition (square-and-multiply step)
 degree 7: hash full rounds (x^7 s-box)

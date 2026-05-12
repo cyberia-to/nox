@@ -374,7 +374,7 @@ the output of a complete order() with proof-carrying is a [[signal]]:
 signal = {
   ν:    neuron_id                          from order() argument
   l⃗:    [cyberlink]                        the batch (from computation results)
-  π_Δ:  [(particle, F_p)]                  impulse (focus shift)
+  Δφ*:  [(particle, F_p)]                  impulse (focus shift)
   σ:    accumulator                        the proof (from proof-carrying reduction)
   prev: H(previous signal)                ordering (hash chain)
   mc:   H(causal DAG root)                ordering (Merkle clock)
