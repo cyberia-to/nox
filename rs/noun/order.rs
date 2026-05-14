@@ -48,10 +48,11 @@ impl<const N: usize> Order<N> {
         Some(idx)
     }
 
-    pub fn get(&self, r: NounId) -> &NounEntry {
-        assert!((r as usize) < self.count as usize, "NounId out of bounds");
+    /// returns None for out-of-bounds NounId (never panics)
+    pub fn get(&self, r: NounId) -> Option<&NounEntry> {
+        if (r as usize) >= self.count as usize { return None; }
         // SAFETY: entries[0..count] are initialized, r < count
-        unsafe { self.entries[r as usize].assume_init_ref() }
+        Some(unsafe { self.entries[r as usize].assume_init_ref() })
     }
 
     pub fn atom(&mut self, value: Goldilocks, tag: Tag) -> Option<NounId> {
@@ -64,8 +65,8 @@ impl<const N: usize> Order<N> {
     }
 
     pub fn cell(&mut self, left: NounId, right: NounId) -> Option<NounId> {
-        let lh = self.get(left).hash;
-        let rh = self.get(right).hash;
+        let lh = self.get(left)?.hash;
+        let rh = self.get(right)?.hash;
         let hash = hash_cell(&lh, &rh);
         if let Some(existing) = self.index_lookup(&hash) { return Some(existing); }
         let inner = Noun::Cell { left, right };
@@ -87,15 +88,15 @@ impl<const N: usize> Order<N> {
 
     /// extract digest from hash noun
     pub fn read_hash_noun(&self, r: NounId) -> Option<Digest> {
-        let (left, right) = match self.get(r).inner {
+        let (left, right) = match self.get(r)?.inner {
             Noun::Cell { left, right } => (left, right),
             _ => return None,
         };
-        let (h0r, h1r) = match self.get(left).inner {
+        let (h0r, h1r) = match self.get(left)?.inner {
             Noun::Cell { left, right } => (left, right),
             _ => return None,
         };
-        let (h2r, h3r) = match self.get(right).inner {
+        let (h2r, h3r) = match self.get(right)?.inner {
             Noun::Cell { left, right } => (left, right),
             _ => return None,
         };
@@ -133,24 +134,26 @@ impl<const N: usize> Order<N> {
     pub fn count(&self) -> u32 { self.count }
 
     pub fn is_atom(&self, r: NounId) -> bool {
-        matches!(self.get(r).inner, Noun::Atom { .. })
+        self.get(r).map_or(false, |e| matches!(e.inner, Noun::Atom { .. }))
     }
 
     pub fn is_cell(&self, r: NounId) -> bool {
-        matches!(self.get(r).inner, Noun::Cell { .. })
+        self.get(r).map_or(false, |e| matches!(e.inner, Noun::Cell { .. }))
     }
 
     pub fn head(&self, r: NounId) -> Option<NounId> {
-        match self.get(r).inner { Noun::Cell { left, .. } => Some(left), _ => None }
+        match self.get(r)?.inner { Noun::Cell { left, .. } => Some(left), _ => None }
     }
 
     pub fn tail(&self, r: NounId) -> Option<NounId> {
-        match self.get(r).inner { Noun::Cell { right, .. } => Some(right), _ => None }
+        match self.get(r)?.inner { Noun::Cell { right, .. } => Some(right), _ => None }
     }
 
     pub fn atom_value(&self, r: NounId) -> Option<(Goldilocks, Tag)> {
-        match self.get(r).inner { Noun::Atom { value, tag } => Some((value, tag)), _ => None }
+        match self.get(r)?.inner { Noun::Atom { value, tag } => Some((value, tag)), _ => None }
     }
 
-    pub fn digest(&self, r: NounId) -> &Digest { &self.get(r).hash }
+    pub fn digest(&self, r: NounId) -> Option<&Digest> {
+        Some(&self.get(r)?.hash)
+    }
 }

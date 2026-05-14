@@ -6,32 +6,60 @@
 
 use crate::noun::{Order, NounId, Noun};
 use crate::reduce::{Outcome, ErrorKind};
+use crate::trace::TraceRow;
 
-pub fn axis<const N: usize>(order: &mut Order<N>, object: NounId, addr_ref: NounId, budget: u64) -> Outcome {
+pub fn axis<const N: usize>(
+    order: &mut Order<N>, object: NounId, addr_ref: NounId, budget: u64,
+    row: &mut TraceRow,
+) -> Outcome {
     let addr = match order.atom_value(addr_ref) {
         Some((v, _)) => v.as_u64(),
         None => return Outcome::Error(ErrorKind::Malformed),
     };
+    // r4 = object NounId (for Lens-opening binding when wired by zheng)
+    // r5 = axis address (raw u64)
+    // r6 = depth traversed (cell levels descended)
+    // r7 = result NounId
+    row.r[4] = object as u64;
+    row.r[5] = addr;
     match addr {
         0 => {
-            let digest = *order.digest(object);
+            let digest = match order.digest(object) {
+                Some(d) => *d,
+                None => return Outcome::Error(ErrorKind::Unavailable),
+            };
             match order.hash_noun(&digest) {
-                Some(r) => Outcome::Ok(r, budget),
+                Some(r) => {
+                    row.r[6] = 0;
+                    row.r[7] = r as u64;
+                    Outcome::Ok(r, budget)
+                }
                 None => Outcome::Error(ErrorKind::Unavailable),
             }
         }
-        1 => Outcome::Ok(object, budget),
+        1 => {
+            row.r[6] = 0;
+            row.r[7] = object as u64;
+            Outcome::Ok(object, budget)
+        }
         _ => {
             let bits = 64 - addr.leading_zeros() - 1;
             let mut node = object;
+            let mut levels = 0u64;
             for i in (0..bits).rev() {
-                match order.get(node).inner {
-                    Noun::Cell { left, right } => {
-                        node = if (addr >> i) & 1 == 1 { right } else { left };
-                    }
-                    _ => return Outcome::Error(ErrorKind::AxisError),
+                match order.get(node) {
+                    Some(e) => match e.inner {
+                        Noun::Cell { left, right } => {
+                            node = if (addr >> i) & 1 == 1 { right } else { left };
+                            levels += 1;
+                        }
+                        _ => return Outcome::Error(ErrorKind::AxisError),
+                    },
+                    None => return Outcome::Error(ErrorKind::Malformed),
                 }
             }
+            row.r[6] = levels;
+            row.r[7] = node as u64;
             Outcome::Ok(node, budget)
         }
     }
@@ -40,7 +68,7 @@ pub fn axis<const N: usize>(order: &mut Order<N>, object: NounId, addr_ref: Noun
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::reduce::reduce;
+    use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::NullCalls;
     use crate::trace::NoTrace;
     use crate::noun::{Order, Tag};
@@ -100,7 +128,7 @@ mod tests {
             Outcome::Ok(r, _) => {
                 assert!(ar.is_cell(r));
                 let d = ar.read_hash_noun(r).unwrap();
-                assert_eq!(d, *ar.digest(s));
+                assert_eq!(d, *ar.digest(s).unwrap());
             }
             o => panic!("{:?}", o),
         }
@@ -133,6 +161,17 @@ mod tests {
         match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(4)),
             o => panic!("{:?}", o),
+        }
+    }
+
+    #[test]
+    fn budget_zero_halts_immediately() {
+        let mut ar = Order::<1024>::new();
+        let s = ar.atom(g(42), Tag::Field).unwrap();
+        let f = make_axis(&mut ar, 1);
+        match reduce(&mut ar, s, f, 0, &NullCalls, &mut NoTrace) {
+            Outcome::Halt(0) => {}
+            o => panic!("expected Halt(0), got {:?}", o),
         }
     }
 }

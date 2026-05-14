@@ -37,12 +37,15 @@ fn pack_digest(d: &Digest) -> hemera::Hash {
 }
 
 fn extract_digest(h: &hemera::Hash) -> Digest {
+    // Canonicalize each limb so stored digests live in [0, p). Goldilocks
+    // PartialEq already canonicalizes on read, so this is defensive — guarantees
+    // hash-cons table keys and serialized digests use the same representation.
     let bytes = h.as_bytes();
     let mut digest = [Goldilocks::ZERO; 4];
     for i in 0..4 {
         let mut buf = [0u8; 8];
         buf.copy_from_slice(&bytes[i * 8..(i + 1) * 8]);
-        digest[i] = Goldilocks::new(u64::from_le_bytes(buf));
+        digest[i] = Goldilocks::new(u64::from_le_bytes(buf)).canonicalize();
     }
     digest
 }

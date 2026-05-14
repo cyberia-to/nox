@@ -19,7 +19,7 @@ use alloc::vec::Vec;
 
 pub const COLS: usize = 16;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct TraceRow {
     pub r: [u64; COLS],
 }
