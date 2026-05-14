@@ -260,15 +260,15 @@ noun_response payload:
 
 a noun_push for a cell MUST include all transitive children before the cell itself (topological order). the receiver can verify and store each entry as it arrives — no forward references.
 
-### particle CID
+### particle
 
 a particle in the cybergraph is identified by its NounId:
 
 ```
-particle_cid = NounId(noun) = hemera(encode(noun))
+particle = NounId(noun) = hemera(encode(noun))
 ```
 
-the CID (content identifier) is the hemera hash of the canonical encoding. any node can independently compute the CID from the noun content. two nodes with the same noun always agree on its CID.
+the particle is the hemera hash of the canonical encoding. any node can independently compute the particle from the noun content. two nodes with the same noun always agree on its particle.
 
 ## variable-length atom encoding (optional optimization)
 
