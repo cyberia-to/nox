@@ -171,10 +171,12 @@ column definitions:
 one sub-expression evaluated unconditionally, then the primitive operation applied to the result.
 
 ```
-reduce(o, [8 a], f)  = let (v, f1) = reduce(o, a, f-1);  (v⁻¹, f1)
-reduce(o, [13 a], f) = let (v, f1) = reduce(o, a, f-1);  (¬v, f1)
-reduce(o, [15 a], f) = let (v, f1) = reduce(o, a, f-200); (H(v), f1)
-reduce(o, [17 k], f) = let (v, f1) = reduce(o, k, f-1);  bbg.read(v)
+reduce(o, [8 a], f)  = let (v, f1) = reduce(o, a, f-64);  (v⁻¹, f1)
+reduce(o, [13 a], f) = let (v, f1) = reduce(o, a, f-32);  (¬v, f1)
+reduce(o, [15 a], f) = let (v, f1) = reduce(o, a, f-300); (H(v), f1)
+reduce(o, [17 [n k]], f) = let (vn, f1) = reduce(o, n, f-1);
+                           let (vk, f2) = reduce(o, k, f1);
+                           bbg.read(vn, vk)
 ```
 
 no parallelism question arises — single sub-expression.
@@ -259,6 +261,7 @@ error kinds:
   2: inv_zero        — inv(0)
   3: unavailable     — referenced content not in store (network partition, missing noun)
   4: malformed       — formula is atom (not cell), or body has wrong structure
+  5: call_rejected   — call witness failed check (check formula returned non-zero)
 ```
 
 ## error propagation
@@ -304,11 +307,16 @@ the trace encodes Result in r15 (status) and r12 (error kind). the instance incl
 
 this is the entire cost model. when reduce(o, formula, f) is entered, 1 is deducted for dispatch (reading the tag, selecting the pattern). sub-expression reduce() calls deduct their own costs recursively. the total budget consumed by a computation is the total number of reduce() calls in its evaluation tree.
 
-two patterns have multi-step overhead beyond the dispatch cost. the overhead is per-instantiation:
+several patterns emit multi-row witnesses for soundness; row count equals cost.
 
 canonical (nox<Goldilocks, Z/2^32, Hemera>):
 - axis: 1 (O(1) polynomial evaluation via Lens opening — replaces legacy depth traversal)
-- inv: 64 (square-and-multiply chain — 64 sequential multiplications)
+- inv:  64 (square-and-multiply chain — 64 sequential multiplications)
+- lt:   64 (bit decomposition of both 64-bit canonical representatives)
+- xor:  32 (bit decomposition of 32-bit word operands and result)
+- and:  32 (bit decomposition)
+- not:  32 (bit decomposition; unary)
+- shl:  32 (bit decomposition with cross-row shift binding)
 - hash: 300 (Poseidon2 permutation — 72 rounds + absorption/squeeze)
 
 all other patterns cost exactly 1 per reduce() call.

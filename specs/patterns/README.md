@@ -71,9 +71,12 @@ Layer │ Pattern      │ Exec Cost      │ STARK Constraints │ Rationale
   1   │ 7 mul        │ 1              │ 1                 │ F-multiplication
   1   │ 8 inv        │ 64             │ 1                 │ F-inverse (Goldilocks)
   1   │ 9 eq         │ 1              │ 1                 │ equality comparison
-  1   │ 10 lt        │ 1              │ ~64               │ range decomposition
-  1   │ 11-14 bit    │ 1              │ ~32 each          │ bit decomposition
-  1   │ 15 hash      │ 200            │ ~736              │ Hemera permutation
+  1   │ 10 lt        │ 64             │ ~64               │ bit decomposition (64 rows)
+  1   │ 11 xor       │ 32             │ ~32               │ bit decomposition (32 rows)
+  1   │ 12 and       │ 32             │ ~32               │ bit decomposition (32 rows)
+  1   │ 13 not       │ 32             │ ~32               │ bit decomposition (32 rows)
+  1   │ 14 shl       │ 32             │ ~32               │ bit decomposition (32 rows)
+  1   │ 15 hash      │ 300            │ ~736              │ Hemera permutation
   2   │ 16 call      │ 1              │ 1                 │ inject + dispatch
   2   │ 17 look      │ 1              │ 1                 │ BBG read + verify
 ```

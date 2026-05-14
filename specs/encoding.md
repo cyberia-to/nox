@@ -321,7 +321,7 @@ a formula is a noun of the form `cell(tag, body)` where tag is a field atom with
 [14 [a n]]      shl      — bitwise left shift
 [15 a]          hash     — hemera hash
 [16 [t c]]      call     — non-deterministic witness injection
-[17 a]          look     — deterministic BBG state read
+[17 [n k]]      look     — deterministic BBG state read (namespace, key)
 ```
 
 formulas are nouns. they are stored and resolved the same way as any other noun — by NounId lookup, recursively. the tag atom uses field type (0x00) in the encoding.

@@ -89,6 +89,8 @@ r7  = result value                — value at the addressed position
 
 constraint: Lens opening proof verifies r7 = noun_poly(r6) (degree 1)
 budget: r9 = r8 - 1
+note: circuit cost is 1 Lens opening (O(1)). interpreter traverses up to 63 tree
+      levels (bounded by u64 address bits) — not a circuit concern.
 ```
 
 ### pattern 1: quote (single-row, cost 1)
@@ -212,52 +214,48 @@ budget: r9 = r8 - 1
 
 ### pattern 8: inv (multi-row, cost 64)
 
+64 consecutive rows, all with r0 = 8. MSB-first square-and-multiply for the
+Fermat exponent p-2 = 0xFFFFFFFE_FFFFFFFF (all bits set except bit 32).
+
+Bit 63 (MSB) of p-2 is always 1 → the accumulator initializes to `v` at
+row 0 (= v^1), then 63 transition rows process bits 62 down to 0.
+
 ```
-64 consecutive rows, all with r0 = 8.
-
-row 0:
-  r0  = 8
-  r1  = object NounId
-  r2  = formula NounId
-  r3  = result NounId              — (set on final row)
-  r4  = input value                — the value to invert
-  r5  = 0 (unused)
-  r6  = 0 (not yet computed)
-  r7  = 0 (unused)
-  r10 = 1                          — accumulator initialized to 1
-  r11 = exponent bit 0             — LSB of p-2 (Fermat exponent)
-  r12 = step counter               — 0
-
-rows 1-62 (transition constraints):
+row 0 (init, bit 63 processed):
   r0  = 8
   r1  = object NounId              — same across all rows
   r2  = formula NounId             — same across all rows
-  r3  = result NounId              — (set on final row)
-  r4  = input value                — same across all rows (copied)
+  r3  = 0                          — result NounId set on final row only
+  r4  = input value v              — constant across the 64-row block
   r5  = 0 (unused)
   r6  = 0 (not yet computed)
   r7  = 0 (unused)
-  r10 = accumulator                — r10_{t+1} = r10_t^2 * (r11_t ? r4 : 1)
-  r11 = exponent bit t             — bit t of p-2
-  r12 = step counter               — t
+  r8  = budget_in (constant across the block)
+  r9  = 0 on rows 0..62; budget_out on row 63
+  r10 = v                          — accumulator = v (= v^1, matches MSB=1)
+  r11 = 1                          — exponent bit at step 0 (MSB of p-2 is 1)
+  r12 = 0                          — step counter
 
-row 63 (final):
-  r0  = 8
-  r1  = object NounId
-  r2  = formula NounId
-  r3  = result NounId
-  r4  = input value
-  r5  = 0 (unused)
-  r6  = final inverse              — r6 = r10 (accumulator after 63 square-and-multiply steps)
-  r7  = 0 (unused)
-  r10 = final accumulator          — equal to r6
-  r11 = exponent bit 63
-  r12 = 63                         — step counter
+rows 1..62 (transition; step t processes bit 63 - t):
+  r4  = v                          — copied
+  r10 = accumulator after step t   — r10_t = r10_{t-1}^2 * (r11_t ? v : 1)
+  r11 = bit (63 - t) of p-2        — exponent bit consumed this step
+  r12 = t                          — step counter
 
-transition constraint: r10_{t+1} = r10_t * r10_t * (r11_t * r4 + (1 - r11_t))  (degree 3)
-final constraint: r6 * r4 = 1 (degree 2, on row 63 only)
+row 63 (final, step 63 processes bit 0):
+  r3  = result NounId              — atom(r10, Field)
+  r4  = v
+  r6  = final inverse v^(p-2)      — equals r10
+  r9  = budget_out                 — = r8 - 64
+  r10 = v^(p-2) = v^-1             — final accumulator
+  r11 = bit 0 of p-2 = 1
+  r12 = 63
+
+transition constraint (rows 1..63): r10_t = r10_{t-1}^2 * (r11_t * v + (1 - r11_t))  (degree 3)
+init constraint (row 0):            r10_0 = v ∧ r11_0 = 1
+final constraint (row 63):          r6 * v = 1  (degree 2)
 error: if r4 = 0, status = error, error kind = 2 (inv_zero)
-budget: r9 = r8 - 64 (on row 0; rows 1-63 have r8 = r9 = 0, budget tracked only at boundaries)
+budget: r8 carries budget_in across all rows; r9 set only on the final row.
 ```
 
 ### pattern 9: eq (single-row, cost 1)
@@ -280,102 +278,163 @@ constraint:
 budget: r9 = r8 - 1
 ```
 
-### pattern 10: lt (single-row, cost 1)
+### pattern 10: lt (multi-row, cost 64)
+
+64 consecutive rows, all with r0 = 10. one row per bit of the 64-bit
+canonical Goldilocks representative, LSB-first.
 
 ```
-r0  = 10
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId
-r4  = left operand
-r5  = right operand
-r6  = 0 if r4 < r5, else 1         — less-than result (0 = true)
-r7  = range decomposition limb 0   — bit/limb decomposition of (r4 - r5) mod p
-r10 = range decomposition limb 1   — for non-native comparison in Goldilocks
-r11 = borrow/sign bit              — determines comparison outcome
+each row k (k = 0..63):
+  r0  = 10
+  r1  = object NounId
+  r2  = formula NounId
+  r3  = 0 except final row (k = 63): result NounId
+  r4  = left operand a (full u64, constant across the 64-row block)
+  r5  = right operand b (full u64, constant across the block)
+  r6  = comparison result (0 if a < b under canonical order, else 1)
+  r7  = bit position k
+  r8  = budget_in (constant across the block)
+  r9  = 0 except final row: budget_out
+  r10 = a_k = (a >> k) & 1
+  r11 = b_k = (b >> k) & 1
 
-constraint: ~64 constraints for range decomposition (bit decomposition proves
-            the difference fits the correct half of the field)
-budget: r9 = r8 - 1
+constraints (per row):
+  - r10, r11 ∈ {0, 1}                (boolean check on each bit)
+  - r7_t = t                          (row index = bit position)
+
+constraints (across the 64-row block):
+  - sum_{k=0..63} 2^k * r10_k = r4    (a decomposition binding)
+  - sum_{k=0..63} 2^k * r11_k = r5    (b decomposition binding)
+  - r6 follows from first-differing-bit gadget over the block (MSB-first
+    "decided" accumulator) — see zheng for the canonical encoding
+
+budget: r9 = r8 - 64 on final row only.
 ```
 
-### pattern 11: xor (single-row, cost 1)
+### pattern 11: xor (multi-row, cost 32)
+
+32 consecutive rows, all with r0 = 11. one row per bit of the 32-bit
+word, LSB-first.
 
 ```
-r0  = 11
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId
-r4  = left operand                 — word-type atom
-r5  = right operand                — word-type atom
-r6  = r4 XOR r5                    — 32-bit bitwise exclusive-or
-r7  = bit decomposition witness 0  — packed bits of r4 (for constraint verification)
-r10 = bit decomposition witness 1  — packed bits of r5
+each row k (k = 0..31):
+  r0  = 11
+  r1  = object NounId
+  r2  = formula NounId
+  r3  = 0 except final row (k = 31): result NounId
+  r4  = left operand a (full 32-bit, constant across the block)
+  r5  = right operand b (full 32-bit, constant across the block)
+  r6  = c = a XOR b (full 32-bit, constant across the block)
+  r7  = bit position k
+  r8  = budget_in (constant across the block)
+  r9  = 0 except final row: budget_out
+  r10 = a_k = (a >> k) & 1
+  r11 = b_k = (b >> k) & 1
+  r12 = c_k = a_k XOR b_k
 
-constraint: ~32 constraints (bit decomposition in F_p; in F_2 this is 1 constraint)
-budget: r9 = r8 - 1
+constraints (per row):
+  - r10, r11, r12 ∈ {0, 1}
+  - r12 = r10 + r11 - 2 * r10 * r11    (XOR gadget, degree 2)
+  - r7_t = t
+
+constraints (across the block):
+  - sum_{k=0..31} 2^k * r10_k = r4
+  - sum_{k=0..31} 2^k * r11_k = r5
+  - sum_{k=0..31} 2^k * r12_k = r6
+
+budget: r9 = r8 - 32 on final row only.
 ```
 
-### pattern 12: and (single-row, cost 1)
+### pattern 12: and (multi-row, cost 32)
+
+32 rows, identical layout to xor with the per-row gadget replaced.
 
 ```
-r0  = 12
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId
-r4  = left operand                 — word-type atom
-r5  = right operand                — word-type atom
-r6  = r4 AND r5                    — 32-bit bitwise conjunction
-r7  = bit decomposition witness 0
-r10 = bit decomposition witness 1
+registers same as pattern 11 with r0 = 12.
 
-constraint: ~32 constraints (bit decomposition in F_p)
-budget: r9 = r8 - 1
+constraints (per row):
+  - r10, r11, r12 ∈ {0, 1}
+  - r12 = r10 * r11                    (AND gadget, degree 2)
+
+decomposition and budget constraints: identical to xor.
 ```
 
-### pattern 13: not (single-row, cost 1)
+### pattern 13: not (multi-row, cost 32)
+
+32 rows. unary: r5 and r11 are zero on every row.
 
 ```
-r0  = 13
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId
-r4  = operand                      — word-type atom
-r5  = 0 (unused, unary operation)
-r6  = NOT r4                       — 32-bit bitwise complement (r4 XOR 0xFFFFFFFF)
-r7  = bit decomposition witness    — packed bits of r4
+each row k (k = 0..31):
+  r0  = 13
+  r1  = object NounId
+  r2  = formula NounId
+  r3  = 0 except final row: result NounId
+  r4  = operand a (full 32-bit)
+  r5  = 0                             (unused — operation is unary)
+  r6  = c = NOT a (= a XOR 0xFFFFFFFF, full 32-bit)
+  r7  = bit position k
+  r8  = budget_in
+  r9  = 0 except final row: budget_out
+  r10 = a_k
+  r11 = 0                             (unused)
+  r12 = c_k = 1 - a_k
 
-constraint: ~32 constraints (bit decomposition in F_p)
-budget: r9 = r8 - 1
+constraints (per row):
+  - r10, r12 ∈ {0, 1}
+  - r12 = 1 - r10                     (NOT gadget, degree 1)
+  - r11 = 0
+
+decomposition (across the block): sum 2^k * r10 = r4, sum 2^k * r12 = r6.
+budget: r9 = r8 - 32 on final row only.
 ```
 
-### pattern 14: shl (single-row, cost 1)
+### pattern 14: shl (multi-row, cost 32)
+
+32 rows, one per output bit position. asymmetric: input bit decomposition
+is partial — only positions that feed the output are exposed.
 
 ```
-r0  = 14
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId
-r4  = value                        — word-type atom to shift
-r5  = shift amount                 — word-type atom, must be in [0, 32)
-r6  = (r4 << r5) mod 2^32         — left shift result (shifts >= 32 produce 0)
-r7  = bit decomposition witness    — packed bits for shift verification
+each row k (k = 0..31, k = output bit position):
+  r0  = 14
+  r1  = object NounId
+  r2  = formula NounId
+  r3  = 0 except final row: result NounId
+  r4  = a (input value)
+  r5  = n (shift amount)
+  r6  = c = (a << n) & 0xFFFFFFFF (output, constant across the block)
+  r7  = k (output bit position)
+  r8  = budget_in
+  r9  = 0 except final row: budget_out
+  r10 = a_k                           (bit k of input — for a's decomp)
+  r11 = src_bit                       (= a_{k-n} when k ≥ n and k-n < 32, else 0)
+  r12 = c_k                           (output bit; = r11 by definition)
+  r13 = src_idx                       (= k - n when in range, else 32 sentinel)
 
-constraint: ~32 constraints (bit decomposition + shift verification in F_p)
-budget: r9 = r8 - 1
+constraints (per row):
+  - r10, r11, r12 ∈ {0, 1}
+  - r12 = r11                         (output bit equals source bit)
+  - src_idx relationship: r13 = k - n when k ≥ n and k - n < 32,
+                          else r13 = 32 (sentinel)
+  - r11 ties to r10 at source row r13 across the block (cross-row equality)
+
+decomposition (across the block):
+  - sum 2^k * r10_k = r4              (input decomp)
+  - sum 2^k * r12_k = r6              (output decomp)
+
+budget: r9 = r8 - 32 on final row only.
 ```
 
-### pattern 15: hash (multi-row, cost 200)
+### pattern 15: hash (multi-row, cost 300)
 
 ```
-~200 consecutive rows, all with r0 = 15.
+~300 consecutive rows, all with r0 = 15.
 
 row 0 (absorption):
   r0  = 15
   r1  = object NounId
   r2  = formula NounId
   r3  = result NounId              — (set on final row)
-  r4  = input value                — the noun to hash (Lens commitment or atom value)
+  r4  = input NounId               — the noun to hash
   r5  = domain tag                 — domain separation constant (capacity[11])
   r6  = 0 (not yet computed)
   r7  = 0 (unused)
@@ -383,12 +442,12 @@ row 0 (absorption):
   r11 = sponge state[1]
   r12 = step counter               — 0
 
-rows 1-198 (round state progression):
+rows 1-298 (round state progression):
   r0  = 15
   r1  = object NounId              — same across all rows
   r2  = formula NounId             — same across all rows
   r3  = result NounId              — (set on final row)
-  r4  = input value                — held constant (for wiring)
+  r4  = input NounId               — held constant (for wiring)
   r5  = 0 (unused after absorption)
   r6  = 0 (not yet computed)
   r7  = 0 (unused)
@@ -396,23 +455,25 @@ rows 1-198 (round state progression):
   r11 = round state element        — (8 full rounds + 16 partial rounds = 24 total)
   r12 = step counter               — t
 
-row 199 (squeeze / final):
+row 299 (squeeze / final):
   r0  = 15
   r1  = object NounId
   r2  = formula NounId
   r3  = result NounId
-  r4  = input value
+  r4  = input NounId
   r5  = 0 (unused)
   r6  = H(input)[0]                — first element of 4-element hash output
   r7  = H(input)[1]                — second element of hash output
   r10 = H(input)[2]                — third element
   r11 = H(input)[3]                — fourth element
-  r12 = 199                        — step counter
+  r12 = 299                        — step counter
 
 transition constraints:
   full round rows: degree 7 (s-box x^7 applied to all state elements)
   partial round rows: degree 2 (s-box x^{-1} on one element, verified as x * y = 1)
-budget: r9 = r8 - 200 (on row 0; internal rows do not independently track budget)
+budget: r9 = r8 - 300 (on row 0; internal rows do not independently track budget)
+note: multi-row trace requires hemera step-by-step API. current implementation emits a
+      single summary row with output digest; full round-progression trace is deferred.
 ```
 
 ### pattern 16: call (single-row, cost 1)
@@ -482,8 +543,11 @@ degree 7: hash full rounds (x^7 s-box)
 most patterns produce exactly 1 trace row per reduce() call. two patterns produce multiple rows:
 
 ```
-single-row (cost 1): 0-7, 9-14, 16, 17 (axis through mul, eq through shl, call, look)
-multi-row:           8 inv (64 rows), 15 hash (~200 rows)
+single-row (cost 1): 0-7, 9, 16, 17 (axis through mul, eq, call, look)
+multi-row:           8 inv (64 rows), 10 lt (64 rows),
+                     11 xor (32 rows), 12 and (32 rows),
+                     13 not (32 rows), 14 shl (32 rows),
+                     15 hash (~300 rows)
 ```
 
 see per-pattern register map above for row-by-row layout of multi-row patterns.
@@ -506,7 +570,7 @@ result link:  r3_t wired to the result NounId of the completed sub-computation
 single-row patterns:  r9 = r8 - 1            (1 per reduce call)
 axis:                 r9 = r8 - 1            (1 — O(1) Lens opening)
 inv:                  r9 = r8 - 64           (64 for square-and-multiply)
-hash:                 r9 = r8 - 200          (200 for Poseidon2 hemera)
+hash:                 r9 = r8 - 300          (300 for Poseidon2 hemera)
 ```
 
 ## error and halt encoding
@@ -523,7 +587,13 @@ when status = 1 (halt):
   r3 = 0 (no result NounId)
 
 when status = 2 (error):
-  r10 = error kind (0 = type error, 1 = axis on atom, 2 = inv(0), 3 = unavailable, 4 = malformed)
+  r10 = error kind:
+    0 = type error    — wrong tag for operation
+    1 = axis error    — axis navigation on atom
+    2 = inv zero      — inversion of zero
+    3 = unavailable   — resource exhausted (order full, provider returned nothing)
+    4 = malformed     — formula structure invalid or depth limit exceeded
+    5 = call rejected — call pattern: check formula returned non-zero or error
   r3 = 0 (no result NounId)
 ```
 

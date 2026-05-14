@@ -223,7 +223,7 @@ all algebras settle through Goldilocks via Hemera (Poseidon2 over Goldilocks). t
 
 - nox<F₂> programs must defer Hemera to settlement (~10 constraints deferred, ~736 at settlement)
 - nox<F_{p³}> programs compute Hemera natively (Hemera operates over base field F_p)
-- nox<F_p> programs compute Hemera natively (200 budget cost)
+- nox<F_p> programs compute Hemera natively (300 budget cost)
 
 the polymorphism is real for computation but asymmetric for commitment. Goldilocks is the anchor field. all algebras settle through it.
 

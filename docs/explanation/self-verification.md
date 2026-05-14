@@ -18,7 +18,7 @@ the system closes on itself.
 
 in most blockchain architectures, verification is a separate, trusted layer. the consensus protocol runs on one system; transaction verification runs on another; proof verification runs on a third. each layer must trust the ones below it. the trust chain ends at hardware and compilers that cannot be audited within the system.
 
-nox collapses this chain. the verifier is a nox program. the proof that the verifier ran correctly is a [[stark]] proof. that proof can be verified by the same verifier. each level of verification reduces to the same mathematical framework — transition constraints over the [[Goldilocks field]], checked by [[sumcheck]], committed by [[WHIR]].
+nox collapses this chain. the verifier is a nox program. the proof that the verifier ran correctly is a [[stark]] proof. that proof can be verified by the same verifier. each level of verification reduces to the same mathematical framework — transition constraints over the [[Goldilocks field]], checked by [[sumcheck]], committed by [[Brakedown]].
 
 the trust chain does not end at an unauditable layer. it ends at the mathematics of finite field arithmetic and the security assumptions of the hash function ([[Hemera]]). these are public, analyzable, and falsifiable.
 
