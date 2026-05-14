@@ -29,9 +29,13 @@ const ORDER_SIZE: usize = 1 << 16; // 64K nouns
 fn parse_noun(order: &mut Order<ORDER_SIZE>, input: &str) -> Result<NounId, String> {
     let tokens = tokenize(input)?;
     let mut pos = 0;
-    let result = parse_expr(order, &tokens, &mut pos)?;
+    let result = parse_expr(order, &tokens, &mut pos, 0)?;
     Ok(result)
 }
+
+/// Cap parse_expr recursion. Adversarial input like `[[[[…` would otherwise
+/// blow the 32 MB worker stack at ~250k levels in debug.
+const MAX_PARSE_DEPTH: usize = 4096;
 
 #[derive(Debug)]
 enum Token {
@@ -71,7 +75,11 @@ fn parse_expr(
     order: &mut Order<ORDER_SIZE>,
     tokens: &[Token],
     pos: &mut usize,
+    depth: usize,
 ) -> Result<NounId, String> {
+    if depth > MAX_PARSE_DEPTH {
+        return Err(format!("nesting depth exceeds {}", MAX_PARSE_DEPTH));
+    }
     if *pos >= tokens.len() {
         return Err("unexpected end of input".to_string());
     }
@@ -87,7 +95,7 @@ fn parse_expr(
             // [a b c d] → Cell(a, Cell(b, Cell(c, d)))
             let mut elems = Vec::new();
             while *pos < tokens.len() && !matches!(tokens[*pos], Token::Close) {
-                elems.push(parse_expr(order, tokens, pos)?);
+                elems.push(parse_expr(order, tokens, pos, depth + 1)?);
             }
             if *pos < tokens.len() && matches!(tokens[*pos], Token::Close) {
                 *pos += 1;
@@ -117,17 +125,30 @@ fn parse_expr(
 // ─── noun printer ────────────────────────────────────────────────
 
 fn print_noun(order: &Order<ORDER_SIZE>, r: NounId) -> String {
-    match order.get(r).inner {
-        Noun::Atom { value, .. } => format!("{}", value.as_u64()),
-        Noun::Cell { left, right } => {
+    match order.get(r).map(|e| e.inner) {
+        Some(Noun::Atom { value, .. }) => format!("{}", value.as_u64()),
+        Some(Noun::Cell { left, right }) => {
             format!("[{} {}]", print_noun(order, left), print_noun(order, right))
         }
+        None => "<invalid>".to_string(),
     }
 }
 
 // ─── main ────────────────────────────────────────────────────────
 
 fn main() {
+    // Order<65536> is ~6 MB — too large for the default 8 MB main thread stack.
+    // Spawn a thread with an explicit 32 MB stack so the heap-allocated order is safe.
+    let exit_code = std::thread::Builder::new()
+        .stack_size(32 * 1024 * 1024)
+        .spawn(run)
+        .expect("failed to spawn nox thread")
+        .join()
+        .expect("nox thread panicked");
+    std::process::exit(exit_code);
+}
+
+fn run() -> i32 {
     let args: Vec<String> = std::env::args().collect();
 
     let mut formula_text = String::new();
@@ -143,7 +164,7 @@ fn main() {
                     formula_text = args[i].clone();
                 } else {
                     eprintln!("error: -e requires an argument");
-                    std::process::exit(1);
+                    return 1;
                 }
             }
             "--object" | "-s" => {
@@ -152,80 +173,79 @@ fn main() {
                     object_text = args[i].clone();
                 } else {
                     eprintln!("error: --object requires an argument");
-                    std::process::exit(1);
+                    return 1;
                 }
             }
             "--budget" | "-b" => {
                 i += 1;
                 if i < args.len() {
-                    budget = args[i].parse().unwrap_or_else(|_| {
-                        eprintln!("error: invalid budget");
-                        std::process::exit(1);
-                    });
+                    match args[i].parse::<u64>() {
+                        Ok(b) => budget = b,
+                        Err(_) => { eprintln!("error: invalid budget"); return 1; }
+                    }
                 } else {
                     eprintln!("error: --budget requires an argument");
-                    std::process::exit(1);
+                    return 1;
                 }
             }
             "--help" | "-h" => {
                 print_usage();
-                std::process::exit(0);
+                return 0;
             }
             other => {
-                // Treat as file path
-                formula_text = std::fs::read_to_string(other).unwrap_or_else(|e| {
-                    eprintln!("error reading '{}': {}", other, e);
-                    std::process::exit(1);
-                });
+                match std::fs::read_to_string(other) {
+                    Ok(s) => formula_text = s,
+                    Err(e) => { eprintln!("error reading '{}': {}", other, e); return 1; }
+                }
             }
         }
         i += 1;
     }
 
-    // Read from stdin if no formula given
     if formula_text.is_empty() {
         use std::io::IsTerminal;
         if std::io::stdin().is_terminal() {
             print_usage();
-            std::process::exit(1);
+            return 1;
         }
-        std::io::stdin().read_to_string(&mut formula_text).unwrap_or_else(|e| {
+        if let Err(e) = std::io::stdin().read_to_string(&mut formula_text) {
             eprintln!("error reading stdin: {}", e);
-            std::process::exit(1);
-        });
+            return 1;
+        }
     }
 
-    let formula_text = formula_text.trim();
+    let formula_text = formula_text.trim().to_string();
     if formula_text.is_empty() {
         eprintln!("error: no formula provided");
-        std::process::exit(1);
+        return 1;
     }
 
     let mut order = Order::<ORDER_SIZE>::new();
     let hints = NullCalls;
 
-    let object = parse_noun(&mut order, &object_text).unwrap_or_else(|e| {
-        eprintln!("error parsing object: {}", e);
-        std::process::exit(1);
-    });
+    let object = match parse_noun(&mut order, &object_text) {
+        Ok(n) => n,
+        Err(e) => { eprintln!("error parsing object: {}", e); return 1; }
+    };
 
-    let formula = parse_noun(&mut order, formula_text).unwrap_or_else(|e| {
-        eprintln!("error parsing formula: {}", e);
-        std::process::exit(1);
-    });
+    let formula = match parse_noun(&mut order, &formula_text) {
+        Ok(n) => n,
+        Err(e) => { eprintln!("error parsing formula: {}", e); return 1; }
+    };
 
     match reduce(&mut order, object, formula, budget, &hints, &mut NoTrace) {
         Outcome::Ok(result, remaining) => {
             println!("{}", print_noun(&order, result));
             eprintln!("cost: {} (budget remaining: {})", budget - remaining, remaining);
+            0
         }
         Outcome::Halt(remaining) => {
             eprintln!("halted: budget exhausted (remaining: {})", remaining);
-            std::process::exit(1);
+            1
         }
         Outcome::Error(kind) => {
             eprintln!("error: {:?}", kind);
-            std::process::exit(1);
+            1
         }
     }
 }
