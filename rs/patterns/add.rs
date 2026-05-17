@@ -59,6 +59,32 @@ mod tests {
         }
     }
 
+    /// Field boundary: add(p-1, 1) = 0; add(p-1, p-1) = p-2.
+    #[test]
+    fn add_field_boundary() {
+        const P: u64 = 0xFFFF_FFFF_0000_0001;
+        // add(p-1, 1) == 0
+        {
+            let mut ar = Order::<1024>::new();
+            let obj = ar.atom(g(0), Tag::Field).unwrap();
+            let formula = make_field_binop(&mut ar, 5, P - 1, 1);
+            match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
+                Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(0)),
+                o => panic!("add(p-1, 1): {:?}", o),
+            }
+        }
+        // add(p-1, p-1) == p-2  (i.e. 2*(p-1) mod p)
+        {
+            let mut ar = Order::<1024>::new();
+            let obj = ar.atom(g(0), Tag::Field).unwrap();
+            let formula = make_field_binop(&mut ar, 5, P - 1, P - 1);
+            match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
+                Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(P - 2)),
+                o => panic!("add(p-1, p-1): {:?}", o),
+            }
+        }
+    }
+
     /// (p - 1) + 1 = 0 (mod p) — boundary case for modular reduction.
     #[test]
     fn add_wraps_at_field_boundary() {

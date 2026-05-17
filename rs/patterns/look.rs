@@ -68,6 +68,23 @@ mod tests {
         }
     }
 
+    /// With NullCalls two independent orders for the same (ns, key) both return
+    /// Unavailable — the result is consistent (deterministic) across orders.
+    #[test]
+    fn look_deterministic() {
+        let run = || {
+            let mut ar = Order::<1024>::new();
+            let obj = ar.atom(g(0), Tag::Field).unwrap();
+            let formula = make_look(&mut ar, 3, 7);
+            match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
+                Outcome::Error(ErrorKind::Unavailable) => true,
+                other => panic!("expected Unavailable, got {:?}", other),
+            }
+        };
+        assert!(run(), "first order: NullCalls look must return Unavailable");
+        assert!(run(), "second order: NullCalls look must return Unavailable");
+    }
+
     /// Same (ns, key) in two independent orders with the same provider
     /// must yield the same value — confluence requirement.
     #[test]

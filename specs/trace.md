@@ -526,6 +526,10 @@ note: fully deterministic — r7, r10-r11 are Brakedown opening proof elements v
 
 call (16) has one non-deterministic column (r5 = prover witness); look (17) is fully deterministic (r5 = BBG_root, r7/r10-r11 = Brakedown/Lens opening proof). call results are not memoizable; look results are memoizable at a given block height.
 
+### prover-side witness extensions
+
+bit-decomposition witnesses (r7/r10 for patterns lt/xor/and/not/shl) and lens-opening columns (axis, look) are populated by the zheng witness generator, not by the nox interpreter. the interpreter fills result and operand registers only.
+
 ## constraint system
 
 each pattern defines constraints over its trace row. single-row patterns use in-row constraints. multi-row patterns (inv, hash) use transition constraints across consecutive rows. SuperSpartan CCS handles both forms and mixed degrees natively.

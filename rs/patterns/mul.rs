@@ -58,6 +58,19 @@ mod tests {
         }
     }
 
+    /// Field boundary: mul(p-1, p-1) = 1, since (-1)*(-1) = 1 in the field.
+    #[test]
+    fn mul_field_boundary() {
+        const P: u64 = 0xFFFF_FFFF_0000_0001;
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let formula = make_field_binop(&mut ar, 7, P - 1, P - 1);
+        match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(1)),
+            o => panic!("mul(p-1, p-1): {:?}", o),
+        }
+    }
+
     /// (p-1) * (p-1) = 1 (mod p) — boundary case for modular multiplication.
     #[test]
     fn mul_neg_one_squared_is_one() {

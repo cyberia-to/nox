@@ -124,6 +124,39 @@ mod tests {
         }
     }
 
+    /// Provider injects witness=0, check formula `[1 0]` returns 0 (passes).
+    /// Verifies a call succeeds when check reduces to 0 (zero means accepted).
+    #[test]
+    fn call_accepts_zero_check() {
+        struct ZeroWitness;
+        impl LookProvider for ZeroWitness {
+            fn look(&self, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
+        }
+        impl<const N: usize> CallProvider<N> for ZeroWitness {
+            fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
+                Some(order.atom(g(0), Tag::Field).unwrap())
+            }
+        }
+
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        // formula = [16 [[1 0] [1 0]]] — tag=quote(0), check=quote(0) (returns 0 → accepted)
+        let t16 = ar.atom(g(16), Tag::Field).unwrap();
+        let t1 = ar.atom(g(1), Tag::Field).unwrap();
+        let zero = ar.atom(g(0), Tag::Field).unwrap();
+        let tag_f = ar.cell(t1, zero).unwrap();
+        let check_f = ar.cell(t1, zero).unwrap();
+        let body = ar.cell(tag_f, check_f).unwrap();
+        let formula = ar.cell(t16, body).unwrap();
+        match reduce(&mut ar, obj, formula, 1000, &ZeroWitness, &mut NoTrace) {
+            Outcome::Ok(result, _) => {
+                let (v, _) = ar.atom_value(result).unwrap();
+                assert_eq!(v, g(0), "zero witness accepted when check returns 0");
+            }
+            o => panic!("expected Ok when check returns 0, got {:?}", o),
+        }
+    }
+
     /// Provider injects witness=42, check formula `[1 0]` returns 0.
     /// Expected: Outcome::Ok with result NounId equal to the injected witness.
     #[test]

@@ -18,12 +18,12 @@ pub fn axis<const N: usize>(
         Some((v, _)) => v.as_u64(),
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    // r4  = object NounId (for Lens-opening binding when wired by zheng)
+    // r4  = noun-poly commitment (placeholder 0 until Lens is wired by zheng)
     // r5  = axis address (raw u64)
-    // r6  = depth traversed (cell levels descended)
+    // r6  = binary-encoded address depth (cell levels descended; approximates addr)
     // r7  = result NounId
     // r11-r14 = Lens commitment bytes for the object noun polynomial (when available)
-    row.r[4] = object as u64;
+    row.r[4] = 0; // placeholder: will hold Lens commitment once wired
     row.r[5] = addr;
     if let Some(bytes) = hints.axis_commitment(object as u64) {
         row.r[11] = u64::from_le_bytes(bytes[0..8].try_into().unwrap());

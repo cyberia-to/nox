@@ -77,7 +77,7 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
                 let v: u64 = num.parse().map_err(|e| format!("bad number '{}': {}", num, e))?;
                 tokens.push(Token::Num(v));
             }
-            _ => return Err(format!("unexpected character {:?}", ch)),
+            _ => return Err(format!("unexpected character: {:?}", ch)),
         }
     }
     Ok(tokens)
@@ -90,7 +90,7 @@ fn parse_expr(
     depth: usize,
 ) -> Result<NounId, String> {
     if depth > MAX_PARSE_DEPTH {
-        return Err(format!("nesting depth exceeds {}", MAX_PARSE_DEPTH));
+        return Err("expression too deeply nested".into());
     }
     if *pos >= tokens.len() {
         return Err("unexpected end of input".to_string());

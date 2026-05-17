@@ -103,6 +103,21 @@ mod tests {
         }
     }
 
+    /// Shifts >= 32 must all produce 0 (word is 32-bit).
+    #[test]
+    fn shl_large_shifts_clamp_to_zero() {
+        for sh in [32u64, 33, 63, 64, u32::MAX as u64] {
+            let mut ar = Order::<1024>::new();
+            let obj = ar.atom(g(0), Tag::Field).unwrap();
+            let formula = make_shl(&mut ar, 1, sh);
+            match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
+                Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0.as_u64(), 0,
+                                                "shift {} should give 0", sh),
+                o => panic!("shift {}: {:?}", sh, o),
+            }
+        }
+    }
+
     #[test]
     fn shl_overflow_clamps_to_zero() {
         for sh in [32u64, 33, 63, 64, u32::MAX as u64] {

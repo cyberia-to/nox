@@ -29,7 +29,7 @@ pub fn branch<const N: usize, T: Tracer>(
     let selector: u64 = if test_value == 0 { 0 } else { 1 };
     let chosen = if selector == 0 { yes_formula } else { no_formula };
     // r4 = test value (canonical field repr), r5 = inverse hint for (test != 0),
-    // r6 = yes-arm formula NounId, r7 = no-arm formula NounId, r10 = selector.
+    // r6 = result NounId (output of chosen arm), r10 = selector (0=yes, 1=no).
     // gadget: selector * (1 - r4 * r5) = 0 binds selector to "test != 0".
     row.r[4] = test_value;
     row.r[5] = if test_value == 0 {
@@ -37,14 +37,15 @@ pub fn branch<const N: usize, T: Tracer>(
     } else {
         nebu::Goldilocks::new(test_value).inv().as_u64()
     };
-    row.r[6] = yes_formula as u64;
-    row.r[7] = no_formula as u64;
     row.r[10] = selector;
     // Step 2: evaluate ONLY the chosen arm under partitioned semantics.
     // Slack from max-of-arms accrues to the caller automatically — we only
     // charge for the chosen arm's actual cost.
     match evaluate_unary(order, object, chosen, budget, hints, tracer, depth) {
-        Ok((val, remaining)) => Outcome::Ok(val, remaining),
+        Ok((val, remaining)) => {
+            row.r[6] = val as u64;
+            Outcome::Ok(val, remaining)
+        }
         Err(o) => o,
     }
 }

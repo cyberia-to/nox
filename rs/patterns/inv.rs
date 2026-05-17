@@ -189,6 +189,31 @@ mod tests {
         }
     }
 
+    /// Property test: inv(k) * k == 1 for boundary field values.
+    /// Covers: inv(1)*1=1, inv(p-1)*(p-1)=1, inv(2)*2=1.
+    #[test]
+    fn inv_round_trip_for_boundary_values() {
+        const P: u64 = 0xFFFF_FFFF_0000_0001;
+        // (value, description)
+        let cases: &[(u64, &str)] = &[
+            (1, "inv(1) * 1 == 1"),
+            (P - 1, "inv(p-1) * (p-1) == 1"),
+            (2, "inv(2) * 2 == 1"),
+        ];
+        for &(k, desc) in cases {
+            let mut ar = Order::<2048>::new();
+            let obj = ar.atom(g(0), Tag::Field).unwrap();
+            let formula = make_inv(&mut ar, k);
+            match reduce(&mut ar, obj, formula, 10_000, &NullCalls, &mut NoTrace) {
+                Outcome::Ok(r, _) => {
+                    let (inv_k, _) = ar.atom_value(r).unwrap();
+                    assert_eq!(inv_k * g(k), g(1), "{}", desc);
+                }
+                o => panic!("{}: got {:?}", desc, o),
+            }
+        }
+    }
+
     #[test]
     fn inv_emits_64_rows() {
         let mut ar = Order::<1024>::new();

@@ -47,6 +47,32 @@ mod tests {
         }
     }
 
+    /// Field boundary: sub(0, 1) = p-1; sub(1, 2) = p-1 (unsigned wrap in field).
+    #[test]
+    fn sub_field_boundary() {
+        const P: u64 = 0xFFFF_FFFF_0000_0001;
+        // sub(0, 1) == p-1
+        {
+            let mut ar = Order::<1024>::new();
+            let obj = ar.atom(g(0), Tag::Field).unwrap();
+            let formula = make_field_binop(&mut ar, 6, 0, 1);
+            match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
+                Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(P - 1)),
+                o => panic!("sub(0, 1): {:?}", o),
+            }
+        }
+        // sub(1, 2) == p-1  (1 - 2 = -1 = p-1 in the field)
+        {
+            let mut ar = Order::<1024>::new();
+            let obj = ar.atom(g(0), Tag::Field).unwrap();
+            let formula = make_field_binop(&mut ar, 6, 1, 2);
+            match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
+                Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(P - 1)),
+                o => panic!("sub(1, 2): {:?}", o),
+            }
+        }
+    }
+
     /// 0 - 1 = p - 1 (mod p) — boundary case for modular subtraction.
     #[test]
     fn sub_underflow_wraps() {

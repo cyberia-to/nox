@@ -217,7 +217,7 @@ reduce(o, [16 [tag check]], f) =
   sequential_reduce(witness_object, check, f_after_witness)
 ```
 
-### unary parallel patterns (8, 13, 15, 17)
+### unary parallel patterns (8, 13, 15)
 
 ```
 reduce(o, [op a], f) =
@@ -294,7 +294,7 @@ tag  pattern   subs  strategy     parallel  reduction rule
 14   shl        2    eager        yes       reduce(o,a), reduce(o,n), then a << n
 15   hash       1    eager        —         reduce(o,a), then H(a)
 16   call       1+1  eager+lazy   no        reduce(o,tag_f), provider injects witness, reduce([w o],check_f)
-17   look       1    eager        —         reduce(o,key_f), then bbg.read(key)
+17   look       2    eager        yes       reduce(o,ns_f), reduce(o,key_f), then bbg.read(ns, key)
 ```
 
 column definitions:
@@ -308,7 +308,7 @@ column definitions:
 
 **quote** (1): body `c` is returned literally. the only pattern that touches neither the object nor any sub-formula via reduce(). cost is 1 (the dispatch).
 
-### unary eager evaluation (tags 8, 13, 15, 17)
+### unary eager evaluation (tags 8, 13, 15)
 
 one sub-expression evaluated unconditionally, then the primitive operation applied to the result.
 
@@ -316,12 +316,21 @@ one sub-expression evaluated unconditionally, then the primitive operation appli
 reduce(o, [8 a], f)  = let (v, f1) = reduce(o, a, f-64);  (v⁻¹, f1)
 reduce(o, [13 a], f) = let (v, f1) = reduce(o, a, f-32);  (¬v, f1)
 reduce(o, [15 a], f) = let (v, f1) = reduce(o, a, f-25); (H(v), f1)
-reduce(o, [17 [n k]], f) = let (vn, f1) = reduce(o, n, f-1);
-                           let (vk, f2) = reduce(o, k, f1);
-                           bbg.read(vn, vk)
 ```
 
 no parallelism question arises — single sub-expression.
+
+### look (17) — two-arg eager evaluation
+
+two sub-expressions evaluated unconditionally (namespace and key), then the BBG read.
+
+```
+reduce(o, [17 [ns key]], f) = let (vn, f1) = reduce(o, ns, f-1);
+                               let (vk, f2) = reduce(o, key, f1);
+                               bbg.read(vn, vk)
+```
+
+both sub-expressions are independent and can be evaluated in parallel (same object, no inter-dependency).
 
 ### binary eager evaluation (tags 5-7, 9-12, 14)
 
