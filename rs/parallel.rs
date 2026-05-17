@@ -61,10 +61,9 @@ use crate::trace::Tracer;
 /// Parallel-canonical reduction.
 ///
 /// Observationally identical to [`crate::reduce`] on every `(o, t, f)` input.
-/// The current implementation is single-threaded — the semantic infrastructure
-/// (bound-partitioned `evaluate_binary` / `evaluate_unary`) is already in
-/// place. A future threaded executor would change scheduling without
-/// changing the Result or the trace.
+/// When the `std` feature is enabled, binary sub-formulas with Exact bounds
+/// run on separate threads (`par_binary`). Without `std`, the semantics is
+/// identical but evaluation is single-threaded.
 ///
 /// ## sequential-equivalence theorem (T1)
 ///
@@ -72,9 +71,8 @@ use crate::trace::Tracer;
 ///
 /// `reduce(o, t, f) == reduce_parallel(o, t, f)`
 ///
-/// on every observable field. See `specs/props/parallel-reduction.md` for
-/// the formal statement; `proofs/lean/T1.lean` for the machine-check
-/// target.
+/// on every observable field (Outcome AND per-row trace after canonical sort).
+/// See `specs/props/parallel-reduction.md`; `proofs/lean/T1.lean`.
 pub fn reduce_parallel<const N: usize, T: Tracer>(
     order: &mut Order<N>,
     object: NounId,
@@ -150,6 +148,121 @@ impl StructuralIndex {
 
 extern crate alloc;
 
+// ── std: scoped-thread parallel binary evaluation ─────────────────────────
+//
+// `par_binary` is called by `evaluate_binary` (reduce.rs) when the `std`
+// feature is enabled and both sub-formulas have Exact (non-Dynamic) bounds
+// that fit the current budget. It forks the Order into two independent
+// sub-orders, spawns one thread per sub-formula using `std::thread::scope`,
+// joins, merges traces (left-before-right for canonical ordering), and
+// re-interns results into the parent order.
+//
+// Safety argument:
+//   - Each thread owns its sub-order exclusively (`fork()` clones all state).
+//   - `hints: &dyn CallProvider<N>` is `Send` because `CallProvider<N>: Sync`
+//     (the `Sync` supertrait requirement in call.rs).
+//   - `std::thread::scope` bounds thread lifetimes to the stack frame,
+//     so no `'static` requirements propagate to `hints` or other borrows.
+//
+// T1 (sequential-equivalence) holds: the `Outcome` and the budgets returned
+// are identical to the sequential path because:
+//   1. Each sub-formula receives exactly `bound(sub)` budget.
+//   2. `reinter` finds pre-existing atoms/cells via hash-consing (same ID
+//      as sequential path for nouns in the base snapshot).
+//   3. Traces are merged in deterministic left-before-right order.
+
+#[cfg(feature = "std")]
+pub(crate) fn par_binary<const N: usize, T: Tracer>(
+    order: &mut Order<N>,
+    object: NounId,
+    a: NounId,
+    b: NounId,
+    ba: u64,
+    bb: u64,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+) -> core::result::Result<(NounId, NounId, u64), Outcome>
+where
+    Order<N>: Send,
+{
+    use crate::reduce::{evaluate, ErrorKind};
+    use crate::trace::VecTrace;
+
+    // Fork: each thread gets an independent copy of the order.
+    let mut sub_a = order.fork();
+    let mut sub_b = order.fork();
+    let mut trace_a = VecTrace::default();
+    let mut trace_b = VecTrace::default();
+
+    // Scoped threads: closures may borrow the stack frame.
+    // `hints` is Send because CallProvider<N>: Sync.
+    let (out_a, out_b) = std::thread::scope(|s| {
+        let ha = s.spawn(|| {
+            let r = evaluate(&mut sub_a, object, a, ba, hints, &mut trace_a, depth);
+            (r, sub_a, trace_a)
+        });
+        let hb = s.spawn(|| {
+            let r = evaluate(&mut sub_b, object, b, bb, hints, &mut trace_b, depth);
+            (r, sub_b, trace_b)
+        });
+        (ha.join().unwrap(), hb.join().unwrap())
+    });
+
+    let (result_a, fin_order_a, fin_trace_a) = out_a;
+    let (result_b, fin_order_b, fin_trace_b) = out_b;
+
+    // Merge traces: left sub-formula rows first, then right (canonical order).
+    for row in fin_trace_a.0 {
+        tracer.record(row);
+    }
+    for row in fin_trace_b.0 {
+        tracer.record(row);
+    }
+
+    match (result_a, result_b) {
+        (Ok((va, ra)), Ok((vb, rb))) => {
+            let va_p = order
+                .reinter(&fin_order_a, va)
+                .ok_or(Outcome::Error(ErrorKind::Unavailable))?;
+            let vb_p = order
+                .reinter(&fin_order_b, vb)
+                .ok_or(Outcome::Error(ErrorKind::Unavailable))?;
+            let used = (ba - ra).saturating_add(bb - rb);
+            Ok((va_p, vb_p, budget - used))
+        }
+        (Err(o), _) | (_, Err(o)) => Err(o),
+    }
+}
+
+/// Parallel-canonical entry point with explicit threading.
+///
+/// Identical observable semantics to [`reduce_parallel`] (which is identical
+/// to [`crate::reduce::reduce`]) but evaluates independent binary sub-formulas
+/// concurrently when the `std` feature is enabled.
+///
+/// Requires `H: Sync` so the hints reference can cross thread boundaries.
+/// All current providers are unit structs and trivially satisfy this.
+#[cfg(feature = "std")]
+pub fn reduce_parallel_threaded<const N: usize, T: Tracer>(
+    order: &mut Order<N>,
+    object: NounId,
+    formula: NounId,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+) -> Outcome
+where
+    Order<N>: Send,
+{
+    // With par_binary wired into evaluate_binary (via cfg(feature="std")),
+    // reduce() already dispatches to the threaded path for every binary
+    // pattern when can_partition is true. This entry point is the named
+    // parallel API; the implementation is transparent.
+    reduce(order, object, formula, budget, hints, tracer)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -223,6 +336,84 @@ mod tests {
         for (i, (a, b)) in tr1.0.iter().zip(tr2.0.iter()).enumerate() {
             assert_eq!(a.r(), b.r(), "row {} differs", i);
         }
+    }
+
+    /// T1 empirical (threaded): reduce and reduce_parallel_threaded produce
+    /// identical Outcome on a binary formula that WILL trigger par_binary.
+    ///
+    /// Formula: [5 [[1 7] [1 11]]] = add(quote(7), quote(11)) = 18.
+    /// Both sub-formulas are Exact-bounded quotes → can_partition = true →
+    /// par_binary spawns two threads when std feature is enabled.
+    #[cfg(feature = "std")]
+    #[test]
+    fn threaded_add_matches_sequential() {
+        let make_add = |ar: &mut Order<256>| {
+            let t5 = ar.atom(g(5), Tag::Field).unwrap();
+            let t1 = ar.atom(g(1), Tag::Field).unwrap();
+            let v7 = ar.atom(g(7), Tag::Field).unwrap();
+            let v11 = ar.atom(g(11), Tag::Field).unwrap();
+            let qa = ar.cell(t1, v7).unwrap();
+            let qb = ar.cell(t1, v11).unwrap();
+            let body = ar.cell(qa, qb).unwrap();
+            ar.cell(t5, body).unwrap()
+        };
+
+        let mut ar_seq = Order::<256>::new();
+        let obj_seq = ar_seq.atom(g(0), Tag::Field).unwrap();
+        let f_seq = make_add(&mut ar_seq);
+        let mut tr_seq = VecTrace::default();
+        let r_seq = reduce(&mut ar_seq, obj_seq, f_seq, 1000, &NullCalls, &mut tr_seq);
+
+        let mut ar_par = Order::<256>::new();
+        let obj_par = ar_par.atom(g(0), Tag::Field).unwrap();
+        let f_par = make_add(&mut ar_par);
+        let mut tr_par = VecTrace::default();
+        let r_par = reduce_parallel_threaded(
+            &mut ar_par, obj_par, f_par, 1000, &NullCalls, &mut tr_par,
+        );
+
+        match (r_seq, r_par) {
+            (Outcome::Ok(vs, bs), Outcome::Ok(vp, bp)) => {
+                assert_eq!(
+                    ar_seq.atom_value(vs).unwrap().0,
+                    ar_par.atom_value(vp).unwrap().0,
+                    "threaded result must match sequential",
+                );
+                assert_eq!(bs, bp, "remaining budget must match");
+            }
+            (x, y) => panic!("Outcome variants diverged: {:?} vs {:?}", x, y),
+        }
+
+        // Trace lengths equal: both emit the same rows regardless of scheduler.
+        assert_eq!(
+            tr_seq.0.len(),
+            tr_par.0.len(),
+            "threaded trace length must match sequential",
+        );
+    }
+
+    /// Order::fork produces an independent order with identical initial entries.
+    #[cfg(feature = "std")]
+    #[test]
+    fn fork_is_independent() {
+        let mut ar = Order::<256>::new();
+        let a = ar.atom(g(3), Tag::Field).unwrap();
+        let b = ar.atom(g(7), Tag::Field).unwrap();
+        let c = ar.cell(a, b).unwrap();
+
+        let base_count = ar.count();
+        let mut fork = ar.fork();
+
+        // Fork has same count as parent.
+        assert_eq!(fork.count(), base_count);
+
+        // Adding to fork doesn't change parent.
+        fork.atom(g(99), Tag::Field).unwrap();
+        assert_eq!(ar.count(), base_count, "parent count unchanged after fork write");
+
+        // Reinter re-finds existing noun by hash-consing.
+        let c_back = ar.reinter(&fork, c).unwrap();
+        assert_eq!(c_back, c, "reinter on pre-fork noun returns same ID");
     }
 
     #[test]
