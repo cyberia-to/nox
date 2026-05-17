@@ -1,54 +1,140 @@
-//! pattern 15: hash — structural hash (multi-row, cost 300)
+//! pattern 15: hash — structural hash (multi-row, cost 25)
 //!
-//! returns hash noun: cell(cell(h0,h1), cell(h2,h3))
+//! Drives a [`hemera::StepSponge`] one round at a time and emits one trace
+//! row per Poseidon2 round (24 rounds) plus a final squeeze row — 25 rows
+//! total. The input rate is the noun's cached structural digest (4 elements,
+//! zero-padded to RATE = 8). The output is a 4-element digest derived from
+//! the post-permutation state, wrapped into a hash-noun `cell(cell(h0,h1),
+//! cell(h2,h3))`.
 //!
-//! Status: SUMMARY-ROW STUB. The hash *result* is correct — the digest is
-//! taken from the hash-consed structural hash maintained by Order, not
-//! recomputed here. The *trace* is incomplete: we emit one summary row
-//! instead of the ~300 rows the constraint system needs.
+//! Per-round register layout (k = 0..23):
+//!   r0  = 15 (tag)               r1 = object NounId
+//!   r2  = formula NounId         r3 = NIL (set only on squeeze row)
+//!   r4..r7  = state[0..3]        r10..r13 = state[4..7] (rate region)
+//!   r8  = budget_in              r9 = 0 (set only on squeeze row)
+//!   r14 = round index k          r15 = input NounId
 //!
-//! To match specs/trace.md §pattern 15 the multi-row emission must cover:
-//!   - absorption row(s): input bytes folded into the sponge state (rate phase)
-//!   - permutation rows: per-round Poseidon2 state evolution (72 rounds total —
-//!     4 + 4 full rounds with x^7 S-box, plus 16 partial rounds with x^-1 S-box)
-//!   - squeeze row(s): output digest extraction from the sponge state
+//! Squeeze row (k = 24):
+//!   r3  = result NounId          r4..r7 = output digest (4 elements)
+//!   r9  = budget_out             r14 = 24 (sentinel)
+//!   r10..r13 = state[4..7] of the final post-permutation state
 //!
-//! Blocked on: hemera step-level API (`hemera::tree::step` or equivalent)
-//! that exposes per-round state for trace emission. Until then, the prover
-//! cannot bind the digest in r3 to a witness of the Poseidon2 computation.
-//! reduce.rs skips post-hoc recording for tag=15 (see is_multi_row).
+//! Reduce.rs skips post-hoc recording for tag=15 (see is_multi_row).
 
-use crate::noun::{Order, NounId, NIL};
-use crate::reduce::{Outcome, ErrorKind, evaluate};
+use hemera::StepSponge;
+use hemera::field::Goldilocks as HemeraGold;
+use nebu::Goldilocks;
+use crate::noun::{Order, NounId};
+use crate::noun::hash::Digest;
+use crate::reduce::{Outcome, ErrorKind, evaluate_unary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
+
+const RATE: usize = 8;
+const ROUNDS_TOTAL: u64 = 24;
 
 pub fn hash<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
-    let (input, budget) = match evaluate(order, object, body, budget, hints, tracer, depth) {
+    let (input, budget) = match evaluate_unary(order, object, body, budget, hints, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
-    let digest = match order.digest(input) {
+    let in_digest: Digest = match order.digest(input) {
         Some(d) => *d,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
-    let outcome = match order.hash_noun(&digest) {
-        Some(r) => Outcome::Ok(r, budget),
-        None => Outcome::Error(ErrorKind::Unavailable),
+
+    // Pack the 4-element digest into the 8-element rate input.
+    // nebu::Goldilocks and hemera::field::Goldilocks both wrap u64 over the
+    // same Goldilocks prime — they are distinct Rust types but interchangeable
+    // by canonical value. Convert via as_u64().
+    let mut rate = [HemeraGold::ZERO; RATE];
+    for i in 0..4 {
+        rate[i] = HemeraGold::new(in_digest[i].as_u64());
+    }
+
+    let template = *row;
+    let budget_in = template.r()[8];
+
+    let mut sponge = StepSponge::absorb(&rate);
+    let mut last_state = [HemeraGold::ZERO; 16];
+    let mut k: u64 = 0;
+    while !sponge.done() {
+        let state = sponge.step();
+        last_state = state;
+        emit_round_row(tracer, &template, &state, k, input, budget_in);
+        k += 1;
+    }
+
+    // Squeeze: 4-element output digest is state[0..4] of the post-permutation state.
+    let out_digest: Digest = [
+        Goldilocks::new(last_state[0].as_canonical_u64()),
+        Goldilocks::new(last_state[1].as_canonical_u64()),
+        Goldilocks::new(last_state[2].as_canonical_u64()),
+        Goldilocks::new(last_state[3].as_canonical_u64()),
+    ];
+    let result = match order.hash_noun(&out_digest) {
+        Some(r) => r,
+        None => return Outcome::Error(ErrorKind::Unavailable),
     };
-    row.r[3] = match &outcome { Outcome::Ok(r, _) => *r as u64, _ => NIL as u64 };
-    row.r[4] = input as u64;
-    row.r[9] = match &outcome { Outcome::Ok(_, b) | Outcome::Halt(b) => *b, Outcome::Error(_) => 0 };
-    row.r[10] = match &outcome { Outcome::Error(k) => *k as u64, _ => 0 };
-    tracer.record(*row);
-    outcome
+    emit_squeeze_row(tracer, &template, &last_state, &out_digest, result, input, budget_in, budget);
+
+    Outcome::Ok(result, budget)
+}
+
+fn emit_round_row<T: Tracer>(
+    tracer: &mut T, template: &TraceRow,
+    state: &[HemeraGold; 16], k: u64, input: NounId, budget_in: u64,
+) {
+    let mut r = TraceRow::default();
+    r.r[0] = template.r()[0];
+    r.r[1] = template.r()[1];
+    r.r[2] = template.r()[2];
+    r.r[4] = state[0].as_canonical_u64();
+    r.r[5] = state[1].as_canonical_u64();
+    r.r[6] = state[2].as_canonical_u64();
+    r.r[7] = state[3].as_canonical_u64();
+    r.r[8] = budget_in;
+    r.r[10] = state[4].as_canonical_u64();
+    r.r[11] = state[5].as_canonical_u64();
+    r.r[12] = state[6].as_canonical_u64();
+    r.r[13] = state[7].as_canonical_u64();
+    r.r[14] = k;
+    r.r[15] = input as u64;
+    tracer.record(r);
+}
+
+fn emit_squeeze_row<T: Tracer>(
+    tracer: &mut T, template: &TraceRow,
+    final_state: &[HemeraGold; 16], out_digest: &Digest,
+    result: NounId, input: NounId, budget_in: u64, budget_out: u64,
+) {
+    let mut r = TraceRow::default();
+    r.r[0] = template.r()[0];
+    r.r[1] = template.r()[1];
+    r.r[2] = template.r()[2];
+    r.r[3] = result as u64;
+    r.r[4] = out_digest[0].as_u64();
+    r.r[5] = out_digest[1].as_u64();
+    r.r[6] = out_digest[2].as_u64();
+    r.r[7] = out_digest[3].as_u64();
+    r.r[8] = budget_in;
+    r.r[9] = budget_out;
+    r.r[10] = final_state[4].as_canonical_u64();
+    r.r[11] = final_state[5].as_canonical_u64();
+    r.r[12] = final_state[6].as_canonical_u64();
+    r.r[13] = final_state[7].as_canonical_u64();
+    r.r[14] = ROUNDS_TOTAL; // 24 — sentinel for squeeze
+    r.r[15] = input as u64;
+    tracer.record(r);
 }
 
 #[cfg(test)]
 mod tests {
+    extern crate alloc;
+    use alloc::vec::Vec;
     use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, VecTrace};
@@ -80,7 +166,7 @@ mod tests {
     }
 
     #[test]
-    fn hash_emits_one_row() {
+    fn hash_emits_25_rows() {
         let mut ar = Order::<1024>::new();
         let obj = ar.atom(g(0), Tag::Field).unwrap();
         let formula = make_hash(&mut ar, 7);
@@ -89,8 +175,36 @@ mod tests {
             Outcome::Ok(_, _) => {}
             o => panic!("{:?}", o),
         }
-        let hash_rows = tracer.0.iter().filter(|r| r.r[0] == 15).count();
-        assert_eq!(hash_rows, 1, "hash stub emits 1 row for its own computation");
+        let hash_rows = tracer.0.iter().filter(|r| r.r()[0] == 15).count();
+        assert_eq!(hash_rows, 25, "hash emits 24 round rows + 1 squeeze row");
+    }
+
+    #[test]
+    fn hash_round_counter_increments() {
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let formula = make_hash(&mut ar, 11);
+        let mut tracer = VecTrace::default();
+        reduce(&mut ar, obj, formula, 10000, &NullCalls, &mut tracer);
+        let hash_rows: Vec<_> = tracer.0.iter().filter(|r| r.r()[0] == 15).collect();
+        for (i, row) in hash_rows.iter().enumerate() {
+            assert_eq!(row.r()[14], i as u64, "row {} has counter {}", i, row.r()[14]);
+        }
+    }
+
+    #[test]
+    fn hash_squeeze_row_carries_result() {
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let formula = make_hash(&mut ar, 11);
+        let mut tracer = VecTrace::default();
+        let result_id = match reduce(&mut ar, obj, formula, 10000, &NullCalls, &mut tracer) {
+            Outcome::Ok(r, _) => r,
+            o => panic!("{:?}", o),
+        };
+        let last = tracer.0.iter().filter(|r| r.r()[0] == 15).last().unwrap();
+        assert_eq!(last.r()[3], result_id as u64);
+        assert_eq!(last.r()[14], 24, "squeeze sentinel is 24");
     }
 
     #[test]

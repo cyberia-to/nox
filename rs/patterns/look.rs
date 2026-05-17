@@ -5,7 +5,7 @@
 //! step 4: return value as field atom, or Unavailable
 
 use crate::noun::{Order, NounId, NIL};
-use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_field, make_field};
+use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary_field, make_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
@@ -18,10 +18,7 @@ pub fn look<const N: usize, T: Tracer>(
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (ns, budget) = match evaluate_field(order, object, ns_formula, budget, hints, tracer, depth) {
-        Ok(v) => v, Err(o) => return o,
-    };
-    let (key, budget) = match evaluate_field(order, object, key_formula, budget, hints, tracer, depth) {
+    let (ns, key, budget) = match evaluate_binary_field(order, object, ns_formula, key_formula, budget, hints, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
     row.r[4] = ns.as_u64();
@@ -69,6 +66,36 @@ mod tests {
             Outcome::Error(ErrorKind::Unavailable) => {}
             other => panic!("expected Unavailable, got {:?}", other),
         }
+    }
+
+    /// Same (ns, key) in two independent orders with the same provider
+    /// must yield the same value — confluence requirement.
+    #[test]
+    fn look_deterministic_across_orders() {
+        struct FixedLooks;
+        impl LookProvider for FixedLooks {
+            fn look(&self, ns: Goldilocks, key: Goldilocks) -> Option<Goldilocks> {
+                // pure function of (ns, key)
+                Some(ns + key)
+            }
+        }
+        impl<const N: usize> CallProvider<N> for FixedLooks {
+            fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
+                None
+            }
+        }
+
+        let run = || {
+            let mut ar = Order::<1024>::new();
+            let obj = ar.atom(g(0), Tag::Field).unwrap();
+            let formula = make_look(&mut ar, 7, 11);
+            match reduce(&mut ar, obj, formula, 1000, &FixedLooks, &mut NoTrace) {
+                Outcome::Ok(r, _) => ar.atom_value(r).unwrap().0.as_u64(),
+                o => panic!("{:?}", o),
+            }
+        };
+        assert_eq!(run(), run(), "look must be deterministic across orders");
+        assert_eq!(run(), 18, "look(7, 11) under FixedLooks should yield 18");
     }
 
     #[test]

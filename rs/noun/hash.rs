@@ -11,7 +11,15 @@ use super::tag::Tag;
 /// intentional truncation from hemera 64-byte output (per trace.md)
 pub type Digest = [Goldilocks; 4];
 
-/// hash an atom using hemera tree leaf mode
+/// Hash an atom using hemera tree leaf mode.
+///
+/// The tag is encoded BOTH in the absorbed data byte (data[8]) AND as the
+/// hemera tree-domain parameter (third arg). specs/noun/hash.md describes
+/// only the domain parameter (capacity[14]). The duplication is deliberate:
+/// the input byte makes the hash distinguish atoms with the same field value
+/// but different tags via the data path, while the domain parameter
+/// distinguishes leaf-class hashes from node-class hashes at the sponge
+/// capacity level. Both must change together.
 pub fn hash_atom(value: Goldilocks, tag: Tag) -> Digest {
     let mut data = [0u8; 9];
     data[0..8].copy_from_slice(&value.as_u64().to_le_bytes());

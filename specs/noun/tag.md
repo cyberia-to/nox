@@ -17,7 +17,7 @@ field and word share the same representation (one Goldilocks element) but differ
 
 the hash type (four field elements, 32 bytes) is the identity primitive. `H(noun)` produces a hash. `axis(s, 0)` returns `H(s)` — a noun can introspect its own identity.
 
-the type tag costs nothing in the stark — it is a constraint selector, not runtime data.
+the type tag costs nothing in the zheng — it is a constraint selector, not runtime data.
 
 ## value tower across instantiations
 

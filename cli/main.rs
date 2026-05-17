@@ -44,6 +44,10 @@ enum Token {
     Num(u64),
 }
 
+// u64::MAX in decimal has 20 digits. Anything longer cannot parse as u64
+// and serves only to inflate allocation from adversarial input.
+const MAX_NUM_DIGITS: usize = 20;
+
 fn tokenize(input: &str) -> Result<Vec<Token>, String> {
     let mut tokens = Vec::new();
     let mut chars = input.chars().peekable();
@@ -56,7 +60,15 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
                 let mut num = String::new();
                 while let Some(&c) = chars.peek() {
                     if c.is_ascii_digit() || c == '_' {
-                        if c != '_' { num.push(c); }
+                        if c != '_' {
+                            if num.len() >= MAX_NUM_DIGITS {
+                                return Err(format!(
+                                    "numeric literal exceeds {} digits",
+                                    MAX_NUM_DIGITS
+                                ));
+                            }
+                            num.push(c);
+                        }
                         chars.next();
                     } else {
                         break;
@@ -65,7 +77,7 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
                 let v: u64 = num.parse().map_err(|e| format!("bad number '{}': {}", num, e))?;
                 tokens.push(Token::Num(v));
             }
-            _ => { chars.next(); } // skip unknown chars
+            _ => return Err(format!("unexpected character {:?}", ch)),
         }
     }
     Ok(tokens)
@@ -106,7 +118,9 @@ fn parse_expr(
                 return Err("empty brackets".to_string());
             }
             if elems.len() == 1 {
-                return Ok(elems[0]);
+                // `[x]` is not a noun: a cell needs ≥ 2 elements. Reject
+                // explicitly so `[[1 42]]` doesn't silently parse as `[1 42]`.
+                return Err("single-element brackets are not a valid cell".to_string());
             }
             // Right-nest: [a b c] → Cell(a, Cell(b, c))
             let mut result = elems.pop().unwrap();
@@ -167,7 +181,7 @@ fn run() -> i32 {
                     return 1;
                 }
             }
-            "--object" | "-s" => {
+            "--object" | "-o" => {
                 i += 1;
                 if i < args.len() {
                     object_text = args[i].clone();
@@ -270,7 +284,7 @@ fn print_usage() {
   nox -e '[5 [[1 3] [1 5]]]'    evaluate inline formula
   echo '[1 42]' | nox            evaluate from stdin
 
-  -s, --object <noun>    object (default: 0)
+  -o, --object <noun>    object (default: 0)
   -b, --budget <n>        budget (default: 1000000)
   -e <formula>            inline formula
 "

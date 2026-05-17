@@ -4,24 +4,33 @@
 //! axis(s, 2n) = head(axis(s, n))
 //! axis(s, 2n+1) = tail(axis(s, n))
 
+use crate::call::CallProvider;
 use crate::noun::{Order, NounId, Noun};
 use crate::reduce::{Outcome, ErrorKind};
 use crate::trace::TraceRow;
 
 pub fn axis<const N: usize>(
     order: &mut Order<N>, object: NounId, addr_ref: NounId, budget: u64,
+    hints: &dyn CallProvider<N>,
     row: &mut TraceRow,
 ) -> Outcome {
     let addr = match order.atom_value(addr_ref) {
         Some((v, _)) => v.as_u64(),
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    // r4 = object NounId (for Lens-opening binding when wired by zheng)
-    // r5 = axis address (raw u64)
-    // r6 = depth traversed (cell levels descended)
-    // r7 = result NounId
+    // r4  = object NounId (for Lens-opening binding when wired by zheng)
+    // r5  = axis address (raw u64)
+    // r6  = depth traversed (cell levels descended)
+    // r7  = result NounId
+    // r11-r14 = Lens commitment bytes for the object noun polynomial (when available)
     row.r[4] = object as u64;
     row.r[5] = addr;
+    if let Some(bytes) = hints.axis_commitment(object as u64) {
+        row.r[11] = u64::from_le_bytes(bytes[0..8].try_into().unwrap());
+        row.r[12] = u64::from_le_bytes(bytes[8..16].try_into().unwrap());
+        row.r[13] = u64::from_le_bytes(bytes[16..24].try_into().unwrap());
+        row.r[14] = u64::from_le_bytes(bytes[24..32].try_into().unwrap());
+    }
     match addr {
         0 => {
             let digest = match order.digest(object) {
@@ -129,6 +138,25 @@ mod tests {
                 assert!(ar.is_cell(r));
                 let d = ar.read_hash_noun(r).unwrap();
                 assert_eq!(d, *ar.digest(s).unwrap());
+            }
+            o => panic!("{:?}", o),
+        }
+    }
+
+    /// axis(s, 0) on a cell object also returns the cell's digest hashed.
+    #[test]
+    fn axis_zero_hash_on_cell() {
+        let mut ar = Order::<1024>::new();
+        let a = ar.atom(g(10), Tag::Field).unwrap();
+        let b = ar.atom(g(20), Tag::Field).unwrap();
+        let s = ar.cell(a, b).unwrap();
+        let f = make_axis(&mut ar, 0);
+        let s_digest = *ar.digest(s).unwrap();
+        match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
+            Outcome::Ok(r, _) => {
+                assert!(ar.is_cell(r));
+                let d = ar.read_hash_noun(r).unwrap();
+                assert_eq!(d, s_digest, "axis(cell, 0) returns hash noun of cell digest");
             }
             o => panic!("{:?}", o),
         }

@@ -9,11 +9,13 @@ pub mod tag;
 pub mod inner;
 pub mod hash;
 pub mod order;
+pub mod cost;
 
 pub use tag::Tag;
 pub use inner::Noun;
 pub use hash::Digest;
 pub use order::{Order, NounEntry};
+pub use cost::Cost;
 
 /// order index — all noun identifiers are u32 indices
 pub type NounId = u32;
@@ -89,5 +91,51 @@ mod tests {
         let mut order = Order::<1024>::new();
         let d = [Goldilocks::new(1), Goldilocks::new(2), Goldilocks::new(3), Goldilocks::new(4)];
         assert_eq!(order.hash_noun(&d).unwrap(), order.hash_noun(&d).unwrap());
+    }
+
+    /// alloc_raw returns None past the load-factor cap (3/4 of N).
+    /// Sized N=16 → cap at 12; allocate 12 distinct atoms, then the 13th fails.
+    #[test]
+    fn order_full_returns_none() {
+        let mut order = Order::<16>::new();
+        for k in 0..12 {
+            assert!(order.atom(Goldilocks::new(k), Tag::Field).is_some());
+        }
+        // 13th allocation hits load-factor cap
+        assert!(order.atom(Goldilocks::new(99), Tag::Field).is_none());
+    }
+
+    /// get(invalid_id) returns None instead of panicking.
+    #[test]
+    fn get_out_of_bounds_returns_none() {
+        let order = Order::<1024>::new();
+        assert!(order.get(NIL).is_none());
+        assert!(order.get(42).is_none());  // never allocated
+    }
+
+    /// read_hash_noun on an atom (not the [[h0,h1],[h2,h3]] shape) returns None.
+    #[test]
+    fn read_hash_noun_on_atom_returns_none() {
+        let mut order = Order::<1024>::new();
+        let a = order.atom(Goldilocks::new(42), Tag::Field).unwrap();
+        assert!(order.read_hash_noun(a).is_none());
+    }
+
+    /// read_hash_noun on a malformed cell shape (one level instead of two)
+    /// returns None.
+    #[test]
+    fn read_hash_noun_on_wrong_shape_returns_none() {
+        let mut order = Order::<1024>::new();
+        let a = order.atom(Goldilocks::new(1), Tag::Field).unwrap();
+        let b = order.atom(Goldilocks::new(2), Tag::Field).unwrap();
+        let cell = order.cell(a, b).unwrap();  // depth-1 cell, not [[h0,h1],[h2,h3]]
+        assert!(order.read_hash_noun(cell).is_none());
+    }
+
+    /// digest on an invalid NounId returns None.
+    #[test]
+    fn digest_on_invalid_id_returns_none() {
+        let order = Order::<1024>::new();
+        assert!(order.digest(NIL).is_none());
     }
 }

@@ -59,7 +59,7 @@ all concrete costs and constraint counts refer to the canonical instantiation: n
 ## cost table (canonical: nox<Goldilocks, Z/2^32, Hemera>)
 
 ```
-Layer │ Pattern      │ Exec Cost      │ STARK Constraints │ Rationale
+Layer │ Pattern      │ Exec Cost      │ zheng Constraints │ Rationale
 ──────┼──────────────┼────────────────┼───────────────────┼─────────────────────
   1   │ 0 axis       │ 1              │ 1                 │ O(1) Lens opening
   1   │ 1 quote      │ 1              │ 1                 │ literal return
@@ -76,7 +76,7 @@ Layer │ Pattern      │ Exec Cost      │ STARK Constraints │ Rationale
   1   │ 12 and       │ 32             │ ~32               │ bit decomposition (32 rows)
   1   │ 13 not       │ 32             │ ~32               │ bit decomposition (32 rows)
   1   │ 14 shl       │ 32             │ ~32               │ bit decomposition (32 rows)
-  1   │ 15 hash      │ 300            │ ~736              │ Hemera permutation
+  1   │ 15 hash      │ 25             │ ~736              │ Hemera permutation (24 rounds + squeeze)
   2   │ 16 call      │ 1              │ 1                 │ inject + dispatch
   2   │ 17 look      │ 1              │ 1                 │ BBG read + verify
 ```

@@ -7,7 +7,7 @@
 
 use nebu::Goldilocks;
 use crate::noun::{Order, NounId};
-use crate::reduce::{Outcome, ErrorKind, evaluate_field};
+use crate::reduce::{Outcome, ErrorKind, evaluate_unary_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::noun::NIL;
@@ -19,7 +19,7 @@ pub fn inv<const N: usize, T: Tracer>(
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
-    let (v, budget) = match evaluate_field(order, object, body, budget, hints, tracer, depth) {
+    let (v, budget) = match evaluate_unary_field(order, object, body, budget, hints, tracer, depth) {
         Ok(v) => v,
         Err(o) => {
             row.r[3] = NIL as u64;
@@ -58,7 +58,7 @@ pub fn inv<const N: usize, T: Tracer>(
         let bit = (P_MINUS_2 >> bit_pos) & 1;
         acc = acc * acc;
         if bit == 1 {
-            acc = acc * v;
+            acc *= v;
         }
 
         let mut step_row = TraceRow::default();
@@ -141,6 +141,51 @@ mod tests {
         match reduce(&mut ar, obj, formula, 10000, &NullCalls, &mut NoTrace) {
             Outcome::Error(ErrorKind::InvZero) => {}
             o => panic!("expected InvZero, got {:?}", o),
+        }
+    }
+
+    /// inv(k) * k == 1 must hold for every non-zero k. Covers boundary
+    /// values (1, p-1, p-2) plus an interior sample.
+    #[test]
+    fn inv_round_trip_property() {
+        const P: u64 = 0xFFFF_FFFF_0000_0001;
+        let samples = [
+            1u64,
+            2,
+            3,
+            42,
+            0xDEAD_BEEF,
+            P - 2,           // largest interior value
+            P - 1,           // -1 in the field; inv is self
+            (P - 1) / 2,
+        ];
+        for &k in &samples {
+            let mut ar = Order::<2048>::new();
+            let obj = ar.atom(g(0), Tag::Field).unwrap();
+            let formula = make_inv(&mut ar, k);
+            match reduce(&mut ar, obj, formula, 10_000, &NullCalls, &mut NoTrace) {
+                Outcome::Ok(r, _) => {
+                    let (inv_k, _) = ar.atom_value(r).unwrap();
+                    assert_eq!(inv_k * g(k), g(1), "inv({}) * {} != 1", k, k);
+                }
+                o => panic!("inv({}) failed: {:?}", k, o),
+            }
+        }
+    }
+
+    /// inv(p-1) = p-1 since (p-1)^2 = 1 mod p.
+    #[test]
+    fn inv_neg_one_is_self() {
+        const P: u64 = 0xFFFF_FFFF_0000_0001;
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let formula = make_inv(&mut ar, P - 1);
+        match reduce(&mut ar, obj, formula, 10_000, &NullCalls, &mut NoTrace) {
+            Outcome::Ok(r, _) => {
+                let (inv_neg1, _) = ar.atom_value(r).unwrap();
+                assert_eq!(inv_neg1, g(P - 1));
+            }
+            o => panic!("{:?}", o),
         }
     }
 

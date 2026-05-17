@@ -1,7 +1,7 @@
 //! pattern 3: cons — evaluate two sub-formulas, construct cell from results
 
 use crate::noun::{Order, NounId};
-use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate};
+use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
@@ -14,10 +14,7 @@ pub fn cons<const N: usize, T: Tracer>(
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (left, budget) = match evaluate(order, object, a, budget, hints, tracer, depth) {
-        Ok(v) => v, Err(o) => return o,
-    };
-    let (right, budget) = match evaluate(order, object, b, budget, hints, tracer, depth) {
+    let (left, right, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
     row.r[4] = left as u64;

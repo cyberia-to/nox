@@ -12,16 +12,36 @@
 //! r[4..8] = pattern-specific operands (filled by pattern; zero otherwise)
 //! r[8]  = budget before step
 //! r[9]  = budget after step
-//! r[10..16] = reserved (error kind in r[10] on error rows)
+//! r[10] = error kind on error rows; pattern-specific witness on success rows
+//! r[11..16] = pattern-specific (bit decomp, step counter, etc.)
 
 extern crate alloc;
 use alloc::vec::Vec;
 
 pub const COLS: usize = 16;
 
+/// One row of the execution trace = zheng witness for one reduce() call
+/// (or one step of a multi-row pattern).
+///
+/// The internal array is `pub(crate)` so only nox can construct/mutate rows;
+/// external consumers (e.g., zheng) read via [`TraceRow::r`] or [`TraceRow::col`].
 #[derive(Clone, Copy, Debug, Default)]
 pub struct TraceRow {
-    pub r: [u64; COLS],
+    pub(crate) r: [u64; COLS],
+}
+
+impl TraceRow {
+    /// Read-only view of all 16 columns.
+    #[inline]
+    pub fn r(&self) -> &[u64; COLS] {
+        &self.r
+    }
+
+    /// Single-column read. Returns 0 for out-of-range indices.
+    #[inline]
+    pub fn col(&self, i: usize) -> u64 {
+        if i < COLS { self.r[i] } else { 0 }
+    }
 }
 
 pub trait Tracer {

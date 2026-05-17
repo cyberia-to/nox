@@ -15,15 +15,15 @@ reduce(o, [17 [ns_f key_f]], f) =
      if coeffs == ⊥_namespace → return ⊥_error
      if coeffs == ⊥_range     → return ⊥_error
   5. value = poly_eval(coeffs, key)            // evaluate polynomial at key point
-  6. trace.append(proof)                       // Brakedown opening proof enters STARK trace
+  6. trace.append(proof)                       // Brakedown opening proof enters zheng trace
   7. return (value, f')
 ```
 
-deterministic read from the authenticated state layer (BBG). evaluates the polynomial BBG_poly(namespace, key, t) under commitment root C_t and returns the result. C_t is part of the object noun — the BBG roots travel with the computation. the evaluator reads polynomial coefficients from the committed state, evaluates at the key point, and generates a Brakedown opening proof. the opening proof enters the STARK trace for verification.
+deterministic read from the authenticated state layer (BBG). evaluates the polynomial BBG_poly(namespace, key, t) under commitment root C_t and returns the result. C_t is part of the object noun — the BBG roots travel with the computation. the evaluator reads polynomial coefficients from the committed state, evaluates at the key point, and generates a Brakedown opening proof. the opening proof enters the zheng trace for verification.
 
 pure function: same namespace, same key, same C_t produces the same value on any machine at any time. the polynomial uniquely determines the output. there is no prover choice, no witness injection, no non-determinism.
 
-the verifier checks the Brakedown Lens opening proof via the STARK proof. it never reads BBG directly.
+the verifier checks the Brakedown Lens opening proof via the zheng proof. it never reads BBG directly.
 
 ## reduction rule
 
@@ -78,7 +78,7 @@ namespaces 0-9 are the 10 public evaluation dimensions of BBG_poly. private stat
 
 - **deterministic**: same namespace, same key, same C_t always returns the same value. the polynomial is committed — its coefficients are fixed by the commitment root. no prover freedom, no witness choice, no oracle
 - **pure**: no side effects. look reads state but never modifies it. write is implicit via the cyberlink transaction result, not via the look pattern
-- **provable**: the Brakedown Lens opening proof enters the STARK trace. the verifier checks the opening against C_t without reading BBG. soundness follows from the binding property of the polynomial commitment
+- **provable**: the Brakedown Lens opening proof enters the zheng trace. the verifier checks the opening against C_t without reading BBG. soundness follows from the binding property of the polynomial commitment
 - **memoizable**: look results are fully cacheable. given the same C_t, namespace, and key, the result is identical. the evaluator may cache polynomial evaluations and reuse opening proofs across multiple look calls within the same block
 - **read-only**: look never modifies BBG state, the object noun, or the commitment root. pure observation
 
@@ -104,14 +104,14 @@ dispatch             1
 namespace evaluation cost(ns_f)
 key evaluation       cost(key_f)
 polynomial eval      depends on polynomial degree (dimension-specific)
-Brakedown opening    1 (O(√N) field operations, amortized to 1 STARK constraint)
+Brakedown opening    1 (O(√N) field operations, amortized to 1 zheng constraint)
 ─────────            ────
 total                1 + cost(ns_f) + cost(key_f) + 1
 ```
 
-the polynomial evaluation cost depends on the degree of BBG_poly in the queried dimension. for single-point lookups, the Brakedown opening proof is O(√N) field operations but enters the STARK trace as a single constraint (the verifier checks the opening via the proof, not by re-evaluating).
+the polynomial evaluation cost depends on the degree of BBG_poly in the queried dimension. for single-point lookups, the Brakedown opening proof is O(√N) field operations but enters the zheng trace as a single constraint (the verifier checks the opening via the proof, not by re-evaluating).
 
-STARK constraints: 1 (the opening proof is verified within the proof system, not expanded into constraints per coefficient).
+zheng constraints: 1 (the opening proof is verified within the proof system, not expanded into constraints per coefficient).
 
 ## error cases
 

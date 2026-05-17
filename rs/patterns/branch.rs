@@ -1,7 +1,7 @@
 //! pattern 4: branch — evaluate test, take yes (0) or no (nonzero)
 
 use crate::noun::{Order, NounId};
-use crate::reduce::{reduce_inner, Outcome, ErrorKind, cell_pair, evaluate};
+use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_unary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
@@ -18,7 +18,8 @@ pub fn branch<const N: usize, T: Tracer>(
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (test_result, budget) = match evaluate(order, object, test_formula, budget, hints, tracer, depth) {
+    // Step 1: evaluate test with its bound (partitioned if possible).
+    let (test_result, budget) = match evaluate_unary(order, object, test_formula, budget, hints, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
     let test_value = match order.atom_value(test_result) {
@@ -39,7 +40,13 @@ pub fn branch<const N: usize, T: Tracer>(
     row.r[6] = yes_formula as u64;
     row.r[7] = no_formula as u64;
     row.r[10] = selector;
-    reduce_inner(order, object, chosen, budget, hints, tracer, depth + 1)
+    // Step 2: evaluate ONLY the chosen arm under partitioned semantics.
+    // Slack from max-of-arms accrues to the caller automatically — we only
+    // charge for the chosen arm's actual cost.
+    match evaluate_unary(order, object, chosen, budget, hints, tracer, depth) {
+        Ok((val, remaining)) => Outcome::Ok(val, remaining),
+        Err(o) => o,
+    }
 }
 
 #[cfg(test)]

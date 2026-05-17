@@ -12,7 +12,7 @@ reduce(o, [16 [tag_f check_f]], f) =
 
 the single non-deterministic pattern. the prover injects a witness noun from outside the VM. the constraint formula is evaluated with the object to produce check — a formula. then check is applied to witness as object via standard reduction. the result must be the field element 0 (success). if the check produces a non-zero value, halts, or errors, the call fails and the proof is invalid.
 
-the verifier NEVER executes call directly — it checks constraint satisfaction via the stark proof.
+the verifier NEVER executes call directly — it checks constraint satisfaction via the zheng proof.
 
 ## provider interface
 

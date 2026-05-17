@@ -23,16 +23,6 @@ pub trait LookProvider {
     fn look(&self, namespace: Goldilocks, key: Goldilocks) -> Option<Goldilocks>;
 }
 
-/// null look provider — always returns None (no BBG state available)
-/// used for testing without an authenticated state layer
-pub struct NullLooks;
-
-impl LookProvider for NullLooks {
-    fn look(&self, _namespace: Goldilocks, _key: Goldilocks) -> Option<Goldilocks> {
-        None
-    }
-}
-
 /// call provider trait — the prover's interface to inject witnesses
 ///
 /// extends LookProvider: every call provider also supports deterministic lookups.
@@ -45,11 +35,23 @@ pub trait CallProvider<const N: usize>: LookProvider {
     ///
     /// returns Some(witness_noun) or None (= halt, prover doesn't know)
     fn provide(&self, order: &mut Order<N>, tag: Goldilocks, object: NounId) -> Option<NounId>;
+
+    /// Return the 32-byte Lens commitment for the noun polynomial of `object_id`.
+    ///
+    /// Called by pattern 0 (axis) to populate r[11]-r[14] with the commitment
+    /// bytes, enabling zheng to circuit-constrain the opening. Proof-unaware
+    /// callers (interpreter, tests) return None — registers stay zero.
+    fn axis_commitment(&self, _object_id: u64) -> Option<[u8; 32]> {
+        None
+    }
 }
 
-/// null call provider — always returns None (no calls or lookups available)
-/// used for pure Layer 1 execution without privacy/search/BBG
+/// null provider — always returns None for both call and look.
+/// used for pure Layer 1 execution and tests without privacy/BBG.
 pub struct NullCalls;
+
+/// alias kept for spec-side terminology; same type as NullCalls.
+pub type NullLooks = NullCalls;
 
 impl LookProvider for NullCalls {
     fn look(&self, _namespace: Goldilocks, _key: Goldilocks) -> Option<Goldilocks> {

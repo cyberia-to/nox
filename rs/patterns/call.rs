@@ -6,7 +6,7 @@
 
 use nebu::Goldilocks;
 use crate::noun::{Order, NounId};
-use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate};
+use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_unary, evaluate};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::noun::NIL;
@@ -20,7 +20,8 @@ pub fn call_witness<const N: usize, T: Tracer>(
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (tag_result, budget) = match evaluate(order, object, tag_formula, budget, calls, tracer, depth) {
+    // Initial phase: tag is statically bounded — partitioned eval.
+    let (tag_result, budget) = match evaluate_unary(order, object, tag_formula, budget, calls, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
     let tag_value = match order.atom_value(tag_result) {
@@ -35,6 +36,8 @@ pub fn call_witness<const N: usize, T: Tracer>(
         Some(c) => c,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
+    // Continuation phase: check_f sees a prover-supplied witness. Witness
+    // shape is unknown statically; cost is dynamic. Sequential threading.
     // propagate the actual error/halt from check formula evaluation —
     // a Malformed/TypeError/Unavailable in check_f is a bug in check_f
     // itself, NOT a witness rejection. only a finished check returning
@@ -118,6 +121,39 @@ mod tests {
         match reduce(&mut ar, obj, formula, 1000, &BadWitness, &mut NoTrace) {
             Outcome::Error(ErrorKind::CallRejected) => {}
             o => panic!("expected CallRejected, got {:?}", o),
+        }
+    }
+
+    /// Provider injects witness=42, check formula `[1 0]` returns 0.
+    /// Expected: Outcome::Ok with result NounId equal to the injected witness.
+    #[test]
+    fn call_accepts_valid_witness() {
+        struct GoodWitness;
+        impl LookProvider for GoodWitness {
+            fn look(&self, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
+        }
+        impl<const N: usize> CallProvider<N> for GoodWitness {
+            fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
+                Some(order.atom(g(42), Tag::Field).unwrap())
+            }
+        }
+
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        // formula = [16 [[1 0] [1 0]]]  — tag=quote(0), check=quote(0) (always passes)
+        let t16 = ar.atom(g(16), Tag::Field).unwrap();
+        let t1 = ar.atom(g(1), Tag::Field).unwrap();
+        let zero = ar.atom(g(0), Tag::Field).unwrap();
+        let tag_f = ar.cell(t1, zero).unwrap();
+        let check_f = ar.cell(t1, zero).unwrap();
+        let body = ar.cell(tag_f, check_f).unwrap();
+        let formula = ar.cell(t16, body).unwrap();
+        match reduce(&mut ar, obj, formula, 1000, &GoodWitness, &mut NoTrace) {
+            Outcome::Ok(result, _) => {
+                let (v, _) = ar.atom_value(result).unwrap();
+                assert_eq!(v, g(42), "result should be the injected witness");
+            }
+            o => panic!("expected Ok(witness=42), got {:?}", o),
         }
     }
 }

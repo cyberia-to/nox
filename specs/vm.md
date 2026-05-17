@@ -5,9 +5,9 @@ status: canonical
 
 ## overview
 
-nox is a proof-native virtual machine. sixteen deterministic compute patterns parameterized by algebra, plus call (non-deterministic witness injection) and look (deterministic BBG read), and five jets for efficient recursive stark verification. 16 compute + call + look = 18 patterns.
+nox is a proof-native virtual machine. sixteen deterministic compute patterns parameterized by algebra, plus call (non-deterministic witness injection) and look (deterministic BBG read), and five jets for efficient recursive zheng verification. 16 compute + call + look = 18 patterns.
 
-every nox execution produces a trace that IS the stark witness. there is no separate arithmetization step.
+every nox execution produces a trace that IS the zheng witness. there is no separate arithmetization step.
 
 ## algebra polymorphism
 
@@ -26,18 +26,20 @@ structural patterns (0-4) are identical across all instantiations. field pattern
 
 eight instantiations across five arithmetics. flat table — no hierarchy. each regime has its own field, costs, jets, and lens. see [[five algebras]] for the independence criteria.
 
-| regime | field | repo | [[lens]] | jets | mul cost | constraints/mul | role |
-|--------|-------|------|----------|------|----------|-----------------|------|
-| nebu | scalar field | [[nebu]] | Brakedown | 5 verifier | 1 | 1 | truth (canonical) |
-| nebu² | scalar field (F_p²) | [[nebu]]::Fp2 | Brakedown (2× wide) | fp2_mul, fp2_inv | 3 | 3 | quantum, 128-bit |
-| nebu³ | scalar field (F_p³) | [[nebu]]::Fp3 | Brakedown (3× wide) | fp3_mul, fp3_inv | 6 | 6 | recursion soundness |
-| nebu⁴ | scalar field (F_p⁴) | [[nebu]]::Fp4 | Brakedown (4× wide) | fp4_mul, fp4_inv | 9 | 9 | 256-bit, recursion tower |
-| kuro | binary tower | [[kuro]] | Binius | 8 binary | 1 | 1 | efficiency |
-| jali | polynomial ring | [[jali]] | Ikat | 5 ring | 3072 | ~N (batched) | veil |
-| trop | tropical semiring | [[trop]] | Assayer | 6 tropical | — | O(\|witness\|) | choice |
-| genies | isogeny curves | [[genies]] | Porphyry | 5 isogeny | 1 F_q | 1 F_q | shadow |
+| regime | field | repo | status | [[lens]] | jets | mul cost | constraints/mul | role |
+|--------|-------|------|--------|----------|------|----------|-----------------|------|
+| nebu | scalar field | [[nebu]] | implemented | Brakedown | 5 verifier | 1 | 1 | truth (canonical) |
+| nebu² | scalar field (F_p²) | [[nebu]]::Fp2 | implemented | Brakedown (2× wide) | fp2_mul, fp2_inv | 3 | 3 | quantum, 128-bit |
+| nebu³ | scalar field (F_p³) | [[nebu]]::Fp3 | implemented | Brakedown (3× wide) | fp3_mul, fp3_inv | 6 | 6 | recursion soundness |
+| nebu⁴ | scalar field (F_p⁴) | [[nebu]]::Fp4 | implemented | Brakedown (4× wide) | fp4_mul, fp4_inv | 9 | 9 | 256-bit, recursion tower |
+| kuro | binary tower | [[kuro]] | **planned** | Binius | 8 binary | 1 | 1 | efficiency |
+| jali | polynomial ring | [[jali]] | **planned** | Ikat | 5 ring | 3072 | ~N (batched) | veil |
+| trop | tropical semiring | [[trop]] | **planned** | Assayer | 6 tropical | — | O(\|witness\|) | choice |
+| genies | isogeny curves | [[genies]] | **planned** | Porphyry | 5 isogeny | 1 F_q | 1 F_q | shadow |
 
-mul cost = base F_p multiplications per one regime-native multiply. constraints/mul = STARK constraints per multiply with regime-native lens (with jets). jali batching: N individual commitments → 1 batch via Ikat.
+regimes marked **planned** describe the target instantiation; the companion repos (kuro, jali, trop, genies) do not yet exist in the cyber workspace. only the nebu family is currently usable.
+
+mul cost = base F_p multiplications per one regime-native multiply. constraints/mul = zheng constraints per multiply with regime-native lens (with jets). jali batching: N individual commitments → 1 batch via Ikat.
 
 ### per-regime cost table
 
@@ -51,10 +53,10 @@ mul cost = base F_p multiplications per one regime-native multiply. constraints/
 | lt | 1 | — | — | — | 1 | — | 1 | — |
 | xor | 1 | — | — | — | 1 | — | — | — |
 | and | 1 | — | — | — | 1 | — | — | — |
-| hash | 300 | 300 | 300 | 300 | deferred | 300 | 300 | deferred |
-| STARK/mul | ~32 | 3 | 6 | 9 | 1 | ~N (batch) | O(w) | 1 F_q |
+| hash | 25 | 25 | 25 | 25 | deferred | 25 | 25 | deferred |
+| zheng/mul | ~32 | 3 | 6 | 9 | 1 | ~N (batch) | O(w) | 1 F_q |
 
-"—" = operation not defined or not meaningful for this regime. n = ring degree (1024). deferred = hemera computed at settlement boundary (~766 constraints). all costs are execution budget; STARK constraint counts are per-instantiation (see [[patterns]]).
+"—" = operation not defined or not meaningful for this regime. n = ring degree (1024). deferred = hemera computed at settlement boundary (~766 constraints). all costs are execution budget; zheng constraint counts are per-instantiation (see [[patterns]]).
 
 five arithmetics (repos): nebu (4 regimes), kuro (1), jali (1), trop (1), genies (1).
 five lenses (zheng): Brakedown (4 regimes), Binius (1), Ikat (1), Porphyry (1), Assayer (1).
@@ -158,9 +160,9 @@ every noun is a multilinear polynomial (see nouns.md polynomial representation).
 the same nox program can be verified by different proof systems:
 
 ```
-nox<F_p> program     → zheng STARK (field-native, 1 constraint per field op)
+nox<F_p> program     → zheng (field-native, 1 constraint per field op)
 nox<F₂> program      → Binius/FRI (binary-native, 1 constraint per binary op)
-nox<F_{p³}> program   → zheng STARK with extension (3× wider constraints)
+nox<F_{p³}> program   → zheng with extension (3× wider constraints)
 ```
 
 a single nox program containing both field and bitwise operations can be partitioned by the prover into algebra-specific sub-trees, with cross-algebra boundaries using Hemera commitments.
@@ -168,7 +170,7 @@ a single nox program containing both field and bitwise operations can be partiti
 constraint costs are per-instantiation:
 
 ```
-and(a, b) in nox<F_p>:   ~32 STARK constraints (bit decomposition in prime field)
+and(a, b) in nox<F_p>:   ~32 zheng constraints (bit decomposition in prime field)
 and(a, b) in nox<F₂>:    1 constraint (native multiplication in binary field)
 ```
 
@@ -195,7 +197,7 @@ primitive root: 7
 efficient reduction: a mod p = a_lo - a_hi × (2^32 - 1) + correction
 ```
 
-in this instantiation, nox arithmetic IS Goldilocks arithmetic. the execution trace IS a table of Goldilocks elements. the stark proof IS over Goldilocks. there is no impedance mismatch at any layer.
+in this instantiation, nox arithmetic IS Goldilocks arithmetic. the execution trace IS a table of Goldilocks elements. the zheng proof IS over Goldilocks. there is no impedance mismatch at any layer.
 
 nebu provides: field element type, addition, subtraction, multiplication, Fermat inversion, NTT-friendly roots of unity, Montgomery/Barrett reduction. nox imports the field — it does not reimplement it.
 
@@ -212,7 +214,7 @@ HASH: Hemera (Poseidon2-Goldilocks, hemera)
   s-box (full rounds): x^7
   s-box (partial rounds): x^{-1} (field inversion, 0^{-1} = 0)
   output: 4 field elements (32 bytes)
-  cost: ~736 stark constraints per permutation
+  cost: ~736 zheng constraints per permutation
 ```
 
 hemera provides: sponge construction, domain-separated hashing, Merkle-compatible mode. nox imports the hash — it does not reimplement it.
@@ -223,7 +225,7 @@ all algebras settle through Goldilocks via Hemera (Poseidon2 over Goldilocks). t
 
 - nox<F₂> programs must defer Hemera to settlement (~10 constraints deferred, ~736 at settlement)
 - nox<F_{p³}> programs compute Hemera natively (Hemera operates over base field F_p)
-- nox<F_p> programs compute Hemera natively (300 budget cost)
+- nox<F_p> programs compute Hemera natively (25 budget cost: 24 rounds + 1 squeeze)
 
 the polymorphism is real for computation but asymmetric for commitment. Goldilocks is the anchor field. all algebras settle through it.
 
@@ -276,4 +278,4 @@ the 5-bit encoding, the trace layout, the budget metering, the confluence proper
 |-------|------|----------|----------|
 | nebu | ~/git/nebu/rs | Goldilocks field arithmetic | F_p type, add, sub, mul, inv, roots of unity |
 | hemera | ~/git/hemera/rs | Hemera hash (Poseidon2-Goldilocks) | H(), domain separation, Merkle mode |
-| zheng | ~/git/zheng/ | proof system (SuperSpartan + Brakedown) | stark proving/verifying (downstream consumer of trace) |
+| zheng | ~/git/zheng/ | proof system (SuperSpartan + Brakedown) | zheng proving/verifying (downstream consumer of trace) |

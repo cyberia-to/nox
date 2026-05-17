@@ -8,13 +8,19 @@ use nebu::Goldilocks;
 use super::tag::Tag;
 use super::inner::Noun;
 use super::hash::{Digest, hash_atom, hash_cell};
+use super::cost::{Cost, PATTERN_COSTS};
 use super::{NounId, NIL};
 
-/// order entry — noun + cached identity hash
+/// order entry — noun + cached identity hash + cached cost bound.
+///
+/// `bound` is computed at construction time so reduce-time partition decisions
+/// (`bound(child) ≤ budget?`) are O(1). The bound represents the noun treated
+/// as a formula; atoms always have `Cost::Exact(0)`.
 #[derive(Debug, Clone, Copy)]
 pub struct NounEntry {
     pub inner: Noun,
     pub hash: Digest,
+    pub bound: Cost,
 }
 
 /// flat order with hash-consing
@@ -27,12 +33,20 @@ pub struct Order<const N: usize> {
     index_mask: u32,
 }
 
+impl<const N: usize> Default for Order<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<const N: usize> Order<N> {
     pub fn new() -> Self {
         assert!(N.is_power_of_two(), "order size must be power of 2");
         Self {
-            // SAFETY: MaybeUninit<T> does not require initialization
-            entries: unsafe { core::mem::MaybeUninit::uninit().assume_init() },
+            // `[const { … }; N]` initializes each slot uninitialized at compile
+            // time. Replaces the deprecated `MaybeUninit::uninit().assume_init()`
+            // pattern which was UB on older toolchains and Miri-flagged.
+            entries: [const { core::mem::MaybeUninit::uninit() }; N],
             count: 0,
             index_keys: [[Goldilocks::ZERO; 4]; N],
             index_vals: [NIL; N],
@@ -41,7 +55,11 @@ impl<const N: usize> Order<N> {
     }
 
     fn alloc_raw(&mut self, entry: NounEntry) -> Option<NounId> {
-        if (self.count as usize) >= N - 1 { return None; }
+        // Cap load factor at 3/4 so linear probing stays O(1) expected and
+        // bounded worst-case (~N/4 max probe). The hash-cons table lives in
+        // the same Order; refusing past 3N/4 means index_insert always finds
+        // an empty slot quickly.
+        if (self.count as usize) >= (N / 4) * 3 { return None; }
         let idx = self.count;
         self.entries[idx as usize] = core::mem::MaybeUninit::new(entry);
         self.count += 1;
@@ -59,7 +77,8 @@ impl<const N: usize> Order<N> {
         let inner = Noun::Atom { value, tag };
         let hash = hash_atom(value, tag);
         if let Some(existing) = self.index_lookup(&hash) { return Some(existing); }
-        let r = self.alloc_raw(NounEntry { inner, hash })?;
+        // Atoms have no formula interpretation; bound is 0 by definition.
+        let r = self.alloc_raw(NounEntry { inner, hash, bound: Cost::Exact(0) })?;
         self.index_insert(&hash, r);
         Some(r)
     }
@@ -70,9 +89,75 @@ impl<const N: usize> Order<N> {
         let hash = hash_cell(&lh, &rh);
         if let Some(existing) = self.index_lookup(&hash) { return Some(existing); }
         let inner = Noun::Cell { left, right };
-        let r = self.alloc_raw(NounEntry { inner, hash })?;
+        let bound = self.compute_cell_bound(left, right);
+        let r = self.alloc_raw(NounEntry { inner, hash, bound })?;
         self.index_insert(&hash, r);
         Some(r)
+    }
+
+    /// Compute the cached cost bound for a cell at construction time.
+    /// Treats the cell as a formula `[tag body]` when `left` is an atom in
+    /// pattern range; otherwise bound is 0 (the cell is data, not code).
+    /// Children's cached bounds are looked up in O(1).
+    fn compute_cell_bound(&self, left: NounId, right: NounId) -> Cost {
+        let left_entry = match self.get(left) { Some(e) => e, None => return Cost::Exact(0) };
+        let tag = match left_entry.inner {
+            Noun::Atom { value, .. } => value.as_u64(),
+            _ => return Cost::Exact(0),
+        };
+        if (tag as usize) >= PATTERN_COSTS.len() { return Cost::Exact(0); }
+        let base = PATTERN_COSTS[tag as usize];
+
+        let child_bound = |id: NounId| -> Cost {
+            self.get(id).map_or(Cost::Exact(0), |e| e.bound)
+        };
+        let pair = |id: NounId| -> Option<(NounId, NounId)> {
+            match self.get(id)?.inner {
+                Noun::Cell { left, right } => Some((left, right)),
+                _ => None,
+            }
+        };
+
+        match tag {
+            // No sub-formula evaluation
+            0 | 1 => Cost::Exact(base),
+            // Compose: bound(x) + bound(y) statically; continuation DYNAMIC
+            2 => match pair(right) {
+                Some((x, y)) => {
+                    let total = base
+                        .saturating_add(child_bound(x).value())
+                        .saturating_add(child_bound(y).value());
+                    Cost::Dynamic(total)
+                }
+                None => Cost::Exact(base),
+            },
+            // Binary structural / look
+            3 | 5 | 6 | 7 | 9 | 10 | 11 | 12 | 14 | 17 => match pair(right) {
+                Some((a, b)) => Cost::sum(base, child_bound(a), child_bound(b)),
+                None => Cost::Exact(base),
+            },
+            // Branch: max of arms
+            4 => match pair(right) {
+                Some((test, rest)) => match pair(rest) {
+                    Some((yes, no)) => Cost::branch(
+                        base, child_bound(test), child_bound(yes), child_bound(no),
+                    ),
+                    None => Cost::Exact(base),
+                },
+                None => Cost::Exact(base),
+            },
+            // Unary patterns
+            8 | 13 | 15 => Cost::sum1(base, child_bound(right)),
+            // Call: bound(tag) statically; check is DYNAMIC
+            16 => match pair(right) {
+                Some((tag_f, _check_f)) => {
+                    let total = base.saturating_add(child_bound(tag_f).value());
+                    Cost::Dynamic(total)
+                }
+                None => Cost::Exact(base),
+            },
+            _ => Cost::Exact(base),
+        }
     }
 
     /// build hash noun: cell(cell(h0, h1), cell(h2, h3))
@@ -134,11 +219,11 @@ impl<const N: usize> Order<N> {
     pub fn count(&self) -> u32 { self.count }
 
     pub fn is_atom(&self, r: NounId) -> bool {
-        self.get(r).map_or(false, |e| matches!(e.inner, Noun::Atom { .. }))
+        self.get(r).is_some_and(|e| matches!(e.inner, Noun::Atom { .. }))
     }
 
     pub fn is_cell(&self, r: NounId) -> bool {
-        self.get(r).map_or(false, |e| matches!(e.inner, Noun::Cell { .. }))
+        self.get(r).is_some_and(|e| matches!(e.inner, Noun::Cell { .. }))
     }
 
     pub fn head(&self, r: NounId) -> Option<NounId> {

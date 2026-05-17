@@ -5,7 +5,7 @@ status: canonical
 
 ## overview
 
-the nox execution trace is the sequence of register states across all reduction steps. it IS the stark witness — no separate arithmetization. each row is one reduction step. each column is a register.
+the nox execution trace is the sequence of register states across all reduction steps. it IS the zheng witness — no separate arithmetization. each row is one reduction step. each column is a register.
 
 the trace layout is algebra-independent in structure (16 registers, power-of-2 rows) but per-instantiation in element size (each register holds one element of the instantiated field F). all concrete details below refer to the canonical instantiation: nox<Goldilocks, Z/2^32, Hemera>.
 
@@ -82,12 +82,24 @@ r0  = 0
 r1  = object NounId
 r2  = formula NounId
 r3  = result NounId               — NounId of the value at the addressed position
-r4  = noun polynomial commitment  — Lens commitment to the object noun polynomial
-r5  = axis index                  — evaluated axis address (integer)
-r6  = evaluation point            — binary encoding of axis index for Lens opening
-r7  = result value                — value at the addressed position
+r4  = object NounId               — repeated for Lens-opening wiring in zheng
+r5  = axis address                — evaluated axis address as raw u64
+r6  = depth traversed             — tree levels descended (0 for addr ≤ 1)
+r7  = result NounId               — NounId of the value at the addressed position
+r8  = budget_in
+r9  = budget_out = r8 - 1
+r10 = 0 (success) / error kind
+r11 = commitment_bytes[0..8]      — first  8 bytes of Lens commitment (LE u64)
+r12 = commitment_bytes[8..16]     — second 8 bytes of Lens commitment
+r13 = commitment_bytes[16..24]    — third  8 bytes of Lens commitment
+r14 = commitment_bytes[24..32]    — fourth 8 bytes of Lens commitment
+r15 = 0 (reserved)
 
-constraint: Lens opening proof verifies r7 = noun_poly(r6) (degree 1)
+r11-r14 are non-zero only when the executor's CallProvider implements axis_commitment().
+when absent (NullCalls / interpreter mode) they are zero; zheng skips commitment binding.
+
+constraint: r9 = r8 - 1 (budget, degree 1)
+            Lens opening verified via axis_acc (separate fold sequence in zheng)
 budget: r9 = r8 - 1
 note: circuit cost is 1 Lens opening (O(1)). interpreter traverses up to 63 tree
       levels (bounded by u64 address bits) — not a circuit concern.
@@ -424,56 +436,50 @@ decomposition (across the block):
 budget: r9 = r8 - 32 on final row only.
 ```
 
-### pattern 15: hash (multi-row, cost 300)
+### pattern 15: hash (multi-row, cost 25)
+
+25 consecutive rows, all with r0 = 15. Driven by [`hemera::StepSponge`]:
+24 Poseidon2 round rows (k = 0..23) plus a final squeeze row (k = 24).
+
+The input noun's cached structural digest (4 Goldilocks elements) is packed
+into the 8-element sponge rate; capacity slots are zero. Each round row
+records the post-round state. The squeeze row records the result NounId
+and the 4-element output digest extracted from the final state.
 
 ```
-~300 consecutive rows, all with r0 = 15.
+each round row k (k = 0..23):
+  r0  = 15
+  r1  = object NounId              — constant across the block
+  r2  = formula NounId             — constant across the block
+  r3  = 0 (set only on squeeze row)
+  r4..r7  = state[0..3]            — first 4 elements of post-round state
+  r8  = budget_in                  — constant across the block
+  r9  = 0 (set only on squeeze row)
+  r10..r13 = state[4..7]           — remaining rate elements
+  r14 = round index k              — 0..23
+  r15 = input NounId               — constant (for wiring)
 
-row 0 (absorption):
+squeeze row (k = 24):
   r0  = 15
   r1  = object NounId
   r2  = formula NounId
-  r3  = result NounId              — (set on final row)
-  r4  = input NounId               — the noun to hash
-  r5  = domain tag                 — domain separation constant (capacity[11])
-  r6  = 0 (not yet computed)
-  r7  = 0 (unused)
-  r10 = sponge state[0]            — initialized from capacity constants
-  r11 = sponge state[1]
-  r12 = step counter               — 0
+  r3  = result NounId              — hash-noun cell(cell(h0,h1), cell(h2,h3))
+  r4..r7 = output digest h0..h3    — first 4 elements of final post-permutation state
+  r8  = budget_in
+  r9  = budget_out                 — = r8 - 25
+  r10..r13 = final_state[4..7]
+  r14 = 24                         — squeeze sentinel
+  r15 = input NounId
 
-rows 1-298 (round state progression):
-  r0  = 15
-  r1  = object NounId              — same across all rows
-  r2  = formula NounId             — same across all rows
-  r3  = result NounId              — (set on final row)
-  r4  = input NounId               — held constant (for wiring)
-  r5  = 0 (unused after absorption)
-  r6  = 0 (not yet computed)
-  r7  = 0 (unused)
-  r10 = round state element        — progresses through Poseidon2 rounds
-  r11 = round state element        — (8 full rounds + 16 partial rounds = 24 total)
-  r12 = step counter               — t
+transition constraints (rows 1..23):
+  full round (k ∈ {0,1,2,3,20,21,22,23}): add round constants on all 16 elements,
+    apply x^7 S-box (degree 7), MDS-light permutation
+  partial round (k ∈ 4..19): add constant to state[0] only, apply x^{-1}
+    S-box on state[0] (degree 2 via y*state[0] = 1), matmul_internal
 
-row 299 (squeeze / final):
-  r0  = 15
-  r1  = object NounId
-  r2  = formula NounId
-  r3  = result NounId
-  r4  = input NounId
-  r5  = 0 (unused)
-  r6  = H(input)[0]                — first element of 4-element hash output
-  r7  = H(input)[1]                — second element of hash output
-  r10 = H(input)[2]                — third element
-  r11 = H(input)[3]                — fourth element
-  r12 = 299                        — step counter
-
-transition constraints:
-  full round rows: degree 7 (s-box x^7 applied to all state elements)
-  partial round rows: degree 2 (s-box x^{-1} on one element, verified as x * y = 1)
-budget: r9 = r8 - 300 (on row 0; internal rows do not independently track budget)
-note: multi-row trace requires hemera step-by-step API. current implementation emits a
-      single summary row with output digest; full round-progression trace is deferred.
+init constraint (row 0): state initialized from rate input + initial MDS-light
+final constraint (squeeze): r3 = order.hash_noun(state[0..4])
+budget: r9 = r8 - 25 on squeeze row only.
 ```
 
 ### pattern 16: call (single-row, cost 1)
@@ -491,7 +497,7 @@ r7  = NounId(check_f)             — identity of the check formula (for wiring)
 constraint: r6 wired to check formula result row via CCS; result must be 0 (degree 1)
 budget: r9 = r8 - 1 (dispatch only; check cost in its own rows)
 note: r5 is the ONLY non-deterministic column in the entire trace. the verifier
-      checks constraint satisfaction via the stark proof, never executes the provider.
+      checks constraint satisfaction via the zheng proof, never executes the provider.
 ```
 
 ### pattern 17: look (single-row, cost 1)
@@ -547,7 +553,7 @@ single-row (cost 1): 0-7, 9, 16, 17 (axis through mul, eq, call, look)
 multi-row:           8 inv (64 rows), 10 lt (64 rows),
                      11 xor (32 rows), 12 and (32 rows),
                      13 not (32 rows), 14 shl (32 rows),
-                     15 hash (~300 rows)
+                     15 hash (25 rows: 24 rounds + 1 squeeze)
 ```
 
 see per-pattern register map above for row-by-row layout of multi-row patterns.
@@ -570,7 +576,7 @@ result link:  r3_t wired to the result NounId of the completed sub-computation
 single-row patterns:  r9 = r8 - 1            (1 per reduce call)
 axis:                 r9 = r8 - 1            (1 — O(1) Lens opening)
 inv:                  r9 = r8 - 64           (64 for square-and-multiply)
-hash:                 r9 = r8 - 300          (300 for Poseidon2 hemera)
+hash:                 r9 = r8 - 25           (24 Poseidon2 rounds + 1 squeeze)
 ```
 
 ## error and halt encoding
@@ -615,7 +621,7 @@ Brakedown commits to f. sumcheck verifies transition constraints. the verifier c
 
 ## self-verification
 
-the stark verifier is a nox program. with Brakedown (Merkle-free PCS), the verifier is pure field arithmetic — no Merkle paths, no FRI folding. Fiat-Shamir via hemera hash is the only non-field operation.
+the zheng verifier is a nox program. with Brakedown (Merkle-free PCS), the verifier is pure field arithmetic — no Merkle paths, no FRI folding. Fiat-Shamir via hemera hash is the only non-field operation.
 
 canonical verifier cost (from zheng specs):
 

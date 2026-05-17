@@ -15,7 +15,7 @@ noun = atom(F)
 atom: single element of the instantiated field F.
 cell: ordered pair of two nouns — a binary tree.
 
-a program is a noun. an object is a noun. the result is a noun. a cyberlink is a noun. a stark proof serialized for verification is a noun. one structure for everything.
+a program is a noun. an object is a noun. the result is a noun. a cyberlink is a noun. a zheng proof serialized for verification is a noun. one structure for everything.
 
 the noun model is parameterized by the field F. in the canonical instantiation (nox<Goldilocks, Z/2^32, Hemera>), F = F_p where p = 2^64 - 2^32 + 1. see vm.md for the instantiation model.
 
@@ -44,7 +44,7 @@ cell(16, constraint)    call
 cell(17, cell(ns, key))   look
 ```
 
-the distinction between code and data is purely contextual — the same noun can be an object in one reduction and a formula in another. this homoiconicity extends to the proof system: the stark proves that a specific noun (the formula) was applied to a specific noun (the object). the proof refers to the same binary tree structure that the execution operated on.
+the distinction between code and data is purely contextual — the same noun can be an object in one reduction and a formula in another. this homoiconicity extends to the proof system: the zheng proves that a specific noun (the formula) was applied to a specific noun (the object). the proof refers to the same binary tree structure that the execution operated on.
 
 ## axis addressing
 

@@ -2,7 +2,7 @@
 //! reduce(s, [2 [x y]], b) = reduce(reduce(s,x), reduce(s,y), b')
 
 use crate::noun::{Order, NounId};
-use crate::reduce::{reduce_inner, Outcome, ErrorKind, cell_pair, evaluate};
+use crate::reduce::{reduce_inner, Outcome, ErrorKind, cell_pair, evaluate_binary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
@@ -15,16 +15,18 @@ pub fn compose<const N: usize, T: Tracer>(
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (obj, budget) = match evaluate(order, object, a, budget, hints, tracer, depth) {
-        Ok(v) => v, Err(o) => return o,
-    };
-    let (frm, budget) = match evaluate(order, object, b, budget, hints, tracer, depth) {
+    // Initial phase: evaluate the two sub-formulas under the partition rule.
+    // Both arms are statically bounded (their bounds may themselves contain
+    // DYNAMIC markers, in which case evaluate_binary falls back to sequential).
+    let (obj, frm, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
     row.r[4] = obj as u64;
     row.r[5] = frm as u64;
     row.r[6] = a as u64;
     row.r[7] = b as u64;
+    // Continuation phase: reduce(obj, frm) is the dynamic-cost frontier.
+    // Sequential semantics — frm is only known now (runtime value).
     reduce_inner(order, obj, frm, budget, hints, tracer, depth + 1)
 }
 

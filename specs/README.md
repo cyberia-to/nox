@@ -32,6 +32,6 @@ nox depends on two companion crates:
 - nebu (~/git/nebu/rs) — Goldilocks field arithmetic. provides the F_p type and all field operations (add, sub, mul, inv, roots of unity). nox imports the field, it does not reimplement it.
 - hemera (~/git/hemera/rs) — Hemera hash (Poseidon2-Goldilocks). provides the sponge construction, domain-separated hashing, and Merkle-compatible mode. nox imports the hash, it does not reimplement it.
 
-zheng (~/git/zheng/) is a downstream consumer — it takes nox execution traces and produces stark proofs.
+zheng (~/git/zheng/) is a downstream consumer — it takes nox execution traces and produces zheng proofs.
 
 nox is frozen. no roadmap, no proposals. the specification is complete.

@@ -58,4 +58,17 @@ mod tests {
             o => panic!("{:?}", o),
         }
     }
+
+    /// (p - 1) + 1 = 0 (mod p) — boundary case for modular reduction.
+    #[test]
+    fn add_wraps_at_field_boundary() {
+        const P: u64 = 0xFFFF_FFFF_0000_0001;
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let formula = make_field_binop(&mut ar, 5, P - 1, 1);
+        match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(0)),
+            o => panic!("{:?}", o),
+        }
+    }
 }

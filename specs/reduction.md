@@ -104,29 +104,171 @@ Layer 3 (jets) preserves confluence — jets are observationally equivalent to t
 
 ## parallel reduction
 
-confluence enables safe parallelism. specific patterns have independent sub-computations:
+confluence enables safe parallelism. the parallel semantics is canonical
+— sequential evaluators implement the same rules as a single-threaded
+schedule. there is one reduction relation; "parallel" and "sequential"
+are scheduling choices over the same semantics. all conforming evaluators
+produce identical witnesses regardless of thread count.
+
+### cost bounds
+
+every formula has a statically computable upper bound `bound(t) ≥
+actual_cost(t)`. the bound is structural — a function of the formula
+tree alone:
 
 ```
-Pattern 2 (compose):  [2 [x y]]
-  reduce(o,x) ∥ reduce(o,y)  — INDEPENDENT
-  Then: reduce(result_x, result_y)
-
-Pattern 3 (cons):     [3 [a b]]
-  reduce(o,a) ∥ reduce(o,b)  — INDEPENDENT
-  Then: cell(result_a, result_b)
-
-Patterns 5-7, 9-12:   [op [a b]]
-  reduce(o,a) ∥ reduce(o,b)  — INDEPENDENT
-  Then: apply op
-
-Pattern 4 (branch):   [4 [t [c d]]]
-  reduce(o,t) first — MUST evaluate test before choosing
-  Then: ONE of reduce(o,c) or reduce(o,d)  — NOT parallel (lazy)
+bound(atom)             = 0
+bound([0 _])            = 1                                          -- axis
+bound([1 _])            = 1                                          -- quote
+bound([2 [x y]])        = 1 + bound(x) + bound(y) + DYNAMIC          -- compose
+bound([3 [a b]])        = 1 + bound(a) + bound(b)                    -- cons
+bound([4 [t [y n]]])    = 1 + bound(t) + max(bound(y), bound(n))     -- branch (lazy arms)
+bound([5 [a b]])        = 1 + bound(a) + bound(b)                    -- add
+bound([6 [a b]])        = 1 + bound(a) + bound(b)                    -- sub
+bound([7 [a b]])        = 1 + bound(a) + bound(b)                    -- mul
+bound([8 a])            = 64 + bound(a)                              -- inv
+bound([9 [a b]])        = 1 + bound(a) + bound(b)                    -- eq
+bound([10 [a b]])       = 64 + bound(a) + bound(b)                   -- lt
+bound([11 [a b]])       = 32 + bound(a) + bound(b)                   -- xor
+bound([12 [a b]])       = 32 + bound(a) + bound(b)                   -- and
+bound([13 a])           = 32 + bound(a)                              -- not
+bound([14 [a n]])       = 32 + bound(a) + bound(n)                   -- shl
+bound([15 a])           = 25 + bound(a)                              -- hash
+bound([16 [tag check]]) = 1 + bound(tag) + DYNAMIC                   -- call
+bound([17 [n k]])       = 1 + bound(n) + bound(k)                    -- look
 ```
 
-all binary arithmetic and bitwise patterns can evaluate both operands in parallel. branch is the only pattern that enforces sequential evaluation (test before choice).
+`DYNAMIC` is the dynamic-cost frontier marker. compose's third reduce
+and call's check-after-witness have value-dependent costs that cannot
+be bounded structurally; these execute sequentially after the
+parallelizable initial phase.
 
-NOTE on budget and parallelism: the formal reduction rules thread budget sequentially (f → f1 → f2), which contradicts parallel evaluation of sub-expressions. for parallelism to work, the resource budget must be partitioned between parallel branches (e.g. split f equally, or pre-compute sub-expression costs). the partitioning scheme is not yet specified. confluence guarantees the result is identical regardless of evaluation order, but the budget accounting must produce the same final value. this is an open specification gap.
+### partitioning rule (binary structural patterns)
+
+for `op ∈ {3, 5, 6, 7, 9, 10, 11, 12, 14, 17}` (both arms always
+evaluated, no dynamic continuation):
+
+```
+reduce(o, [op [a b]], f) =
+  if f < cost(op)                          then Halt(f)
+  if bound(a) + bound(b) + cost(op) > f    then sequential_fallback(o, [op [a b]], f)
+  else
+    let (va, ra) = reduce(o, a, bound(a))     -- can run in parallel
+    let (vb, rb) = reduce(o, b, bound(b))     -- can run in parallel
+    let used = cost(op) + (bound(a) - ra) + (bound(b) - rb)
+    return (op(va, vb), f - used)
+```
+
+each branch receives `bound(branch)` budget, not the parent's remaining.
+unused budget (`bound - remaining`) is refunded to the caller at join.
+since `actual_cost(branch) ≤ bound(branch)` by construction, no branch
+halts internally when `bound(parent) ≤ f`.
+
+the sequential fallback executes when `bound(parent) > f`. it threads
+budget the classical way and may halt at any inner step. this is the
+ONLY path where parallel and sequential reductions traverse different
+code. by definition, when bound > f, the program halts in any
+implementation; the fallback preserves the exact halt point and
+remaining value for diagnostic precision.
+
+### branch (4) — lazy arm with static slack
+
+```
+reduce(o, [4 [t [y n]]], f) =
+  if f < 1                                                    then Halt(f)
+  if 1 + bound(t) + max(bound(y), bound(n)) > f               then sequential_fallback
+  else
+    let (vt, rt) = reduce(o, t, bound(t))
+    let chosen   = if vt == 0 then y else n
+    let (vc, rc) = reduce(o, chosen, bound(chosen))
+    let slack    = max(bound(y), bound(n)) - bound(chosen)    -- unchosen-arm refund
+    let used     = 1 + (bound(t) - rt) + (bound(chosen) - rc)
+    return (vc, f - used)
+```
+
+the unchosen arm's bound is refunded as slack — observable in the
+parent's remaining budget. this is intentional: the caller pre-paid for
+"either arm" via `max()`, and the cheaper arm's saving accrues to the
+caller.
+
+### compose (2) — partial parallelism
+
+```
+reduce(o, [2 [x y]], f) =
+  if f < 1                          then Halt(f)
+  if bound(x) + bound(y) + 1 > f    then sequential_fallback
+  else
+    let (rx, rrx) = reduce(o, x, bound(x))
+    let (ry, rry) = reduce(o, y, bound(y))
+    let f_after_init = f - 1 - (bound(x) - rrx) - (bound(y) - rry)
+    sequential_reduce(rx, ry, f_after_init)    -- third reduce: dynamic cost, sequential
+```
+
+### call (16) — sequential after witness arrival
+
+```
+reduce(o, [16 [tag check]], f) =
+  if f < 1                          then Halt(f)
+  let (vtag, rt) = reduce(o, tag, bound(tag))
+  let witness    = provider(vtag, o)
+  if witness is None                then Halt(f - 1 - (bound(tag) - rt))
+  let witness_object = cell(witness, o)
+  let f_after_witness = f - 1 - (bound(tag) - rt)
+  sequential_reduce(witness_object, check, f_after_witness)
+```
+
+### unary parallel patterns (8, 13, 15, 17)
+
+```
+reduce(o, [op a], f) =
+  if f < cost(op)                  then Halt(f)
+  if bound(a) + cost(op) > f       then sequential_fallback
+  else
+    let (va, ra) = reduce(o, a, bound(a))
+    let used = cost(op) + (bound(a) - ra)
+    return (op(va), f - used)
+```
+
+single sub-formula; no internal parallelism at this rule, though `a`
+itself may contain parallel sub-formulas.
+
+### sequential-equivalence theorem (T1)
+
+for every formula `t`, object `o`, and budget `f`:
+
+  `reduce_serial(o, t, f) = reduce_parallel(o, t, f)`
+
+on every observable field — `Result` variant, result `Noun`, remaining
+budget, error kind. the two implementations differ only in scheduling.
+
+**proof sketch**: by structural induction on `t`. base cases (atom,
+quote) are identical. inductive cases when `bound(t) ≤ f`: each branch
+has enough budget by `bound ≥ actual_cost`, so neither halts; the
+combined `used` value equals the sequential sum-of-costs. when
+`bound(t) > f`: both implementations take the sequential fallback path,
+identical by definition. compose and call: parallel phase by IH; sequential
+continuation phase identical. ∎
+
+**why this works where naive parallelism fails**: naive parallel runs
+each branch with the parent's `f - c` budget. when budgets are tight,
+branch `b` sees more budget than sequential would give it (sequential
+gives `f - c - cost(a)`), so `b` may succeed in parallel where it halts
+in sequential. by partitioning via `bound`, each branch sees the same
+budget regardless of scheduling, and the equivalence holds.
+
+### consensus implications
+
+- the witness is parallel-canonical: rows sorted by structural index
+  (position in the reduce tree).
+- per-row budget values reflect the partitioned scheme: each row's
+  `r[8]` = `bound(this_node)`, `r[9]` = `bound - actual_cost`.
+- the parent row's `r[9]` is the **caller's** view: `f - used`.
+- two evaluators on different hardware (1 thread vs N threads) produce
+  identical witness hashes. this is the consensus property.
+
+see `specs/props/parallel-reduction.md` for the full research write-up,
+including counter-examples to rejected schemes (full-budget speculative,
+equal-split, etc.) and the implementation plan.
 
 ## evaluation scope
 
@@ -173,7 +315,7 @@ one sub-expression evaluated unconditionally, then the primitive operation appli
 ```
 reduce(o, [8 a], f)  = let (v, f1) = reduce(o, a, f-64);  (v⁻¹, f1)
 reduce(o, [13 a], f) = let (v, f1) = reduce(o, a, f-32);  (¬v, f1)
-reduce(o, [15 a], f) = let (v, f1) = reduce(o, a, f-300); (H(v), f1)
+reduce(o, [15 a], f) = let (v, f1) = reduce(o, a, f-25); (H(v), f1)
 reduce(o, [17 [n k]], f) = let (vn, f1) = reduce(o, n, f-1);
                            let (vk, f2) = reduce(o, k, f1);
                            bbg.read(vn, vk)
@@ -226,20 +368,20 @@ order(ν, object, formula, τ, a, v, t) → result
   2. lookup axon in cybergraph
      → verified result exists: return cached (zero compute)
      → no result: reduce(object, formula, budget=(τ,a)), prove
-  3. link order_axon → result (with stark proof)
+  3. link order_axon → result (with zheng proof)
   4. return result
 ```
 
 two [[cyberlinks]] per computation:
 - order: neuron links formula → object (with payment τ,a and valence v)
-- answer: device links order_axon → result (with stark proof)
+- answer: device links order_axon → result (with zheng proof)
 
 the order axon is a [[particle]] (axiom A6). multiple devices can answer the same order — competing results. the [[coupling|ICBS]] market determines which answer the graph trusts.
 
 properties:
 - universal: any node in the network can contribute and consume
 - permanent: results never change (confluence guarantees determinism)
-- verifiable: result hash is checkable against the stark proof
+- verifiable: result hash is checkable against the zheng proof
 - the more the graph grows, the fewer computations actually execute
 
 layer scope:
@@ -317,7 +459,7 @@ canonical (nox<Goldilocks, Z/2^32, Hemera>):
 - and:  32 (bit decomposition)
 - not:  32 (bit decomposition; unary)
 - shl:  32 (bit decomposition with cross-row shift binding)
-- hash: 300 (Poseidon2 permutation — 72 rounds + absorption/squeeze)
+- hash: 25 (Poseidon2 permutation — 24 rounds + 1 squeeze; row count = cost)
 
 all other patterns cost exactly 1 per reduce() call.
 
@@ -403,6 +545,6 @@ proof cost: ZERO additional (accumulated during execution)
 
 the signal is the unit of state change for [[BBG]]. it flows from device through [[structural-sync|structural sync]] (layers 1-5) to the network.
 
-## stark integration
+## zheng integration
 
-the reduction trace (sequence of pattern applications with register states) IS the stark witness. the trace layout is per-instantiation — column widths depend on F element size. see trace.md for the register layout and AIR constraints. see jets.md for optimized verification. see [[zheng]] recursion.md for HyperNova folding mechanics.
+the reduction trace (sequence of pattern applications with register states) IS the zheng witness. the trace layout is per-instantiation — column widths depend on F element size. see trace.md for the register layout and AIR constraints. see jets.md for optimized verification. see [[zheng]] recursion.md for HyperNova folding mechanics.

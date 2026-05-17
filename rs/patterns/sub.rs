@@ -46,4 +46,17 @@ mod tests {
             o => panic!("{:?}", o),
         }
     }
+
+    /// 0 - 1 = p - 1 (mod p) — boundary case for modular subtraction.
+    #[test]
+    fn sub_underflow_wraps() {
+        const P: u64 = 0xFFFF_FFFF_0000_0001;
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let formula = make_field_binop(&mut ar, 6, 0, 1);
+        match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(P - 1)),
+            o => panic!("{:?}", o),
+        }
+    }
 }

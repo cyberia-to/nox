@@ -4,7 +4,7 @@
 //! per-row constraint: c_k = 1 - a_k (with a_k boolean).
 
 use crate::noun::{Order, NounId, Tag};
-use crate::reduce::{Outcome, ErrorKind, evaluate_word, emit_bit_row, WORD_MASK};
+use crate::reduce::{Outcome, ErrorKind, evaluate_unary_word, emit_bit_row, WORD_MASK};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use nebu::Goldilocks;
@@ -14,7 +14,7 @@ pub fn not<const N: usize, T: Tracer>(
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
-    let (a, budget) = match evaluate_word(order, object, body, budget, hints, tracer, depth) {
+    let (a, budget) = match evaluate_unary_word(order, object, body, budget, hints, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
     let c = (!a) & WORD_MASK;

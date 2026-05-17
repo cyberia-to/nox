@@ -1,7 +1,13 @@
 # jet specification
 
 version: 0.4
-status: canonical
+status: canonical (specification) / **deferred (implementation)**
+
+> **Implementation status: deferred post-genesis.** The jet mechanism, registry,
+> and individual jet specifications in `specs/jets/` describe the target Layer 3
+> optimization layer. The current nox crate (`rs/`) exposes none of these — only
+> Layer 1 (16 patterns) and Layer 2 (call + look) are implemented. Pure Layer 1
+> expansions of every jet are sound and the only path the interpreter takes today.
 
 ## overview
 
@@ -94,7 +100,7 @@ the stack is continuous: nox pattern → software jet → GFP hardware primitive
 
 ## self-verification
 
-the stark verifier for nox is itself a nox program. with Brakedown (Merkle-free PCS), the verifier is pure field arithmetic — ~825 constraints (CCS jet + batch) or ~89 (algebraic Fiat-Shamir). recursion to arbitrary depth, constant proof size at every level. the decider jet reduces all-history verification to 89 constraints. see zheng/specs/verifier.md for canonical costs.
+the zheng verifier for nox is itself a nox program. with Brakedown (Merkle-free PCS), the verifier is pure field arithmetic — ~825 constraints (CCS jet + batch) or ~89 (algebraic Fiat-Shamir). recursion to arbitrary depth, constant proof size at every level. the decider jet reduces all-history verification to 89 constraints. see zheng/specs/verifier.md for canonical costs.
 
 ## domain-specific jets
 

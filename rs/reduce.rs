@@ -13,7 +13,34 @@ use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::patterns;
 
-// ── pattern tags ──────────────────────────────────────────────
+// ── pattern tags + per-pattern costs ──────────────────────────
+//
+// Indexed by tag; row count equals cost for multi-row patterns so zheng
+// constrains one soundness witness slot per budget unit. Keep this table
+// in sync with specs/trace.md and specs/patterns/README.md cost column.
+
+const COSTS: [u64; 18] = [
+    1,   // 0  axis
+    1,   // 1  quote
+    1,   // 2  compose
+    1,   // 3  cons
+    1,   // 4  branch
+    1,   // 5  add
+    1,   // 6  sub
+    1,   // 7  mul
+    64,  // 8  inv   — Fermat exponent, one row per bit of p-2
+    1,   // 9  eq
+    64,  // 10 lt    — bit decomp of two 64-bit canonical reprs
+    32,  // 11 xor   — bit decomp of 32-bit word
+    32,  // 12 and
+    32,  // 13 not
+    32,  // 14 shl
+    25,  // 15 hash  — 24 Poseidon2 rounds + 1 squeeze row
+    1,   // 16 call
+    1,   // 17 look
+];
+
+// Tags that emit their own rows (cost > 1 by construction).
 const TAG_INV:  u64 = 8;
 const TAG_LT:   u64 = 10;
 const TAG_XOR:  u64 = 11;
@@ -22,22 +49,17 @@ const TAG_NOT:  u64 = 13;
 const TAG_SHL:  u64 = 14;
 const TAG_HASH: u64 = 15;
 
-// ── budget costs ──────────────────────────────────────────────
-// for multi-row patterns: row count = cost. one row per bit of soundness
-// witness so zheng can constrain bitwise / comparison gadgets.
-const COST_INV:     u64 = 64;
-const COST_LT:      u64 = 64;
-const COST_XOR:     u64 = 32;
-const COST_AND:     u64 = 32;
-const COST_NOT:     u64 = 32;
-const COST_SHL:     u64 = 32;
-const COST_HASH:    u64 = 300;
-const COST_DEFAULT: u64 = 1;
-
 // ── word arithmetic ───────────────────────────────────────────
 pub(crate) const WORD_MASK: u64 = 0xFFFF_FFFF;
 
 // ── safety ────────────────────────────────────────────────────
+//
+// MAX_DEPTH bounds the recursion of reduce_inner. Each frame holds a
+// TraceRow (128 bytes) plus locals (~few hundred bytes). With macOS's
+// default 8 MiB main-thread stack and the CLI's 32 MiB worker thread,
+// 1000 frames is well within budget on every supported target. The
+// cap exists so malformed deeply-recursive formulas terminate predictably
+// instead of stack-overflowing.
 const MAX_DEPTH: u64 = 1000;
 
 #[derive(Debug)]
@@ -58,16 +80,8 @@ pub enum ErrorKind {
 }
 
 fn cost(tag: u64) -> u64 {
-    match tag {
-        TAG_INV  => COST_INV,
-        TAG_LT   => COST_LT,
-        TAG_XOR  => COST_XOR,
-        TAG_AND  => COST_AND,
-        TAG_NOT  => COST_NOT,
-        TAG_SHL  => COST_SHL,
-        TAG_HASH => COST_HASH,
-        _        => COST_DEFAULT,
-    }
+    // unknown tags get COST_DEFAULT; the dispatch later returns Malformed
+    if (tag as usize) < COSTS.len() { COSTS[tag as usize] } else { 1 }
 }
 
 /// public entry point — depth starts at 0
@@ -130,7 +144,7 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
     );
 
     let outcome = match tag {
-        0  => patterns::axis::axis(order, object, body, budget, &mut row),
+        0  => patterns::axis::axis(order, object, body, budget, hints, &mut row),
         1  => patterns::quote::quote(body, budget, &mut row),
         2  => patterns::compose::compose(order, object, body, budget, hints, tracer, depth, &mut row),
         3  => patterns::cons::cons(order, object, body, budget, hints, tracer, depth, &mut row),
@@ -212,33 +226,137 @@ pub(crate) fn evaluate<const N: usize, T: Tracer>(
     }
 }
 
-pub(crate) fn evaluate_field<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-) -> core::result::Result<(Goldilocks, u64), Outcome> {
-    let (result, budget) = evaluate(order, object, formula, budget, hints, tracer, depth)?;
-    match order.atom_value(result) {
-        Some((v, Tag::Field)) | Some((v, Tag::Word)) => Ok((v, budget)),
-        _ => Err(Outcome::Error(ErrorKind::TypeError)),
-    }
-}
-
-pub(crate) fn evaluate_word<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-) -> core::result::Result<(u64, u64), Outcome> {
-    let (result, budget) = evaluate(order, object, formula, budget, hints, tracer, depth)?;
-    match order.atom_value(result) {
-        Some((v, Tag::Word)) => Ok((v.as_u64(), budget)),
-        Some((v, Tag::Field)) if v.as_u64() < (1u64 << 32) => Ok((v.as_u64(), budget)),
-        _ => Err(Outcome::Error(ErrorKind::TypeError)),
-    }
-}
-
 pub(crate) fn make_field<const N: usize>(order: &mut Order<N>, v: Goldilocks, budget: u64) -> Outcome {
     match order.atom(v, Tag::Field) {
         Some(r) => Outcome::Ok(r, budget),
         None => Outcome::Error(ErrorKind::Unavailable),
+    }
+}
+
+// === bound-partitioned evaluation helpers (option β scheduling) =============
+//
+// `evaluate_binary` / `evaluate_unary` apply the parallel-canonical
+// partitioning rule from specs/reduction.md §parallel reduction:
+//
+// - If both children have static (non-Dynamic) bounds and their sum fits
+//   the current budget, each child is evaluated with its OWN bound() as
+//   the budget. Unused budget is refunded at the join. This yields the
+//   identical witness regardless of execution scheduling — sequential
+//   single-thread runs and a future parallel scheduler produce the same
+//   per-row budget values.
+// - If any child is Dynamic, or the bound sum exceeds the parent's
+//   budget, the helper falls back to classical sequential threading
+//   (f → f1 → f2). This path agrees with current sequential semantics
+//   and preserves the precise halt point.
+
+/// Evaluate two sub-formulas under the parallel-canonical partition rule.
+/// Returns (val_a, val_b, remaining_budget_for_parent).
+pub(crate) fn evaluate_binary<const N: usize, T: Tracer>(
+    order: &mut Order<N>, object: NounId,
+    a: NounId, b: NounId, budget: u64,
+    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+) -> core::result::Result<(NounId, NounId, u64), Outcome> {
+    let ba_cost = crate::bound::bound(order, a);
+    let bb_cost = crate::bound::bound(order, b);
+    let ba = ba_cost.value();
+    let bb = bb_cost.value();
+    // Partition only when both sub-formulas have static bounds AND the sum
+    // fits the available budget. Saturating add prevents overflow on
+    // pathologically large bounds.
+    let can_partition = !ba_cost.is_dynamic()
+        && !bb_cost.is_dynamic()
+        && ba.saturating_add(bb) <= budget;
+
+    if can_partition {
+        let (va, ra) = evaluate(order, object, a, ba, hints, tracer, depth)?;
+        let (vb, rb) = evaluate(order, object, b, bb, hints, tracer, depth)?;
+        let used = (ba - ra).saturating_add(bb - rb);
+        Ok((va, vb, budget - used))
+    } else {
+        let (va, b1) = evaluate(order, object, a, budget, hints, tracer, depth)?;
+        let (vb, b2) = evaluate(order, object, b, b1, hints, tracer, depth)?;
+        Ok((va, vb, b2))
+    }
+}
+
+/// Evaluate a single sub-formula under the partition rule.
+/// Returns (val, remaining_budget_for_parent).
+pub(crate) fn evaluate_unary<const N: usize, T: Tracer>(
+    order: &mut Order<N>, object: NounId, a: NounId, budget: u64,
+    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+) -> core::result::Result<(NounId, u64), Outcome> {
+    let ba_cost = crate::bound::bound(order, a);
+    let ba = ba_cost.value();
+    let can_partition = !ba_cost.is_dynamic() && ba <= budget;
+
+    if can_partition {
+        let (va, ra) = evaluate(order, object, a, ba, hints, tracer, depth)?;
+        Ok((va, budget - (ba - ra)))
+    } else {
+        evaluate(order, object, a, budget, hints, tracer, depth)
+    }
+}
+
+/// Evaluate two field-typed sub-formulas with partitioning.
+pub(crate) fn evaluate_binary_field<const N: usize, T: Tracer>(
+    order: &mut Order<N>, object: NounId,
+    a: NounId, b: NounId, budget: u64,
+    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+) -> core::result::Result<(Goldilocks, Goldilocks, u64), Outcome> {
+    let (ra, rb, remaining) = evaluate_binary(order, object, a, b, budget, hints, tracer, depth)?;
+    let va = match order.atom_value(ra) {
+        Some((v, Tag::Field)) | Some((v, Tag::Word)) => v,
+        _ => return Err(Outcome::Error(ErrorKind::TypeError)),
+    };
+    let vb = match order.atom_value(rb) {
+        Some((v, Tag::Field)) | Some((v, Tag::Word)) => v,
+        _ => return Err(Outcome::Error(ErrorKind::TypeError)),
+    };
+    Ok((va, vb, remaining))
+}
+
+/// Evaluate two word-typed sub-formulas with partitioning.
+pub(crate) fn evaluate_binary_word<const N: usize, T: Tracer>(
+    order: &mut Order<N>, object: NounId,
+    a: NounId, b: NounId, budget: u64,
+    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+) -> core::result::Result<(u64, u64, u64), Outcome> {
+    let (ra, rb, remaining) = evaluate_binary(order, object, a, b, budget, hints, tracer, depth)?;
+    let va = match order.atom_value(ra) {
+        Some((v, Tag::Word)) => v.as_u64(),
+        Some((v, Tag::Field)) if v.as_u64() < (1u64 << 32) => v.as_u64(),
+        _ => return Err(Outcome::Error(ErrorKind::TypeError)),
+    };
+    let vb = match order.atom_value(rb) {
+        Some((v, Tag::Word)) => v.as_u64(),
+        Some((v, Tag::Field)) if v.as_u64() < (1u64 << 32) => v.as_u64(),
+        _ => return Err(Outcome::Error(ErrorKind::TypeError)),
+    };
+    Ok((va, vb, remaining))
+}
+
+/// Evaluate a single field-typed sub-formula with partitioning.
+pub(crate) fn evaluate_unary_field<const N: usize, T: Tracer>(
+    order: &mut Order<N>, object: NounId, a: NounId, budget: u64,
+    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+) -> core::result::Result<(Goldilocks, u64), Outcome> {
+    let (ra, remaining) = evaluate_unary(order, object, a, budget, hints, tracer, depth)?;
+    match order.atom_value(ra) {
+        Some((v, Tag::Field)) | Some((v, Tag::Word)) => Ok((v, remaining)),
+        _ => Err(Outcome::Error(ErrorKind::TypeError)),
+    }
+}
+
+/// Evaluate a single word-typed sub-formula with partitioning.
+pub(crate) fn evaluate_unary_word<const N: usize, T: Tracer>(
+    order: &mut Order<N>, object: NounId, a: NounId, budget: u64,
+    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+) -> core::result::Result<(u64, u64), Outcome> {
+    let (ra, remaining) = evaluate_unary(order, object, a, budget, hints, tracer, depth)?;
+    match order.atom_value(ra) {
+        Some((v, Tag::Word)) => Ok((v.as_u64(), remaining)),
+        Some((v, Tag::Field)) if v.as_u64() < (1u64 << 32) => Ok((v.as_u64(), remaining)),
+        _ => Err(Outcome::Error(ErrorKind::TypeError)),
     }
 }
 
@@ -252,10 +370,7 @@ pub(crate) fn field_binary_op<const N: usize, T: Tracer>(
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (va, budget) = match evaluate_field(order, object, a, budget, hints, tracer, depth) {
-        Ok(v) => v, Err(o) => return o,
-    };
-    let (vb, budget) = match evaluate_field(order, object, b, budget, hints, tracer, depth) {
+    let (va, vb, budget) = match evaluate_binary_field(order, object, a, b, budget, hints, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
     let vc = op(va, vb);
@@ -295,4 +410,115 @@ pub(crate) fn emit_bit_row<T: Tracer>(
         r.r[9] = budget_out;
     }
     tracer.record(r);
+}
+
+#[cfg(test)]
+mod tests {
+    extern crate alloc;
+    use alloc::vec::Vec;
+    use super::*;
+    use crate::call::NullCalls;
+    use crate::trace::{NoTrace, VecTrace};
+    use nebu::Goldilocks;
+
+    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+
+    /// reduce on a formula that's an atom (not a cell) is Malformed,
+    /// and the error path emits a synthetic trace row.
+    #[test]
+    fn atom_formula_is_malformed_and_records_row() {
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let formula = ar.atom(g(1), Tag::Field).unwrap(); // atom formula
+        let mut tr = VecTrace::default();
+        match reduce(&mut ar, obj, formula, 100, &NullCalls, &mut tr) {
+            Outcome::Error(ErrorKind::Malformed) => {}
+            o => panic!("expected Malformed, got {:?}", o),
+        }
+        assert_eq!(tr.0.len(), 1, "error path emits one synthetic row");
+        assert_eq!(tr.0[0].col(10), ErrorKind::Malformed as u64);
+    }
+
+    /// Budget less than the dispatch cost halts before pattern executes
+    /// and emits a synthetic halt row.
+    #[test]
+    fn budget_below_cost_halts_and_records_row() {
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let t15 = ar.atom(g(15), Tag::Field).unwrap();
+        let t1 = ar.atom(g(1), Tag::Field).unwrap();
+        let body = ar.cell(t1, obj).unwrap();
+        let formula = ar.cell(t15, body).unwrap();
+        let mut tr = VecTrace::default();
+        // hash cost = 25, budget = 10 → halt before dispatching
+        match reduce(&mut ar, obj, formula, 10, &NullCalls, &mut tr) {
+            Outcome::Halt(b) => assert_eq!(b, 10),
+            o => panic!("expected Halt(10), got {:?}", o),
+        }
+        assert_eq!(tr.0.len(), 1, "halt path emits one synthetic row");
+        assert_eq!(tr.0[0].col(0), 15);
+        assert_eq!(tr.0[0].col(8), 10);
+        assert_eq!(tr.0[0].col(9), 10);
+    }
+
+    /// Construct a small nested compose chain. compose's third reduce
+    /// `reduce(obj, frm)` operates on the runtime result of the second
+    /// sub-expression. When that result is an atom (not a cell), reduce_inner
+    /// returns Malformed. The chain only needs to be deep enough that the
+    /// reducer actually walks into the malformed continuation.
+    #[test]
+    fn malformed_compose_continuation_returns_malformed() {
+        let mut ar = Order::<256>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let t2 = ar.atom(g(2), Tag::Field).unwrap();
+        let t1 = ar.atom(g(1), Tag::Field).unwrap();
+        let zero = ar.atom(g(0), Tag::Field).unwrap();
+        let quote_zero = ar.cell(t1, zero).unwrap();
+        // [2 [[1 0] [1 0]]] — compose with two quote-zero sub-formulas.
+        // After evaluation: obj=0, frm=0 → reduce_inner(0, 0) is Malformed.
+        let body = ar.cell(quote_zero, quote_zero).unwrap();
+        let formula = ar.cell(t2, body).unwrap();
+        match reduce(&mut ar, obj, formula, 1_000_000, &NullCalls, &mut NoTrace) {
+            Outcome::Error(ErrorKind::Malformed) => {}
+            o => panic!("expected Malformed from compose's atom-formula continuation, got {:?}", o),
+        }
+    }
+
+    /// Public reduce() returns Outcome::Ok for a trivial formula.
+    #[test]
+    fn ok_variant_returns_result() {
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let t1 = ar.atom(g(1), Tag::Field).unwrap();
+        let v = ar.atom(g(42), Tag::Field).unwrap();
+        let formula = ar.cell(t1, v).unwrap();
+        match reduce(&mut ar, obj, formula, 10, &NullCalls, &mut NoTrace) {
+            Outcome::Ok(r, b) => {
+                assert_eq!(ar.atom_value(r).unwrap().0, g(42));
+                assert_eq!(b, 9, "quote costs 1");
+            }
+            o => panic!("{:?}", o),
+        }
+    }
+
+    /// Cost table is in sync with the dispatch arm count.
+    #[test]
+    fn cost_table_length_matches_dispatch() {
+        // 18 patterns (0..=17). COSTS array must have exactly 18 entries.
+        let _: [u64; 18] = COSTS;
+    }
+
+    /// Cost lookups for known multi-row tags return the multi-row cost.
+    #[test]
+    fn cost_table_multi_row_values() {
+        assert_eq!(cost(8), 64);    // inv
+        assert_eq!(cost(10), 64);   // lt
+        assert_eq!(cost(11), 32);   // xor
+        assert_eq!(cost(15), 25);   // hash (24 rounds + 1 squeeze)
+        assert_eq!(cost(99), 1);    // unknown tag → default
+    }
+
+    // suppress dead-warning on alloc helper
+    #[test]
+    fn _vec_used() { let _: Vec<u64> = Vec::new(); }
 }

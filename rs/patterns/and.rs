@@ -4,7 +4,7 @@
 //! c_k = a_k * b_k, with row-linking sum(2^k * a_k) = a etc.
 
 use crate::noun::{Order, NounId, Tag};
-use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_word, emit_bit_row, WORD_MASK};
+use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary_word, emit_bit_row, WORD_MASK};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use nebu::Goldilocks;
@@ -18,10 +18,7 @@ pub fn and<const N: usize, T: Tracer>(
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (a, budget) = match evaluate_word(order, object, af, budget, hints, tracer, depth) {
-        Ok(v) => v, Err(o) => return o,
-    };
-    let (b, budget) = match evaluate_word(order, object, bf, budget, hints, tracer, depth) {
+    let (a, b, budget) = match evaluate_binary_word(order, object, af, bf, budget, hints, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
     let c = (a & b) & WORD_MASK;

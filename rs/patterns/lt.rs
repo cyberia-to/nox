@@ -14,7 +14,7 @@
 
 use nebu::Goldilocks;
 use crate::noun::{Order, NounId, Tag};
-use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_field};
+use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
@@ -27,10 +27,7 @@ pub fn lt<const N: usize, T: Tracer>(
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (va, budget) = match evaluate_field(order, object, af, budget, hints, tracer, depth) {
-        Ok(v) => v, Err(o) => return o,
-    };
-    let (vb, budget) = match evaluate_field(order, object, bf, budget, hints, tracer, depth) {
+    let (va, vb, budget) = match evaluate_binary_field(order, object, af, bf, budget, hints, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
     let a = va.as_u64();

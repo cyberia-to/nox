@@ -7,7 +7,7 @@
 
 use nebu::Goldilocks;
 use crate::noun::{Order, NounId};
-use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate, make_field};
+use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary, make_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
@@ -20,10 +20,7 @@ pub fn eq<const N: usize, T: Tracer>(
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (ra, budget) = match evaluate(order, object, a, budget, hints, tracer, depth) {
-        Ok(v) => v, Err(o) => return o,
-    };
-    let (rb, budget) = match evaluate(order, object, b, budget, hints, tracer, depth) {
+    let (ra, rb, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
     let da = match order.digest(ra) {
@@ -99,6 +96,52 @@ mod tests {
         let mut ar = Order::<1024>::new();
         let obj = ar.atom(g(0), Tag::Field).unwrap();
         let formula = make_eq(&mut ar, 5, 7);
+        match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(1)),
+            o => panic!("{:?}", o),
+        }
+    }
+
+    /// formula = [9 [[1 (1,2)] [1 (1,2)]]] — quote two structurally-equal cells.
+    /// Hash-cons means both sub-quotes resolve to the same NounId, but the test
+    /// is meaningful: the eq pattern must work on cells via digest comparison.
+    #[test]
+    fn eq_cells_structurally_equal_returns_zero() {
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let one = ar.atom(g(1), Tag::Field).unwrap();
+        let two = ar.atom(g(2), Tag::Field).unwrap();
+        let cell_a = ar.cell(one, two).unwrap();
+        let cell_b = ar.cell(one, two).unwrap();
+        assert_eq!(cell_a, cell_b, "hash-cons collapses identical cells");
+        let t1 = ar.atom(g(1), Tag::Field).unwrap();
+        let qa = ar.cell(t1, cell_a).unwrap();
+        let qb = ar.cell(t1, cell_b).unwrap();
+        let body = ar.cell(qa, qb).unwrap();
+        let t9 = ar.atom(g(9), Tag::Field).unwrap();
+        let formula = ar.cell(t9, body).unwrap();
+        match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(0)),
+            o => panic!("{:?}", o),
+        }
+    }
+
+    /// Cells with different contents — verify digest path returns 1.
+    #[test]
+    fn eq_cells_different_returns_one() {
+        let mut ar = Order::<1024>::new();
+        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let one = ar.atom(g(1), Tag::Field).unwrap();
+        let two = ar.atom(g(2), Tag::Field).unwrap();
+        let three = ar.atom(g(3), Tag::Field).unwrap();
+        let cell_a = ar.cell(one, two).unwrap();
+        let cell_b = ar.cell(one, three).unwrap();
+        let t1 = ar.atom(g(1), Tag::Field).unwrap();
+        let qa = ar.cell(t1, cell_a).unwrap();
+        let qb = ar.cell(t1, cell_b).unwrap();
+        let body = ar.cell(qa, qb).unwrap();
+        let t9 = ar.atom(g(9), Tag::Field).unwrap();
+        let formula = ar.cell(t9, body).unwrap();
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(1)),
             o => panic!("{:?}", o),

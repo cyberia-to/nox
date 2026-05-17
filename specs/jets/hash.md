@@ -14,7 +14,7 @@ committed in genesis BBG state.
 
 | name | signature | exec cost | constraints | pure cost |
 |------|-----------|-----------|-------------|-----------|
-| hash | hash(x) → 4×F_p | 300 | ~736 | ~1,000 |
+| hash | hash(x) → 4×F_p | 25 | ~736 | ~1,000 |
 
 ## where hash is used
 
@@ -26,13 +26,13 @@ committed in genesis BBG state.
 | structural hash | every noun | H(cell) = H(H(left) ‖ H(right)) |
 | cross-algebra boundary | every type transition | hemera commitment at algebra crossing |
 
-hash is the most frequently executed jet in the system. without it, one Poseidon2 permutation = ~1,000 Layer 1 patterns. with it, 300 execution cost, ~736 STARK constraints.
+hash is the most frequently executed jet in the system. without it, one Poseidon2 permutation = ~1,000 Layer 1 patterns. with it, 25 execution cost (24 rounds + 1 squeeze), ~736 zheng constraints.
 
 ## the Hemera anchor
 
 all algebras compute natively in their own field. all algebras settle through Goldilocks via Hemera:
 
-- nox<F_p>: hash is native (300 budget cost)
+- nox<F_p>: hash is native (25 budget cost: 24 Poseidon2 rounds + 1 squeeze)
 - nox<F_p²>, nox<F_p³>, nox<F_p⁴>: hash operates on base field (native)
 - nox<F₂>: hash deferred to settlement boundary (~736 constraints at boundary)
 - nox<R_q>: hash operates on coefficient field F_p (native)

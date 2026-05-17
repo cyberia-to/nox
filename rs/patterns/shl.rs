@@ -14,7 +14,7 @@
 //! r12 = r11 per row; r11 ties to r10 of row (k - n).
 
 use crate::noun::{Order, NounId, Tag};
-use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_word, WORD_MASK};
+use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary_word, WORD_MASK};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use nebu::Goldilocks;
@@ -30,10 +30,7 @@ pub fn shl<const N: usize, T: Tracer>(
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (a, budget) = match evaluate_word(order, object, af, budget, hints, tracer, depth) {
-        Ok(v) => v, Err(o) => return o,
-    };
-    let (n, budget) = match evaluate_word(order, object, nf, budget, hints, tracer, depth) {
+    let (a, n, budget) = match evaluate_binary_word(order, object, af, nf, budget, hints, tracer, depth) {
         Ok(v) => v, Err(o) => return o,
     };
     let c = if n >= 32 { 0 } else { (a << n) & WORD_MASK };
