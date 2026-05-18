@@ -11,17 +11,18 @@ use crate::noun::{Order, NounId};
 use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary, make_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
+use crate::jets::registry::JetRegistry;
 
 pub fn eq<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow,
+    row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
     let (a, b) = match cell_pair(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (ra, rb, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth) {
+    let (ra, rb, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     let da = match order.digest(ra) {

@@ -72,7 +72,7 @@ the economics are self-reinforcing: each computation makes future computations c
 
 ### the privacy/verification duality
 
-hint (pattern 16) provides zero-knowledge proofs natively. a [[neuron]] can prove:
+call (pattern 16) provides zero-knowledge proofs natively. a [[neuron]] can prove:
 - identity without revealing the secret key
 - a valid transfer without revealing sender, receiver, or amount
 - correct AI inference without revealing the model weights

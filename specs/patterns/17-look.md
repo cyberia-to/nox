@@ -6,54 +6,108 @@ alias: look pattern, BBG read, deterministic state read
 ---
 # look pattern (17) — deterministic BBG read
 
+note: current implementation delegates to the LookProvider trait. BBG commitment root extraction (C_t) and Brakedown opening proof assembly are deferred to the zheng witness generator. the interpreter reads C_t from fixed object axes and returns the provider value; proof accumulation runs after reduction via collect_look_openings().
+
 ```
 reduce(o, [17 [ns_f key_f]], f) =
-  1. ns  = reduce(o, ns_f, f - 1)             // evaluate namespace expression
-  2. key = reduce(o, key_f, f - 1)             // evaluate key expression
-  3. C_t = axis(o, BBG_ROOT_AXIS)              // extract BBG commitment root from object
-  4. (coeffs, proof) = evaluator.read(C_t, ns, key)
-     if coeffs == ⊥_namespace → return ⊥_error
-     if coeffs == ⊥_range     → return ⊥_error
-  5. value = poly_eval(coeffs, key)            // evaluate polynomial at key point
-  6. trace.append(proof)                       // Brakedown opening proof enters zheng trace
-  7. return (value, f')
+  1. ns  = reduce(o, ns_f,  f - 1)        // evaluate namespace expression
+  2. key = reduce(o, key_f, f - 1)        // evaluate key expression
+  3. C_t = extract 4 limbs from object at axes [4, 10, 22, 23]
+  4. value = provider.look(C_t[0], ns, key)
+     if value == None → return ⊥_unavailable
+  5. return (value, f')
 ```
 
-deterministic read from the authenticated state layer (BBG). evaluates the polynomial BBG_poly(namespace, key, t) under commitment root C_t and returns the result. C_t is part of the object noun — the BBG roots travel with the computation. the evaluator reads polynomial coefficients from the committed state, evaluates at the key point, and generates a Brakedown opening proof. the opening proof enters the zheng trace for verification.
+deterministic read from the authenticated state layer (BBG). extracts the BBG
+commitment root from the object noun (four 64-bit Goldilocks limbs at fixed axes),
+then asks a `LookProvider` for the polynomial value at the given namespace and key.
+the provider returns `Option<Goldilocks>` — `Some(v)` for a successful read,
+`None` when the value is not available.
 
-pure function: same namespace, same key, same C_t produces the same value on any machine at any time. the polynomial uniquely determines the output. there is no prover choice, no witness injection, no non-determinism.
-
-the verifier checks the Brakedown Lens opening proof via the zheng proof. it never reads BBG directly.
+pure function: same namespace, same key, same C_t produces the same value on any
+machine at any time. the polynomial uniquely determines the output. no prover
+choice, no witness injection, no non-determinism.
 
 ## reduction rule
 
 ```
-reduce(object, [17 [namespace key]], budget) → value
+reduce(object, [17 [ns_f key_f]], budget) → value
 
 where:
   namespace  ∈ {0..9}          evaluation dimension of BBG_poly
   key        ∈ F_p             evaluation point within that dimension
-  C_t        from object       BBG commitment root at time t
-  value      ∈ F_p             BBG_poly(namespace, key, t) evaluated under C_t
+  C_t        from object       4-limb BBG commitment root (axes 4, 10, 22, 23)
+  value      ∈ F_p             BBG_poly(namespace, key, t) under C_t
 ```
 
-the formula `[17 [ns_f key_f]]` contains two sub-formulas. both are reduced against the object to produce field elements. the namespace selects which evaluation dimension of BBG_poly to read. the key selects the evaluation point within that dimension.
+the formula `[17 [ns_f key_f]]` contains two sub-formulas. both are reduced against
+the object to produce field elements. the namespace selects which evaluation
+dimension of BBG_poly to read. the key selects the evaluation point within that
+dimension.
 
-## evaluator interface
+## provider interface
 
-```
-trait LookEvaluator {
-    fn read(&self, commitment: Root, namespace: F, key: F) -> LookResult;
+```rust
+trait LookProvider {
+    fn look(
+        &self,
+        commitment: Goldilocks,   // C_t[0] — first limb of the 4-limb BBG root
+        namespace:  Goldilocks,   // 0..9 (validated before call)
+        key:        Goldilocks,
+    ) -> Option<Goldilocks>;
 }
-
-enum LookResult {
-    Value { coefficients: Vec<F>, proof: BrakedownOpening },
-    NamespaceNotFound,
-    KeyOutOfRange,
-}
 ```
 
-the evaluator is not a prover — it performs a deterministic computation. given the commitment root, namespace, and key, there is exactly one correct result. the evaluator retrieves polynomial coefficients, evaluates at the key point, and produces the Brakedown opening proof that the evaluation is correct against C_t.
+`None` means the value is not available (provider has no data for this C_t).
+the pattern returns `⊥_unavailable` in that case.
+
+two concrete providers exist in bbg/:
+
+```
+BbgLookProvider   fast path — reads local BBG state, no proof
+ProofLookProvider accumulates LookOpening entries; collect_look_openings()
+                  retrieves them after execution for zheng::commit()
+```
+
+proof accumulation is separate from execution. the trace records the inputs and
+output; the proof is assembled after reduction completes, not during.
+
+## C_t extraction
+
+the BBG commitment root lives in the object noun at a fixed structure. four Goldilocks
+field atoms at axes [4, 10, 22, 23] form the four 64-bit limbs of C_t:
+
+```
+BBG_ROOT_LIMB_AXES: [u64; 4] = [4, 10, 22, 23]
+
+C_t[0] at axis  4   → passed to LookProvider as `commitment`
+C_t[1] at axis 10   → recorded in trace row r[11]
+C_t[2] at axis 22   → recorded in trace row r[12]
+C_t[3] at axis 23   → recorded in trace row r[13]
+```
+
+see [[object]] for the full object layout and how these axes resolve.
+
+if any axis navigation fails (object is an atom, or the path hits an atom before
+the target), the pattern returns `⊥_unavailable`.
+
+## trace row layout
+
+```
+r[ 4]  C_t[0]     first limb of the BBG commitment root
+r[ 5]  ns         namespace (0..9)
+r[ 6]  key        lookup key
+r[ 7]  value      result (u64 of the Goldilocks element), or NIL if unavailable
+r[11]  C_t[1]     second limb
+r[12]  C_t[2]     third limb
+r[13]  C_t[3]     fourth limb
+```
+
+`r[7] = NIL` (u32::MAX as u64) is the sentinel for "no value" — distinguishes
+an unavailable result from a successful read of the field element 0.
+
+bbg/'s `collect_look_openings` reads columns r[4..7] and r[11..13] from the trace
+to reconstruct the full C_t and assemble `LookOpening` structs.
 
 ## namespace table
 
@@ -72,15 +126,18 @@ namespace    dimension       contents
 9            signals         finalized signal batches
 ```
 
-namespaces 0-9 are the 10 public evaluation dimensions of BBG_poly. private state (commitment polynomial A(x), nullifier polynomial N(x)) is not accessible via look — private records require call (pattern 16) with ZK witness injection.
+namespaces 0–9 are the 10 public evaluation dimensions of BBG_poly. private state
+(commitment polynomial A(x), nullifier polynomial N(x)) is not accessible via
+look — private records require call (pattern 16) with ZK witness injection.
 
 ## properties
 
-- **deterministic**: same namespace, same key, same C_t always returns the same value. the polynomial is committed — its coefficients are fixed by the commitment root. no prover freedom, no witness choice, no oracle
-- **pure**: no side effects. look reads state but never modifies it. write is implicit via the cyberlink transaction result, not via the look pattern
-- **provable**: the Brakedown Lens opening proof enters the zheng trace. the verifier checks the opening against C_t without reading BBG. soundness follows from the binding property of the polynomial commitment
-- **memoizable**: look results are fully cacheable. given the same C_t, namespace, and key, the result is identical. the evaluator may cache polynomial evaluations and reuse opening proofs across multiple look calls within the same block
-- **read-only**: look never modifies BBG state, the object noun, or the commitment root. pure observation
+- **deterministic**: same namespace, same key, same C_t always returns the same
+  value. the polynomial is committed — its coefficients are fixed by C_t
+- **pure**: no side effects. look reads state but never modifies it
+- **memoizable**: look results are fully cacheable. given the same C_t, namespace,
+  and key, the result is identical
+- **read-only**: look never modifies BBG state, the object noun, or C_t
 
 ## comparison with call (16)
 
@@ -88,12 +145,10 @@ namespaces 0-9 are the 10 public evaluation dimensions of BBG_poly. private stat
 |----------|-----------|-----------|
 | determinism | non-deterministic — prover chooses witness | deterministic — polynomial determines value |
 | output | multiple valid witnesses may satisfy the check | exactly one correct value for given inputs |
-| memoizable | no — different provers produce different witnesses | yes — same C_t + namespace + key = same result |
-| verification | check formula validates witness (Layer 1 reduction) | Brakedown opening proof (polynomial commitment) |
+| memoizable | no | yes — same C_t + namespace + key = same result |
+| verification | check formula validates witness | proof accumulated via ProofLookProvider |
 | state access | external witness injection | committed polynomial evaluation |
 | confluence | intentionally broken | preserved |
-
-call injects information from outside the computation (secrets, optimization solutions, oracle responses). look reads information already committed inside the computation (BBG state under C_t). call is existential — "there exists a witness satisfying this check." look is functional — "the value at this point is uniquely determined."
 
 ## cost model
 
@@ -103,57 +158,47 @@ component            cost
 dispatch             1
 namespace evaluation cost(ns_f)
 key evaluation       cost(key_f)
-polynomial eval      depends on polynomial degree (dimension-specific)
-Brakedown opening    1 (O(√N) field operations, amortized to 1 zheng constraint)
+provider call        0 (not a budget cost — provider is an external service)
 ─────────            ────
-total                1 + cost(ns_f) + cost(key_f) + 1
+total                1 + cost(ns_f) + cost(key_f)
 ```
 
-the polynomial evaluation cost depends on the degree of BBG_poly in the queried dimension. for single-point lookups, the Brakedown opening proof is O(√N) field operations but enters the zheng trace as a single constraint (the verifier checks the opening via the proof, not by re-evaluating).
-
-zheng constraints: 1 (the opening proof is verified within the proof system, not expanded into constraints per coefficient).
+proof accumulation (LookOpening assembly) happens after execution and is not part
+of the reduction budget. the verifier checks the opening via the proof system, not
+by re-evaluating during reduction.
 
 ## error cases
 
 ```
-⊥_error (namespace not found):
-  namespace ∉ {0..9}
-  the formula evaluated ns_f to a value outside the valid dimension range.
-  this is a static error — the formula is malformed.
+⊥_unavailable (namespace out of range):
+  namespace > 9
+  validated before calling the provider.
+  the provider is never called for invalid namespaces.
 
-⊥_error (key out of range):
-  key exceeds the domain of the polynomial in the given dimension.
-  the polynomial is defined over a specific evaluation domain;
-  points outside that domain have no committed value.
+⊥_unavailable (C_t extraction failed):
+  the object noun does not contain field atoms at axes [4, 10, 22, 23].
+  happens when the object is an atom, or a path hits an atom mid-way.
 
-⊥_error (commitment root missing):
-  the object noun does not contain a BBG commitment root at the expected axis.
-  look requires C_t to be present in the object structure.
+⊥_unavailable (provider returned None):
+  the provider has no value for (C_t[0], namespace, key).
+  may indicate a cache miss, a node that has not synced this state,
+  or a query against an epoch the local node does not hold.
 ```
 
-all error cases produce ⊥_error (not ⊥_halt). look failures are deterministic — the same malformed input always produces the same error. there is no "unavailable" case analogous to call's Halt; if the commitment root exists and the namespace and key are valid, the value exists.
-
-## memoization
-
-look results are safe to memoize because the computation is a pure function of three inputs: C_t, namespace, key. within a single block (same C_t), repeated lookups to the same (namespace, key) return identical values. the evaluator should maintain a cache keyed by (C_t, namespace, key) to avoid redundant polynomial evaluations and proof generation.
-
-across blocks, C_t changes and the cache must be invalidated. partial invalidation is possible: only dimensions modified by the block's transactions need cache eviction.
+all error cases produce `⊥_unavailable`, not `⊥_halt`. look failures are
+deterministic — the same malformed input always produces the same error.
 
 ## what look enables
 
 ```
-state queries:      look reads neuron balance, particle energy, token supply
-                    Layer 1 computes over the result deterministically
+state queries:     look reads neuron balance, particle energy, token supply
 
-conditional logic:  formulas branch on current BBG state
-                    e.g., check balance before constructing a transfer
+conditional:       formulas branch on current BBG state
+                   e.g., check balance before constructing a transfer
 
-cross-dimension:    look from axons_out + look from axons_in
-                    consistency is structural — same polynomial, different dimensions
+cross-dimension:   look from axons_out + look from axons_in
+                   consistency is structural — same polynomial, different dimensions
 
-temporal queries:   look at different time dimensions yields historical state
-                    diff between two temporal lookups reveals changes
-
-provable reads:     every look result carries a Brakedown opening proof
-                    the verifier knows the value is correct without trusting the evaluator
+temporal:          look in the time dimension yields historical snapshots
+                   diff between two temporal lookups reveals changes
 ```

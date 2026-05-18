@@ -123,7 +123,7 @@ nox adds what Nock could not have:
 - field arithmetic as native patterns (add, sub, mul, inv, eq, lt)
 - bitwise operations (xor, and, not, shl) for binary protocol handling
 - cryptographic hash as a pattern: [[Hemera]]
-- non-deterministic witness injection (hint) for zero-knowledge proofs
+- non-deterministic witness injection (call, pattern 16) for zero-knowledge proofs
 - jets optimized for recursive [[stark]] verification and more
 
 the result is sixteen patterns instead of twelve, but the six additional patterns (field arithmetic) are the entire reason the system can produce proofs natively. four more (bitwise) handle the binary world. one (hash) closes the identity loop. the increase in pattern count is the price of proof-nativity — and the return is that every computation in the network is automatically verifiable.

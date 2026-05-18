@@ -68,6 +68,8 @@ total: 33 bytes
 
 each of the 4 field elements MUST be in [0, p). this encodes the output of a hemera hash (4 x F_p).
 
+note: hash atoms (tag 0x02) are not implemented in the current interpreter. hash identity is encoded as a cell of four field atoms via the cell encoding path — pattern 15 (hash) returns a cell(cell(h0,h1), cell(h2,h3)) of four Field atoms. tag 0x02 is reserved for a future flat-atom encoding of hash results.
+
 ### cell (tag 0x03)
 
 ```

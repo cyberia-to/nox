@@ -12,6 +12,7 @@ use crate::noun::{Order, NounId, Noun, Tag, NIL};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::patterns;
+use crate::jets::registry::{JetRegistry, digest_key};
 
 // ── pattern tags + per-pattern costs ──────────────────────────
 //
@@ -84,17 +85,28 @@ fn cost(tag: u64) -> u64 {
     if (tag as usize) < COSTS.len() { COSTS[tag as usize] } else { 1 }
 }
 
-/// public entry point — depth starts at 0
+/// Public entry point — depth starts at 0, no jet registry (pure L1).
+/// Existing callers and all tests use this. Jets never fire on this path.
 pub fn reduce<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, formula: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T,
 ) -> Outcome {
-    reduce_inner(order, object, formula, budget, hints, tracer, 0)
+    reduce_inner(order, object, formula, budget, hints, tracer, 0, &JetRegistry::empty())
+}
+
+/// Entry point with jet registry. Use this in production to enable jet dispatch.
+pub fn reduce_with_registry<const N: usize, T: Tracer>(
+    order: &mut Order<N>, object: NounId, formula: NounId, budget: u64,
+    hints: &dyn CallProvider<N>, tracer: &mut T,
+    registry: &JetRegistry<N>,
+) -> Outcome {
+    reduce_inner(order, object, formula, budget, hints, tracer, 0, registry)
 }
 
 pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, formula: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
     if depth > MAX_DEPTH {
         emit_error_row(tracer, object, formula, 0, budget, ErrorKind::Malformed);
@@ -121,20 +133,40 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
             return Outcome::Error(ErrorKind::Malformed);
         }
     };
-    let c = cost(tag);
-    let budget_in = budget;
-    if budget < c {
-        emit_halt_row(tracer, object, formula, tag, budget);
-        return Outcome::Halt(budget);
-    }
-    let budget = budget - c;
 
-    // pre-fill common registers; patterns fill r[4]-r[7] (multi-row: all rows)
+    let budget_in = budget;
     let mut row = TraceRow::default();
     row.r[0] = tag;
     row.r[1] = object as u64;
     row.r[2] = formula as u64;
     row.r[8] = budget_in;
+
+    // ── jet registry check ───────────────────────────────────────────────────
+    // Fires before tag cost and before tag dispatch. Jets own all budget.
+    if let Some(fkey) = order.digest(formula).map(digest_key) {
+        let jet = registry.lookup_exact(&fkey)
+            .or_else(|| registry.lookup_template(order, formula));
+        if let Some(jet_fn) = jet {
+            let outcome = jet_fn(order, object, body, budget_in, hints,
+                tracer as &mut dyn Tracer, depth, &mut row);
+            row.r[3] = match &outcome { Outcome::Ok(r, _) => *r as u64, _ => NIL as u64 };
+            row.r[9] = match &outcome {
+                Outcome::Ok(_, b) | Outcome::Halt(b) => *b,
+                Outcome::Error(_) => 0,
+            };
+            row.r[10] = match &outcome { Outcome::Error(k) => *k as u64, _ => 0 };
+            tracer.record(row);
+            return outcome;
+        }
+    }
+
+    // ── normal tag-based dispatch ────────────────────────────────────────────
+    let c = cost(tag);
+    if budget_in < c {
+        emit_halt_row(tracer, object, formula, tag, budget_in);
+        return Outcome::Halt(budget_in);
+    }
+    let budget = budget_in - c;
 
     // multi-row patterns emit their own rows. these patterns expose per-bit
     // (or per-step) soundness witnesses that don't fit a single 16-col row.
@@ -146,28 +178,28 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
     let outcome = match tag {
         0  => patterns::axis::axis(order, object, body, budget, hints, &mut row),
         1  => patterns::quote::quote(body, budget, &mut row),
-        2  => patterns::compose::compose(order, object, body, budget, hints, tracer, depth, &mut row),
-        3  => patterns::cons::cons(order, object, body, budget, hints, tracer, depth, &mut row),
-        4  => patterns::branch::branch(order, object, body, budget, hints, tracer, depth, &mut row),
-        5  => patterns::add::add(order, object, body, budget, hints, tracer, depth, &mut row),
-        6  => patterns::sub::sub(order, object, body, budget, hints, tracer, depth, &mut row),
-        7  => patterns::mul::mul(order, object, body, budget, hints, tracer, depth, &mut row),
-        8  => patterns::inv::inv(order, object, body, budget, hints, tracer, depth, &mut row),
-        9  => patterns::eq::eq(order, object, body, budget, hints, tracer, depth, &mut row),
-        10 => patterns::lt::lt(order, object, body, budget, hints, tracer, depth, &mut row),
-        11 => patterns::xor::xor(order, object, body, budget, hints, tracer, depth, &mut row),
-        12 => patterns::and::and(order, object, body, budget, hints, tracer, depth, &mut row),
-        13 => patterns::not::not(order, object, body, budget, hints, tracer, depth, &mut row),
-        14 => patterns::shl::shl(order, object, body, budget, hints, tracer, depth, &mut row),
-        15 => patterns::hash::hash(order, object, body, budget, hints, tracer, depth, &mut row),
-        16 => patterns::call::call_witness(order, object, body, budget, hints, tracer, depth, &mut row),
-        17 => patterns::look::look(order, object, body, budget, hints, tracer, depth, &mut row),
+        2  => patterns::compose::compose(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        3  => patterns::cons::cons(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        4  => patterns::branch::branch(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        5  => patterns::add::add(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        6  => patterns::sub::sub(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        7  => patterns::mul::mul(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        8  => patterns::inv::inv(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        9  => patterns::eq::eq(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        10 => patterns::lt::lt(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        11 => patterns::xor::xor(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        12 => patterns::and::and(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        13 => patterns::not::not(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        14 => patterns::shl::shl(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        15 => patterns::hash::hash(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        16 => patterns::call::call_witness(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        17 => patterns::look::look(order, object, body, budget, hints, tracer, depth, &mut row, registry),
         _  => Outcome::Error(ErrorKind::Malformed),
     };
 
     if !is_multi_row {
         row.r[3] = match &outcome { Outcome::Ok(r, _) => *r as u64, _ => NIL as u64 };
-        row.r[9] = match &outcome { Outcome::Ok(_, b) | Outcome::Halt(b) => *b, Outcome::Error(_) => 0 };
+        row.r[9] = match &outcome { Outcome::Ok(_, b) | Outcome::Halt(b) => *b, Outcome::Error(_) => budget };
         row.r[10] = match &outcome { Outcome::Error(k) => *k as u64, _ => 0 };
         tracer.record(row);
     }
@@ -219,8 +251,9 @@ pub(crate) fn cell_pair<const N: usize>(order: &Order<N>, r: NounId) -> Option<(
 pub(crate) fn evaluate<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, formula: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+    registry: &JetRegistry<N>,
 ) -> core::result::Result<(NounId, u64), Outcome> {
-    match reduce_inner(order, object, formula, budget, hints, tracer, depth + 1) {
+    match reduce_inner(order, object, formula, budget, hints, tracer, depth + 1, registry) {
         Outcome::Ok(r, b) => Ok((r, b)),
         other => Err(other),
     }
@@ -255,6 +288,7 @@ pub(crate) fn evaluate_binary<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId,
     a: NounId, b: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+    registry: &JetRegistry<N>,
 ) -> core::result::Result<(NounId, NounId, u64), Outcome> {
     let ba_cost = crate::bound::bound(order, a);
     let bb_cost = crate::bound::bound(order, b);
@@ -268,13 +302,24 @@ pub(crate) fn evaluate_binary<const N: usize, T: Tracer>(
         && ba.saturating_add(bb) <= budget;
 
     if can_partition {
-        let (va, ra) = evaluate(order, object, a, ba, hints, tracer, depth)?;
-        let (vb, rb) = evaluate(order, object, b, bb, hints, tracer, depth)?;
-        let used = (ba - ra).saturating_add(bb - rb);
-        Ok((va, vb, budget - used))
+        #[cfg(feature = "std")]
+        {
+            // par_binary uses an empty registry in sub-orders (correct: jets
+            // fire at the top-level reduce_inner; sub-evaluations use L1).
+            return crate::parallel::par_binary(
+                order, object, a, b, ba, bb, budget, hints, tracer, depth,
+            );
+        }
+        #[allow(unreachable_code)]
+        {
+            let (va, ra) = evaluate(order, object, a, ba, hints, tracer, depth, registry)?;
+            let (vb, rb) = evaluate(order, object, b, bb, hints, tracer, depth, registry)?;
+            let used = (ba - ra).saturating_add(bb - rb);
+            Ok((va, vb, budget - used))
+        }
     } else {
-        let (va, b1) = evaluate(order, object, a, budget, hints, tracer, depth)?;
-        let (vb, b2) = evaluate(order, object, b, b1, hints, tracer, depth)?;
+        let (va, b1) = evaluate(order, object, a, budget, hints, tracer, depth, registry)?;
+        let (vb, b2) = evaluate(order, object, b, b1, hints, tracer, depth, registry)?;
         Ok((va, vb, b2))
     }
 }
@@ -284,16 +329,17 @@ pub(crate) fn evaluate_binary<const N: usize, T: Tracer>(
 pub(crate) fn evaluate_unary<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, a: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+    registry: &JetRegistry<N>,
 ) -> core::result::Result<(NounId, u64), Outcome> {
     let ba_cost = crate::bound::bound(order, a);
     let ba = ba_cost.value();
     let can_partition = !ba_cost.is_dynamic() && ba <= budget;
 
     if can_partition {
-        let (va, ra) = evaluate(order, object, a, ba, hints, tracer, depth)?;
+        let (va, ra) = evaluate(order, object, a, ba, hints, tracer, depth, registry)?;
         Ok((va, budget - (ba - ra)))
     } else {
-        evaluate(order, object, a, budget, hints, tracer, depth)
+        evaluate(order, object, a, budget, hints, tracer, depth, registry)
     }
 }
 
@@ -302,8 +348,9 @@ pub(crate) fn evaluate_binary_field<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId,
     a: NounId, b: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+    registry: &JetRegistry<N>,
 ) -> core::result::Result<(Goldilocks, Goldilocks, u64), Outcome> {
-    let (ra, rb, remaining) = evaluate_binary(order, object, a, b, budget, hints, tracer, depth)?;
+    let (ra, rb, remaining) = evaluate_binary(order, object, a, b, budget, hints, tracer, depth, registry)?;
     let va = match order.atom_value(ra) {
         Some((v, Tag::Field)) | Some((v, Tag::Word)) => v,
         _ => return Err(Outcome::Error(ErrorKind::TypeError)),
@@ -320,8 +367,9 @@ pub(crate) fn evaluate_binary_word<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId,
     a: NounId, b: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+    registry: &JetRegistry<N>,
 ) -> core::result::Result<(u64, u64, u64), Outcome> {
-    let (ra, rb, remaining) = evaluate_binary(order, object, a, b, budget, hints, tracer, depth)?;
+    let (ra, rb, remaining) = evaluate_binary(order, object, a, b, budget, hints, tracer, depth, registry)?;
     let va = match order.atom_value(ra) {
         Some((v, Tag::Word)) => v.as_u64(),
         Some((v, Tag::Field)) if v.as_u64() < (1u64 << 32) => v.as_u64(),
@@ -339,8 +387,9 @@ pub(crate) fn evaluate_binary_word<const N: usize, T: Tracer>(
 pub(crate) fn evaluate_unary_field<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, a: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+    registry: &JetRegistry<N>,
 ) -> core::result::Result<(Goldilocks, u64), Outcome> {
-    let (ra, remaining) = evaluate_unary(order, object, a, budget, hints, tracer, depth)?;
+    let (ra, remaining) = evaluate_unary(order, object, a, budget, hints, tracer, depth, registry)?;
     match order.atom_value(ra) {
         Some((v, Tag::Field)) | Some((v, Tag::Word)) => Ok((v, remaining)),
         _ => Err(Outcome::Error(ErrorKind::TypeError)),
@@ -351,8 +400,9 @@ pub(crate) fn evaluate_unary_field<const N: usize, T: Tracer>(
 pub(crate) fn evaluate_unary_word<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, a: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
+    registry: &JetRegistry<N>,
 ) -> core::result::Result<(u64, u64), Outcome> {
-    let (ra, remaining) = evaluate_unary(order, object, a, budget, hints, tracer, depth)?;
+    let (ra, remaining) = evaluate_unary(order, object, a, budget, hints, tracer, depth, registry)?;
     match order.atom_value(ra) {
         Some((v, Tag::Word)) => Ok((v.as_u64(), remaining)),
         Some((v, Tag::Field)) if v.as_u64() < (1u64 << 32) => Ok((v.as_u64(), remaining)),
@@ -364,13 +414,14 @@ pub(crate) fn field_binary_op<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow,
+    registry: &JetRegistry<N>,
     op: fn(Goldilocks, Goldilocks) -> Goldilocks,
 ) -> Outcome {
     let (a, b) = match cell_pair(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (va, vb, budget) = match evaluate_binary_field(order, object, a, b, budget, hints, tracer, depth) {
+    let (va, vb, budget) = match evaluate_binary_field(order, object, a, b, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     let vc = op(va, vb);
@@ -504,7 +555,8 @@ mod tests {
     /// Cost table is in sync with the dispatch arm count.
     #[test]
     fn cost_table_length_matches_dispatch() {
-        // 18 patterns (0..=17). COSTS array must have exactly 18 entries.
+        // 18 patterns (0..=17). Jets (poly_eval, merkle_verify, …) are recognized
+        // by formula hash at dispatch time — not by dedicated tag slots.
         let _: [u64; 18] = COSTS;
     }
 

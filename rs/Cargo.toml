@@ -13,6 +13,25 @@ license = "Cyber"
 [lib]
 path = "lib.rs"
 
+[features]
+# Enable std-only features: scoped-thread parallel evaluation (evaluate_binary_par),
+# Order::fork / Order::reinter, and reduce_parallel_threaded.
+# Without this flag the library is no_std / alloc-only.
+std = []
+brakedown = ["std", "dep:cyb-lens-core", "dep:cyb-lens-brakedown"]
+wgpu = ["std"]
+honeycrisp = ["std"]
+
 [dependencies]
 nebu = { package = "cyb-nebu", path = "../../strata/nebu/rs" }
 hemera = { package = "cyber-hemera", path = "../../hemera/rs" }
+cyb-lens-core = { path = "../../lens/core", optional = true }
+cyb-lens-brakedown = { path = "../../lens/brakedown", optional = true }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+hemera = { package = "cyber-hemera", path = "../../hemera/rs" }
+
+[[bench]]
+name = "reduction"
+harness = false

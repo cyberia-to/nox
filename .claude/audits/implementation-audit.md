@@ -55,9 +55,9 @@ what's needed: the nox program (as a noun) for each of: hash, poly_eval, merkle_
 
 **action**: write pure Layer 1 nox programs for all 5 jets in nox/roadmap/recursive-jets.md
 
-### G3: hint callback interface (high)
+### G3: call callback interface (high)
 
-pattern 16 (hint) says "prover injects witness" but doesn't define:
+pattern 16 (call) says "prover injects witness" but doesn't define:
 - the callback signature
 - sync vs async injection
 - what happens if the prover provides no hint (error? halt?)
@@ -141,7 +141,7 @@ nox/src/
 ├── lib.rs          mod exports
 ├── noun.rs         NounRef, NounInner, NounArena<N>
 ├── reduce.rs       reduce(object, formula, budget) → Result
-├── hint.rs         HintProvider trait
+├── call.rs         HintProvider trait (call = pattern 16)
 ├── jet.rs          JetRegistry (const table of formula_hash → fn)
 ├── trace.rs        TraceRow, TraceWriter (streaming)
 ├── encode.rs       Noun → [u8; 8|32|64], [u8] → Noun

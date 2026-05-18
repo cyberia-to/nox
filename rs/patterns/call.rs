@@ -10,18 +10,19 @@ use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_unary, evaluate};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::noun::NIL;
+use crate::jets::registry::JetRegistry;
 
 pub fn call_witness<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
     calls: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow,
+    row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
     let (tag_formula, check_formula) = match cell_pair(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
     // Initial phase: tag is statically bounded — partitioned eval.
-    let (tag_result, budget) = match evaluate_unary(order, object, tag_formula, budget, calls, tracer, depth) {
+    let (tag_result, budget) = match evaluate_unary(order, object, tag_formula, budget, calls, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     let tag_value = match order.atom_value(tag_result) {
@@ -42,7 +43,7 @@ pub fn call_witness<const N: usize, T: Tracer>(
     // a Malformed/TypeError/Unavailable in check_f is a bug in check_f
     // itself, NOT a witness rejection. only a finished check returning
     // non-zero counts as CallRejected (handled below).
-    let (check_result, budget) = match evaluate(order, witness_object, check_formula, budget, calls, tracer, depth) {
+    let (check_result, budget) = match evaluate(order, witness_object, check_formula, budget, calls, tracer, depth, registry) {
         Ok(v) => v,
         Err(o) => return o,
     };
@@ -97,7 +98,7 @@ mod tests {
     fn call_rejected_on_bad_witness() {
         struct BadWitness;
         impl LookProvider for BadWitness {
-            fn look(&self, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
+            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
         }
         impl<const N: usize> CallProvider<N> for BadWitness {
             fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
@@ -130,7 +131,7 @@ mod tests {
     fn call_accepts_zero_check() {
         struct ZeroWitness;
         impl LookProvider for ZeroWitness {
-            fn look(&self, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
+            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
         }
         impl<const N: usize> CallProvider<N> for ZeroWitness {
             fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
@@ -163,7 +164,7 @@ mod tests {
     fn call_accepts_valid_witness() {
         struct GoodWitness;
         impl LookProvider for GoodWitness {
-            fn look(&self, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
+            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
         }
         impl<const N: usize> CallProvider<N> for GoodWitness {
             fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {

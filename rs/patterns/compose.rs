@@ -5,11 +5,12 @@ use crate::noun::{Order, NounId};
 use crate::reduce::{reduce_inner, Outcome, ErrorKind, cell_pair, evaluate_binary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
+use crate::jets::registry::JetRegistry;
 
 pub fn compose<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow,
+    row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
     let (a, b) = match cell_pair(order, body) {
         Some(p) => p,
@@ -18,7 +19,7 @@ pub fn compose<const N: usize, T: Tracer>(
     // Initial phase: evaluate the two sub-formulas under the partition rule.
     // Both arms are statically bounded (their bounds may themselves contain
     // DYNAMIC markers, in which case evaluate_binary falls back to sequential).
-    let (obj, frm, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth) {
+    let (obj, frm, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     row.r[4] = obj as u64;
@@ -27,7 +28,7 @@ pub fn compose<const N: usize, T: Tracer>(
     row.r[7] = b as u64;
     // Continuation phase: reduce(obj, frm) is the dynamic-cost frontier.
     // Sequential semantics — frm is only known now (runtime value).
-    reduce_inner(order, obj, frm, budget, hints, tracer, depth + 1)
+    reduce_inner(order, obj, frm, budget, hints, tracer, depth + 1, registry)
 }
 
 #[cfg(test)]

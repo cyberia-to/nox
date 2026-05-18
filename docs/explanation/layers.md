@@ -13,12 +13,12 @@ the ontological separation — truth, possibility, speed. nox is organized into 
 │                                                                    │
 │  the ground truth of computation                                   │
 ├────────────────────────────────────────────────────────────────────┤
-│  LAYER 2: WHAT MIGHT BE                                            │
-│  one non-deterministic pattern: hint                               │
-│  prover injects, Layer 1 constraints verify                        │
-│  verifier never executes hint — checks via stark                   │
+│  LAYER 2: WHAT MIGHT BE AND WHAT IS KNOWN                         │
+│  two patterns: call (non-deterministic) + look (deterministic)     │
+│  call: prover injects witness, Layer 1 constraints verify          │
+│  look: deterministic BBG read, verifier checks authenticated state │
 │                                                                    │
-│  the origin of privacy and search                                  │
+│  the origin of privacy, search, and state access                   │
 ├────────────────────────────────────────────────────────────────────┤
 │  LAYER 3: HOW FAST                                                 │
 │  five jets: hash, poly_eval, merkle_verify, fri_fold, ntt          │
@@ -39,17 +39,17 @@ the patterns form an orthogonal rewrite system: unique tags, linear left-hand si
 
 Layer 1 is the ground truth. if you stripped away Layers 2 and 3, you would still have a complete, deterministic, provable virtual machine. slower and less private, but functionally identical. everything builds on this foundation.
 
-## Layer 2: what might be
+## Layer 2: what might be and what is known
 
-one pattern: hint. the prover injects a value from outside the VM. Layer 1 constraints verify it. the verifier never executes hint — it checks the [[stark]] proof instead.
+two patterns. call (pattern 16): the prover injects a value from outside the VM. Layer 1 constraints verify it. the verifier never executes call — it checks the [[stark]] proof instead. look (pattern 17): a deterministic read from BBG (the authenticated state graph). the lookup result is a public, authenticated fact; the verifier checks it against the BBG state root.
 
-this single pattern is the entire mechanism of privacy, search, and oracle access. it is the boundary between the prover's knowledge and the verifier's knowledge. what the prover knows but the verifier does not crosses this boundary.
+call is the entire mechanism of privacy, search, and oracle access. it is the boundary between the prover's knowledge and the verifier's knowledge. what the prover knows but the verifier does not crosses this boundary. look is the mechanism of state access — a program reads from BBG without re-deriving the state; the BBG Merkle root in the proof attests to the authenticity of the lookup.
 
-Layer 2 breaks confluence intentionally. two different provers may inject different valid witnesses for the same constraint. this is the non-determinism that makes [[zero knowledge proofs]] possible — the prover demonstrates knowledge without revealing it. soundness is preserved: any witness that fails the Layer 1 constraint check is rejected.
+call breaks confluence intentionally. two different provers may inject different valid witnesses for the same constraint. this is the non-determinism that makes [[zero knowledge proofs]] possible — the prover demonstrates knowledge without revealing it. soundness is preserved: any witness that fails the Layer 1 constraint check is rejected. look is deterministic: same state root + same key → same value, always.
 
-the ontological status of Layer 2 is "possibility." Layer 1 says "this IS the result." Layer 2 says "there EXISTS a witness such that the constraints are satisfied." the shift from deterministic to existential is what enables privacy — proving that you know something without revealing what you know.
+the ontological status of Layer 2 is "possibility and known fact." Layer 1 says "this IS the result." call says "there EXISTS a witness such that the constraints are satisfied." look says "this IS the authenticated state at this point." the shift from deterministic to existential in call is what enables privacy. the authenticated read in look is what enables stateful programs without embedding the full state in the trace.
 
-without Layer 2, nox would be fully transparent. every computation would be publicly reproducible. there would be no private transactions, no ZK proofs, no ability to prove identity without revealing secrets. hint is the minimum necessary non-determinism — one instruction that opens the door to an entire cryptographic universe.
+without Layer 2, nox would be fully transparent and stateless. every computation would be publicly reproducible and could only use data passed in the initial object. call opens the door to zero-knowledge proofs and private computation. look opens the door to stateful programs that interact with the cyber substrate.
 
 ## Layer 3: how fast
 
@@ -67,7 +67,7 @@ the three layers are distinguished by what happens when you remove them:
 
 remove Layer 3 (jets): every program still runs, every proof still verifies. the system is slower. no functionality is lost. this is why jets are "optimization without compromise."
 
-remove Layer 2 (hint): the system loses privacy and search. every computation becomes fully transparent — no ZK proofs, no private transactions, no ability to prove without revealing. but the deterministic core remains complete. Layer 1 is still Turing-complete, still provable.
+remove Layer 2 (call + look): the system loses privacy, search, and state access. every computation becomes fully transparent and stateless — no ZK proofs, no private transactions, no ability to prove without revealing, no interaction with the BBG state graph. but the deterministic core remains complete. Layer 1 is still Turing-complete, still provable.
 
 remove Layer 1 (patterns): nothing remains. the patterns ARE the computation. there is no nox without them.
 

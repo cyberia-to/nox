@@ -17,17 +17,18 @@ use crate::noun::{Order, NounId, Tag};
 use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
+use crate::jets::registry::JetRegistry;
 
 pub fn lt<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow,
+    row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
     let (af, bf) = match cell_pair(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (va, vb, budget) = match evaluate_binary_field(order, object, af, bf, budget, hints, tracer, depth) {
+    let (va, vb, budget) = match evaluate_binary_field(order, object, af, bf, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     let a = va.as_u64();

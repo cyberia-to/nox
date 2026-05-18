@@ -5,7 +5,7 @@ status: canonical
 
 ## overview
 
-nox is a proof-native virtual machine. sixteen deterministic compute patterns parameterized by algebra, plus call (non-deterministic witness injection) and look (deterministic BBG read), and five jets for efficient recursive zheng verification. 16 compute + call + look = 18 patterns.
+nox is a proof-native virtual machine. sixteen deterministic compute patterns parameterized by algebra, plus call (non-deterministic witness injection) and look (deterministic BBG read), and 12 genesis jets (6 computation jets + 6 state jets) for efficient recursive zheng verification. 16 compute + call + look = 18 patterns.
 
 every nox execution produces a trace that IS the zheng witness. there is no separate arithmetization step.
 

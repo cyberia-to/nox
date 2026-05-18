@@ -23,12 +23,12 @@ columns (16 = 2⁴ registers, each one F element):
   r7:   pattern-specific operand 3
   r8:   budget before step
   r9:   budget after step
-  r10:  reserved
-  r11:  reserved
-  r12:  reserved
-  r13:  reserved
-  r14:  reserved
-  r15:  reserved
+  r10:  error kind on error rows; pattern-specific witness on success rows (inv: accumulator, branch: selector)
+  r11:  multi-row state / pattern-specific / Lens commitment bytes (when prover active)
+  r12:  multi-row state / pattern-specific / Lens commitment bytes (when prover active)
+  r13:  multi-row state / pattern-specific / Lens commitment bytes (when prover active)
+  r14:  pattern-specific (round index for hash/inv)
+  r15:  pattern-specific (input NounId for hash)
 
 rows: 2^n (padded to power of 2)
 ```
@@ -68,7 +68,8 @@ r3:    result NounId
 r4-r7: pattern-specific operands (meaning varies per pattern, see below)
 r8:    budget before step
 r9:    budget after step
-r10-r15: reserved (zero-filled unless otherwise specified)
+r10:   error kind on error rows (0-5); pattern-specific witness on success rows
+r11-r15: pattern-specific (Lens commitment bytes, round state, input wiring — zero when unused)
 ```
 
 ## per-pattern register map
@@ -82,20 +83,21 @@ r0  = 0
 r1  = object NounId
 r2  = formula NounId
 r3  = result NounId               — NounId of the value at the addressed position
-r4  = object NounId               — repeated for Lens-opening wiring in zheng
-r5  = axis address                — evaluated axis address as raw u64
-r6  = depth traversed             — tree levels descended (0 for addr ≤ 1)
+r4  = commitment[0] from axis_commitment() when prover is active, 0 otherwise
+      (first 8-byte LE limb of the 32-byte Lens commitment; equals r11)
+r5  = axis address (raw u64)      — literal address from formula body
+r6  = levels descended (depth of navigation)
 r7  = result NounId               — NounId of the value at the addressed position
 r8  = budget_in
 r9  = budget_out = r8 - 1
 r10 = 0 (success) / error kind
-r11 = commitment_bytes[0..8]      — first  8 bytes of Lens commitment (LE u64)
-r12 = commitment_bytes[8..16]     — second 8 bytes of Lens commitment
-r13 = commitment_bytes[16..24]    — third  8 bytes of Lens commitment
-r14 = commitment_bytes[24..32]    — fourth 8 bytes of Lens commitment
+r11 = commitment[0] (bytes 0..8 of Lens commitment, LE u64) — same as r4
+r12 = commitment[1] (bytes 8..16)
+r13 = commitment[2] (bytes 16..24)
+r14 = commitment[3] (bytes 24..32)
 r15 = 0 (reserved)
 
-r11-r14 are non-zero only when the executor's CallProvider implements axis_commitment().
+r4 and r11-r14 are non-zero only when the executor's CallProvider implements axis_commitment().
 when absent (NullCalls / interpreter mode) they are zero; zheng skips commitment binding.
 
 constraint: r9 = r8 - 1 (budget, degree 1)
@@ -163,17 +165,17 @@ r1  = object NounId
 r2  = formula NounId
 r3  = result NounId               — NounId of the chosen branch result
 r4  = test value                   — result of reduce(o, test)
-r5  = inverse of test value        — r4^-1 (non-deterministic hint, 0 when r4 = 0)
-r6  = yes-branch result            — result of reduce(o, yes) (wired from sub-row)
-r7  = no-branch result             — result of reduce(o, no) (wired from sub-row)
-r10 = selector                     — 1 if r4 = 0 (take yes), 0 if r4 != 0 (take no)
+r5  = inverse hint of r4           — r4^-1 when r4 ≠ 0, else 0
+r6  = chosen arm result            — NounId of the chosen branch result
+r10 = selector                     — 0 if r4 = 0 (take yes), 1 if r4 ≠ 0 (take no)
 
 constraint:
-  r10 = 1 - r4 * r5               — selector computation (degree 2)
-  r4 * r10 = 0                    — ensures selector is valid (degree 2)
-  result = r10 * r6 + (1 - r10) * r7  — mux (degree 2)
+  selector * (1 - r4 * r5) = 0   — binds selector to "test != 0" (degree 2)
+  r4 * (1 - r10) = 0             — when test=0, selector must be 0 (degree 2)
+  result = chosen arm result
 budget: r9 = r8 - 1
-note: only the chosen branch is evaluated; the unchosen register (r6 or r7) is zero.
+note: only the chosen branch is evaluated. r6 = NounId of chosen result.
+      r7 is unused (the unchosen arm is not evaluated, not stored).
 ```
 
 ### pattern 5: add (single-row, cost 1)
@@ -268,6 +270,9 @@ init constraint (row 0):            r10_0 = v ∧ r11_0 = 1
 final constraint (row 63):          r6 * v = 1  (degree 2)
 error: if r4 = 0, status = error, error kind = 2 (inv_zero)
 budget: r8 carries budget_in across all rows; r9 set only on the final row.
+note: bit ordering is MSB-first. bit 63 of p-2 = 1 is processed at step 0.
+      bit 32 of p-2 = 0 (the one unset bit). bits 31-0 of p-2 = 1 complete the exponent.
+      r8 carries budget_in across all 64 rows; r9 is set only on the final row (row 63).
 ```
 
 ### pattern 9: eq (single-row, cost 1)
@@ -277,10 +282,13 @@ r0  = 9
 r1  = object NounId
 r2  = formula NounId
 r3  = result NounId
-r4  = left operand
-r5  = right operand
-r6  = 0 if r4 = r5, else 1         — equality result (0 = true)
-r7  = (r4 - r5)^-1                 — inverse of difference (hint; 0 when r4 = r5)
+r4  = left operand field value       — for atoms: field value; for cells: digest[0] of left noun
+r5  = right operand field value      — for atoms: field value; for cells: digest[0] of right noun
+r6  = result (0 if equal, 1 if not equal)
+r7  = (r4 - r5)^-1                  — inverse of difference (hint; 0 when r4 = r5)
+
+note: for cells, r4 = digest[0] of left noun, r5 = digest[0] of right noun.
+      structurally equal cells always produce equal digests across all four limbs.
 
 constraint:
   (r4 - r5) * (1 - r6) = 0          — if r4 != r5, then r6 = 1 (degree 2)
@@ -321,6 +329,9 @@ constraints (across the 64-row block):
     "decided" accumulator) — see zheng for the canonical encoding
 
 budget: r9 = r8 - 64 on final row only.
+note: r7, r10, r11 (bit decomposition witnesses): populated by zheng witness generator,
+      not by the nox interpreter. the interpreter writes only r4 (left operand) and r5 (right operand).
+      r6 (result) is written by the interpreter. r7/r10/r11 are filled by zheng during witness extension.
 ```
 
 ### pattern 11: xor (multi-row, cost 32)
@@ -355,6 +366,8 @@ constraints (across the block):
   - sum_{k=0..31} 2^k * r12_k = r6
 
 budget: r9 = r8 - 32 on final row only.
+note: r7, r10, r12 (bit decomposition witnesses): populated by zheng witness generator,
+      not by the nox interpreter. the interpreter writes r4, r5, r6 only.
 ```
 
 ### pattern 12: and (multi-row, cost 32)
@@ -369,6 +382,8 @@ constraints (per row):
   - r12 = r10 * r11                    (AND gadget, degree 2)
 
 decomposition and budget constraints: identical to xor.
+note: r7, r10, r11, r12 (bit decomposition witnesses): populated by zheng witness generator,
+      not by the nox interpreter. the interpreter writes r4, r5, r6 only.
 ```
 
 ### pattern 13: not (multi-row, cost 32)
@@ -398,6 +413,8 @@ constraints (per row):
 
 decomposition (across the block): sum 2^k * r10 = r4, sum 2^k * r12 = r6.
 budget: r9 = r8 - 32 on final row only.
+note: r7, r10, r12 (bit decomposition witnesses): populated by zheng witness generator,
+      not by the nox interpreter. the interpreter writes r4, r6 only.
 ```
 
 ### pattern 14: shl (multi-row, cost 32)
@@ -434,6 +451,8 @@ decomposition (across the block):
   - sum 2^k * r12_k = r6              (output decomp)
 
 budget: r9 = r8 - 32 on final row only.
+note: r7, r10, r11, r13 (bit decomposition witnesses): populated by zheng witness generator,
+      not by the nox interpreter. the interpreter writes r4 (input), r5 (shift amount), r6 (output) only.
 ```
 
 ### pattern 15: hash (multi-row, cost 25)
@@ -480,6 +499,10 @@ transition constraints (rows 1..23):
 init constraint (row 0): state initialized from rate input + initial MDS-light
 final constraint (squeeze): r3 = order.hash_noun(state[0..4])
 budget: r9 = r8 - 25 on squeeze row only.
+note: current implementation: single summary row; multi-row round-progression trace
+      (25 rows with full state) is deferred to step-level hemera API integration.
+      the result IS correct; only the trace witness is incomplete.
+      the 25-row layout above describes the target; the interpreter today emits 1 row.
 ```
 
 ### pattern 16: call (single-row, cost 1)
@@ -490,7 +513,7 @@ r1  = object NounId
 r2  = formula NounId
 r3  = result NounId               — NounId of reduce([witness, o], check_f) result
 r4  = tag value                    — result of reduce(o, tag_f): identifies witness type
-r5  = witness value                — non-deterministic: injected by prover via CallProvider
+r5  = witness NounId               — non-deterministic: injected by prover via CallProvider
 r6  = result                       — result of reduce([witness, o], check_f)
 r7  = NounId(check_f)             — identity of the check formula (for wiring)
 
@@ -507,19 +530,21 @@ r0  = 17
 r1  = object NounId
 r2  = formula NounId
 r3  = result NounId               — NounId of the looked-up value
-r4  = key value                    — result of reduce(o, key_f): the BBG lookup key
-r5  = BBG_root                     — Hemera(Lens.commit(BBG_poly) || Lens.commit(A) || Lens.commit(N))
-r6  = value                        — the looked-up value: BBG_poly(eval(r4))
-r7  = opening proof element 0      — Brakedown/Lens opening proof (Lens.open(r5, eval(r4)) witness)
-r10 = opening proof element 1
-r11 = opening proof element 2
+r4  = C_t[0]                      — first limb of BBG commitment root (from object axis 4)
+r5  = ns                           — namespace (result of reduce(o, ns_f))
+r6  = key                          — lookup key (result of reduce(o, key_f))
+r7  = value                        — result (u64 of Goldilocks element), or NIL if unavailable
+r11 = C_t[1]                       — second limb of BBG root (from object axis 10)
+r12 = C_t[2]                       — third limb of BBG root (from object axis 22)
+r13 = C_t[3]                       — fourth limb of BBG root (from object axis 23)
 
-constraint: Lens.verify(r5, eval(r4), r6, proof) — 2 inline degree-1 wiring constraints
-            (key binding: eval(r4) wired to evaluation point; root binding: r5 = instance BBG_root);
-            Brakedown opening verification via folded CCS sub-instance (HyperNova, same as hint/call)
+constraint: Lens.verify(C_t, ns, key, r7) — inline wiring constraints
+            Brakedown opening verification via folded CCS sub-instance (deferred to zheng)
 budget: r9 = r8 - 1
-note: fully deterministic — r7, r10-r11 are Brakedown opening proof elements verifiable against
-      the BBG_root in the instance. memoizable at a given block height.
+note: fully deterministic — r4/r11-r13 form the full BBG commitment root (4 × u64 LE).
+      Brakedown opening proof assembly is deferred to zheng witness generator
+      (collect_look_openings() reads r4..r7 and r11..r13 after execution).
+      memoizable at a given block height.
 ```
 
 ### call vs look: trace difference
@@ -573,6 +598,9 @@ same formula: r2_{t+1} = r2_t
 new formula:  r2_{t+1} set by sub-expression dispatch
 result link:  r3_t wired to the result NounId of the completed sub-computation
 ```
+
+note: the row-linking constraints (r1_{t+1}=r1_t etc.) are verified by zheng, not enforced at
+trace-emit time by the interpreter. the interpreter populates the registers; zheng checks the linking.
 
 ## budget decrement constraints
 

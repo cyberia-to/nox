@@ -4,17 +4,18 @@ use crate::noun::{Order, NounId};
 use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
+use crate::jets::registry::JetRegistry;
 
 pub fn cons<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow,
+    row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
     let (a, b) = match cell_pair(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (left, right, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth) {
+    let (left, right, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     row.r[4] = left as u64;

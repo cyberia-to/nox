@@ -29,6 +29,7 @@ use crate::noun::hash::Digest;
 use crate::reduce::{Outcome, ErrorKind, evaluate_unary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
+use crate::jets::registry::JetRegistry;
 
 const RATE: usize = 8;
 const ROUNDS_TOTAL: u64 = 24;
@@ -36,9 +37,9 @@ const ROUNDS_TOTAL: u64 = 24;
 pub fn hash<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow,
+    row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (input, budget) = match evaluate_unary(order, object, body, budget, hints, tracer, depth) {
+    let (input, budget) = match evaluate_unary(order, object, body, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     let in_digest: Digest = match order.digest(input) {

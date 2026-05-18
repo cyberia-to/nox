@@ -63,13 +63,13 @@ this property is what makes the cybergraph a shared, trustless knowledge structu
 
 ## Layer 2 and confluence
 
-hint (pattern 16) breaks confluence intentionally. two different provers may inject different valid witnesses for the same constraint. `reduce(s, [16 c], f)` may produce different results depending on what the prover injects.
+call (pattern 16) breaks confluence intentionally. two different provers may inject different valid witnesses for the same constraint. `reduce(s, [16 c], f)` may produce different results depending on what the prover injects.
 
 this is the point. privacy requires non-determinism. if the computation is fully deterministic, the verifier can reproduce it and learn everything the prover knows. non-determinism — the prover choosing which witness to inject — is what creates the information asymmetry that zero-knowledge proofs exploit.
 
 soundness is preserved: any witness must satisfy the Layer 1 constraint check. an invalid witness fails the constraint and is rejected. the non-determinism is bounded — any valid witness produces a correct result, even if different provers choose different valid witnesses.
 
-the memoization scope follows: Layer 1 computations are fully memoizable (deterministic). Layer 2 computations are NOT memoizable (prover-specific). pure sub-expressions within a hint-containing computation remain memoizable — the taint applies to the hint root, not to its pure children.
+the memoization scope follows: Layer 1 computations are fully memoizable (deterministic). Layer 2 call computations are NOT memoizable (prover-specific). pure sub-expressions within a call-containing computation remain memoizable — the taint applies to the call root, not to its pure children.
 
 ## the mathematical structure
 

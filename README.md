@@ -25,9 +25,9 @@ merkle by construction. every `cons(a, b)` builds a Merkle tree — the hash is 
 
 cybergraph-native. nox is tightly coupled with the [[cybergraph]] and [[bbg]]. the memo cache IS the graph state. the proof IS a [[cyberlink]]. the focus budget IS the token payment. this coupling is not a dependency — it is the source of compounding returns. every computation enriches the graph. every enrichment accelerates future computation.
 
-minimal irreducible design. 16 deterministic patterns, 1 non-deterministic hint, 5 optimization jets. remove the jets — identical results, ~8.5× slower. remove the hint — no privacy, no ZK, but still Turing-complete. remove Layer 1 — nothing remains. every pattern earns its place.
+minimal irreducible design. 18 patterns total: 16 deterministic compute (Layer 1) + call (16, non-deterministic witness injection) + look (17, deterministic BBG read) + 5 optimization jets. remove the jets — identical results, ~8.5× slower. remove call and look — no privacy, no state access, but still Turing-complete. remove Layer 1 — nothing remains. every pattern earns its place.
 
-privacy at the boundary. the hint pattern (16) injects untrusted witness data that Layer 1 constraints verify. this is where privacy enters: the prover knows the secret, the verifier checks the math. no trusted setup. no MPC ceremony. the architecture separates knowledge from verification.
+privacy at the boundary. the call pattern (16) injects untrusted witness data that Layer 1 constraints verify. this is where privacy enters: the prover knows the secret, the verifier checks the math. no trusted setup. no MPC ceremony. the architecture separates knowledge from verification.
 
 lazy evaluation. the branch pattern (4) evaluates only the taken path. the other branch is never touched. this prevents infinite-recursion DoS attacks structurally — a property of the reduction semantics, not a runtime check.
 
@@ -62,31 +62,35 @@ the order axon `H(formula, object)` is itself a [[particle]] (axiom A6). anyone 
 everything is a noun — a binary tree of [[Goldilocks field]] elements. programs are nouns. data is nouns. the result is a noun.
 
 ```
-Layer 1: 16 deterministic patterns    Turing-complete + field arithmetic + bitwise + hash
-Layer 2: 1 non-deterministic hint     witness injection, privacy boundary, verified by Layer 1
-Layer 3: 5 jets                       hash, poly_eval, merkle_verify, fri_fold, ntt
+Layer 1: 16 deterministic compute patterns    Turing-complete + field arithmetic + bitwise + hash
+Layer 2: call (16) + look (17)                witness injection + deterministic BBG read
+Layer 3: 5 jets                               hash, poly_eval, merkle_verify, fri_fold, ntt
 ```
 
-### the 16 patterns
+16 compute + call + look = 18 patterns total.
 
-| # | name | domain | what it does |
-|---|------|--------|-------------|
-| 0 | axis | structural | navigate tree by path. axis(0) = hash introspection |
-| 1 | quote | structural | literal — code as data |
-| 2 | compose | structural | chain computations. function application, recursion, control flow |
-| 3 | cons | structural | build cell from two values |
-| 4 | branch | structural | conditional. lazy — only evaluates taken path |
-| 5 | add | field | field addition |
-| 6 | sub | field | field subtraction |
-| 7 | mul | field | field multiplication |
-| 8 | inv | field | field inverse (Fermat) |
-| 9 | eq | field | equality test |
-| 10 | lt | field | less-than comparison |
-| 11 | xor | bitwise | exclusive or |
-| 12 | and | bitwise | bitwise and |
-| 13 | not | bitwise | bitwise complement |
-| 14 | shl | bitwise | shift left |
-| 15 | hash | hash | structural hashing via [[hemera]] |
+### the 18 patterns
+
+| # | name | layer | domain | what it does |
+|---|------|-------|--------|-------------|
+| 0 | axis | 1 | structural | navigate tree by path. axis(0) = hash introspection |
+| 1 | quote | 1 | structural | literal — code as data |
+| 2 | compose | 1 | structural | chain computations. function application, recursion, control flow |
+| 3 | cons | 1 | structural | build cell from two values |
+| 4 | branch | 1 | structural | conditional. lazy — only evaluates taken path |
+| 5 | add | 1 | field | field addition |
+| 6 | sub | 1 | field | field subtraction |
+| 7 | mul | 1 | field | field multiplication |
+| 8 | inv | 1 | field | field inverse (Fermat) |
+| 9 | eq | 1 | field | equality test |
+| 10 | lt | 1 | field | less-than comparison |
+| 11 | xor | 1 | bitwise | exclusive or |
+| 12 | and | 1 | bitwise | bitwise and |
+| 13 | not | 1 | bitwise | bitwise complement |
+| 14 | shl | 1 | bitwise | shift left |
+| 15 | hash | 1 | hash | structural hashing via [[hemera]] |
+| 16 | call | 2 | witness | non-deterministic witness injection |
+| 17 | look | 2 | state | deterministic read from BBG |
 
 ### canonical instantiation
 

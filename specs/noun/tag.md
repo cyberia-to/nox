@@ -9,13 +9,13 @@
 ├──────────────┼─────────────────────┼─────────────────┼───────────────┤
 │  0x00: field │  Single F_p element │  [0, p)         │  Arithmetic   │
 │  0x01: word  │  Single F_p element │  [0, 2^32)      │  Bitwise      │
-│  0x02: hash  │  4 × F_p elements   │  32-byte digest │  Identity     │
+│  0x02: hash  │  (not used)         │  —              │  (reserved)   │
 └───────────────────────────────────────────────────────────────────────┘
 ```
 
 field and word share the same representation (one Goldilocks element) but different operations. a field element wraps around modulo p; a word wraps around modulo 2^32. the distinction is semantic, enforced by the type system. the 32-bit word range guarantees every word value is a valid field element ([0, 2^32) ⊂ [0, p)), and every bitwise operation produces a representable result. heavy 64-bit binary computation belongs in Bt (FRI-Binius, characteristic 2), not in nox's prime field bitwise patterns.
 
-the hash type (four field elements, 32 bytes) is the identity primitive. `H(noun)` produces a hash. `axis(s, 0)` returns `H(s)` — a noun can introspect its own identity.
+hash identity is represented as a cell of four Field atoms — not an atom type. tag 0x02 is reserved but not used in the current implementation. `H(noun)` produces a cell of four field elements. `axis(s, 0)` returns `H(s)` — a noun can introspect its own identity.
 
 the type tag costs nothing in the zheng — it is a constraint selector, not runtime data.
 

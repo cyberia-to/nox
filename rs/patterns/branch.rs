@@ -4,11 +4,12 @@ use crate::noun::{Order, NounId};
 use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_unary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
+use crate::jets::registry::JetRegistry;
 
 pub fn branch<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow,
+    row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
     let (test_formula, rest) = match cell_pair(order, body) {
         Some(p) => p,
@@ -19,7 +20,7 @@ pub fn branch<const N: usize, T: Tracer>(
         None => return Outcome::Error(ErrorKind::Malformed),
     };
     // Step 1: evaluate test with its bound (partitioned if possible).
-    let (test_result, budget) = match evaluate_unary(order, object, test_formula, budget, hints, tracer, depth) {
+    let (test_result, budget) = match evaluate_unary(order, object, test_formula, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     let test_value = match order.atom_value(test_result) {
@@ -41,7 +42,7 @@ pub fn branch<const N: usize, T: Tracer>(
     // Step 2: evaluate ONLY the chosen arm under partitioned semantics.
     // Slack from max-of-arms accrues to the caller automatically — we only
     // charge for the chosen arm's actual cost.
-    match evaluate_unary(order, object, chosen, budget, hints, tracer, depth) {
+    match evaluate_unary(order, object, chosen, budget, hints, tracer, depth, registry) {
         Ok((val, remaining)) => {
             row.r[6] = val as u64;
             Outcome::Ok(val, remaining)

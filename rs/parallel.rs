@@ -183,35 +183,40 @@ pub(crate) fn par_binary<const N: usize, T: Tracer>(
     hints: &dyn CallProvider<N>,
     tracer: &mut T,
     depth: u64,
-) -> core::result::Result<(NounId, NounId, u64), Outcome>
-where
-    Order<N>: Send,
-{
+) -> core::result::Result<(NounId, NounId, u64), Outcome> {
     use crate::reduce::{evaluate, ErrorKind};
     use crate::trace::VecTrace;
+    use crate::jets::registry::JetRegistry;
 
     // Fork: each thread gets an independent copy of the order.
-    let mut sub_a = order.fork();
-    let mut sub_b = order.fork();
+    // Box the forks so the closure captures are thin pointers (~8 bytes each),
+    // not 100+ KB structs on the current stack frame.
+    let mut sub_a = std::boxed::Box::new(order.fork());
+    let mut sub_b = std::boxed::Box::new(order.fork());
     let mut trace_a = VecTrace::default();
     let mut trace_b = VecTrace::default();
 
-    // Scoped threads: closures may borrow the stack frame.
-    // `hints` is Send because CallProvider<N>: Sync.
-    let (out_a, out_b) = std::thread::scope(|s| {
-        let ha = s.spawn(|| {
-            let r = evaluate(&mut sub_a, object, a, ba, hints, &mut trace_a, depth);
-            (r, sub_a, trace_a)
-        });
-        let hb = s.spawn(|| {
-            let r = evaluate(&mut sub_b, object, b, bb, hints, &mut trace_b, depth);
-            (r, sub_b, trace_b)
-        });
-        (ha.join().unwrap(), hb.join().unwrap())
+    // SAFETY: (1) `CallProvider<N>: Sync` (supertrait) — concurrent reads safe.
+    // (2) Both threads are joined before `par_binary` returns, so `hints`
+    // is valid for the entire lifetime of both threads. Transmuting to
+    // `&'static` lets the closures satisfy `std::thread::spawn`'s `'static`
+    // bound while keeping the actual lifetime sound.
+    let hints_a: &'static dyn CallProvider<N> = unsafe { std::mem::transmute(hints) };
+    let hints_b: &'static dyn CallProvider<N> = unsafe { std::mem::transmute(hints) };
+
+    let ha = std::thread::spawn(move || {
+        let r = evaluate(&mut *sub_a, object, a, ba, hints_a, &mut trace_a, depth,
+                         &JetRegistry::empty());
+        (r, sub_a, trace_a)
+    });
+    let hb = std::thread::spawn(move || {
+        let r = evaluate(&mut *sub_b, object, b, bb, hints_b, &mut trace_b, depth,
+                         &JetRegistry::empty());
+        (r, sub_b, trace_b)
     });
 
-    let (result_a, fin_order_a, fin_trace_a) = out_a;
-    let (result_b, fin_order_b, fin_trace_b) = out_b;
+    let (result_a, fin_order_a, fin_trace_a) = ha.join().unwrap();
+    let (result_b, fin_order_b, fin_trace_b) = hb.join().unwrap();
 
     // Merge traces: left sub-formula rows first, then right (canonical order).
     for row in fin_trace_a.0 {
@@ -252,10 +257,7 @@ pub fn reduce_parallel_threaded<const N: usize, T: Tracer>(
     budget: u64,
     hints: &dyn CallProvider<N>,
     tracer: &mut T,
-) -> Outcome
-where
-    Order<N>: Send,
-{
+) -> Outcome {
     // With par_binary wired into evaluate_binary (via cfg(feature="std")),
     // reduce() already dispatches to the threaded path for every binary
     // pattern when can_partition is true. This entry point is the named
@@ -390,6 +392,18 @@ mod tests {
             tr_par.0.len(),
             "threaded trace length must match sequential",
         );
+    }
+
+    /// Minimal smoke test: std::thread::scope works in this binary.
+    #[cfg(feature = "std")]
+    #[test]
+    fn scope_smoke_test() {
+        let x = 42u64;
+        let result = std::thread::scope(|s| {
+            let h = s.spawn(|| x + 1);
+            h.join().unwrap()
+        });
+        assert_eq!(result, 43);
     }
 
     /// Order::fork produces an independent order with identical initial entries.

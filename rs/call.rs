@@ -15,19 +15,25 @@ use crate::noun::{Order, NounId};
 
 /// look provider trait — deterministic BBG state reads
 ///
-/// namespace: evaluation dimension of BBG_poly (0..9)
-/// key: evaluation point within that dimension
+/// commitment: BBG root field element extracted from the object at BBG_ROOT_AXIS
+/// namespace:  evaluation dimension of BBG_poly (0..9)
+/// key:        evaluation point within that dimension
 ///
-/// returns Some(value) or None (= lookup unavailable)
+/// returns Some(value) or None (= lookup unavailable, e.g. BBG not connected)
 pub trait LookProvider {
-    fn look(&self, namespace: Goldilocks, key: Goldilocks) -> Option<Goldilocks>;
+    fn look(&self, commitment: Goldilocks, namespace: Goldilocks, key: Goldilocks) -> Option<Goldilocks>;
 }
 
 /// call provider trait — the prover's interface to inject witnesses
 ///
 /// extends LookProvider: every call provider also supports deterministic lookups.
 /// NullCalls provides both (returning None for both).
-pub trait CallProvider<const N: usize>: LookProvider {
+///
+/// `Sync` is required because the `std` feature runs binary sub-formulas on
+/// separate threads, each holding a `&dyn CallProvider<N>` read-only reference.
+/// All current implementations (NullCalls, test stubs) are unit structs and
+/// trivially `Sync`. User-defined providers must not hold non-Sync interior state.
+pub trait CallProvider<const N: usize>: LookProvider + Sync {
     /// provide a witness for the given tag and object
     ///
     /// tag: field element identifying WHICH call (e.g., 0x01 = private key)
@@ -54,7 +60,7 @@ pub struct NullCalls;
 pub type NullLooks = NullCalls;
 
 impl LookProvider for NullCalls {
-    fn look(&self, _namespace: Goldilocks, _key: Goldilocks) -> Option<Goldilocks> {
+    fn look(&self, _commitment: Goldilocks, _namespace: Goldilocks, _key: Goldilocks) -> Option<Goldilocks> {
         None
     }
 }

@@ -17,9 +17,10 @@ use std::io::Read;
 
 use nebu::Goldilocks;
 use nox::noun::{Order, NounId, Noun, Tag};
-use nox::reduce::{reduce, Outcome};
+use nox::reduce::{reduce_with_registry, Outcome};
 use nox::call::NullCalls;
 use nox::trace::NoTrace;
+use nox::jets::registry::JetRegistry;
 
 const ORDER_SIZE: usize = 1 << 16; // 64K nouns
 
@@ -228,7 +229,7 @@ fn run() -> i32 {
         }
     }
 
-    let formula_text = formula_text.trim().to_string();
+    let formula_text = formula_text.trim();
     if formula_text.is_empty() {
         eprintln!("error: no formula provided");
         return 1;
@@ -236,6 +237,7 @@ fn run() -> i32 {
 
     let mut order = Order::<ORDER_SIZE>::new();
     let hints = NullCalls;
+    let registry = JetRegistry::<ORDER_SIZE>::genesis();
 
     let object = match parse_noun(&mut order, &object_text) {
         Ok(n) => n,
@@ -247,7 +249,7 @@ fn run() -> i32 {
         Err(e) => { eprintln!("error parsing formula: {}", e); return 1; }
     };
 
-    match reduce(&mut order, object, formula, budget, &hints, &mut NoTrace) {
+    match reduce_with_registry(&mut order, object, formula, budget, &hints, &mut NoTrace, &registry) {
         Outcome::Ok(result, remaining) => {
             println!("{}", print_noun(&order, result));
             eprintln!("cost: {} (budget remaining: {})", budget - remaining, remaining);
@@ -276,7 +278,7 @@ fn print_usage() {
 \x1b[35m    ╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝
 \x1b[0m\x1b[37m    the VM for superintelligence\x1b[0m
 \x1b[90m
-    16 patterns · 36 genesis jets · 5 algebras
+    18 patterns · 36 genesis jets · 5 algebras
     Goldilocks field · p = 2^64 - 2^32 + 1
     computation IS linking · proof-native
 \x1b[0m

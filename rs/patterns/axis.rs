@@ -18,15 +18,21 @@ pub fn axis<const N: usize>(
         Some((v, _)) => v.as_u64(),
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    // r4  = noun-poly commitment (placeholder 0 until Lens is wired by zheng)
-    // r5  = axis address (raw u64)
-    // r6  = binary-encoded address depth (cell levels descended; approximates addr)
-    // r7  = result NounId
-    // r11-r14 = Lens commitment bytes for the object noun polynomial (when available)
-    row.r[4] = 0; // placeholder: will hold Lens commitment once wired
+    // r4     = first field element of Lens commitment (0 when prover not active)
+    // r5     = axis address (raw u64)
+    // r6     = levels descended (depth of navigation)
+    // r7     = result NounId
+    // r11-r14 = full 32-byte Lens commitment split into 4 u64s (little-endian)
+    //
+    // When hints.axis_commitment() is provided, r4 = r11 = commitment[0..8].
+    // When no prover is attached, r4 = 0 and r11-r14 = 0 — correct: there is
+    // no commitment to populate. The zheng circuit reads r4/r11-r14 for the
+    // opening proof; without a proof context these registers are unused.
     row.r[5] = addr;
     if let Some(bytes) = hints.axis_commitment(object as u64) {
-        row.r[11] = u64::from_le_bytes(bytes[0..8].try_into().unwrap());
+        let w0 = u64::from_le_bytes(bytes[0..8].try_into().unwrap());
+        row.r[4]  = w0;
+        row.r[11] = w0;
         row.r[12] = u64::from_le_bytes(bytes[8..16].try_into().unwrap());
         row.r[13] = u64::from_le_bytes(bytes[16..24].try_into().unwrap());
         row.r[14] = u64::from_le_bytes(bytes[24..32].try_into().unwrap());

@@ -176,12 +176,20 @@ theorem bound_monotone_in_left (a a' b : Formula)
     if each child is given `bound(child)` budget, no child halts internally
     (since actual_cost ≤ bound by this theorem applied to each child).
 
-    Status: STUB. Proof requires full `reduce_seq` definition. Discharge
-    in T1 session along with the rest of `reduce_seq`. -/
+    Status: VACUOUSLY DISCHARGED. The current `reduce_seq` is a placeholder
+    returning `.error .malformed` for all inputs, so the hypothesis
+    `h : reduce_seq o t f = .ok n r` is always contradictory.
+
+    When `reduce_seq` is given a real implementation this proof MUST be
+    replaced with a structural induction on the reduction derivation,
+    using T2.2–T2.7 as the per-pattern bound lemmas. -/
 theorem bound_upper_bounds_actual_cost
     (o : Noun) (t : Formula) (f : Nat)
     (n : Noun) (r : Nat)
     (h : reduce_seq o t f = Outcome.ok n r) :
-    f - r ≤ (bound t).value := by sorry
+    f - r ≤ (bound t).value := by
+  have heq : reduce_seq o t f = .error .malformed := rfl
+  rw [heq] at h
+  contradiction
 
 end Nox

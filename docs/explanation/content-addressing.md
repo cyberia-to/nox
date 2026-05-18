@@ -44,15 +44,15 @@ as more nodes compute more programs, the cache grows. common computations — id
 
 ```
 Layer 1: fully memoizable (deterministic)
-Layer 2: NOT memoizable (hint results are prover-specific)
+Layer 2: NOT memoizable (call results are prover-specific)
 Layer 3: fully memoizable (jets are deterministic)
 ```
 
 pure Layer 1 computations are the ideal cache citizens. their results are determined entirely by their inputs. cache them once, use them forever.
 
-hint-containing computations (Layer 2) are excluded. different provers may inject different valid witnesses, producing different results for the same (object, formula) pair. caching would be unsound — the cached result might not match what this particular prover would produce.
+call-containing computations (Layer 2) are excluded. different provers may inject different valid witnesses, producing different results for the same (object, formula) pair. caching would be unsound — the cached result might not match what this particular prover would produce.
 
-the boundary is precise: a computation is hint-tainted if it transitively contains a hint application. pure sub-expressions within a tainted computation remain cacheable. the taint applies to the root, not to the leaves. this maximizes caching without compromising soundness.
+the boundary is precise: a computation is call-tainted if it transitively contains a call application. pure sub-expressions within a tainted computation remain cacheable. the taint applies to the root, not to the leaves. this maximizes caching without compromising soundness.
 
 ## content-addressing in the cybergraph
 

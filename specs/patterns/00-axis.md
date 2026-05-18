@@ -3,10 +3,10 @@
 algebra-independent.
 
 ```
-reduce(o, [0 a], f) = (axis(s, eval(a)), f - 1)
+reduce(o, [0 a], f) = (axis(s, a), f - 1)
 ```
 
-the evaluated axis index must be a field-type or word-type atom, interpreted as an integer. if eval(a) produces a cell or hash-type atom → ⊥_error.
+the address `a` is a literal atom in the formula structure — it is NOT reduced before use. axis reads the address directly from the formula noun body. the address must be a field-type or word-type atom, interpreted as an integer. if `a` is a cell or hash-type atom → ⊥_error.
 
 with polynomial nouns, axis is O(1) via Lens opening: the binary encoding of the axis address is the evaluation point. this replaces O(depth) tree traversal with a single polynomial evaluation.
 
@@ -19,22 +19,23 @@ r0  = 0
 r1  = object NounId
 r2  = formula NounId
 r3  = result NounId               — NounId of the value at the addressed position
-r4  = object NounId               — repeated for Lens-opening binding in zheng
-r5  = axis address                — evaluated axis address as raw u64
-r6  = depth traversed             — number of tree levels descended (0 for addr ≤ 1)
+r4  = commitment[0] from axis_commitment() when prover active, 0 otherwise
+      (equals r11: first 8-byte LE limb of the 32-byte Lens commitment)
+r5  = axis address (raw u64)      — literal address from formula body
+r6  = levels descended            — number of tree levels descended (0 for addr ≤ 1)
 r7  = result NounId               — NounId of the value at the addressed position
 r8  = budget_in
 r9  = budget_out                  — r8 - 1
 r10 = 0 (success) / error kind
-r11 = commitment_bytes[0..8]      — first  8 bytes of Lens commitment (LE u64); 0 if hints absent
-r12 = commitment_bytes[8..16]     — second 8 bytes
-r13 = commitment_bytes[16..24]    — third  8 bytes
-r14 = commitment_bytes[24..32]    — fourth 8 bytes
+r11 = commitment[0] (bytes 0..8, LE u64)   — same as r4; 0 if hints absent
+r12 = commitment[1] (bytes 8..16)
+r13 = commitment[2] (bytes 16..24)
+r14 = commitment[3] (bytes 24..32)
 r15 = 0 (reserved)
 ```
 
-r11-r14 are populated when the executor's CallProvider implements axis_commitment().
-when absent (NullCalls, interpreter mode) r11-r14 are zero; zheng skips commitment binding.
+r4 and r11-r14 are populated when the executor's CallProvider implements axis_commitment().
+when absent (NullCalls, interpreter mode) r4 and r11-r14 are zero; zheng skips commitment binding.
 
 ## constraints (zheng)
 

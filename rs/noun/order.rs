@@ -218,6 +218,58 @@ impl<const N: usize> Order<N> {
 
     pub fn count(&self) -> u32 { self.count }
 
+    // ── std-only: fork / reinter ───────────────────────────────────
+    // Used by the parallel executor (parallel.rs) to give each thread
+    // a private mutable Order derived from the shared parent state.
+    //
+    // Invariant (fork): for all i < self.count, fork()[i] == self[i].
+    // Invariant (reinter): reinter(src, id) == id if id < self.count at fork time.
+    // These two invariants together mean re-interning an atom or cell
+    // from a sub-order into the parent finds the pre-existing entry
+    // (via hash-consing) and returns the same NounId. Only entries
+    // created DURING evaluation (id >= base_count) require new allocations.
+
+    /// Clone this order into a fresh independent order.
+    ///
+    /// The fork shares the same initial noun set (entries 0..self.count).
+    /// New nouns allocated in the fork do NOT appear in self, and vice
+    /// versa. Used by the parallel executor: one fork per thread.
+    #[cfg(feature = "std")]
+    pub fn fork(&self) -> Self {
+        let mut new = Order::<N>::new();
+        new.count = self.count;
+        new.index_mask = self.index_mask;
+        // Copy initialized entries (SAFETY: entries[0..count] are initialized).
+        for i in 0..self.count as usize {
+            let entry = unsafe { self.entries[i].assume_init() };
+            new.entries[i] = core::mem::MaybeUninit::new(entry);
+        }
+        // Copy the full hash-cons table (probe chains may span any slot in 0..N).
+        new.index_keys.copy_from_slice(&self.index_keys);
+        new.index_vals.copy_from_slice(&self.index_vals);
+        new
+    }
+
+    /// Re-intern a noun from `src` into `self` and return its NounId in self.
+    ///
+    /// Atoms are found (or created) by value+tag. Cells are recursively
+    /// re-interned then joined. Hash-consing guarantees idempotency: if the
+    /// noun was in self before the fork, `reinter` returns the original NounId.
+    ///
+    /// Returns `None` if the order is full (same failure mode as `atom`/`cell`).
+    #[cfg(feature = "std")]
+    pub fn reinter(&mut self, src: &Self, id: NounId) -> Option<NounId> {
+        let entry = src.get(id)?;
+        match entry.inner {
+            Noun::Atom { value, tag } => self.atom(value, tag),
+            Noun::Cell { left, right } => {
+                let l = self.reinter(src, left)?;
+                let r = self.reinter(src, right)?;
+                self.cell(l, r)
+            }
+        }
+    }
+
     pub fn is_atom(&self, r: NounId) -> bool {
         self.get(r).is_some_and(|e| matches!(e.inner, Noun::Atom { .. }))
     }

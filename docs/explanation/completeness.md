@@ -1,17 +1,18 @@
 # completeness
 
-why exactly these instruction groups — structural, field, bitwise, hash, hint — and why nothing else is needed.
+why exactly these instruction groups — structural, field, bitwise, hash, call, look — and why nothing else is needed.
 
 ## the five groups
 
-nox has sixteen deterministic patterns organized into four groups, plus a non-deterministic prover protocol (hint). each group covers a distinct algebraic domain that the others cannot reach. removing any group cripples the system. adding more groups adds no capability.
+nox has sixteen deterministic patterns organized into four groups, plus two Layer 2 patterns: call (non-deterministic witness injection) and look (deterministic BBG read). each group covers a distinct algebraic domain that the others cannot reach. removing any group cripples the system. adding more groups adds no capability.
 
 ```
 STRUCTURAL (5)      tree algebra        Turing completeness          4-bit encoded
 FIELD (6)           F_p arithmetic      proof-native computation     4-bit encoded
 BITWISE (4)         Z/2^32 arithmetic   binary world interface       4-bit encoded
 HASH (1)            cryptographic       identity and commitment      4-bit encoded
-HINT                non-deterministic   privacy and search           prover protocol
+CALL (16)           non-deterministic   privacy and search           prover protocol
+LOOK (17)           deterministic       state access                 BBG read protocol
 ```
 
 ## group 1: structural (patterns 0-4) — tree algebra
@@ -64,19 +65,19 @@ could hash be expressed as pure structural + field patterns? yes. [[Hemera]] (Po
 
 the reason hash is a dedicated pattern rather than a library function: it appears in every meaningful operation. identity verification is a hash. Merkle trees are hashes. [[stark]] Fiat-Shamir challenges are hashes. content addressing is a hash. making hash a pattern means the most common expensive operation has the most optimized constraint layout. 83% of the stark verifier's cost is hash operations — this single pattern, jetted, accounts for the largest share of the 8.5× recursive verification speedup.
 
-## group 5: hint — non-deterministic witness
+## group 5: call — non-deterministic witness
 
 ```
-hint — prover injects, constraints verify
+call — prover injects, constraints verify
 ```
 
 not an opcode. a prover/verifier protocol. the entire mechanism of privacy, search, and oracle access.
 
-hint is what separates nox from a transparent calculator. without hint, every computation is publicly reproducible — the verifier can re-run the program and learn everything the prover knows. hint creates the information asymmetry that makes [[zero knowledge proofs]] possible: the prover injects private knowledge, Layer 1 constraints verify it, the verifier checks the [[stark]] proof without learning the secret.
+call is what separates nox from a transparent calculator. without call, every computation is publicly reproducible — the verifier can re-run the program and learn everything the prover knows. call creates the information asymmetry that makes [[zero knowledge proofs]] possible: the prover injects private knowledge, Layer 1 constraints verify it, the verifier checks the [[stark]] proof without learning the secret.
 
-hint is the only non-deterministic mechanism. the sixteen deterministic patterns always produce the same output from the same input. hint produces a result that depends on what the prover injects. this breaks confluence intentionally, creating the gap between prover knowledge and verifier knowledge that ZK exploits.
+call is the only non-deterministic mechanism. the sixteen compute patterns always produce the same output from the same input. call produces a result that depends on what the prover injects. this breaks confluence intentionally, creating the gap between prover knowledge and verifier knowledge that ZK exploits.
 
-could the system work without hint? yes — as a transparent, verifiable computation engine. all the other properties (confluence, content-addressing, memoization, proof-nativity) remain. but without hint, there are no private transactions, no ZK identity proofs, no ability to prove without revealing. hint is the minimum necessary non-determinism.
+could the system work without call? yes — as a transparent, verifiable computation engine. all the other properties (confluence, content-addressing, memoization, proof-nativity) remain. but without call, there are no private transactions, no ZK identity proofs, no ability to prove without revealing. call is the minimum necessary non-determinism.
 
 ## the sufficiency argument
 
@@ -92,12 +93,12 @@ oracle    — non-determinism (privacy, ZK)
 
 any computation that [[cyber]] needs falls into one of these domains:
 
-- identity verification → hash + hint (prove H(secret) = address)
-- state transitions → structural + field (tree transformation with arithmetic)
+- identity verification → hash + call (prove H(secret) = address)
+- state transitions → structural + field + look (tree transformation with arithmetic, state reads)
 - network protocols → bitwise (packet encoding, flag testing)
 - ranking → field (focus flow is field arithmetic over the graph)
 - [[stark]] verification → field + hash (polynomial evaluation, Merkle paths)
-- private transactions → hint + field + hash (witness injection, conservation checks)
+- private transactions → call + field + hash (witness injection, conservation checks)
 - AI inference → field + structural (matrix operations as noun transformations)
 
 the nine [[cyb/architecture|computation languages]] (Nox, Bt, Rs, Trident, Arc, Seq, Ask, Wav, Ten) all compile through nox as their structural IR. each language maps to a subset of the five groups:
@@ -143,13 +144,15 @@ runtime       jets                          recognized by formula hash, transpar
               hash is simultaneously pattern 15 AND a jet (optimized constraint layout)
               poly_eval, merkle_verify, fri_fold, ntt — pure pattern compositions, jetted for speed
 
-prover        hint                          prover/verifier protocol, not an opcode
+prover        call (16)                     prover/verifier protocol, not a 4-bit opcode
               the prover injects a witness, constraints verify it
               never appears in the encoded formula — it is a runtime interaction
+              look (17)                     deterministic BBG read protocol
+              authenticated state access via BBG Merkle root
 ```
 
 jets do not need opcodes. a jet is a formula tree made of the sixteen core patterns — the runtime recognizes it by `H(formula) == KNOWN_HASH` and substitutes optimized native code. the encoding on the wire is still 4-bit tagged core patterns. as more jets are added over time (recursive [[stark]] verification, new cryptographic primitives, AI inference kernels), the encoding never grows. jets are a runtime layer, not an encoding layer.
 
-hint does not need an opcode either. it is a prover/verifier protocol — the prover signals "I will inject a witness here," the [[stark]] constraints verify the witness is valid, the verifier checks the proof without learning the secret. hint lives in the interaction between prover and verifier, not in the formula encoding.
+call and look do not need 4-bit opcodes either. call is a prover/verifier protocol — the prover signals "I will inject a witness here," the [[stark]] constraints verify the witness is valid, the verifier checks the proof without learning the secret. look is a state access protocol — the prover provides the BBG lookup result along with its Merkle proof against the state root. both live in the interaction between prover and verifier, not in the formula encoding.
 
 the result: the wire format is 4 bits per node, forever. sixteen is the exact number — enough for algebraic completeness across five domains, few enough to fill a nibble with zero waste. adding a seventeenth deterministic pattern would require 5 bits, wasting half the encoding space on tags that will never be used. the four-bit boundary is both a mathematical optimum and a forcing function: it disciplines the design to include only what is algebraically necessary.

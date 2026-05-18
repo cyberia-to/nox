@@ -31,9 +31,9 @@ the program addition is the same operation as the constraint addition. the field
 
 contrast this with a VM that operates on 256-bit integers but proves over a 64-bit field. the prover must decompose each 256-bit operation into multiple 64-bit constraints. the translation is correct but expensive, and every translation step is a potential source of bugs. nox eliminates the translation entirely.
 
-## the sixteen constraints
+## the eighteen constraints
 
-each of the sixteen patterns becomes an AIR transition constraint:
+each of the eighteen patterns becomes an AIR transition constraint:
 
 ```
 pattern 5  (add):  result_{t+1} = a_t + b_t              degree 1
@@ -45,14 +45,14 @@ pattern 4  (branch): selector × yes + (1-selector) × no  degree 2
 
 the constraint selector — `pattern_tag_t = N` — gates each pattern's constraints. only the active pattern's constraints apply per row. [[SuperSpartan]]'s CCS (Customizable Constraint System) handles mixed degrees natively — no degree padding, no uniform arithmetization.
 
-sixteen patterns means sixteen constraint families. this is manageable. a conventional VM with hundreds of opcodes produces hundreds of constraint families, each requiring separate verification logic. nox's minimalism at the instruction level translates directly to simplicity at the proof level.
+eighteen patterns means eighteen constraint families. this is manageable. a conventional VM with hundreds of opcodes produces hundreds of constraint families, each requiring separate verification logic. nox's minimalism at the instruction level translates directly to simplicity at the proof level.
 
 ## the trace
 
 the execution trace has 16 registers and 2^n rows (padded to a power of 2):
 
 ```
-r0:  pattern tag (0-16)           which rule fired
+r0:  pattern tag (0-17)           which rule fired
 r1:  object hash                  H(current object)
 r2:  formula hash                 H(current formula)
 r3:  operand A                    first evaluated operand
@@ -88,7 +88,7 @@ proof-nativity is the single design decision from which most of nox's properties
 - content-addressing works because the trace deterministically follows from the computation
 - memoization works because the proof certifies the result
 - parallelism works because confluence is a theorem about the constraint system
-- privacy works because hint creates an information asymmetry within the same constraint framework
+- privacy works because call creates an information asymmetry within the same constraint framework
 - recursive verification works because the verifier is a nox program operating in the same field
 
 every other proof system has a "compilation gap" — the distance between the program and the proof. nox closes this gap to zero. the program and the proof are the same mathematical object, viewed from different angles. this is the deepest insight of the design, and it is the reason nox exists as a separate VM rather than using an existing instruction set with a bolted-on proof system.

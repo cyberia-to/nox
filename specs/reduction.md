@@ -450,7 +450,7 @@ error:       (status=2, error_kind)                    — no result noun
 
 unavailable is an error (status=2) with error_kind=3. it is not a separate status code — the trace only encodes three status values (0, 1, 2). the Result type in the reduction semantics distinguishes ⊥_error from ⊥_unavailable for error reporting, but the trace encoding folds them into status=2 with the error_kind discriminant.
 
-the trace encodes Result in r15 (status) and r12 (error kind). the instance includes status and H(result) for success cases (H(result) = 0 when status ≠ 0, see trace.md). errors are transient computation outcomes, not persistent data — they have no content-addressed storage entry.
+the trace encodes status in the instance (not a register) and error kind in r10. the instance includes status and H(result) for success cases (H(result) = 0 when status ≠ 0, see trace.md). errors are transient computation outcomes, not persistent data — they have no content-addressed storage entry.
 
 ## budget accounting
 

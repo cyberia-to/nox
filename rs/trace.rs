@@ -56,7 +56,12 @@ impl Tracer for NoTrace {
     fn record(&mut self, _: TraceRow) {}
 }
 
-/// accumulating tracer — collects all rows into a Vec
+/// accumulating tracer — collects all rows into a Vec.
+///
+/// Row count is bounded in practice by the budget passed to reduce():
+/// each pattern consumes at least 1 budget unit before emitting a row,
+/// so the trace never exceeds `budget` rows. Callers that pass untrusted
+/// budgets should cap the budget before calling reduce().
 #[derive(Default)]
 pub struct VecTrace(pub Vec<TraceRow>);
 

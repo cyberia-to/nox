@@ -10,6 +10,7 @@ use crate::noun::{Order, NounId};
 use crate::reduce::{Outcome, ErrorKind, evaluate_unary_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
+use crate::jets::registry::JetRegistry;
 use crate::noun::NIL;
 
 const P_MINUS_2: u64 = 0xFFFFFFFEFFFFFFFF;
@@ -17,9 +18,9 @@ const P_MINUS_2: u64 = 0xFFFFFFFEFFFFFFFF;
 pub fn inv<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow,
+    row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (v, budget) = match evaluate_unary_field(order, object, body, budget, hints, tracer, depth) {
+    let (v, budget) = match evaluate_unary_field(order, object, body, budget, hints, tracer, depth, registry) {
         Ok(v) => v,
         Err(o) => {
             row.r[3] = NIL as u64;

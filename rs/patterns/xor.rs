@@ -9,18 +9,19 @@ use crate::noun::{Order, NounId, Tag};
 use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary_word, emit_bit_row, WORD_MASK};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
+use crate::jets::registry::JetRegistry;
 use nebu::Goldilocks;
 
 pub fn xor<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow,
+    row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
     let (af, bf) = match cell_pair(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (a, b, budget) = match evaluate_binary_word(order, object, af, bf, budget, hints, tracer, depth) {
+    let (a, b, budget) = match evaluate_binary_word(order, object, af, bf, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     let c = (a ^ b) & WORD_MASK;

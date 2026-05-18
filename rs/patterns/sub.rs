@@ -4,13 +4,14 @@ use crate::noun::{Order, NounId};
 use crate::reduce::{Outcome, field_binary_op};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
+use crate::jets::registry::JetRegistry;
 
 pub fn sub<const N: usize, T: Tracer>(
     order: &mut Order<N>, object: NounId, b: NounId, bg: u64,
     h: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow,
+    row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    field_binary_op(order, object, b, bg, h, tracer, depth, row, |a, b| a - b)
+    field_binary_op(order, object, b, bg, h, tracer, depth, row, registry, |a, b| a - b)
 }
 
 #[cfg(test)]
