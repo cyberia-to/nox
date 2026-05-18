@@ -20,13 +20,14 @@ path = "lib.rs"
 std = []
 brakedown = ["std", "dep:cyb-lens-core", "dep:cyb-lens-brakedown"]
 wgpu = ["std"]
-honeycrisp = ["std"]
+honeycrisp = ["std", "dep:acpu"]
 
 [dependencies]
 nebu = { package = "cyb-nebu", path = "../../strata/nebu/rs" }
 hemera = { package = "cyber-hemera", path = "../../hemera/rs" }
 cyb-lens-core = { path = "../../lens/core", optional = true }
 cyb-lens-brakedown = { path = "../../lens/brakedown", optional = true }
+acpu = { package = "acpu", path = "../../honeycrisp/acpu", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }

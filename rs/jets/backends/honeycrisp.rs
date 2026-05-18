@@ -7,22 +7,229 @@
 //!
 //! Targets aarch64 macOS using Apple Matrix Coprocessor (AMX) for polynomial
 //! arithmetic and Metal/MSL kernels for hash (Poseidon2) and NTT.
-//! For 0.1.0, all jets fall back to the CPU backend.
-//! AMX and Metal kernels will be added in 0.2.0.
+//! NTT and poly_eval are wired to acpu kernels.
+//! All other jets fall back to the CPU backend.
 //!
-//! Availability check: always returns false in 0.1.0 so the
-//! backend selection in mod.rs will skip to CPU.
+//! Availability check: returns true on aarch64 macOS when the honeycrisp
+//! feature is enabled.
 
 use crate::jets::registry::JetRegistry;
 
-/// Returns true if Apple Silicon AMX is available.
-/// Always false in 0.1.0; AMX feature detection added in 0.2.0.
+/// Returns true on aarch64 macOS (runtime guard for backend dispatch).
 pub fn available() -> bool {
-    false
+    cfg!(all(target_os = "macos", target_arch = "aarch64"))
 }
 
-/// Build the genesis registry using Honeycrisp (AMX+Metal) jets.
-/// Falls back to the CPU backend for 0.1.0.
+#[cfg(feature = "honeycrisp")]
+mod hc_jets {
+    extern crate alloc;
+    use alloc::vec::Vec;
+
+    use nebu::Goldilocks;
+    use crate::noun::{Order, NounId, Noun, Tag};
+    use crate::reduce::{Outcome, ErrorKind, cell_pair};
+    use crate::call::CallProvider;
+    use crate::trace::{Tracer, TraceRow};
+
+    // ── NTT jet ──────────────────────────────────────────────────────────────
+
+    pub fn honeycrisp_ntt_jet<const N: usize>(
+        order: &mut Order<N>, object: NounId, _body: NounId, budget: u64,
+        _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+        row: &mut TraceRow,
+    ) -> Outcome {
+        // object = [[n | formula] | [values_tree | omega]]
+        let (lhs, rhs) = match cell_pair(order, object) {
+            Some(p) => p,
+            None => return Outcome::Error(ErrorKind::Malformed),
+        };
+        let (n_id, _formula_id) = match cell_pair(order, lhs) {
+            Some(p) => p,
+            None => return Outcome::Error(ErrorKind::Malformed),
+        };
+        let (tree_id, omega_id) = match cell_pair(order, rhs) {
+            Some(p) => p,
+            None => return Outcome::Error(ErrorKind::Malformed),
+        };
+
+        let n = match order.atom_value(n_id) {
+            Some((v, _)) => v.as_u64() as usize,
+            None => return Outcome::Error(ErrorKind::TypeError),
+        };
+        let omega = match order.atom_value(omega_id) {
+            Some((v, _)) => v,
+            None => return Outcome::Error(ErrorKind::TypeError),
+        };
+
+        let size = 1usize << n;
+
+        // Budget: n × size butterfly operations
+        let cost = (n as u64).saturating_mul(size as u64);
+        if budget < cost {
+            return Outcome::Halt(budget);
+        }
+        let remaining = budget - cost;
+
+        // Flatten the balanced binary tree into a Vec<Goldilocks>.
+        let mut vals: Vec<Goldilocks> = Vec::with_capacity(size);
+        if !flatten_tree(order, tree_id, &mut vals) {
+            return Outcome::Error(ErrorKind::TypeError);
+        }
+        if vals.len() != size {
+            return Outcome::Error(ErrorKind::TypeError);
+        }
+
+        // Convert to u64, run acpu NTT, convert back.
+        let mut vals_u64: Vec<u64> = vals.iter().map(|g| g.as_u64()).collect();
+        let omega_u64 = omega.as_u64();
+        acpu::field::ntt_forward(&mut vals_u64, omega_u64);
+        let vals_out: Vec<Goldilocks> = vals_u64.into_iter().map(Goldilocks::new).collect();
+
+        // Write result back as a balanced binary tree into the order.
+        let result_tree = match build_tree(order, &vals_out) {
+            Some(id) => id,
+            None => return Outcome::Error(ErrorKind::Unavailable),
+        };
+
+        row.r[4] = tree_id as u64;
+        row.r[5] = omega_id as u64;
+        row.r[6] = result_tree as u64;
+
+        Outcome::Ok(result_tree, remaining)
+    }
+
+    // ── poly_eval jet ─────────────────────────────────────────────────────────
+
+    pub fn honeycrisp_poly_eval_jet<const N: usize>(
+        order: &mut Order<N>, object: NounId, _body: NounId, budget: u64,
+        _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+        row: &mut TraceRow,
+    ) -> Outcome {
+        // object = [[k | formula] | [evals_tree | point]]
+        let (lhs, rhs) = match cell_pair(order, object) {
+            Some(p) => p,
+            None => return Outcome::Error(ErrorKind::Malformed),
+        };
+        let (k_id, _formula_id) = match cell_pair(order, lhs) {
+            Some(p) => p,
+            None => return Outcome::Error(ErrorKind::Malformed),
+        };
+        let (evals_id, point_id) = match cell_pair(order, rhs) {
+            Some(p) => p,
+            None => return Outcome::Error(ErrorKind::Malformed),
+        };
+
+        let k = match order.atom_value(k_id) {
+            Some((v, _)) => v.as_u64() as usize,
+            None => return Outcome::Error(ErrorKind::TypeError),
+        };
+
+        // Flatten the balanced binary tree of evaluations into a Vec<Goldilocks>.
+        let mut evals: Vec<Goldilocks> = Vec::new();
+        if !flatten_tree(order, evals_id, &mut evals) {
+            return Outcome::Error(ErrorKind::TypeError);
+        }
+        let expected = 1usize << k;
+        if evals.len() != expected {
+            return Outcome::Error(ErrorKind::TypeError);
+        }
+
+        // Decode k coordinates from the right-nested point list (big-endian, MSV first).
+        let mut point: Vec<Goldilocks> = Vec::with_capacity(k);
+        let mut cur = point_id;
+        for _ in 0..k {
+            match cell_pair(order, cur) {
+                Some((head, tail)) => match order.atom_value(head) {
+                    Some((v, _)) => { point.push(v); cur = tail; }
+                    None => return Outcome::Error(ErrorKind::TypeError),
+                },
+                None => return Outcome::Error(ErrorKind::TypeError),
+            }
+        }
+
+        let cost = expected as u64;
+        if budget < cost {
+            return Outcome::Halt(budget);
+        }
+        let remaining = budget - cost;
+
+        // Convert to u64, call acpu kernel, convert result back.
+        let evals_u64: Vec<u64> = evals.iter().map(|g| g.as_u64()).collect();
+        let point_u64: Vec<u64> = point.iter().map(|g| g.as_u64()).collect();
+        let value_u64 = acpu::field::multilinear_eval(&evals_u64, &point_u64);
+        let value = Goldilocks::new(value_u64);
+
+        row.r[4] = evals_id as u64;
+        row.r[5] = point_id as u64;
+        row.r[6] = value.as_u64();
+
+        match order.atom(value, Tag::Field) {
+            Some(r) => Outcome::Ok(r, remaining),
+            None => Outcome::Error(ErrorKind::Unavailable),
+        }
+    }
+
+    // ── shared tree helpers ───────────────────────────────────────────────────
+
+    fn flatten_tree<const N: usize>(order: &Order<N>, id: NounId, out: &mut Vec<Goldilocks>) -> bool {
+        let inner = match order.get(id) {
+            Some(e) => e.inner,
+            None => return false,
+        };
+        match inner {
+            Noun::Atom { .. } => match order.atom_value(id) {
+                Some((v, _)) => { out.push(v); true }
+                None => false,
+            },
+            Noun::Cell { left, right } => {
+                flatten_tree(order, left, out) && flatten_tree(order, right, out)
+            }
+        }
+    }
+
+    fn build_tree<const N: usize>(order: &mut Order<N>, vals: &[Goldilocks]) -> Option<NounId> {
+        if vals.len() == 1 {
+            return order.atom(vals[0], Tag::Field);
+        }
+        let mid = vals.len() / 2;
+        let left  = build_tree(order, &vals[..mid])?;
+        let right = build_tree(order, &vals[mid..])?;
+        order.cell(left, right)
+    }
+}
+
+/// Build the genesis registry using Honeycrisp (acpu) jets for NTT and poly_eval.
+/// All other jets fall back to the CPU backend.
 pub fn genesis_honeycrisp<const N: usize>() -> JetRegistry<N> {
-    super::cpu::genesis_cpu()
+    #[cfg(feature = "honeycrisp")]
+    {
+        use crate::jets::registry::compute_genesis_digests;
+        use crate::jets::{merkle_verify, fri_fold, state, decider};
+
+        let digests = compute_genesis_digests();
+        let mut reg = JetRegistry::empty();
+
+        // acpu-accelerated jets
+        reg.insert_exact(digests.ntt,       hc_jets::honeycrisp_ntt_jet::<N>);
+        reg.insert_exact(digests.poly_eval, hc_jets::honeycrisp_poly_eval_jet::<N>);
+
+        // CPU fallbacks for remaining exact-match jets
+        reg.insert_exact(digests.merkle_verify, merkle_verify::merkle_verify_jet::<N>);
+        reg.insert_exact(digests.fri_fold,      fri_fold::fri_fold_jet::<N>);
+        reg.insert_exact(digests.cyberlink,     state::cyberlink_jet::<N>);
+        reg.insert_exact(digests.decider,       decider::decider_jet::<N>);
+
+        // Template jets — CPU implementations
+        reg.insert_template(state::is_transfer::<N>,  state::transfer_jet::<N>);
+        reg.insert_template(state::is_insert::<N>,    state::insert_jet::<N>);
+        reg.insert_template(state::is_update::<N>,    state::update_jet::<N>);
+        reg.insert_template(state::is_aggregate::<N>, state::aggregate_jet::<N>);
+        reg.insert_template(state::is_conserve::<N>,  state::conserve_jet::<N>);
+
+        reg
+    }
+    #[cfg(not(feature = "honeycrisp"))]
+    {
+        super::cpu::genesis_cpu()
+    }
 }
