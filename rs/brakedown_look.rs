@@ -18,7 +18,7 @@ use std::sync::Mutex;
 use alloc::vec::Vec;
 
 use cyb_lens_brakedown::Brakedown;
-use cyb_lens_core::{Lens, MultilinearPoly};
+use cyb_lens_core::{Commitment, Lens, MultilinearPoly};
 use nebu::Goldilocks;
 
 use crate::noun::{Order, NounId};
@@ -40,6 +40,7 @@ pub struct LookOpening {
 /// l0 (axis 4 of the object noun).
 pub struct BrakedownLookProvider {
     poly: MultilinearPoly<Goldilocks>,
+    commitment: Commitment,
     commitment_field: Goldilocks,
     openings: Mutex<Vec<LookOpening>>,
 }
@@ -51,7 +52,7 @@ impl BrakedownLookProvider {
         let mut buf = [0u8; 8];
         buf.copy_from_slice(&bytes[0..8]);
         let commitment_field = Goldilocks::new(u64::from_le_bytes(buf));
-        Self { poly, commitment_field, openings: Mutex::new(Vec::new()) }
+        Self { poly, commitment, commitment_field, openings: Mutex::new(Vec::new()) }
     }
 
     /// Drain accumulated openings for batch proof generation.
@@ -60,9 +61,13 @@ impl BrakedownLookProvider {
         core::mem::take(&mut *guard)
     }
 
-    pub fn commitment_field(&self) -> Goldilocks {
-        self.commitment_field
-    }
+    /// The polynomial committed at construction time.
+    pub fn poly(&self) -> &MultilinearPoly<Goldilocks> { &self.poly }
+
+    /// The Brakedown commitment to `poly`.
+    pub fn commitment(&self) -> &Commitment { &self.commitment }
+
+    pub fn commitment_field(&self) -> Goldilocks { self.commitment_field }
 }
 
 impl LookProvider for BrakedownLookProvider {
