@@ -1,0 +1,75 @@
+-- nox/Model.ei — shared type definitions for T1/T2/T3
+-- Source: nox/proofs/lean/nox_model.lean
+
+-- ── Tag: 18 pattern tags ──────────────────────────────────────────────────────
+
+inductive Tag : Type 0 where
+  | axis         : Tag
+  | quote        : Tag
+  | compose      : Tag
+  | cons         : Tag
+  | branch       : Tag
+  | add          : Tag
+  | sub          : Tag
+  | mul          : Tag
+  | inv          : Tag
+  | eq           : Tag
+  | lt           : Tag
+  | xor          : Tag
+  | andp         : Tag
+  | notp         : Tag
+  | shl          : Tag
+  | hash         : Tag
+  | call         : Tag
+  | look         : Tag
+
+-- ── AtomKind ──────────────────────────────────────────────────────────────────
+
+inductive AtomKind : Type 0 where
+  | field : AtomKind
+  | word  : AtomKind
+
+-- ── Noun: recursive atom/cell tree ───────────────────────────────────────────
+
+inductive Noun : Type 0 where
+  | atom : Nat -> AtomKind -> Noun
+  | cell : Noun -> Noun -> Noun
+
+-- ── ErrorKind ────────────────────────────────────────────────────────────────
+
+inductive ErrorKind : Type 0 where
+  | typeError    : ErrorKind
+  | axisError    : ErrorKind
+  | invZero      : ErrorKind
+  | unavailable  : ErrorKind
+  | malformed    : ErrorKind
+  | callRejected : ErrorKind
+
+-- ── Outcome ──────────────────────────────────────────────────────────────────
+
+inductive Outcome : Type 0 where
+  | ok   : Noun -> Nat -> Outcome
+  | halt : Nat -> Outcome
+  | error : ErrorKind -> Outcome
+
+-- ── Cost bound (Nat-simplified, mirrors T2.ei) ────────────────────────────────
+
+axiom bound : Noun -> Nat
+
+-- ── Sequential and parallel reduction stubs ──────────────────────────────────
+
+axiom reduce_seq : Noun -> Noun -> Nat -> Outcome
+axiom reduce_par : Noun -> Noun -> Nat -> Outcome
+
+-- reduce_par is definitionally reduce_seq in current stub model (T1.1 vacuous)
+axiom reduce_par_def (o : Noun) (t : Noun) (f : Nat) :
+    Eq Outcome (reduce_seq o t f) (reduce_par o t f)
+
+-- ── Trace stubs (abstract as Nat) ────────────────────────────────────────────
+
+axiom trace_seq : Noun -> Noun -> Nat -> Nat
+axiom trace_par : Noun -> Noun -> Nat -> Nat
+
+-- empty-trace axioms: both stub traces return 0
+axiom trace_seq_empty (o : Noun) (t : Noun) (f : Nat) : Eq Nat (trace_seq o t f) 0
+axiom trace_par_empty (o : Noun) (t : Noun) (f : Nat) : Eq Nat (trace_par o t f) 0

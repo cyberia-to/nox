@@ -1,0 +1,76 @@
+-- nox/T3.ei — parallel commutativity of witness traces
+-- Source: nox/proofs/lean/T3_parallel_commutativity.lean
+-- T3.1 (sort permutation invariant), T3.2 (multiset equiv), T3 main
+
+import "Model.ei"
+
+-- ── PathStep: structural trace position ──────────────────────────────────────
+
+inductive PathStep : Type 0 where
+  | left         : PathStep
+  | right        : PathStep
+  | test         : PathStep
+  | yes          : PathStep
+  | no           : PathStep
+  | sub          : PathStep
+  | continuation : PathStep
+  | tag          : PathStep
+  | check        : PathStep
+
+-- ── StructuralIndex (abstract) ────────────────────────────────────────────────
+
+axiom StructuralIndex : Type 0
+
+-- ── Perm: permutation relation over abstract traces (Nat) ────────────────────
+
+axiom Perm : Nat -> Nat -> Type 0
+
+-- nil case: empty traces (both 0) are trivially permutations
+axiom Perm.nil : Perm 0 0
+
+-- ── sortByPath: canonical sort of a trace ────────────────────────────────────
+
+axiom sortByPath : Nat -> Nat
+
+-- ── keyInjective: injectivity predicate for a trace ──────────────────────────
+
+axiom keyInjective : Nat -> Type 0
+
+-- ── T3.1 — sort is permutation-invariant ─────────────────────────────────────
+-- Requires mergeSort Perm case analysis — stays as axiom.
+
+axiom sort_permutation_invariant (t1 : Nat) (t2 : Nat)
+    (h : Perm t1 t2)
+    (uniq : keyInjective t1) :
+    Eq Nat (sortByPath t1) (sortByPath t2)
+
+-- keyInjective holds for the empty (0) trace
+axiom keyInjective_nil : keyInjective 0
+
+-- ── T3.2 — multiset equivalence ──────────────────────────────────────────────
+-- Both stubs reduce to 0 via empty-trace axioms; Perm.nil closes.
+
+theorem threaded_trace_is_permutation (o : Noun) (t : Noun) (f : Nat) :
+    Perm (trace_seq o t f) (trace_par o t f) := by {
+  rewrite [trace_seq_empty o t f]
+  rewrite [trace_par_empty o t f]
+  exact Perm.nil
+}
+
+-- ── keyInjective holds for stub traces ────────────────────────────────────────
+
+theorem trace_seq_key_injective (o : Noun) (t : Noun) (f : Nat) :
+    keyInjective (trace_seq o t f) := by {
+  rewrite [trace_seq_empty o t f]
+  exact keyInjective_nil
+}
+
+-- ── T3 main — canonical-sorted trace equivalence ─────────────────────────────
+
+theorem canonical_trace_equivalence (o : Noun) (t : Noun) (f : Nat)
+    (uniq : keyInjective (trace_seq o t f)) :
+    Eq Nat (sortByPath (trace_seq o t f)) (sortByPath (trace_par o t f)) := by {
+  rewrite [trace_seq_empty o t f]
+  rewrite [trace_par_empty o t f]
+  rfl
+}

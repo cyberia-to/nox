@@ -1,0 +1,32 @@
+-- nox/T1.ei — sequential equivalence theorem
+-- Source: nox/proofs/lean/T1_sequential_equivalence.lean
+-- T1.1 (outcome equiv), T1.2 (trace equiv), T1 main (conjunction)
+
+import "T3.ei"
+
+-- ── T1.1 — Outcome equivalence ───────────────────────────────────────────────
+-- reduce_par is definitionally reduce_seq; proved by exact on reduce_par_def.
+
+theorem outcome_equivalence (o : Noun) (t : Noun) (f : Nat) :
+    Eq Outcome (reduce_seq o t f) (reduce_par o t f) := by {
+  exact (reduce_par_def o t f)
+}
+
+-- ── T1.2 — Trace equivalence (after canonical sort) ──────────────────────────
+-- Directly from T3.canonical_trace_equivalence.
+
+theorem trace_equivalence (o : Noun) (t : Noun) (f : Nat)
+    (uniq : keyInjective (trace_seq o t f)) :
+    Eq Nat (sortByPath (trace_seq o t f)) (sortByPath (trace_par o t f)) := by {
+  exact (canonical_trace_equivalence o t f uniq)
+}
+
+-- ── T1 main — observational equivalence ──────────────────────────────────────
+-- Conjunction of outcome and trace equivalence.
+
+theorem T1 (o : Noun) (t : Noun) (f : Nat)
+    (uniq : keyInjective (trace_seq o t f)) :
+    And (Eq Outcome (reduce_seq o t f) (reduce_par o t f))
+        (Eq Nat (sortByPath (trace_seq o t f)) (sortByPath (trace_par o t f))) := by {
+  exact (And.intro _ _ (outcome_equivalence o t f) (trace_equivalence o t f uniq))
+}

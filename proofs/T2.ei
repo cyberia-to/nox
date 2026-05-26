@@ -1,0 +1,120 @@
+-- nox/T2.ei — bound monotonicity for nox formula patterns
+-- Source: nox/proofs/lean/T2_bound_monotonicity.lean
+
+-- ── Types ─────────────────────────────────────────────────────────────────────
+
+inductive AtomKind : Type 1 where
+  | field    : AtomKind
+  | register : AtomKind
+
+inductive Formula : Type 1 where
+  | atom : Nat -> AtomKind -> Formula
+  | cell : Formula -> Formula -> Formula
+
+-- bound : Formula -> Nat (simplified from bound : Formula -> Cost)
+axiom bound : Formula -> Nat
+
+-- ── T2.1 — atom bound is 0 ────────────────────────────────────────────────────
+
+axiom bound_atom (n : Nat) (k : AtomKind) :
+    Eq Nat (bound (Formula.atom n k)) 0
+
+-- ── T2.2 — binary structural patterns ────────────────────────────────────────
+
+axiom bound_cons (a : Formula) (b : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 3 AtomKind.field) (Formula.cell a b)))
+           (Nat.add 1 (Nat.add (bound a) (bound b)))
+
+axiom bound_add (a : Formula) (b : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 5 AtomKind.field) (Formula.cell a b)))
+           (Nat.add 1 (Nat.add (bound a) (bound b)))
+
+axiom bound_sub (a : Formula) (b : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 6 AtomKind.field) (Formula.cell a b)))
+           (Nat.add 1 (Nat.add (bound a) (bound b)))
+
+axiom bound_mul (a : Formula) (b : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 7 AtomKind.field) (Formula.cell a b)))
+           (Nat.add 1 (Nat.add (bound a) (bound b)))
+
+axiom bound_eq (a : Formula) (b : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 9 AtomKind.field) (Formula.cell a b)))
+           (Nat.add 1 (Nat.add (bound a) (bound b)))
+
+axiom bound_lt (a : Formula) (b : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 10 AtomKind.field) (Formula.cell a b)))
+           (Nat.add 64 (Nat.add (bound a) (bound b)))
+
+axiom bound_xor (a : Formula) (b : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 11 AtomKind.field) (Formula.cell a b)))
+           (Nat.add 32 (Nat.add (bound a) (bound b)))
+
+axiom bound_and (a : Formula) (b : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 12 AtomKind.field) (Formula.cell a b)))
+           (Nat.add 32 (Nat.add (bound a) (bound b)))
+
+axiom bound_shl (a : Formula) (n : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 14 AtomKind.field) (Formula.cell a n)))
+           (Nat.add 32 (Nat.add (bound a) (bound n)))
+
+axiom bound_look (ns : Formula) (key : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 17 AtomKind.field) (Formula.cell ns key)))
+           (Nat.add 1 (Nat.add (bound ns) (bound key)))
+
+-- ── T2.3 — unary patterns ─────────────────────────────────────────────────────
+
+axiom bound_inv (a : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 8 AtomKind.field) a))
+           (Nat.add 64 (bound a))
+
+axiom bound_not (a : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 13 AtomKind.field) a))
+           (Nat.add 32 (bound a))
+
+axiom bound_hash (a : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 15 AtomKind.field) a))
+           (Nat.add 25 (bound a))
+
+-- ── T2.4 — branch ─────────────────────────────────────────────────────────────
+
+axiom bound_branch (test : Formula) (yes : Formula) (no : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 4 AtomKind.field)
+                    (Formula.cell test (Formula.cell yes no))))
+           (Nat.add 1 (Nat.add (bound test) (Nat.max (bound yes) (bound no))))
+
+-- ── T2.5 — no-sub patterns ────────────────────────────────────────────────────
+
+axiom bound_axis (addr : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 0 AtomKind.field) addr)) 1
+
+axiom bound_quote (c : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 1 AtomKind.field) c)) 1
+
+-- ── T2.6 — compose: always dynamic ───────────────────────────────────────────
+
+axiom bound_compose (x : Formula) (y : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 2 AtomKind.field) (Formula.cell x y)))
+           (Nat.add 1 (Nat.add (bound x) (bound y)))
+
+-- ── T2.7 — call: always dynamic ──────────────────────────────────────────────
+
+axiom bound_call (tag : Formula) (check : Formula) :
+    Eq Nat (bound (Formula.cell (Formula.atom 16 AtomKind.field) (Formula.cell tag check)))
+           (Nat.add 1 (bound tag))
+
+-- ── T2 monotonicity ───────────────────────────────────────────────────────────
+
+axiom bound_monotone_in_left (a : Formula) (a' : Formula) (b : Formula)
+    (hge : Le (bound a) (bound a')) :
+    Le (bound (Formula.cell (Formula.atom 5 AtomKind.field) (Formula.cell a b)))
+       (bound (Formula.cell (Formula.atom 5 AtomKind.field) (Formula.cell a' b)))
+
+-- ── T2.8 — upper bound (vacuous — reduce_seq is a stub) ─────────────────────
+
+axiom Noun : Type 1
+axiom reduce_seq : Noun -> Formula -> Nat -> Nat
+
+axiom bound_upper_bounds_actual_cost
+    (o : Noun) (t : Formula) (f : Nat) (r : Nat)
+    (h : Eq Nat (reduce_seq o t f) r) :
+    Le (Nat.sub f r) (bound t)
