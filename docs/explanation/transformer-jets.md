@@ -19,7 +19,7 @@ all seven operations decompose into existing [[cyb/languages]]:
 |-----|-----------|-------------|-----------|------------|
 | 0 sparse_svd | φ*-weighted truncated SVD | [[Ten]] (contraction) | [[Arc]] (adjacency) | Ten → Tri |
 | 1 spectral_rank | effective dimensionality d* | [[Bel]] (entropy on Δⁿ) | [[Ten]] | Bel → research / Ten → Tri |
-| 2 semcon_partition | subgraph extraction by edge type | [[Arc]] (subcategory) | — | Arc → Tri |
+| 2 dialect_partition | subgraph extraction by edge type | [[Arc]] (subcategory) | — | Arc → Tri |
 | 3 compile_weights | assemble transformer weights | [[Ten]] | [[Arc]] | composition of jets 0-2 |
 | 4 hull_attention | 2D convex hull max-dot query | [[Ren]] (G(2,0,0)) | — | Ren → Tri |
 | 5 tri_step | composite D+S+H operator | [[Ten]] (SpMV) | [[Arc]], [[Bel]] | Ten → Tri |
@@ -32,8 +32,8 @@ these are composite jets — compositions of existing language primitives recogn
 ```
 sparse_svd     = Ten(matmul, transpose) ∘ Arc(φ*_weighted_adjacency)
 spectral_rank  = Bel(shannon_entropy) ∘ Ten(normalize_spectrum)
-semcon_partition = Arc(filter_edges_by_morphism_type)
-compile_weights = Ten(assemble) ∘ sparse_svd ∘ semcon_partition
+dialect_partition = Arc(filter_edges_by_morphism_type)
+compile_weights = Ten(assemble) ∘ sparse_svd ∘ dialect_partition
 hull_attention  = Ren(convex_hull_supporting_point)     ← one new Ren op
 tri_step       = Ten(spmv) × 3 + Ten(simplex_project)  ← existing "matmul jet → fma"
 reconverge     = tri_step^k + Tok(verify_conservation) + Tri(stark_prove)
@@ -75,15 +75,15 @@ language decomposition: Ten normalizes the spectrum. Bel computes Shannon entrop
 - pure equivalent: ~3N ops (normalize, log, entropy sum)
 - jet cost: N (number of singular values)
 
-## jet 2: semcon_partition
+## jet 2: dialect_partition
 
 ```
-semcon_partition(A_eff, semcon_ids) → Vec<A_s>
-  input:  effective adjacency matrix, semcon type assignments
-  output: per-semcon adjacency submatrices
+dialect_partition(A_eff, dialect_ids) → Vec<A_s>
+  input:  effective adjacency matrix, dialect type assignments
+  output: per-dialect adjacency submatrices
 ```
 
-language decomposition: pure Arc — extract subcategories of the cybergraph by morphism type (semcon). each semcon s defines a subgraph from which attention weights W_Q^(s), W_K^(s) are derived. the number of distinct semcons determines h* (minimum head count).
+language decomposition: pure Arc — extract subcategories of the cybergraph by morphism type (dialect). each dialect s defines a subgraph from which attention weights W_Q^(s), W_K^(s) are derived. the number of distinct dialects determines h* (minimum head count).
 
 - jet cost: O(|E| · h*)
 
@@ -91,7 +91,7 @@ language decomposition: pure Arc — extract subcategories of the cybergraph by 
 
 ```
 compile_weights(E*, {A_s}, L*, d*) → TransformerWeights
-  input:  embedding matrix, per-semcon adjacencies, layer count, dim
+  input:  embedding matrix, per-dialect adjacencies, layer count, dim
   output: complete compiled transformer weight set
 ```
 
@@ -159,7 +159,7 @@ language decomposition: tri_step^k (Ten) until convergence + Tok conservation ve
 graph state (bbg)
     ↓ sparse_svd (jet 0: Ten ∘ Arc)
     ↓ spectral_rank (jet 1: Bel ∘ Ten)
-    ↓ semcon_partition (jet 2: Arc)
+    ↓ dialect_partition (jet 2: Arc)
     ↓ compile_weights (jet 3: Ten ∘ Arc)
 compiled transformer
     ↓ hull_attention (jet 4: Ren)  × L* layers
@@ -210,7 +210,7 @@ the languages doc states: "Add any plausible new language — say, a concurrent 
 
 ## open questions
 
-- hull_attention in higher dimensions: 2D hulls give O(log n). 3D hulls give O(log² n). is 2D sufficient for all tri-kernel diffusion steps, or do some semcon heads benefit from 3D?
+- hull_attention in higher dimensions: 2D hulls give O(log n). 3D hulls give O(log² n). is 2D sufficient for all tri-kernel diffusion steps, or do some dialect heads benefit from 3D?
 - Bel readiness: spectral_rank uses Bel (entropy on simplex). Bel is currently "research horizon." should this jet accelerate Bel's move to engineering-ready?
 - compilation frequency: recompile per-epoch (slow, high quality) or incremental (fast, approximate)?
 - training residual: after compilation, what does fine-tuning learn that the graph cannot encode? quantifying this gap determines the value of the compiled path vs pure focus flow
