@@ -131,11 +131,13 @@ Unrecognized formulas: full nox execution trace → SuperSpartan proof
 
 ## 4. Ownership
 
-By the boundary rule applied across the jet set, the authenticated state
-layer is bbg's. The signal/box/nullifier circuits are bbg-owned; nox holds
-the formula-hash anchors and the wrapper that delegates to the bbg state
-provider (today's `CallProvider`). This mirrors decider→zheng
-([[decider-ownership]]) and hash→hemera.
+State is one of the registry's products (see [[decider-product]] for the
+product principle): the cybergraph state machine. By the boundary rule
+applied across the jet set, the authenticated state layer is bbg's. The
+signal/box/nullifier circuits are bbg-owned; nox holds the formula-hash
+anchors and the wrapper that delegates to the bbg state provider (today's
+`CallProvider`). This mirrors decider→zheng ([[decider-product]]) and
+hash→hemera — grouping by product, ownership by domain repo.
 
 The current `rs/jets/state.rs` (transfer/insert/update/aggregate/conserve
 delegating to `CallProvider`) is scaffolding against the dead design. It
@@ -179,5 +181,5 @@ the current set is carved against a model bbg no longer implements.
    proven inside the signal jet, or as a separate per-block circuit? The
    tri-kernel is a composite (diffusion + springs + heat); its proof shape
    needs cross-checking with bbg.
-4. Coordinate the genesis-digest source of truth with [[decider-ownership]]
+4. Coordinate the genesis-digest source of truth with [[decider-product]]
    — both proposals move circuit ownership out of nox while keeping anchors.
