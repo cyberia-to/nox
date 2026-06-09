@@ -17,7 +17,7 @@ the 16 deterministic compute patterns are algebra-polymorphic — parameterized 
 ║  0: axis — navigate          5: add — F-addition                          ║
 ║  1: quote — literal          6: sub — F-subtraction                       ║
 ║  2: compose — recursion      7: mul — F-multiplication                    ║
-║  3: cons — build cell        8: inv — F-inverse                           ║
+║  3: cons — build pair        8: inv — F-inverse                           ║
 ║  4: branch — conditional     9: eq  — equality test                       ║
 ║                              10: lt — less-than                           ║
 ║                                                                           ║
@@ -64,7 +64,7 @@ Layer │ Pattern      │ Exec Cost      │ zheng Constraints │ Rationale
   1   │ 0 axis       │ 1              │ 1                 │ O(1) Lens opening
   1   │ 1 quote      │ 1              │ 1                 │ literal return
   1   │ 2 compose    │ 1              │ 1                 │ dispatch only
-  1   │ 3 cons       │ 1              │ 1                 │ cell construction
+  1   │ 3 cons       │ 1              │ 1                 │ pair construction
   1   │ 4 branch     │ 1              │ 1                 │ test + select
   1   │ 5 add        │ 1              │ 1                 │ F-addition
   1   │ 6 sub        │ 1              │ 1                 │ F-subtraction
@@ -91,6 +91,6 @@ inv(0) = ⊥_error
 
 reduce([1,2], [5 [[0 2] [0 3]]], 100) = (3, 97)
 reduce(42, [1 7], 10) = (7, 9)
-reduce([1,2], [3 [[0 2] [0 3]]], 100) = (cell(1, 2), 97)
+reduce([1,2], [3 [[0 2] [0 3]]], 100) = (pair(1, 2), 97)
 reduce([1,2], [4 [[9 [[0 2] [0 3]]] [[1 100] [1 200]]]], 100) = (200, 95)
 ```

@@ -26,38 +26,38 @@ mod hc_jets {
     use alloc::vec::Vec;
 
     use nebu::Goldilocks;
-    use crate::noun::{Order, NounId, Noun, Tag};
-    use crate::reduce::{Outcome, ErrorKind, cell_pair};
+    use crate::data::{Order, OrderId, Data};
+    use crate::reduce::{Outcome, ErrorKind, pair_children};
     use crate::call::CallProvider;
     use crate::trace::{Tracer, TraceRow};
 
     // ── NTT jet ──────────────────────────────────────────────────────────────
 
     pub fn honeycrisp_ntt_jet<const N: usize>(
-        order: &mut Order<N>, object: NounId, _body: NounId, budget: u64,
+        order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
         _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
         row: &mut TraceRow,
     ) -> Outcome {
         // object = [[n | formula] | [values_tree | omega]]
-        let (lhs, rhs) = match cell_pair(order, object) {
+        let (lhs, rhs) = match pair_children(order, object) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
-        let (n_id, _formula_id) = match cell_pair(order, lhs) {
+        let (n_id, _formula_id) = match pair_children(order, lhs) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
-        let (tree_id, omega_id) = match cell_pair(order, rhs) {
+        let (tree_id, omega_id) = match pair_children(order, rhs) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
 
         let n = match order.atom_value(n_id) {
-            Some((v, _)) => v.as_u64() as usize,
+            Some(v) => v.as_u64() as usize,
             None => return Outcome::Error(ErrorKind::TypeError),
         };
         let omega = match order.atom_value(omega_id) {
-            Some((v, _)) => v,
+            Some(v) => v,
             None => return Outcome::Error(ErrorKind::TypeError),
         };
 
@@ -101,26 +101,26 @@ mod hc_jets {
     // ── poly_eval jet ─────────────────────────────────────────────────────────
 
     pub fn honeycrisp_poly_eval_jet<const N: usize>(
-        order: &mut Order<N>, object: NounId, _body: NounId, budget: u64,
+        order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
         _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
         row: &mut TraceRow,
     ) -> Outcome {
         // object = [[k | formula] | [evals_tree | point]]
-        let (lhs, rhs) = match cell_pair(order, object) {
+        let (lhs, rhs) = match pair_children(order, object) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
-        let (k_id, _formula_id) = match cell_pair(order, lhs) {
+        let (k_id, _formula_id) = match pair_children(order, lhs) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
-        let (evals_id, point_id) = match cell_pair(order, rhs) {
+        let (evals_id, point_id) = match pair_children(order, rhs) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
 
         let k = match order.atom_value(k_id) {
-            Some((v, _)) => v.as_u64() as usize,
+            Some(v) => v.as_u64() as usize,
             None => return Outcome::Error(ErrorKind::TypeError),
         };
 
@@ -138,9 +138,9 @@ mod hc_jets {
         let mut point: Vec<Goldilocks> = Vec::with_capacity(k);
         let mut cur = point_id;
         for _ in 0..k {
-            match cell_pair(order, cur) {
+            match pair_children(order, cur) {
                 Some((head, tail)) => match order.atom_value(head) {
-                    Some((v, _)) => { point.push(v); cur = tail; }
+                    Some(v) => { point.push(v); cur = tail; }
                     None => return Outcome::Error(ErrorKind::TypeError),
                 },
                 None => return Outcome::Error(ErrorKind::TypeError),
@@ -163,7 +163,7 @@ mod hc_jets {
         row.r[5] = point_id as u64;
         row.r[6] = value.as_u64();
 
-        match order.atom(value, Tag::Field) {
+        match order.atom(value) {
             Some(r) => Outcome::Ok(r, remaining),
             None => Outcome::Error(ErrorKind::Unavailable),
         }
@@ -171,30 +171,30 @@ mod hc_jets {
 
     // ── shared tree helpers ───────────────────────────────────────────────────
 
-    fn flatten_tree<const N: usize>(order: &Order<N>, id: NounId, out: &mut Vec<Goldilocks>) -> bool {
+    fn flatten_tree<const N: usize>(order: &Order<N>, id: OrderId, out: &mut Vec<Goldilocks>) -> bool {
         let inner = match order.get(id) {
             Some(e) => e.inner,
             None => return false,
         };
         match inner {
-            Noun::Atom { .. } => match order.atom_value(id) {
-                Some((v, _)) => { out.push(v); true }
+            Data::Atom { .. } => match order.atom_value(id) {
+                Some(v) => { out.push(v); true }
                 None => false,
             },
-            Noun::Cell { left, right } => {
+            Data::Pair { left, right } => {
                 flatten_tree(order, left, out) && flatten_tree(order, right, out)
             }
         }
     }
 
-    fn build_tree<const N: usize>(order: &mut Order<N>, vals: &[Goldilocks]) -> Option<NounId> {
+    fn build_tree<const N: usize>(order: &mut Order<N>, vals: &[Goldilocks]) -> Option<OrderId> {
         if vals.len() == 1 {
-            return order.atom(vals[0], Tag::Field);
+            return order.atom(vals[0]);
         }
         let mid = vals.len() / 2;
         let left  = build_tree(order, &vals[..mid])?;
         let right = build_tree(order, &vals[mid..])?;
-        order.cell(left, right)
+        order.pair(left, right)
     }
 }
 

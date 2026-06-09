@@ -13,7 +13,7 @@ reduce(o, [16 [tag_f check_f]], f) =
 
 note: tags are not validated by the VM; any field value is accepted as a tag.
 
-the single non-deterministic pattern. the prover injects a witness noun from outside the VM. the check formula is evaluated with [witness, object] as the new object. the check result must be the field element 0 (success). if the check returns non-zero, halts, or errors, the call returns CallRejected. on success, the witness itself is returned (not the check result).
+the single non-deterministic pattern. the prover injects a witness data from outside the VM. the check formula is evaluated with [witness, object] as the new object. the check result must be the field element 0 (success). if the check returns non-zero, halts, or errors, the call returns CallRejected. on success, the witness itself is returned (not the check result).
 
 the verifier NEVER executes call directly — it checks constraint satisfaction via the zheng proof.
 
@@ -21,11 +21,11 @@ the verifier NEVER executes call directly — it checks constraint satisfaction 
 
 ```
 trait CallProvider {
-    fn provide(&self, tag: F, object: NounId) -> CallResult;
+    fn provide(&self, tag: F, object: particle) -> CallResult;
 }
 
 enum CallResult {
-    Value(NounId),
+    Value(particle),
     Halt,
 }
 ```

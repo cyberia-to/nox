@@ -1,11 +1,11 @@
-//! Static cost bound type — cached per NounEntry.
+//! Static cost bound type — cached per DataEntry.
 //!
 //! `Cost::Exact(n)` is a tight upper bound. `Cost::Dynamic(n)` carries the
 //! statically-analyzable prefix and signals that the formula contains a
 //! compose (tag 2) or call (tag 16) at some depth — patterns where the
 //! continuation cost depends on runtime values.
 //!
-//! Cached on [`crate::noun::order::NounEntry`] at construction time so that
+//! Cached on [`crate::data::order::DataEntry`] at construction time so that
 //! the parallel-scheduling decision `bound(child) ≤ budget?` is O(1) at
 //! reduce time, independent of formula depth.
 
@@ -63,7 +63,7 @@ impl Cost {
 }
 
 /// Per-pattern static dispatch cost — must mirror `reduce::COSTS`.
-/// Used by `Order::cell` to compute cached bounds at construction time.
+/// Used by `Order::pair` to compute cached bounds at construction time.
 pub(crate) const PATTERN_COSTS: [u64; 18] = [
     1,   // 0  axis
     1,   // 1  quote

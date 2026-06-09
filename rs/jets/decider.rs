@@ -12,9 +12,9 @@
 //! (HyperNova multi-folding scheme, SuperSpartan relaxed R1CS).
 //!
 //! Registry calling convention:
-//!   object = [proof_noun | instance_noun]
-//!   proof_noun    = the folded proof (compressed witness)
-//!   instance_noun = the public instance to verify against
+//!   object = [proof_data | instance_data]
+//!   proof_data    = the folded proof (compressed witness)
+//!   instance_data = the public instance to verify against
 //!
 //! Returns: Field atom 1 (valid proof) or 0 (invalid).
 //! Budget: 825 (one unit per cross-term constraint verified).
@@ -24,8 +24,8 @@
 //! The formula hash uniquely identifies this jet; see jets/formulas.rs.
 
 use nebu::Goldilocks;
-use crate::noun::{Order, NounId, Tag};
-use crate::reduce::{Outcome, ErrorKind, cell_pair};
+use crate::data::{Order, OrderId};
+use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
@@ -36,12 +36,12 @@ const DECIDER_COST: u64 = 825;
 const DECIDER_CALL_TAG: u64 = 0xDEC1_DEC1;
 
 pub fn decider_jet<const N: usize>(
-    order: &mut Order<N>, object: NounId, _body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
     hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [proof | instance]
-    let (proof_id, instance_id) = match cell_pair(order, object) {
+    let (proof_id, instance_id) = match pair_children(order, object) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
@@ -57,7 +57,7 @@ pub fn decider_jet<const N: usize>(
     let tag = Goldilocks::new(DECIDER_CALL_TAG);
     let result = match hints.provide(order, tag, object) {
         Some(r) => r,
-        None => match order.atom(Goldilocks::ZERO, Tag::Field) {
+        None => match order.atom(Goldilocks::ZERO) {
             Some(r) => r,
             None => return Outcome::Error(ErrorKind::Unavailable),
         },
@@ -70,21 +70,21 @@ mod tests {
     use super::*;
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
     #[test]
     fn decider_with_null_calls_returns_zero() {
         let mut ar = Order::<256>::new();
-        let proof    = ar.atom(g(1), Tag::Field).unwrap();
-        let instance = ar.atom(g(2), Tag::Field).unwrap();
-        let obj      = ar.cell(proof, instance).unwrap();
-        let body     = ar.atom(g(0), Tag::Field).unwrap();
+        let proof    = ar.atom(g(1)).unwrap();
+        let instance = ar.atom(g(2)).unwrap();
+        let obj      = ar.pair(proof, instance).unwrap();
+        let body     = ar.atom(g(0)).unwrap();
         let mut row  = TraceRow::default();
         match decider_jet(&mut ar, obj, body, 10_000, &NullCalls, &mut NoTrace, 0, &mut row) {
             Outcome::Ok(r, rem) => {
-                assert_eq!(ar.atom_value(r).unwrap().0, g(0));
+                assert_eq!(ar.atom_value(r).unwrap(), g(0));
                 assert_eq!(rem, 10_000 - 825);
             }
             o => panic!("{:?}", o),
@@ -94,10 +94,10 @@ mod tests {
     #[test]
     fn decider_exhausted_budget_halts() {
         let mut ar = Order::<256>::new();
-        let proof    = ar.atom(g(1), Tag::Field).unwrap();
-        let instance = ar.atom(g(2), Tag::Field).unwrap();
-        let obj      = ar.cell(proof, instance).unwrap();
-        let body     = ar.atom(g(0), Tag::Field).unwrap();
+        let proof    = ar.atom(g(1)).unwrap();
+        let instance = ar.atom(g(2)).unwrap();
+        let obj      = ar.pair(proof, instance).unwrap();
+        let body     = ar.atom(g(0)).unwrap();
         let mut row  = TraceRow::default();
         match decider_jet(&mut ar, obj, body, 100, &NullCalls, &mut NoTrace, 0, &mut row) {
             Outcome::Halt(_) => {}

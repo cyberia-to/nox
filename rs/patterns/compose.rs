@@ -1,18 +1,18 @@
 //! pattern 2: compose — evaluate two sub-formulas, apply second to first
 //! reduce(s, [2 [x y]], b) = reduce(reduce(s,x), reduce(s,y), b')
 
-use crate::noun::{Order, NounId};
-use crate::reduce::{reduce_inner, Outcome, ErrorKind, cell_pair, evaluate_binary};
+use crate::data::{Order, OrderId};
+use crate::reduce::{reduce_inner, Outcome, ErrorKind, pair_children, evaluate_binary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::jets::registry::JetRegistry;
 
 pub fn compose<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (a, b) = match cell_pair(order, body) {
+    let (a, b) = match pair_children(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
@@ -36,7 +36,7 @@ mod tests {
     use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
     use crate::trace::NoTrace;
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
@@ -55,23 +55,23 @@ mod tests {
     #[test]
     fn compose_chains_reductions() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(5), Tag::Field).unwrap();
+        let obj = ar.atom(g(5)).unwrap();
 
         // [0 1] — axis identity formula
-        let t0 = ar.atom(g(0), Tag::Field).unwrap();
-        let t1 = ar.atom(g(1), Tag::Field).unwrap();
-        let axis_id = ar.cell(t0, t1).unwrap();
+        let t0 = ar.atom(g(0)).unwrap();
+        let t1 = ar.atom(g(1)).unwrap();
+        let axis_id = ar.pair(t0, t1).unwrap();
 
         // [1 [0 1]] — quote of axis_id
-        let t1b = ar.atom(g(1), Tag::Field).unwrap();
-        let quote_axis = ar.cell(t1b, axis_id).unwrap();
+        let t1b = ar.atom(g(1)).unwrap();
+        let quote_axis = ar.pair(t1b, axis_id).unwrap();
 
         // body = [[0 1] [1 [0 1]]]
-        let body = ar.cell(axis_id, quote_axis).unwrap();
+        let body = ar.pair(axis_id, quote_axis).unwrap();
 
         // formula = [2 body]
-        let t2 = ar.atom(g(2), Tag::Field).unwrap();
-        let formula = ar.cell(t2, body).unwrap();
+        let t2 = ar.atom(g(2)).unwrap();
+        let formula = ar.pair(t2, body).unwrap();
 
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
             Outcome::Ok(r, _) => assert_eq!(r, obj),

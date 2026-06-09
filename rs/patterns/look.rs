@@ -7,8 +7,8 @@
 
 use nebu::Goldilocks;
 
-use crate::noun::{Order, NounId, Noun, NIL};
-use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary_field, make_field};
+use crate::data::{Order, OrderId, Data, NIL};
+use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary_field, make_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::jets::registry::JetRegistry;
@@ -18,11 +18,11 @@ use crate::jets::registry::JetRegistry;
 /// limb0=axis4, limb1=axis10, limb2=axis22, limb3=axis23.
 pub(crate) const BBG_ROOT_LIMB_AXES: [u64; 4] = [4, 10, 22, 23];
 
-/// Navigate to `addr` inside `object` and return the NounId there.
+/// Navigate to `addr` inside `object` and return the OrderId there.
 /// Returns None if addr hits an atom mid-path or the order is inconsistent.
 /// Mirrors the axis navigation logic from patterns/axis.rs without the
 /// trace-row side effects (C_t extraction must not emit a row of its own).
-fn axis_nav<const N: usize>(order: &Order<N>, object: NounId, addr: u64) -> Option<NounId> {
+fn axis_nav<const N: usize>(order: &Order<N>, object: OrderId, addr: u64) -> Option<OrderId> {
     match addr {
         1 => Some(object),
         _ => {
@@ -30,7 +30,7 @@ fn axis_nav<const N: usize>(order: &Order<N>, object: NounId, addr: u64) -> Opti
             let mut node = object;
             for i in (0..bits).rev() {
                 match order.get(node)?.inner {
-                    Noun::Cell { left, right } => {
+                    Data::Pair { left, right } => {
                         node = if (addr >> i) & 1 == 1 { right } else { left };
                     }
                     _ => return None,
@@ -42,11 +42,11 @@ fn axis_nav<const N: usize>(order: &Order<N>, object: NounId, addr: u64) -> Opti
 }
 
 pub fn look<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (ns_formula, key_formula) = match cell_pair(order, body) {
+    let (ns_formula, key_formula) = match pair_children(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
@@ -67,7 +67,7 @@ pub fn look<const N: usize, T: Tracer>(
             None => return Outcome::Error(ErrorKind::Unavailable),
         };
         limbs[i] = match order.atom_value(node) {
-            Some((v, _)) => v,
+            Some(v) => v,
             None => return Outcome::Error(ErrorKind::Unavailable),
         };
     }
@@ -98,34 +98,34 @@ mod tests {
     use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::{CallProvider, LookProvider, NullCalls};
     use crate::trace::NoTrace;
-    use crate::noun::{Order, NounId, Tag};
+    use crate::data::{Order, OrderId};
     use nebu::Goldilocks;
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
     /// Build a 4-limb BBG object: `[[l0 | [l1 | [l2 | l3]]] | rest]`.
     /// limb0 is passed to LookProvider as `commitment`; limbs 1-3 go to r[11..14].
-    fn make_obj<const N: usize>(ar: &mut Order<N>, l0: u64, l1: u64, l2: u64, l3: u64) -> NounId {
-        let al0  = ar.atom(g(l0), Tag::Field).unwrap();
-        let al1  = ar.atom(g(l1), Tag::Field).unwrap();
-        let al2  = ar.atom(g(l2), Tag::Field).unwrap();
-        let al3  = ar.atom(g(l3), Tag::Field).unwrap();
-        let inner     = ar.cell(al2, al3).unwrap();
-        let mid       = ar.cell(al1, inner).unwrap();
-        let root_cell = ar.cell(al0, mid).unwrap();
-        let rest      = ar.atom(g(0), Tag::Field).unwrap();
-        ar.cell(root_cell, rest).unwrap()
+    fn make_obj<const N: usize>(ar: &mut Order<N>, l0: u64, l1: u64, l2: u64, l3: u64) -> OrderId {
+        let al0  = ar.atom(g(l0)).unwrap();
+        let al1  = ar.atom(g(l1)).unwrap();
+        let al2  = ar.atom(g(l2)).unwrap();
+        let al3  = ar.atom(g(l3)).unwrap();
+        let inner     = ar.pair(al2, al3).unwrap();
+        let mid       = ar.pair(al1, inner).unwrap();
+        let root_pair = ar.pair(al0, mid).unwrap();
+        let rest      = ar.atom(g(0)).unwrap();
+        ar.pair(root_pair, rest).unwrap()
     }
 
     /// Build formula [17 [[1 ns] [1 key]]] — look with quoted ns and key.
-    fn make_look<const N: usize>(ar: &mut Order<N>, ns: u64, key: u64) -> NounId {
-        let t17 = ar.atom(g(17), Tag::Field).unwrap();
-        let t1  = ar.atom(g(1),  Tag::Field).unwrap();
-        let vns  = ar.atom(g(ns),  Tag::Field).unwrap();
-        let vkey = ar.atom(g(key), Tag::Field).unwrap();
-        let ns_formula  = ar.cell(t1, vns).unwrap();
-        let key_formula = ar.cell(t1, vkey).unwrap();
-        let body = ar.cell(ns_formula, key_formula).unwrap();
-        ar.cell(t17, body).unwrap()
+    fn make_look<const N: usize>(ar: &mut Order<N>, ns: u64, key: u64) -> OrderId {
+        let t17 = ar.atom(g(17)).unwrap();
+        let t1  = ar.atom(g(1)).unwrap();
+        let vns  = ar.atom(g(ns)).unwrap();
+        let vkey = ar.atom(g(key)).unwrap();
+        let ns_formula  = ar.pair(t1, vns).unwrap();
+        let key_formula = ar.pair(t1, vkey).unwrap();
+        let body = ar.pair(ns_formula, key_formula).unwrap();
+        ar.pair(t17, body).unwrap()
     }
 
     #[test]
@@ -167,7 +167,7 @@ mod tests {
             }
         }
         impl<const N: usize> CallProvider<N> for FixedLooks {
-            fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
+            fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
                 None
             }
         }
@@ -177,7 +177,7 @@ mod tests {
             let obj = make_obj(&mut ar, 100, 0, 0, 0); // C_t[0] = 100
             let formula = make_look(&mut ar, 7, 11);
             match reduce(&mut ar, obj, formula, 1000, &FixedLooks, &mut NoTrace) {
-                Outcome::Ok(r, _) => ar.atom_value(r).unwrap().0.as_u64(),
+                Outcome::Ok(r, _) => ar.atom_value(r).unwrap().as_u64(),
                 o => panic!("{:?}", o),
             }
         };
@@ -194,7 +194,7 @@ mod tests {
             }
         }
         impl<const N: usize> CallProvider<N> for TestLooks {
-            fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
+            fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
                 None
             }
         }
@@ -204,7 +204,7 @@ mod tests {
         let formula = make_look(&mut ar, 0, 42);
         match reduce(&mut ar, obj, formula, 1000, &TestLooks, &mut NoTrace) {
             Outcome::Ok(result, _) => {
-                let (v, _) = ar.atom_value(result).unwrap();
+                let v = ar.atom_value(result).unwrap();
                 assert_eq!(v, Goldilocks::new(99));
             }
             other => panic!("expected Ok(99), got {:?}", other),
@@ -221,7 +221,7 @@ mod tests {
             }
         }
         impl<const N: usize> CallProvider<N> for PanicLooks {
-            fn provide(&self, _: &mut Order<N>, _: Goldilocks, _: NounId) -> Option<NounId> { None }
+            fn provide(&self, _: &mut Order<N>, _: Goldilocks, _: OrderId) -> Option<OrderId> { None }
         }
 
         for ns in [10u64, 100, u64::MAX] {
@@ -235,13 +235,13 @@ mod tests {
         }
     }
 
-    /// When the object is an atom (no cells for limb axes), look
+    /// When the object is an atom (no pairs for limb axes), look
     /// returns Unavailable rather than panicking.
     #[test]
     fn look_object_atom_returns_unavailable() {
         let mut ar = Order::<1024>::new();
-        // object is a bare atom — axis(4) requires two cell levels
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        // object is a bare atom — axis(4) requires two pair levels
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_look(&mut ar, 0, 1);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
             Outcome::Error(ErrorKind::Unavailable) => {}
@@ -261,7 +261,7 @@ mod tests {
             }
         }
         impl<const N: usize> CallProvider<N> for CaptureLooks {
-            fn provide(&self, _: &mut Order<N>, _: Goldilocks, _: NounId) -> Option<NounId> { None }
+            fn provide(&self, _: &mut Order<N>, _: Goldilocks, _: OrderId) -> Option<OrderId> { None }
         }
 
         let captured = CaptureLooks(AtomicU64::new(0));

@@ -5,19 +5,19 @@
 //! step 4: return witness
 
 use nebu::Goldilocks;
-use crate::noun::{Order, NounId};
-use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_unary, evaluate};
+use crate::data::{Order, OrderId};
+use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_unary, evaluate};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
-use crate::noun::NIL;
+use crate::data::NIL;
 use crate::jets::registry::JetRegistry;
 
 pub fn call_witness<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
     calls: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (tag_formula, check_formula) = match cell_pair(order, body) {
+    let (tag_formula, check_formula) = match pair_children(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
@@ -26,14 +26,14 @@ pub fn call_witness<const N: usize, T: Tracer>(
         Ok(v) => v, Err(o) => return o,
     };
     let tag_value = match order.atom_value(tag_result) {
-        Some((v, _)) => v,
+        Some(v) => v,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
     let witness = match calls.provide(order, tag_value, object) {
         Some(w) => w,
         None => return Outcome::Halt(budget),
     };
-    let witness_object = match order.cell(witness, object) {
+    let witness_object = match order.pair(witness, object) {
         Some(c) => c,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
@@ -48,7 +48,7 @@ pub fn call_witness<const N: usize, T: Tracer>(
         Err(o) => return o,
     };
     match order.atom_value(check_result) {
-        Some((v, _)) if v == Goldilocks::ZERO => {
+        Some(v) if v == Goldilocks::ZERO => {
             row.r[4] = tag_value.as_u64();
             row.r[5] = witness as u64;
             row.r[6] = check_result as u64;
@@ -68,7 +68,7 @@ mod tests {
     use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::{CallProvider, LookProvider, NullCalls};
     use crate::trace::NoTrace;
-    use crate::noun::{Order, NounId, Tag};
+    use crate::data::{Order, OrderId};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
@@ -76,18 +76,18 @@ mod tests {
     #[test]
     fn call_null_provider_halts() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         // formula = [16 [[1 0] [1 [0 1]]]]
         // tag = quote(0), check = quote(identity = axis(1))
-        let t16 = ar.atom(g(16), Tag::Field).unwrap();
-        let t1 = ar.atom(g(1), Tag::Field).unwrap();
-        let zero = ar.atom(g(0), Tag::Field).unwrap();
-        let tag_formula = ar.cell(t1, zero).unwrap();
-        let t0 = ar.atom(g(0), Tag::Field).unwrap();
-        let axis1 = ar.cell(t0, t1).unwrap(); // [0 1] = axis(1)
-        let check_formula = ar.cell(t1, axis1).unwrap(); // [1 [0 1]] = quote(axis(1))
-        let body = ar.cell(tag_formula, check_formula).unwrap();
-        let formula = ar.cell(t16, body).unwrap();
+        let t16 = ar.atom(g(16)).unwrap();
+        let t1 = ar.atom(g(1)).unwrap();
+        let zero = ar.atom(g(0)).unwrap();
+        let tag_formula = ar.pair(t1, zero).unwrap();
+        let t0 = ar.atom(g(0)).unwrap();
+        let axis1 = ar.pair(t0, t1).unwrap(); // [0 1] = axis(1)
+        let check_formula = ar.pair(t1, axis1).unwrap(); // [1 [0 1]] = quote(axis(1))
+        let body = ar.pair(tag_formula, check_formula).unwrap();
+        let formula = ar.pair(t16, body).unwrap();
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
             Outcome::Halt(_) => {}
             o => panic!("expected Halt, got {:?}", o),
@@ -101,24 +101,24 @@ mod tests {
             fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
         }
         impl<const N: usize> CallProvider<N> for BadWitness {
-            fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
+            fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
                 // provide witness = 99, but check expects 0
-                Some(order.atom(g(99), Tag::Field).unwrap())
+                Some(order.atom(g(99)).unwrap())
             }
         }
 
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         // formula = [16 [[1 0] [1 99]]]
         // tag=quote(0), check=quote(99) — check returns 99 ≠ 0 → CallRejected
-        let t16 = ar.atom(g(16), Tag::Field).unwrap();
-        let t1 = ar.atom(g(1), Tag::Field).unwrap();
-        let zero = ar.atom(g(0), Tag::Field).unwrap();
-        let tag_f = ar.cell(t1, zero).unwrap();
-        let ninety_nine = ar.atom(g(99), Tag::Field).unwrap();
-        let check_f = ar.cell(t1, ninety_nine).unwrap();
-        let body = ar.cell(tag_f, check_f).unwrap();
-        let formula = ar.cell(t16, body).unwrap();
+        let t16 = ar.atom(g(16)).unwrap();
+        let t1 = ar.atom(g(1)).unwrap();
+        let zero = ar.atom(g(0)).unwrap();
+        let tag_f = ar.pair(t1, zero).unwrap();
+        let ninety_nine = ar.atom(g(99)).unwrap();
+        let check_f = ar.pair(t1, ninety_nine).unwrap();
+        let body = ar.pair(tag_f, check_f).unwrap();
+        let formula = ar.pair(t16, body).unwrap();
         match reduce(&mut ar, obj, formula, 1000, &BadWitness, &mut NoTrace) {
             Outcome::Error(ErrorKind::CallRejected) => {}
             o => panic!("expected CallRejected, got {:?}", o),
@@ -134,24 +134,24 @@ mod tests {
             fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
         }
         impl<const N: usize> CallProvider<N> for ZeroWitness {
-            fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
-                Some(order.atom(g(0), Tag::Field).unwrap())
+            fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
+                Some(order.atom(g(0)).unwrap())
             }
         }
 
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         // formula = [16 [[1 0] [1 0]]] — tag=quote(0), check=quote(0) (returns 0 → accepted)
-        let t16 = ar.atom(g(16), Tag::Field).unwrap();
-        let t1 = ar.atom(g(1), Tag::Field).unwrap();
-        let zero = ar.atom(g(0), Tag::Field).unwrap();
-        let tag_f = ar.cell(t1, zero).unwrap();
-        let check_f = ar.cell(t1, zero).unwrap();
-        let body = ar.cell(tag_f, check_f).unwrap();
-        let formula = ar.cell(t16, body).unwrap();
+        let t16 = ar.atom(g(16)).unwrap();
+        let t1 = ar.atom(g(1)).unwrap();
+        let zero = ar.atom(g(0)).unwrap();
+        let tag_f = ar.pair(t1, zero).unwrap();
+        let check_f = ar.pair(t1, zero).unwrap();
+        let body = ar.pair(tag_f, check_f).unwrap();
+        let formula = ar.pair(t16, body).unwrap();
         match reduce(&mut ar, obj, formula, 1000, &ZeroWitness, &mut NoTrace) {
             Outcome::Ok(result, _) => {
-                let (v, _) = ar.atom_value(result).unwrap();
+                let v = ar.atom_value(result).unwrap();
                 assert_eq!(v, g(0), "zero witness accepted when check returns 0");
             }
             o => panic!("expected Ok when check returns 0, got {:?}", o),
@@ -159,7 +159,7 @@ mod tests {
     }
 
     /// Provider injects witness=42, check formula `[1 0]` returns 0.
-    /// Expected: Outcome::Ok with result NounId equal to the injected witness.
+    /// Expected: Outcome::Ok with result OrderId equal to the injected witness.
     #[test]
     fn call_accepts_valid_witness() {
         struct GoodWitness;
@@ -167,24 +167,24 @@ mod tests {
             fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
         }
         impl<const N: usize> CallProvider<N> for GoodWitness {
-            fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
-                Some(order.atom(g(42), Tag::Field).unwrap())
+            fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
+                Some(order.atom(g(42)).unwrap())
             }
         }
 
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         // formula = [16 [[1 0] [1 0]]]  — tag=quote(0), check=quote(0) (always passes)
-        let t16 = ar.atom(g(16), Tag::Field).unwrap();
-        let t1 = ar.atom(g(1), Tag::Field).unwrap();
-        let zero = ar.atom(g(0), Tag::Field).unwrap();
-        let tag_f = ar.cell(t1, zero).unwrap();
-        let check_f = ar.cell(t1, zero).unwrap();
-        let body = ar.cell(tag_f, check_f).unwrap();
-        let formula = ar.cell(t16, body).unwrap();
+        let t16 = ar.atom(g(16)).unwrap();
+        let t1 = ar.atom(g(1)).unwrap();
+        let zero = ar.atom(g(0)).unwrap();
+        let tag_f = ar.pair(t1, zero).unwrap();
+        let check_f = ar.pair(t1, zero).unwrap();
+        let body = ar.pair(tag_f, check_f).unwrap();
+        let formula = ar.pair(t16, body).unwrap();
         match reduce(&mut ar, obj, formula, 1000, &GoodWitness, &mut NoTrace) {
             Outcome::Ok(result, _) => {
-                let (v, _) = ar.atom_value(result).unwrap();
+                let v = ar.atom_value(result).unwrap();
                 assert_eq!(v, g(42), "result should be the injected witness");
             }
             o => panic!("expected Ok(witness=42), got {:?}", o),

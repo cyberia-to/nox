@@ -11,7 +11,7 @@
 //! look reads committed polynomial state — same inputs always produce same output.
 
 use nebu::Goldilocks;
-use crate::noun::{Order, NounId};
+use crate::data::{Order, OrderId};
 
 /// look provider trait — deterministic BBG state reads
 ///
@@ -39,10 +39,10 @@ pub trait CallProvider<const N: usize>: LookProvider + Sync {
     /// tag: field element identifying WHICH call (e.g., 0x01 = private key)
     /// object: the data the formula operates on
     ///
-    /// returns Some(witness_noun) or None (= halt, prover doesn't know)
-    fn provide(&self, order: &mut Order<N>, tag: Goldilocks, object: NounId) -> Option<NounId>;
+    /// returns Some(witness_data) or None (= halt, prover doesn't know)
+    fn provide(&self, order: &mut Order<N>, tag: Goldilocks, object: OrderId) -> Option<OrderId>;
 
-    /// Return the 32-byte Lens commitment for the noun polynomial of `object_id`.
+    /// Return the 32-byte Lens commitment for the data polynomial of `object_id`.
     ///
     /// Called by pattern 0 (axis) to populate r[11]-r[14] with the commitment
     /// bytes, enabling zheng to circuit-constrain the opening. Proof-unaware
@@ -66,7 +66,7 @@ impl LookProvider for NullCalls {
 }
 
 impl<const N: usize> CallProvider<N> for NullCalls {
-    fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
+    fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
         None
     }
 }

@@ -3,7 +3,7 @@
 // crystal-type: source
 // crystal-domain: comp
 // ---
-//! nox — run noun formulas from stdin or file
+//! nox — run data formulas from stdin or file
 //!
 //! Usage:
 //!   nox <file.nox>              # evaluate formula from file
@@ -16,18 +16,18 @@
 use std::io::Read;
 
 use nebu::Goldilocks;
-use nox::noun::{Order, NounId, Noun, Tag};
+use nox::data::{Order, OrderId, Data};
 use nox::reduce::{reduce_with_registry, Outcome};
 use nox::call::NullCalls;
 use nox::trace::NoTrace;
 use nox::jets::registry::JetRegistry;
 
-const ORDER_SIZE: usize = 1 << 16; // 64K nouns
+const ORDER_SIZE: usize = 1 << 16; // 64K data
 
-// ─── noun parser ─────────────────────────────────────────────────
+// ─── data parser ─────────────────────────────────────────────────
 
-/// Parse a textual noun `[a b]` or `42` into the order.
-fn parse_noun(order: &mut Order<ORDER_SIZE>, input: &str) -> Result<NounId, String> {
+/// Parse a textual data `[a b]` or `42` into the order.
+fn parse_data(order: &mut Order<ORDER_SIZE>, input: &str) -> Result<OrderId, String> {
     let tokens = tokenize(input)?;
     let mut pos = 0;
     let result = parse_expr(order, &tokens, &mut pos, 0)?;
@@ -89,7 +89,7 @@ fn parse_expr(
     tokens: &[Token],
     pos: &mut usize,
     depth: usize,
-) -> Result<NounId, String> {
+) -> Result<OrderId, String> {
     if depth > MAX_PARSE_DEPTH {
         return Err("expression too deeply nested".into());
     }
@@ -99,13 +99,13 @@ fn parse_expr(
     match &tokens[*pos] {
         Token::Num(v) => {
             *pos += 1;
-            order.atom(Goldilocks::new(*v), Tag::Field)
+            order.atom(Goldilocks::new(*v))
                 .ok_or_else(|| "order full".to_string())
         }
         Token::Open => {
             *pos += 1; // skip [
             // Parse all elements inside brackets, right-nest them.
-            // [a b c d] → Cell(a, Cell(b, Cell(c, d)))
+            // [a b c d] → Pair(a, Pair(b, Pair(c, d)))
             let mut elems = Vec::new();
             while *pos < tokens.len() && !matches!(tokens[*pos], Token::Close) {
                 elems.push(parse_expr(order, tokens, pos, depth + 1)?);
@@ -119,14 +119,14 @@ fn parse_expr(
                 return Err("empty brackets".to_string());
             }
             if elems.len() == 1 {
-                // `[x]` is not a noun: a cell needs ≥ 2 elements. Reject
+                // `[x]` is not a data: a pair needs ≥ 2 elements. Reject
                 // explicitly so `[[1 42]]` doesn't silently parse as `[1 42]`.
-                return Err("single-element brackets are not a valid cell".to_string());
+                return Err("single-element brackets are not a valid pair".to_string());
             }
-            // Right-nest: [a b c] → Cell(a, Cell(b, c))
+            // Right-nest: [a b c] → Pair(a, Pair(b, c))
             let mut result = elems.pop().unwrap();
             while let Some(head) = elems.pop() {
-                result = order.cell(head, result)
+                result = order.pair(head, result)
                     .ok_or_else(|| "order full".to_string())?;
             }
             Ok(result)
@@ -137,13 +137,13 @@ fn parse_expr(
     }
 }
 
-// ─── noun printer ────────────────────────────────────────────────
+// ─── data printer ────────────────────────────────────────────────
 
-fn print_noun(order: &Order<ORDER_SIZE>, r: NounId) -> String {
+fn print_data(order: &Order<ORDER_SIZE>, r: OrderId) -> String {
     match order.get(r).map(|e| e.inner) {
-        Some(Noun::Atom { value, .. }) => format!("{}", value.as_u64()),
-        Some(Noun::Cell { left, right }) => {
-            format!("[{} {}]", print_noun(order, left), print_noun(order, right))
+        Some(Data::Atom { value, .. }) => format!("{}", value.as_u64()),
+        Some(Data::Pair { left, right }) => {
+            format!("[{} {}]", print_data(order, left), print_data(order, right))
         }
         None => "<invalid>".to_string(),
     }
@@ -239,19 +239,19 @@ fn run() -> i32 {
     let hints = NullCalls;
     let registry = JetRegistry::<ORDER_SIZE>::genesis();
 
-    let object = match parse_noun(&mut order, &object_text) {
+    let object = match parse_data(&mut order, &object_text) {
         Ok(n) => n,
         Err(e) => { eprintln!("error parsing object: {}", e); return 1; }
     };
 
-    let formula = match parse_noun(&mut order, &formula_text) {
+    let formula = match parse_data(&mut order, &formula_text) {
         Ok(n) => n,
         Err(e) => { eprintln!("error parsing formula: {}", e); return 1; }
     };
 
     match reduce_with_registry(&mut order, object, formula, budget, &hints, &mut NoTrace, &registry) {
         Outcome::Ok(result, remaining) => {
-            println!("{}", print_noun(&order, result));
+            println!("{}", print_data(&order, result));
             eprintln!("cost: {} (budget remaining: {})", budget - remaining, remaining);
             0
         }
@@ -286,7 +286,7 @@ fn print_usage() {
   nox -e '[5 [[1 3] [1 5]]]'    evaluate inline formula
   echo '[1 42]' | nox            evaluate from stdin
 
-  -o, --object <noun>    object (default: 0)
+  -o, --object <data>    object (default: 0)
   -b, --budget <n>        budget (default: 1000000)
   -e <formula>            inline formula
 "

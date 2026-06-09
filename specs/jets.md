@@ -26,7 +26,7 @@ this is testable: a harness compares jet output against pure-pattern output on r
 jets are recognized by formula hash. the VM maintains a jet registry mapping formula identities to optimized implementations.
 
 ```
-jet_registry: H(formula_noun) → jet_implementation
+jet_registry: H(formula_data) → jet_implementation
 
 recognition: at reduction time, before dispatching a formula,
 the VM checks if H(formula) is in the jet registry.
@@ -36,7 +36,7 @@ if no:  dispatch normally via Layer 1 patterns.
 
 the jet registry lives on the cybergraph. genesis jets are committed in the genesis BBG state — frozen by axiom A3 (append-only). every conforming implementation MUST recognize genesis jets.
 
-genesis jet entries are generated, not hand-written: the build system constructs each jet's pure Layer 1 formula as a noun, computes its structural hash, and commits them as particles in the genesis state.
+genesis jet entries are generated, not hand-written: the build system constructs each jet's pure Layer 1 formula as a data, computes its structural hash, and commits them as particles in the genesis state.
 
 post-genesis jet registration through cyberlinks is a separate mechanism — design deferred. the semantic contract (pure Layer 1 equivalent) applies to all jets regardless of origin.
 

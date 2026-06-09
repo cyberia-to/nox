@@ -392,7 +392,7 @@ object `o`, and budget `f`:
 
 ```
 parallel_reduce(o, t, f).result_kind == sequential_reduce(o, t, f).result_kind
-parallel_reduce(o, t, f).noun         == sequential_reduce(o, t, f).noun         when result_kind = Ok
+parallel_reduce(o, t, f).data         == sequential_reduce(o, t, f).data         when result_kind = Ok
 parallel_reduce(o, t, f).remaining    == sequential_reduce(o, t, f).remaining    when result_kind ∈ {Ok, Halt}
 parallel_reduce(o, t, f).error_kind   == sequential_reduce(o, t, f).error_kind   when result_kind = Error
 ```
@@ -460,7 +460,7 @@ results). Parallel threads would race on it. Three options:
 
 **(a) Per-thread scratch + merge.** Each thread has its own scratch
 `Order`. At join, allocations from each scratch are merged into a single
-canonical `Order` via the hash-cons table (identical noun bytes → same
+canonical `Order` via the hash-cons table (identical data bytes → same
 slot). Merge is O(scratch size × hash cost).
 
 **(b) Atomic Order.** Order's allocator becomes a lock-free hash table.
@@ -469,7 +469,7 @@ provides the unique-allocation invariant; we just need to make
 `alloc_raw` atomic.
 
 **(c) Pre-allocate.** Before parallel phase, pre-compute the set of
-allocations each branch will need. Allocate in parent; pass NounIds into
+allocations each branch will need. Allocate in parent; pass OrderIds into
 branches. Requires static analysis of allocation patterns — likely
 intractable for non-trivial formulas.
 
@@ -494,11 +494,11 @@ count. Acceptable cost for parallelism.
 `bound(t)` is itself a tree walk over the formula. For a one-shot
 parallel reduction, this is O(formula size) — comparable to the
 reduction itself. For repeated reductions of the same formula, the
-bound can be cached at the NounId level via the Order's hash-cons
-machinery (one more entry per noun: `cached_bound: u64`).
+bound can be cached at the OrderId level via the Order's hash-cons
+machinery (one more entry per data: `cached_bound: u64`).
 
-The cache invariant: `bound(noun)` is a pure function of noun structure,
-so hash-consed identical sub-nouns share the same bound. Cache hit rate
+The cache invariant: `bound(data)` is a pure function of data structure,
+so hash-consed identical sub-data share the same bound. Cache hit rate
 should be high for any recursive program.
 
 ## 7. Open theorems and validation
@@ -508,7 +508,7 @@ should be high for any recursive program.
 **T1 (sequential-equivalence)**: stated in §5. Should be machine-checked
 (Coq/Lean) for confidence given the consensus implications.
 
-**T2 (bound monotonicity)**: `bound(t)` is monotone under sub-noun
+**T2 (bound monotonicity)**: `bound(t)` is monotone under sub-data
 substitution. Used in the proof of T1's compose case.
 
 **T3 (parallel commutativity)**: for binary patterns with both arms
@@ -541,11 +541,11 @@ counter-example showing where it diverges from sequential. This is the
 
 ### 8.2 Phase 1 (bound function)
 
-- Add `bound: Formula → ℕ` to `noun/order.rs` as a cached field on
+- Add `bound: Formula → ℕ` to `data/order.rs` as a cached field on
   `NounEntry`.
-- Compute bound at noun construction. Pattern 2 and pattern 16 sub-noun
+- Compute bound at data construction. Pattern 2 and pattern 16 sub-data
   bounds carry a "DYNAMIC" sentinel.
-- Specs: `noun/order.md` documents the bound field.
+- Specs: `data/order.md` documents the bound field.
 
 ### 8.3 Phase 2 (parallel-safe Order)
 
@@ -625,7 +625,7 @@ This proposal asks for sign-off on:
 Open questions to discuss:
 
 - Should `bound` be carried in `Order::NounEntry` (always-on cache) or
-  computed on-demand? Cache costs ~16 bytes per noun (one u64 + status
+  computed on-demand? Cache costs ~16 bytes per data (one u64 + status
   bit), gives O(1) bound lookup at the price of permanent memory.
 - For the `Halt` payload in the over-budget fallback case: do we want
   the sequential halt's precise remaining-budget value (requires running
@@ -659,7 +659,7 @@ Correct bound uses max-of-arms.
 ## Appendix B: bound function as Rust
 
 ```rust
-pub fn bound<const N: usize>(order: &Order<N>, root: NounId) -> Cost {
+pub fn bound<const N: usize>(order: &Order<N>, root: OrderId) -> Cost {
     match order.get(root).map(|e| e.inner) {
         Some(Noun::Atom { .. }) => Cost::Exact(0),
         Some(Noun::Cell { left, right }) => {
@@ -673,7 +673,7 @@ pub fn bound<const N: usize>(order: &Order<N>, root: NounId) -> Cost {
     }
 }
 
-fn bound_for_tag<const N: usize>(order: &Order<N>, tag: u64, body: NounId) -> Cost {
+fn bound_for_tag<const N: usize>(order: &Order<N>, tag: u64, body: OrderId) -> Cost {
     let base = COSTS.get(tag as usize).copied().unwrap_or(1);
     match tag {
         0 | 1 => Cost::Exact(base),                                        // axis / quote
@@ -721,7 +721,7 @@ Identical after sort. The budget_in/budget_out values reflect the
 `bound(branch)`; budget_out is `bound(branch) - actual_cost(branch)`.
 For atomic quotes, both are 1 → 0, so the visible row contents may
 differ from sequential's threading view. But the parent's final
-remaining (97) and the result NounId are identical.
+remaining (97) and the result OrderId are identical.
 
 This is the subtle point: **observable result identical; per-row budget
 values differ on intermediate rows**. The witness hash includes per-row

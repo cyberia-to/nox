@@ -6,9 +6,9 @@
 //! execution trace — 16-column register table, one row per reduce() call
 //!
 //! r[0]  = pattern tag (0-17)
-//! r[1]  = object NounId
-//! r[2]  = formula NounId
-//! r[3]  = result NounId (NIL on halt/error)
+//! r[1]  = object particle
+//! r[2]  = formula particle
+//! r[3]  = result particle (NIL on halt/error)
 //! r[4..8] = pattern-specific operands (filled by pattern; zero otherwise)
 //! r[8]  = budget before step
 //! r[9]  = budget after step

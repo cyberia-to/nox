@@ -1,216 +1,123 @@
-# noun encoding specification
+# data encoding specification
 
-version: 0.3
+version: 0.5
 status: canonical
 
 ## overview
 
-this document specifies three encoding layers for nox nouns:
-
-1. **storage encoding** — canonical binary serialization of individual nouns
-2. **content-addressed identity** — how noun identity is derived from encoded content
-3. **wire format** — how nouns are transmitted between nodes
+nox uses **Model B**: data *is* its field leaves. there is no tag byte and no
+separate "encoding" identity scheme — a data node's `particle` is the tree hash
+of its content (`data/hash.md`), the same bytes the in-order hash-cons table
+keys on. this document specifies only the byte layout for storage and wire
+transmission; identity lives in `data/hash.md`.
 
 all concrete sizes refer to the canonical instantiation: nox<Goldilocks, Z/2^32, Hemera>.
 
-## storage encoding
+## storage layout
 
-every noun is either an atom or a cell. the first byte is a tag that determines interpretation. the encoding is deterministic — one valid byte sequence per noun.
-
-### tag byte
-
-```
-0x00   atom (field element)
-0x01   atom (word element)
-0x02   atom (hash element)
-0x03   cell
-```
-
-three atom tags distinguish runtime types. the tag byte makes stored nouns self-describing — a resolver does not need execution context to parse a noun.
-
-### atom: field element (tag 0x00)
+every data node is an atom or a pair. node type is read from **length**, not a
+tag byte:
 
 ```
-offset  size   field
-──────  ─────  ──────────────────────────────
-0       1      tag = 0x00
-1       8      value: canonical little-endian Goldilocks element
-
-total: 9 bytes
+atom   8 bytes    one field, little-endian
+pair  64 bytes    left particle (32) ‖ right particle (32)
 ```
 
-the 8-byte value MUST be in [0, p) where p = 2^64 - 2^32 + 1 = 18446744069414584321. values >= p are invalid. the canonical encoding is the unique little-endian representation of the reduced value.
+- **atom** — the 8-byte little-endian Goldilocks value. MUST be in `[0, p)`
+  where `p = 2^64 - 2^32 + 1 = 18446744069414584321`. there is no `word` or
+  `hash` atom variant: a `word` is an atom whose value is proven in `[0, 2^32)`
+  (a refinement, not an encoding), and a hemera hash result is a pair-tree of
+  atoms, not a leaf.
+- **pair** — its two children's `particle`s, left before right. a pair does not
+  inline its children; it references them by identity. to materialize a pair,
+  resolve both particles recursively.
 
-### atom: word element (tag 0x01)
+data is sized `8·N` for `N` leaves. the size spectrum is the full ladder — `8`
+(atom), `16` would be a flattened pair-of-atoms commitment, `32` (a particle),
+`64` (a pair of particles), … — and a particle is 4 field leaves, not a tree of
+tagged nodes.
 
-```
-offset  size   field
-──────  ─────  ──────────────────────────────
-0       1      tag = 0x01
-1       8      value: canonical little-endian Goldilocks element
-                (word value zero-extended to field element, MUST be in [0, 2^32))
+## particle — content-addressed identity
 
-total: 9 bytes
-```
-
-word atoms store 32-bit values as field elements. the value MUST be in [0, 2^32). values >= 2^32 are invalid for word-typed atoms. the encoding is 8 bytes little-endian, same as field atoms — the upper 4 bytes are zero.
-
-### atom: hash element (tag 0x02)
-
-```
-offset  size   field
-──────  ─────  ──────────────────────────────
-0       1      tag = 0x02
-1       32     value: 4 consecutive Goldilocks elements, each 8 bytes little-endian
-
-total: 33 bytes
-```
-
-each of the 4 field elements MUST be in [0, p). this encodes the output of a hemera hash (4 x F_p).
-
-note: hash atoms (tag 0x02) are not implemented in the current interpreter. hash identity is encoded as a cell of four field atoms via the cell encoding path — pattern 15 (hash) returns a cell(cell(h0,h1), cell(h2,h3)) of four Field atoms. tag 0x02 is reserved for a future flat-atom encoding of hash results.
-
-### cell (tag 0x03)
+a node's particle is its tree hash (full definition in `data/hash.md`):
 
 ```
-offset  size   field
-──────  ─────  ──────────────────────────────
-0       1      tag = 0x03
-1       32     left:  NounId (32 bytes, identity of the left child)
-33      32     right: NounId (32 bytes, identity of the right child)
-
-total: 65 bytes
+particle(atom v)        = hash_atom(v)               // hemera leaf hash of 8 bytes
+particle(pair l r)      = hash_pair(p(l), p(r))      // hemera node hash of two particles
 ```
 
-left before right. a cell does not contain its children inline — it contains their identities. to materialize a cell, resolve both NounIds recursively.
+both yield 32 bytes (4 Goldilocks limbs, little-endian). identity is the **same**
+computation as the in-order hash-cons key — one hash, no second scheme. the tag
+byte that older drafts prepended is gone: `field 5` and `word 5` have the same
+particle (identity reflects content, ignores refinement); `pair(domain, value)`
+gives nominal distinctness through content, never a tag.
 
-### encoding summary
+### equivalence to the leaf commitment (optional)
 
-```
-tag    type          size (bytes)   payload
-────   ────────────  ─────────────  ────────────────────────────────
-0x00   field atom     9             8-byte LE Goldilocks element
-0x01   word atom      9             8-byte LE value (must be < 2^32)
-0x02   hash atom     33             4 × 8-byte LE Goldilocks elements
-0x03   cell          65             NounId(left) ‖ NounId(right)
-```
+for data with many leaves, `particle = hemera(lens.commit(leaves))` is an
+equivalent O(N) path (Brakedown linear-time commitment + one hemera wrap for
+domain separation). it produces the same particle as the recursive tree hash for
+the same data. an implementation MUST support the direct tree-hash path; the
+commitment path is an optimization.
 
-four sizes: 9, 9, 33, 65. tag byte disambiguates the two 9-byte variants.
-
-## NounId — content-addressed identity
-
-every noun has a 32-byte identity derived from its content:
-
-```
-NounId = hemera(encoded_noun)     32 bytes (4 × F_p elements)
-```
-
-`encoded_noun` is the canonical binary encoding defined above (tag byte + payload). hemera absorbs the byte sequence and squeezes 4 field elements. the identity is deterministic — same noun always produces the same NounId.
-
-### identity computation
-
-```
-fn noun_id(noun: &Noun) -> NounId {
-    let bytes = encode(noun);          // tag byte + payload
-    hemera::hash(&bytes)               // → [F_p; 4] = 32 bytes
-}
-```
-
-hemera uses the default domain tag (capacity[11] = 0x00) for structural noun hashing. other domain tags (COMMITMENT, NULLIFIER, etc.) are protocol-level — they do not affect NounId.
-
-### polynomial identity (optimization)
-
-for large nouns (many leaves), the polynomial identity is more efficient:
-
-```
-identity = hemera(Lens.commit(noun_polynomial) ‖ domain_tag)    32 bytes
-```
-
-the noun is encoded as a multilinear polynomial (see nouns.md polynomial representation). Lens commitment costs O(N) field operations where N = number of leaves (Brakedown linear-time commitment). the hemera wrap adds 1 hemera call for domain separation.
-
-both methods produce the same NounId for the same noun. the polynomial path is an optimization for nouns with many leaves — it replaces recursive hashing with O(N) field ops + 1 hemera call. for small nouns (< 56 bytes), cost is equivalent to direct hemera hashing.
-
-an implementation MUST support the direct path (hemera of encoded bytes). the polynomial path is optional.
-
-### computation key
+### computation key (axon)
 
 the memoization key for a computation (formula applied to object):
 
 ```
-computation_key = NounId(object) ‖ NounId(formula)    64 bytes
-computation_val = NounId(result)                       32 bytes
+computation_key = particle(object) ‖ particle(formula)    64 bytes
+computation_val = particle(result)                         32 bytes
 ```
 
-this is the axon in the cybergraph (see reduction.md global memoization).
+this is the axon in the cybergraph (see `reduction.md` global memoization).
 
 ## content-addressed store
 
-nouns are stored in a content-addressed key-value store:
-
 ```
-store: NounId (32 bytes) → encoded_noun (9, 9, 33, or 65 bytes)
+store: Particle (32 bytes) → encoded_data (8 or 64 bytes)
 ```
 
-to retrieve a noun, query the store by its NounId. the tag byte in the stored value determines how to parse the payload.
-
-### resolution
-
-to materialize a full noun tree from a NounId:
+to retrieve a node, query by its particle and read the payload. length
+disambiguates:
 
 ```
-fn resolve(store: &Store, id: NounId) -> Result<Noun, Unavailable> {
+fn resolve(store: &Store, id: Particle) -> Result<Data, Unavailable> {
     let bytes = store.get(id)?;
-    match bytes[0] {
-        0x00 => {
-            assert(bytes.len() == 9);
-            let value = u64_le(bytes[1..9]);
+    match bytes.len() {
+        8 => {
+            let value = u64_le(bytes);
             assert(value < p);
-            Atom::Field(value)
+            Atom(value)
         }
-        0x01 => {
-            assert(bytes.len() == 9);
-            let value = u64_le(bytes[1..9]);
-            assert(value < p);
-            assert(value < 2^32);
-            Atom::Word(value as u32)
+        64 => {
+            let left  = bytes[0..32];
+            let right = bytes[32..64];
+            Pair(resolve(store, left)?, resolve(store, right)?)
         }
-        0x02 => {
-            assert(bytes.len() == 33);
-            let elems = [u64_le(bytes[1..9]),
-                         u64_le(bytes[9..17]),
-                         u64_le(bytes[17..25]),
-                         u64_le(bytes[25..33])];
-            assert(all elems < p);
-            Atom::Hash(elems)
-        }
-        0x03 => {
-            assert(bytes.len() == 65);
-            let left_id  = bytes[1..33];
-            let right_id = bytes[33..65];
-            let left  = resolve(store, left_id)?;
-            let right = resolve(store, right_id)?;
-            Cell(left, right)
-        }
-        _ => error("invalid tag byte")
+        _ => error("invalid length")
     }
 }
 ```
 
-resolution is recursive for cells. an implementation SHOULD use iterative deepening or a stack to avoid call-stack overflow on deep nouns.
+resolution is recursive for pairs. an implementation SHOULD use an explicit stack
+to avoid call-stack overflow on deep data.
 
 ### store verification
 
-when receiving nouns from an untrusted source, verify:
+when receiving a node from an untrusted source, recompute its tree hash and
+compare:
 
 ```
-assert(hemera::hash(encoded_noun) == claimed_noun_id);
+assert(particle(decoded_bytes) == claimed_particle);
 ```
 
-this is the only check needed. if the hash matches, the content is authentic. content addressing eliminates the need for signatures on individual nouns.
+this is the only check needed — content addressing eliminates per-node
+signatures.
 
 ## wire format
 
-nouns are transmitted between nodes as length-prefixed messages containing content-addressed noun entries.
+data is transmitted as length-prefixed messages containing content-addressed
+entries.
 
 ### message framing
 
@@ -218,98 +125,58 @@ nouns are transmitted between nodes as length-prefixed messages containing conte
 offset  size       field
 ──────  ─────────  ──────────────────────────────
 0       4          message_length: u32 little-endian (byte count of payload)
-4       variable   payload: one or more noun entries
+4       variable   payload: one or more entries
 
-max message_length: 2^24 (16 MiB). implementations MUST reject messages > 16 MiB.
+max message_length: 2^24 (16 MiB). implementations MUST reject larger messages.
 ```
 
-### noun entry within a message
-
-each entry in the payload is:
+### entry within a message
 
 ```
 offset  size       field
 ──────  ─────────  ──────────────────────────────
-0       32         NounId (expected identity)
-32      1          entry_length: encoded noun size (9, 9, 33, or 65)
-33      variable   encoded_noun (tag byte + payload, as specified above)
+0       32         Particle (expected identity)
+32      1          entry_length: 8 (atom) or 64 (pair)
+33      variable   encoded_data (8 or 64 bytes, as above)
 ```
 
 the receiver:
-1. reads the NounId (32 bytes)
-2. reads the entry_length (1 byte)
-3. reads entry_length bytes of encoded noun data
-4. verifies: hemera(encoded_noun) == NounId
-5. stores the entry if valid, rejects the message if any entry fails verification
+1. reads the Particle (32 bytes)
+2. reads the entry_length (1 byte; MUST be 8 or 64)
+3. reads entry_length bytes
+4. verifies: `particle(encoded_data) == Particle`
+5. stores the entry if valid; rejects the whole message if any entry fails
 
 ### message types
 
 ```
 type byte (first byte of payload):
-0x10   noun_push    — sender pushes noun entries (no request)
-0x11   noun_request — request nouns by NounId list
-0x12   noun_response — response to a noun_request
+0x10   data_push     — sender pushes entries (no request)
+0x11   data_request  — request data by particle list
+0x12   data_response — response to a data_request
 
-noun_push payload:
-  [type=0x10] [entry_count: u32 LE] [entry_0] [entry_1] ...
-
-noun_request payload:
-  [type=0x11] [count: u32 LE] [NounId_0] [NounId_1] ...
-
-noun_response payload:
-  [type=0x12] [entry_count: u32 LE] [entry_0] [entry_1] ...
+data_push     payload: [0x10] [entry_count: u32 LE] [entry_0] [entry_1] ...
+data_request  payload: [0x11] [count: u32 LE]       [Particle_0] ...
+data_response payload: [0x12] [entry_count: u32 LE] [entry_0] [entry_1] ...
 ```
 
-a noun_push for a cell MUST include all transitive children before the cell itself (topological order). the receiver can verify and store each entry as it arrives — no forward references.
+a data_push for a pair MUST include all transitive children before the pair
+itself (topological order). the receiver verifies and stores each entry as it
+arrives — no forward references.
 
-### particle
-
-a particle in the cybergraph is identified by its NounId:
-
-```
-particle = NounId(noun) = hemera(encode(noun))
-```
-
-the particle is the hemera hash of the canonical encoding. any node can independently compute the particle from the noun content. two nodes with the same noun always agree on its particle.
-
-## variable-length atom encoding (optional optimization)
-
-for atoms whose value fits in fewer than 8 bytes, an implementation MAY use a compact encoding within internal storage. this is an implementation optimization — the canonical wire format and identity computation always use the fixed-width encoding defined above.
-
-```
-compact atom encoding (internal use only):
-
-tag     size   value range         encoding
-─────   ─────  ──────────────────  ─────────────────────
-0x80    2      [0, 256)            tag + 1 byte
-0x81    3      [0, 65536)          tag + 2 bytes LE
-0x82    5      [0, 2^32)           tag + 4 bytes LE
-0x00    9      [0, p)              tag + 8 bytes LE (canonical)
-```
-
-the compact encoding MUST NOT be used for identity computation or wire transmission. it is strictly an internal storage optimization for implementations that want to reduce memory for small atoms.
-
-an implementation that does not support compact encoding is fully conforming.
-
-## field element encoding
-
-```
-Goldilocks field element:
-  8 bytes, little-endian
-  canonical value in [0, p) where p = 2^64 - 2^32 + 1
-  values >= p are invalid
-  reduction: a mod p = a_lo - a_hi × (2^32 - 1) + correction
-```
+transport-level framing (length varints, batching) is tape's concern, never
+identity.
 
 ## formula encoding
 
-a formula is a noun of the form `cell(tag, body)` where tag is a field atom with value 0-17 (the pattern number).
+a formula is a pair `pair(tag, body)` where tag is an atom with value 0–17 (the
+pattern number).
 
 ```
 [0 a]           axis     — navigate object tree
 [1 c]           quote    — return literal
 [2 [x y]]       compose  — reduce x, reduce y, apply
-[3 [a b]]       cons     — construct cell
+[3 [a b]]       cons     — construct pair
 [4 [t [y n]]]   branch   — conditional evaluation
 [5 [a b]]       add      — field addition
 [6 [a b]]       sub      — field subtraction
@@ -326,66 +193,75 @@ a formula is a noun of the form `cell(tag, body)` where tag is a field atom with
 [17 [n k]]      look     — deterministic BBG state read (namespace, key)
 ```
 
-formulas are nouns. they are stored and resolved the same way as any other noun — by NounId lookup, recursively. the tag atom uses field type (0x00) in the encoding.
+formulas are data — stored and resolved like any other node, by particle lookup.
+the tag is an ordinary 8-byte atom.
+
+## field element encoding
+
+```
+Goldilocks field element:
+  8 bytes, little-endian
+  canonical value in [0, p) where p = 2^64 - 2^32 + 1
+  values >= p are invalid
+  reduction: a mod p = a_lo - a_hi × (2^32 - 1) + correction
+```
 
 ## canonical invariants
 
-1. tag byte MUST be 0x00, 0x01, 0x02, or 0x03
-2. field element values MUST be in [0, p)
-3. word element values MUST be in [0, 2^32)
-4. hash elements: each of the 4 field elements MUST be in [0, p)
-5. cell content: left NounId before right NounId
-6. encoded noun length MUST match the tag (9, 9, 33, or 65 bytes)
-7. NounId MUST equal hemera(encoded_noun) — no aliasing
-8. one valid encoding per noun — no alternative representations
-9. wire messages: topological order (children before parents)
-10. wire messages MUST NOT exceed 16 MiB
+1. node payload is 8 bytes (atom) or 64 bytes (pair) — no tag byte; type is read from length
+2. atom value MUST be in `[0, p)`
+3. a `word` is an atom whose value is in `[0, 2^32)` — a refinement, not a distinct encoding
+4. pair content: left particle before right particle
+5. particle MUST equal the tree hash of the content — no aliasing, no second scheme
+6. one canonical layout per node — no alternative representations
+7. wire messages: topological order (children before parents)
+8. wire messages MUST NOT exceed 16 MiB
 
-violation of any invariant is a rejection. there is no recovery, no fallback, no "best effort" parsing. invalid data is discarded.
+violation of any invariant is a rejection. there is no recovery, no fallback, no
+"best effort" parsing. invalid data is discarded.
 
 ## test vectors (canonical instantiation)
 
-### atom encoding
+### atom layout
 
 ```
-field atom with value 0:
-  encoded: 00 00 00 00 00 00 00 00 00
-  NounId:  hemera(00 00 00 00 00 00 00 00 00)
+atom value 0:
+  bytes:    00 00 00 00 00 00 00 00          (8 bytes, LE)
+  particle: hash_atom(0)
 
-field atom with value 1:
-  encoded: 00 01 00 00 00 00 00 00 00
-  NounId:  hemera(00 01 00 00 00 00 00 00 00)
+atom value 1:
+  bytes:    01 00 00 00 00 00 00 00
+  particle: hash_atom(1)
 
-field atom with value p-1 (max valid):
+atom value 42 (a word-range value — same as the field 42):
+  bytes:    2A 00 00 00 00 00 00 00
+  particle: hash_atom(42)
+
+atom value p-1 (max valid):
   p-1 = 18446744069414584320 = 0xFFFFFFFF00000000
-  little-endian of p-1: 00 00 00 00 FF FF FF FF
-  encoded: 00 00 00 00 00 FF FF FF FF   (tag=0x00, then 8 bytes LE)
-  NounId:  hemera(00 00 00 00 00 FF FF FF FF)
-
-word atom with value 42:
-  encoded: 01 2A 00 00 00 00 00 00 00
-  NounId:  hemera(01 2A 00 00 00 00 00 00 00)
+  bytes:    00 00 00 00 FF FF FF FF
+  particle: hash_atom(p-1)
 ```
 
-### cell encoding
+### pair layout
 
 ```
-cell(atom(0), atom(1)):
-  left  = NounId(atom(0))  = hemera(00 00 00 00 00 00 00 00 00)
-  right = NounId(atom(1))  = hemera(00 01 00 00 00 00 00 00 00)
-  encoded: 03 ‖ left ‖ right  (65 bytes)
-  NounId:  hemera(03 ‖ left ‖ right)
+pair(atom(0), atom(1)):
+  left  = particle(atom(0)) = hash_atom(0)
+  right = particle(atom(1)) = hash_atom(1)
+  bytes:    left ‖ right                     (64 bytes)
+  particle: hash_pair(left, right)
 ```
 
-### invalid encodings (must be rejected)
+### invalid layouts (must be rejected)
 
 ```
-tag byte 0x04 or higher           — unknown tag
-field atom with value = p          — value out of range
-field atom with value = p + 1      — value out of range
-word atom with value = 2^32        — word out of range
-cell with only 64 bytes total      — truncated
-cell with 66 bytes total           — trailing bytes
-hash atom with 3 elements          — truncated
-empty payload (0 bytes)            — missing tag
+9-byte payload                    — invalid length (legacy tagged atom, no longer accepted)
+65-byte payload                   — invalid length (legacy tagged pair)
+33-byte payload                   — invalid length (legacy hash atom)
+atom with value = p               — value out of range
+atom with value = p + 1           — value out of range
+pair with only 63 bytes           — invalid length
+pair with 65 bytes                — invalid length
+empty payload (0 bytes)           — invalid length
 ```

@@ -19,32 +19,32 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 use nebu::Goldilocks;
-use crate::noun::{Order, NounId, Noun, Tag};
-use crate::reduce::{Outcome, ErrorKind, cell_pair};
+use crate::data::{Order, OrderId, Data};
+use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
 pub fn poly_eval_jet<const N: usize>(
-    order: &mut Order<N>, object: NounId, _body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
     _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [[k | formula] | [evals_tree | point]]
-    let (lhs, rhs) = match cell_pair(order, object) {
+    let (lhs, rhs) = match pair_children(order, object) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (k_id, _formula_id) = match cell_pair(order, lhs) {
+    let (k_id, _formula_id) = match pair_children(order, lhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (evals_id, point_id) = match cell_pair(order, rhs) {
+    let (evals_id, point_id) = match pair_children(order, rhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
 
     let k = match order.atom_value(k_id) {
-        Some((v, _)) => v.as_u64() as usize,
+        Some(v) => v.as_u64() as usize,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
 
@@ -62,9 +62,9 @@ pub fn poly_eval_jet<const N: usize>(
     let mut point: Vec<Goldilocks> = Vec::with_capacity(k);
     let mut cur = point_id;
     for _ in 0..k {
-        match cell_pair(order, cur) {
+        match pair_children(order, cur) {
             Some((head, tail)) => match order.atom_value(head) {
-                Some((v, _)) => { point.push(v); cur = tail; }
+                Some(v) => { point.push(v); cur = tail; }
                 None => return Outcome::Error(ErrorKind::TypeError),
             },
             None => return Outcome::Error(ErrorKind::TypeError),
@@ -83,24 +83,24 @@ pub fn poly_eval_jet<const N: usize>(
     row.r[5] = point_id as u64;
     row.r[6] = value.as_u64();
 
-    match order.atom(value, Tag::Field) {
+    match order.atom(value) {
         Some(r) => Outcome::Ok(r, remaining),
         None => Outcome::Error(ErrorKind::Unavailable),
     }
 }
 
 /// Flatten a balanced binary tree of field atoms into a Vec (left-to-right DFS).
-fn flatten_tree<const N: usize>(order: &Order<N>, id: NounId, out: &mut Vec<Goldilocks>) -> bool {
+fn flatten_tree<const N: usize>(order: &Order<N>, id: OrderId, out: &mut Vec<Goldilocks>) -> bool {
     let inner = match order.get(id) {
         Some(e) => e.inner,
         None => return false,
     };
     match inner {
-        Noun::Atom { .. } => match order.atom_value(id) {
-            Some((v, _)) => { out.push(v); true }
+        Data::Atom { .. } => match order.atom_value(id) {
+            Some(v) => { out.push(v); true }
             None => false,
         },
-        Noun::Cell { left, right } => {
+        Data::Pair { left, right } => {
             flatten_tree(order, left, out) && flatten_tree(order, right, out)
         }
     }
@@ -127,28 +127,28 @@ mod tests {
     use crate::reduce::Outcome;
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
     /// Build a balanced binary tree from evaluations (power-of-two length).
-    fn build_tree<const N: usize>(ar: &mut Order<N>, vals: &[Goldilocks]) -> NounId {
+    fn build_tree<const N: usize>(ar: &mut Order<N>, vals: &[Goldilocks]) -> OrderId {
         assert!(vals.len().is_power_of_two() && !vals.is_empty());
         if vals.len() == 1 {
-            return ar.atom(vals[0], Tag::Field).unwrap();
+            return ar.atom(vals[0]).unwrap();
         }
         let mid = vals.len() / 2;
         let left  = build_tree(ar, &vals[..mid]);
         let right = build_tree(ar, &vals[mid..]);
-        ar.cell(left, right).unwrap()
+        ar.pair(left, right).unwrap()
     }
 
     /// Build a right-nested point list [x0 | [x1 | ... term]] with atom terminator.
-    fn build_point<const N: usize>(ar: &mut Order<N>, coords: &[Goldilocks]) -> NounId {
-        let term = ar.atom(g(0), Tag::Field).unwrap();
+    fn build_point<const N: usize>(ar: &mut Order<N>, coords: &[Goldilocks]) -> OrderId {
+        let term = ar.atom(g(0)).unwrap();
         coords.iter().rev().fold(term, |acc, &c| {
-            let h = ar.atom(c, Tag::Field).unwrap();
-            ar.cell(h, acc).unwrap()
+            let h = ar.atom(c).unwrap();
+            ar.pair(h, acc).unwrap()
         })
     }
 
@@ -157,14 +157,14 @@ mod tests {
         ar: &mut Order<N>, evals: &[Goldilocks], point: &[Goldilocks],
     ) -> Outcome {
         let k = evals.len().trailing_zeros() as u64;
-        let k_id  = ar.atom(g(k), Tag::Field).unwrap();
-        let dummy = ar.atom(g(0), Tag::Field).unwrap(); // formula placeholder
-        let lhs   = ar.cell(k_id, dummy).unwrap();
+        let k_id  = ar.atom(g(k)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap(); // formula placeholder
+        let lhs   = ar.pair(k_id, dummy).unwrap();
         let tree  = build_tree(ar, evals);
         let pt    = build_point(ar, point);
-        let rhs   = ar.cell(tree, pt).unwrap();
-        let obj   = ar.cell(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0), Tag::Field).unwrap();
+        let rhs   = ar.pair(tree, pt).unwrap();
+        let obj   = ar.pair(lhs, rhs).unwrap();
+        let body  = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
         poly_eval_jet(ar, obj, body, 100_000, &NullCalls, &mut NoTrace, 0, &mut row)
     }
@@ -173,7 +173,7 @@ mod tests {
     fn at_zero_returns_first_eval() {
         let mut ar = Order::<256>::new();
         match run(&mut ar, &[g(3), g(7)], &[g(0)]) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(3)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(3)),
             o => panic!("{:?}", o),
         }
     }
@@ -182,7 +182,7 @@ mod tests {
     fn at_one_returns_second_eval() {
         let mut ar = Order::<256>::new();
         match run(&mut ar, &[g(3), g(7)], &[g(1)]) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(7)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(7)),
             o => panic!("{:?}", o),
         }
     }
@@ -192,7 +192,7 @@ mod tests {
         // f(x0,x1) with evals [10,20,30,40]; evaluate at x1=0, x0=0 → 10
         let mut ar = Order::<512>::new();
         match run(&mut ar, &[g(10), g(20), g(30), g(40)], &[g(0), g(0)]) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(10)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(10)),
             o => panic!("{:?}", o),
         }
     }
@@ -202,7 +202,7 @@ mod tests {
         // f(1,1) = evals[3] = 40
         let mut ar = Order::<512>::new();
         match run(&mut ar, &[g(10), g(20), g(30), g(40)], &[g(1), g(1)]) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(40)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(40)),
             o => panic!("{:?}", o),
         }
     }
@@ -211,18 +211,18 @@ mod tests {
     fn budget_exhaustion() {
         let mut ar = Order::<256>::new();
         // k=1 needs cost=2, pass budget=1 → Halt
-        let k_id  = ar.atom(g(1), Tag::Field).unwrap();
-        let dummy = ar.atom(g(0), Tag::Field).unwrap();
-        let lhs   = ar.cell(k_id, dummy).unwrap();
-        let e0    = ar.atom(g(3), Tag::Field).unwrap();
-        let e1    = ar.atom(g(7), Tag::Field).unwrap();
-        let tree  = ar.cell(e0, e1).unwrap();
-        let term  = ar.atom(g(0), Tag::Field).unwrap();
-        let pt_h  = ar.atom(g(0), Tag::Field).unwrap();
-        let pt    = ar.cell(pt_h, term).unwrap();
-        let rhs   = ar.cell(tree, pt).unwrap();
-        let obj   = ar.cell(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0), Tag::Field).unwrap();
+        let k_id  = ar.atom(g(1)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs   = ar.pair(k_id, dummy).unwrap();
+        let e0    = ar.atom(g(3)).unwrap();
+        let e1    = ar.atom(g(7)).unwrap();
+        let tree  = ar.pair(e0, e1).unwrap();
+        let term  = ar.atom(g(0)).unwrap();
+        let pt_h  = ar.atom(g(0)).unwrap();
+        let pt    = ar.pair(pt_h, term).unwrap();
+        let rhs   = ar.pair(tree, pt).unwrap();
+        let obj   = ar.pair(lhs, rhs).unwrap();
+        let body  = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
         match poly_eval_jet(&mut ar, obj, body, 1, &NullCalls, &mut NoTrace, 0, &mut row) {
             Outcome::Halt(_) => {}

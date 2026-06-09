@@ -14,9 +14,9 @@ the trace layout is algebra-independent in structure (16 registers, power-of-2 r
 ```
 columns (16 = 2⁴ registers, each one F element):
   r0:   pattern tag (0-17)
-  r1:   object NounId             — identity of the object noun
-  r2:   formula NounId            — identity of the formula noun
-  r3:   result NounId             — identity of the result noun
+  r1:   object particle             — identity of the object data
+  r2:   formula particle            — identity of the formula data
+  r3:   result particle             — identity of the result data
   r4:   pattern-specific operand 0
   r5:   pattern-specific operand 1
   r6:   pattern-specific operand 2
@@ -28,31 +28,31 @@ columns (16 = 2⁴ registers, each one F element):
   r12:  multi-row state / pattern-specific / Lens commitment bytes (when prover active)
   r13:  multi-row state / pattern-specific / Lens commitment bytes (when prover active)
   r14:  pattern-specific (round index for hash/inv)
-  r15:  pattern-specific (input NounId for hash)
+  r15:  pattern-specific (input particle for hash)
 
 rows: 2^n (padded to power of 2)
 ```
 
-a NounId is a single field element that uniquely identifies a noun in the noun store. the instance (public input) contains the full identities. the trace stores one NounId per noun per row — sufficient for row-linking and cross-row wiring. the instance constraint verifies full noun identities against the first and last rows.
+the particle is the content identity of a data node — its 32-byte hemera hash (4 field elements). each register holds one field element, so r1–r3 carry a compact field-element reference to each data node's particle, sufficient for row-linking and cross-row wiring. the instance (public input) carries the full particles; the instance constraint verifies the full identities against the first and last rows.
 
 ## instance (public input)
 
 ```
 instance = (object_id, formula_id, result_id, status)
 
-object_id:  F_p (NounId of the object noun)
-formula_id: F_p (NounId of the formula noun)
-result_id:  F_p (NounId of the result noun, or 0 on failure)
+object_id:  F_p (particle of the object data)
+formula_id: F_p (particle of the formula data)
+result_id:  F_p (particle of the result data, or 0 on failure)
 status:     F_p (0 = ok, 1 = halt, 2 = error)
 ```
 
-the protocol invocation is order() -> result: the caller provides (object, formula), the executor returns result. when status = 0 (success), result_id is the NounId of the result noun. when status != 0 (halt or error), there is no result noun — result_id MUST be zero. the verifier enforces: `status != 0 => result_id = 0`.
+the protocol invocation is order() -> result: the caller provides (object, formula), the executor returns result. when status = 0 (success), result_id is the particle of the result data. when status != 0 (halt or error), there is no result data — result_id MUST be zero. the verifier enforces: `status != 0 => result_id = 0`.
 
 the instance links the trace to the computation. the verifier checks:
 1. first row: r1 matches instance object_id, r2 matches instance formula_id
 2. last row: r3 matches instance result_id, status propagated correctly
-3. status-gated result: if status = 0, result_id is a valid NounId; if status != 0, result_id = 0
-4. noun store commitment: instance NounIds (object_id, formula_id, and result_id when status = 0) are checked against the noun store polynomial commitments. each NounId is hemera(Lens.commit(noun_polynomial) || domain_tag). the commitment scheme is defined by the proof system (zheng) — nox specifies WHAT is committed (the noun identities referenced by the trace), not HOW
+3. status-gated result: if status = 0, result_id is a valid particle; if status != 0, result_id = 0
+4. data store commitment: instance particles (object_id, formula_id, and result_id when status = 0) are checked against the data store polynomial commitments. each particle is hemera(Lens.commit(data_polynomial) || domain_tag). the commitment scheme is defined by the proof system (zheng) — nox specifies WHAT is committed (the data identities referenced by the trace), not HOW
 
 ## register layout
 
@@ -62,9 +62,9 @@ every row follows this fixed structure:
 
 ```
 r0:    pattern tag (0-17)
-r1:    object NounId
-r2:    formula NounId
-r3:    result NounId
+r1:    object particle
+r2:    formula particle
+r3:    result particle
 r4-r7: pattern-specific operands (meaning varies per pattern, see below)
 r8:    budget before step
 r9:    budget after step
@@ -80,14 +80,14 @@ exact register contents for each pattern (tags 0-17). r0-r3 and r8-r9 follow the
 
 ```
 r0  = 0
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId               — NounId of the value at the addressed position
+r1  = object particle
+r2  = formula particle
+r3  = result particle               — particle of the value at the addressed position
 r4  = commitment[0] from axis_commitment() when prover is active, 0 otherwise
       (first 8-byte LE limb of the 32-byte Lens commitment; equals r11)
 r5  = axis address (raw u64)      — literal address from formula body
 r6  = levels descended (depth of navigation)
-r7  = result NounId               — NounId of the value at the addressed position
+r7  = result particle               — particle of the value at the addressed position
 r8  = budget_in
 r9  = budget_out = r8 - 1
 r10 = 0 (success) / error kind
@@ -111,10 +111,10 @@ note: circuit cost is 1 Lens opening (O(1)). interpreter traverses up to 63 tree
 
 ```
 r0  = 1
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId               — same as body NounId
-r4  = body                        — the literal noun c from [1 c]
+r1  = object particle
+r2  = formula particle
+r3  = result particle               — same as body particle
+r4  = body                        — the literal data c from [1 c]
 r5  = 0 (unused)
 r6  = 0 (unused)
 r7  = body                        — result = body (identity: r7 = r4)
@@ -127,13 +127,13 @@ budget: r9 = r8 - 1
 
 ```
 r0  = 2
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId               — NounId of reduce(r4, r5)
+r1  = object particle
+r2  = formula particle
+r3  = result particle               — particle of reduce(r4, r5)
 r4  = result of reduce(o, x)      — evaluated first sub-expression (new object)
 r5  = result of reduce(o, y)      — evaluated second sub-expression (new formula)
-r6  = NounId(x)                   — identity of first sub-formula (for wiring)
-r7  = NounId(y)                   — identity of second sub-formula (for wiring)
+r6  = particle(x)                   — identity of first sub-formula (for wiring)
+r7  = particle(y)                   — identity of second sub-formula (for wiring)
 
 constraint: r3 wired to result row of reduce(r4, r5) via CCS (degree 1)
 budget: r9 = r8 - 1 (dispatch only; sub-expression costs in their own rows)
@@ -144,15 +144,15 @@ note: 3 reduce() calls total (x, y, final application) — sub-results in separa
 
 ```
 r0  = 3
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId               — NounId of the constructed cell
+r1  = object particle
+r2  = formula particle
+r3  = result particle               — particle of the constructed pair
 r4  = result of reduce(o, a)      — evaluated head
 r5  = result of reduce(o, b)      — evaluated tail
 r6  = 0 (unused)
 r7  = 0 (unused)
 
-constraint: r3 = NounId(cell(r4, r5)) verified via hemera hash wiring (degree 1)
+constraint: r3 = particle(pair(r4, r5)) verified via hemera hash wiring (degree 1)
 budget: r9 = r8 - 1
 note: sub-expressions evaluated in separate rows; r4, r5 wired via CCS.
 ```
@@ -161,12 +161,12 @@ note: sub-expressions evaluated in separate rows; r4, r5 wired via CCS.
 
 ```
 r0  = 4
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId               — NounId of the chosen branch result
+r1  = object particle
+r2  = formula particle
+r3  = result particle               — particle of the chosen branch result
 r4  = test value                   — result of reduce(o, test)
 r5  = inverse hint of r4           — r4^-1 when r4 ≠ 0, else 0
-r6  = chosen arm result            — NounId of the chosen branch result
+r6  = chosen arm result            — particle of the chosen branch result
 r10 = selector                     — 0 if r4 = 0 (take yes), 1 if r4 ≠ 0 (take no)
 
 constraint:
@@ -174,7 +174,7 @@ constraint:
   r4 * (1 - r10) = 0             — when test=0, selector must be 0 (degree 2)
   result = chosen arm result
 budget: r9 = r8 - 1
-note: only the chosen branch is evaluated. r6 = NounId of chosen result.
+note: only the chosen branch is evaluated. r6 = particle of chosen result.
       r7 is unused (the unchosen arm is not evaluated, not stored).
 ```
 
@@ -182,9 +182,9 @@ note: only the chosen branch is evaluated. r6 = NounId of chosen result.
 
 ```
 r0  = 5
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId
+r1  = object particle
+r2  = formula particle
+r3  = result particle
 r4  = left operand                 — evaluated first sub-expression
 r5  = right operand                — evaluated second sub-expression
 r6  = (r4 + r5) mod p              — field addition result
@@ -198,9 +198,9 @@ budget: r9 = r8 - 1
 
 ```
 r0  = 6
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId
+r1  = object particle
+r2  = formula particle
+r3  = result particle
 r4  = left operand
 r5  = right operand
 r6  = (r4 - r5) mod p              — field subtraction result
@@ -214,9 +214,9 @@ budget: r9 = r8 - 1
 
 ```
 r0  = 7
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId
+r1  = object particle
+r2  = formula particle
+r3  = result particle
 r4  = left operand
 r5  = right operand
 r6  = (r4 * r5) mod p              — field multiplication result
@@ -237,9 +237,9 @@ row 0 (= v^1), then 63 transition rows process bits 62 down to 0.
 ```
 row 0 (init, bit 63 processed):
   r0  = 8
-  r1  = object NounId              — same across all rows
-  r2  = formula NounId             — same across all rows
-  r3  = 0                          — result NounId set on final row only
+  r1  = object particle              — same across all rows
+  r2  = formula particle             — same across all rows
+  r3  = 0                          — result particle set on final row only
   r4  = input value v              — constant across the 64-row block
   r5  = 0 (unused)
   r6  = 0 (not yet computed)
@@ -257,7 +257,7 @@ rows 1..62 (transition; step t processes bit 63 - t):
   r12 = t                          — step counter
 
 row 63 (final, step 63 processes bit 0):
-  r3  = result NounId              — atom(r10, Field)
+  r3  = result particle              — atom(r10, Field)
   r4  = v
   r6  = final inverse v^(p-2)      — equals r10
   r9  = budget_out                 — = r8 - 64
@@ -279,16 +279,16 @@ note: bit ordering is MSB-first. bit 63 of p-2 = 1 is processed at step 0.
 
 ```
 r0  = 9
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId
-r4  = left operand field value       — for atoms: field value; for cells: digest[0] of left noun
-r5  = right operand field value      — for atoms: field value; for cells: digest[0] of right noun
+r1  = object particle
+r2  = formula particle
+r3  = result particle
+r4  = left operand field value       — for atoms: field value; for pairs: digest[0] of left data
+r5  = right operand field value      — for atoms: field value; for pairs: digest[0] of right data
 r6  = result (0 if equal, 1 if not equal)
 r7  = (r4 - r5)^-1                  — inverse of difference (hint; 0 when r4 = r5)
 
-note: for cells, r4 = digest[0] of left noun, r5 = digest[0] of right noun.
-      structurally equal cells always produce equal digests across all four limbs.
+note: for pairs, r4 = digest[0] of left data, r5 = digest[0] of right data.
+      structurally equal pairs always produce equal digests across all four limbs.
 
 constraint:
   (r4 - r5) * (1 - r6) = 0          — if r4 != r5, then r6 = 1 (degree 2)
@@ -306,9 +306,9 @@ canonical Goldilocks representative, LSB-first.
 ```
 each row k (k = 0..63):
   r0  = 10
-  r1  = object NounId
-  r2  = formula NounId
-  r3  = 0 except final row (k = 63): result NounId
+  r1  = object particle
+  r2  = formula particle
+  r3  = 0 except final row (k = 63): result particle
   r4  = left operand a (full u64, constant across the 64-row block)
   r5  = right operand b (full u64, constant across the block)
   r6  = comparison result (0 if a < b under canonical order, else 1)
@@ -342,9 +342,9 @@ word, LSB-first.
 ```
 each row k (k = 0..31):
   r0  = 11
-  r1  = object NounId
-  r2  = formula NounId
-  r3  = 0 except final row (k = 31): result NounId
+  r1  = object particle
+  r2  = formula particle
+  r3  = 0 except final row (k = 31): result particle
   r4  = left operand a (full 32-bit, constant across the block)
   r5  = right operand b (full 32-bit, constant across the block)
   r6  = c = a XOR b (full 32-bit, constant across the block)
@@ -393,9 +393,9 @@ note: r7, r10, r11, r12 (bit decomposition witnesses): populated by zheng witnes
 ```
 each row k (k = 0..31):
   r0  = 13
-  r1  = object NounId
-  r2  = formula NounId
-  r3  = 0 except final row: result NounId
+  r1  = object particle
+  r2  = formula particle
+  r3  = 0 except final row: result particle
   r4  = operand a (full 32-bit)
   r5  = 0                             (unused — operation is unary)
   r6  = c = NOT a (= a XOR 0xFFFFFFFF, full 32-bit)
@@ -425,9 +425,9 @@ is partial — only positions that feed the output are exposed.
 ```
 each row k (k = 0..31, k = output bit position):
   r0  = 14
-  r1  = object NounId
-  r2  = formula NounId
-  r3  = 0 except final row: result NounId
+  r1  = object particle
+  r2  = formula particle
+  r3  = 0 except final row: result particle
   r4  = a (input value)
   r5  = n (shift amount)
   r6  = c = (a << n) & 0xFFFFFFFF (output, constant across the block)
@@ -460,35 +460,35 @@ note: r7, r10, r11, r13 (bit decomposition witnesses): populated by zheng witnes
 25 consecutive rows, all with r0 = 15. Driven by [`hemera::StepSponge`]:
 24 Poseidon2 round rows (k = 0..23) plus a final squeeze row (k = 24).
 
-The input noun's cached structural digest (4 Goldilocks elements) is packed
+The input data's cached structural digest (4 Goldilocks elements) is packed
 into the 8-element sponge rate; capacity slots are zero. Each round row
-records the post-round state. The squeeze row records the result NounId
+records the post-round state. The squeeze row records the result particle
 and the 4-element output digest extracted from the final state.
 
 ```
 each round row k (k = 0..23):
   r0  = 15
-  r1  = object NounId              — constant across the block
-  r2  = formula NounId             — constant across the block
+  r1  = object particle              — constant across the block
+  r2  = formula particle             — constant across the block
   r3  = 0 (set only on squeeze row)
   r4..r7  = state[0..3]            — first 4 elements of post-round state
   r8  = budget_in                  — constant across the block
   r9  = 0 (set only on squeeze row)
   r10..r13 = state[4..7]           — remaining rate elements
   r14 = round index k              — 0..23
-  r15 = input NounId               — constant (for wiring)
+  r15 = input particle               — constant (for wiring)
 
 squeeze row (k = 24):
   r0  = 15
-  r1  = object NounId
-  r2  = formula NounId
-  r3  = result NounId              — hash-noun cell(cell(h0,h1), cell(h2,h3))
+  r1  = object particle
+  r2  = formula particle
+  r3  = result particle              — hash-data pair(pair(h0,h1), pair(h2,h3))
   r4..r7 = output digest h0..h3    — first 4 elements of final post-permutation state
   r8  = budget_in
   r9  = budget_out                 — = r8 - 25
   r10..r13 = final_state[4..7]
   r14 = 24                         — squeeze sentinel
-  r15 = input NounId
+  r15 = input particle
 
 transition constraints (rows 1..23):
   full round (k ∈ {0,1,2,3,20,21,22,23}): add round constants on all 16 elements,
@@ -497,7 +497,7 @@ transition constraints (rows 1..23):
     S-box on state[0] (degree 2 via y*state[0] = 1), matmul_internal
 
 init constraint (row 0): state initialized from rate input + initial MDS-light
-final constraint (squeeze): r3 = order.hash_noun(state[0..4])
+final constraint (squeeze): r3 = order.hash_data(state[0..4])
 budget: r9 = r8 - 25 on squeeze row only.
 note: current implementation: single summary row; multi-row round-progression trace
       (25 rows with full state) is deferred to step-level hemera API integration.
@@ -509,13 +509,13 @@ note: current implementation: single summary row; multi-row round-progression tr
 
 ```
 r0  = 16
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId               — NounId of reduce([witness, o], check_f) result
+r1  = object particle
+r2  = formula particle
+r3  = result particle               — particle of reduce([witness, o], check_f) result
 r4  = tag value                    — result of reduce(o, tag_f): identifies witness type
-r5  = witness NounId               — non-deterministic: injected by prover via CallProvider
+r5  = witness particle               — non-deterministic: injected by prover via CallProvider
 r6  = result                       — result of reduce([witness, o], check_f)
-r7  = NounId(check_f)             — identity of the check formula (for wiring)
+r7  = particle(check_f)             — identity of the check formula (for wiring)
 
 constraint: r6 wired to check formula result row via CCS; result must be 0 (degree 1)
 budget: r9 = r8 - 1 (dispatch only; check cost in its own rows)
@@ -527,9 +527,9 @@ note: r5 is the ONLY non-deterministic column in the entire trace. the verifier
 
 ```
 r0  = 17
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId               — NounId of the looked-up value
+r1  = object particle
+r2  = formula particle
+r3  = result particle               — particle of the looked-up value
 r4  = C_t[0]                      — first limb of BBG commitment root (from object axis 4)
 r5  = ns                           — namespace (result of reduce(o, ns_f))
 r6  = key                          — lookup key (result of reduce(o, key_f))
@@ -589,14 +589,14 @@ see per-pattern register map above for row-by-row layout of multi-row patterns.
 
 ## row linking
 
-consecutive rows are linked by constraints on object, formula, and result NounIds:
+consecutive rows are linked by constraints on object, formula, and result particles:
 
 ```
 same object:  r1_{t+1} = r1_t
-new object:   r1_{t+1} set by compose result NounId
+new object:   r1_{t+1} set by compose result particle
 same formula: r2_{t+1} = r2_t
 new formula:  r2_{t+1} set by sub-expression dispatch
-result link:  r3_t wired to the result NounId of the completed sub-computation
+result link:  r3_t wired to the result particle of the completed sub-computation
 ```
 
 note: the row-linking constraints (r1_{t+1}=r1_t etc.) are verified by zheng, not enforced at
@@ -622,7 +622,7 @@ status = 2: error — type/semantic error
 
 when status = 1 (halt):
   r8 = remaining budget (insufficient for next pattern)
-  r3 = 0 (no result NounId)
+  r3 = 0 (no result particle)
 
 when status = 2 (error):
   r10 = error kind:
@@ -632,7 +632,7 @@ when status = 2 (error):
     3 = unavailable   — resource exhausted (order full, provider returned nothing)
     4 = malformed     — formula structure invalid or depth limit exceeded
     5 = call rejected — call pattern: check formula returned non-zero or error
-  r3 = 0 (no result NounId)
+  r3 = 0 (no result particle)
 ```
 
 errors and halts propagate: once status != 0, subsequent rows maintain the same status.

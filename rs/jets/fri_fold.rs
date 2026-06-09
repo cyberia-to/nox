@@ -22,36 +22,36 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 use nebu::Goldilocks;
-use crate::noun::{Order, NounId, Noun, Tag};
-use crate::reduce::{Outcome, ErrorKind, cell_pair};
+use crate::data::{Order, OrderId, Data};
+use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
 pub fn fri_fold_jet<const N: usize>(
-    order: &mut Order<N>, object: NounId, _body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
     _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [[k | formula] | [evals_tree | r]]
-    let (lhs, rhs) = match cell_pair(order, object) {
+    let (lhs, rhs) = match pair_children(order, object) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (k_id, _formula_id) = match cell_pair(order, lhs) {
+    let (k_id, _formula_id) = match pair_children(order, lhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (evals_id, r_id) = match cell_pair(order, rhs) {
+    let (evals_id, r_id) = match pair_children(order, rhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
 
     let k = match order.atom_value(k_id) {
-        Some((v, _)) => v.as_u64() as usize,
+        Some(v) => v.as_u64() as usize,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
     let r = match order.atom_value(r_id) {
-        Some((v, _)) => v,
+        Some(v) => v,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
 
@@ -89,23 +89,23 @@ pub fn fri_fold_jet<const N: usize>(
     row.r[5] = r_id as u64;
     row.r[6] = value.as_u64();
 
-    match order.atom(value, Tag::Field) {
+    match order.atom(value) {
         Some(result) => Outcome::Ok(result, remaining),
         None => Outcome::Error(ErrorKind::Unavailable),
     }
 }
 
-fn flatten_tree<const N: usize>(order: &Order<N>, id: NounId, out: &mut Vec<Goldilocks>) -> bool {
+fn flatten_tree<const N: usize>(order: &Order<N>, id: OrderId, out: &mut Vec<Goldilocks>) -> bool {
     let inner = match order.get(id) {
         Some(e) => e.inner,
         None => return false,
     };
     match inner {
-        Noun::Atom { .. } => match order.atom_value(id) {
-            Some((v, _)) => { out.push(v); true }
+        Data::Atom { .. } => match order.atom_value(id) {
+            Some(v) => { out.push(v); true }
             None => false,
         },
-        Noun::Cell { left, right } => {
+        Data::Pair { left, right } => {
             flatten_tree(order, left, out) && flatten_tree(order, right, out)
         }
     }
@@ -117,33 +117,33 @@ mod tests {
     use crate::reduce::Outcome;
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn build_tree<const N: usize>(ar: &mut Order<N>, vals: &[Goldilocks]) -> NounId {
+    fn build_tree<const N: usize>(ar: &mut Order<N>, vals: &[Goldilocks]) -> OrderId {
         assert!(vals.len().is_power_of_two() && !vals.is_empty());
         if vals.len() == 1 {
-            return ar.atom(vals[0], Tag::Field).unwrap();
+            return ar.atom(vals[0]).unwrap();
         }
         let mid = vals.len() / 2;
         let l = build_tree(ar, &vals[..mid]);
         let r = build_tree(ar, &vals[mid..]);
-        ar.cell(l, r).unwrap()
+        ar.pair(l, r).unwrap()
     }
 
     fn run<const N: usize>(
         ar: &mut Order<N>, evals: &[Goldilocks], r: Goldilocks,
     ) -> Outcome {
         let k_val = evals.len().trailing_zeros() as u64;
-        let k_id  = ar.atom(g(k_val), Tag::Field).unwrap();
-        let dummy = ar.atom(g(0), Tag::Field).unwrap();
-        let lhs   = ar.cell(k_id, dummy).unwrap();
+        let k_id  = ar.atom(g(k_val)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs   = ar.pair(k_id, dummy).unwrap();
         let tree  = build_tree(ar, evals);
-        let r_id  = ar.atom(r, Tag::Field).unwrap();
-        let rhs   = ar.cell(tree, r_id).unwrap();
-        let obj   = ar.cell(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0), Tag::Field).unwrap();
+        let r_id  = ar.atom(r).unwrap();
+        let rhs   = ar.pair(tree, r_id).unwrap();
+        let obj   = ar.pair(lhs, rhs).unwrap();
+        let body  = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
         fri_fold_jet(ar, obj, body, 100_000, &NullCalls, &mut NoTrace, 0, &mut row)
     }
@@ -153,7 +153,7 @@ mod tests {
         let mut ar = Order::<256>::new();
         // k=0, evals=[7], any r → result=7
         match run(&mut ar, &[g(7)], g(3)) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(7)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(7)),
             o => panic!("{:?}", o),
         }
     }
@@ -163,7 +163,7 @@ mod tests {
         // r=0: result = left + 0*(right-left) = left
         let mut ar = Order::<256>::new();
         match run(&mut ar, &[g(3), g(7)], g(0)) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(3)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(3)),
             o => panic!("{:?}", o),
         }
     }
@@ -173,7 +173,7 @@ mod tests {
         // r=1: result = left + 1*(right-left) = right
         let mut ar = Order::<256>::new();
         match run(&mut ar, &[g(3), g(7)], g(1)) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(7)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(7)),
             o => panic!("{:?}", o),
         }
     }
@@ -187,7 +187,7 @@ mod tests {
         let p = 0xFFFF_FFFF_0000_0001u64;
         let half = Goldilocks::new((p + 1) / 2);
         match run(&mut ar, &[g(0), g(4), g(8), g(12)], half) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(6)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(6)),
             o => panic!("{:?}", o),
         }
     }

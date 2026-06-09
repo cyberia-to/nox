@@ -17,7 +17,7 @@
 
 extern crate alloc;
 
-pub mod noun;
+pub mod data;
 pub mod reduce;
 pub mod call;
 pub mod patterns;
@@ -30,9 +30,9 @@ pub mod jets;
 #[cfg(feature = "brakedown")]
 pub mod brakedown_look;
 
-pub use noun::{Order, NounId, Tag, Digest, NIL};
-// Noun and NounEntry are intentionally NOT re-exported. External callers that
-// need pattern-matching access can import them through `nox::noun::{Noun, NounEntry}`,
+pub use data::{Order, OrderId, Digest, NIL};
+// Data and DataEntry are intentionally NOT re-exported. External callers that
+// need pattern-matching access can import them through `nox::data::{Data, DataEntry}`,
 // signaling reliance on internal representation. The default surface is the
 // safe accessors on Order (head/tail/atom_value/digest).
 pub use reduce::{reduce, reduce_with_registry, Outcome, ErrorKind};
@@ -42,9 +42,9 @@ pub use trace::{TraceRow, Tracer, NoTrace, VecTrace};
 pub use bound::{bound, Cost};
 pub use parallel::{reduce_parallel, StructuralIndex, PathStep};
 pub use encode::{
-    ContentId, DecodeError, DecodedNoun, WireEntry, WireMessage,
-    encode_field, encode_word, encode_hash, encode_cell,
-    noun_id, encoded_bytes, content_id, encode_tree,
+    Particle, DecodeError, DecodedData, WireEntry, WireMessage,
+    encode_atom, encode_pair,
+    particle_of, encoded_bytes, particle_id, encode_tree,
     decode, parse_message, write_push, write_request, write_response,
 };
 

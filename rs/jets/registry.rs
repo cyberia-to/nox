@@ -6,7 +6,7 @@
 //! jet registry — formula-hash dispatch to optimized implementations
 //!
 //! Every genesis jet is identified by the structural digest of its pure Layer 1
-//! formula noun. At reduction time, reduce_inner checks H(formula) against this
+//! formula data. At reduction time, reduce_inner checks H(formula) against this
 //! registry before tag dispatch. If matched, the jet runs instead of the L1
 //! program — identical results, orders of magnitude faster.
 //!
@@ -16,13 +16,13 @@
 //!
 //! Template predicates are used for state jets (TRANSFER/INSERT/UPDATE/AGGREGATE/
 //! CONSERVE) which recognize a class of formulas matching a CCS pattern rather
-//! than one specific noun.
+//! than one specific data.
 //!
 //! Register layout convention for jets (single-row):
 //!   r[0] = tag of formula's outer pattern (from reduce_inner)
-//!   r[1] = object NounId
-//!   r[2] = formula NounId
-//!   r[3] = result NounId (filled by reduce_inner from Outcome)
+//!   r[1] = object OrderId
+//!   r[2] = formula OrderId
+//!   r[3] = result OrderId (filled by reduce_inner from Outcome)
 //!   r[4..8] = jet-specific operands (filled by jet)
 //!   r[8] = budget before jet (from reduce_inner)
 //!   r[9] = budget after jet (filled by reduce_inner from Outcome)
@@ -31,7 +31,7 @@
 extern crate alloc;
 use alloc::vec::Vec;
 
-use crate::noun::{Digest, Order, NounId};
+use crate::data::{Digest, Order, OrderId};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::reduce::Outcome;
@@ -49,13 +49,13 @@ pub fn digest_key(d: &Digest) -> DigestKey {
 /// Jet function pointer. Receives (order, object, body, budget, hints, tracer,
 /// depth, row) and returns an Outcome. Jets handle their own budget metering.
 ///
-/// `body` is the right half of the formula noun (formula's body in [tag | body]
+/// `body` is the right half of the formula data (formula's body in [tag | body]
 /// decomposition). Jets read data from `object`, not `body`, following the
 /// calling convention encoded in their pure L1 formula.
 pub type JetFn<const N: usize> = fn(
     &mut Order<N>,
-    NounId,                      // object (contains data per formula convention)
-    NounId,                      // body (formula right half — jet may ignore)
+    OrderId,                      // object (contains data per formula convention)
+    OrderId,                      // body (formula right half — jet may ignore)
     u64,                         // budget (full, before any jet charge)
     &dyn CallProvider<N>,
     &mut dyn Tracer,
@@ -64,7 +64,7 @@ pub type JetFn<const N: usize> = fn(
 ) -> Outcome;
 
 /// Predicate for template jets: returns true if `formula` matches the template.
-pub type TemplatePredicate<const N: usize> = fn(&Order<N>, NounId) -> bool;
+pub type TemplatePredicate<const N: usize> = fn(&Order<N>, OrderId) -> bool;
 
 /// Jet registry — maps formula digests to optimized implementations.
 pub struct JetRegistry<const N: usize> {
@@ -99,8 +99,8 @@ impl<const N: usize> JetRegistry<N> {
             .map(|i| self.exact[i].1)
     }
 
-    /// Look up a template jet by inspecting the formula noun.
-    pub fn lookup_template(&self, order: &Order<N>, formula: NounId) -> Option<JetFn<N>> {
+    /// Look up a template jet by inspecting the formula data.
+    pub fn lookup_template(&self, order: &Order<N>, formula: OrderId) -> Option<JetFn<N>> {
         self.templates.iter()
             .find(|(pred, _)| pred(order, formula))
             .map(|(_, f)| *f)
@@ -161,7 +161,7 @@ pub fn compute_genesis_digests() -> GenesisDigests {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::noun::Order;
+    use crate::data::Order;
 
     #[test]
     fn empty_registry_returns_none() {
@@ -173,7 +173,7 @@ mod tests {
     fn insert_and_lookup_exact() {
         let mut reg = JetRegistry::<1024>::empty();
         fn dummy_jet<const N: usize>(
-            _: &mut Order<N>, _: NounId, _: NounId, b: u64,
+            _: &mut Order<N>, _: OrderId, _: OrderId, b: u64,
             _: &dyn CallProvider<N>, _: &mut dyn Tracer, _: u64,
             _: &mut TraceRow,
         ) -> Outcome {
@@ -189,11 +189,11 @@ mod tests {
     fn sorted_insert_maintains_binary_search() {
         let mut reg = JetRegistry::<1024>::empty();
         fn jet_a<const N: usize>(
-            _: &mut Order<N>, _: NounId, _: NounId, b: u64,
+            _: &mut Order<N>, _: OrderId, _: OrderId, b: u64,
             _: &dyn CallProvider<N>, _: &mut dyn Tracer, _: u64, _: &mut TraceRow,
         ) -> Outcome { Outcome::Halt(b) }
         fn jet_b<const N: usize>(
-            _: &mut Order<N>, _: NounId, _: NounId, b: u64,
+            _: &mut Order<N>, _: OrderId, _: OrderId, b: u64,
             _: &dyn CallProvider<N>, _: &mut dyn Tracer, _: u64, _: &mut TraceRow,
         ) -> Outcome { Outcome::Halt(b + 1) }
         // Insert out of order
@@ -207,9 +207,9 @@ mod tests {
     #[test]
     fn template_predicate_matches() {
         let mut reg = JetRegistry::<1024>::empty();
-        fn always_match<const N: usize>(_: &Order<N>, _: NounId) -> bool { true }
+        fn always_match<const N: usize>(_: &Order<N>, _: OrderId) -> bool { true }
         fn jet<const N: usize>(
-            _: &mut Order<N>, _: NounId, _: NounId, b: u64,
+            _: &mut Order<N>, _: OrderId, _: OrderId, b: u64,
             _: &dyn CallProvider<N>, _: &mut dyn Tracer, _: u64, _: &mut TraceRow,
         ) -> Outcome { Outcome::Halt(b) }
         reg.insert_template(always_match, jet);

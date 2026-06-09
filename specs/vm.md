@@ -151,9 +151,9 @@ the same `and(a, b)` means:
 
 the operations are identical. the algebra is a parameter. the programmer writes one tree. the prover splits it by algebra. cross-algebra boundaries are Hemera commitments.
 
-### polynomial nouns and axis
+### polynomial data and axis
 
-every noun is a multilinear polynomial (see nouns.md polynomial representation). axis — the fundamental navigation operation — becomes polynomial evaluation at a binary point. a Lens opening proves the evaluation in O(1) (~75 bytes proof), replacing O(depth) tree traversal. the 16 compute patterns are unchanged semantically — axis still navigates nouns. the implementation changes from pointer-following to polynomial evaluation. this applies across all instantiations: the noun polynomial is over the instantiated field F, and the Lens commitment uses the same field.
+every data node is a multilinear polynomial (see data/inner.md polynomial representation). axis — the fundamental navigation operation — becomes polynomial evaluation at a binary point. a Lens opening proves the evaluation in O(1) (~75 bytes proof), replacing O(depth) tree traversal. the 16 compute patterns are unchanged semantically — axis still navigates data. the implementation changes from pointer-following to polynomial evaluation. this applies across all instantiations: the data polynomial is over the instantiated field F, and the Lens commitment uses the same field.
 
 ## proof-system polymorphism
 
@@ -241,7 +241,7 @@ OWNER      = 0x4E4F5820204F574E   "NOX  OWN"
 domain separation tags are injected into Hemera's sponge capacity[11] (the domain tag slot) before permutation. they ensure that hashes computed for different purposes are cryptographically distinct — a commitment hash cannot collide with a nullifier hash, even for identical input data.
 
 nox programs invoke domain-separated hashing via pattern 15 (hash) with the tag as a capacity parameter. the tag is a protocol constant — it is not user-configurable. the VM sets capacity[11] based on the calling context:
-- structural hash of nouns: capacity[11] = DOMAIN_HASH (Hemera default, 0x00)
+- structural hash of data: capacity[11] = DOMAIN_HASH (Hemera default, 0x00)
 - record commitment: capacity[11] = COMMITMENT
 - nullifier derivation: capacity[11] = NULLIFIER
 - Merkle tree operations: capacity[11] = MERKLE
@@ -265,7 +265,7 @@ the 5-bit encoding, the trace layout, the budget metering, the confluence proper
 
 | page | scope |
 |------|-------|
-| nouns.md | data model: atom, cell, type tags, coercion, structural hash |
+| data/inner.md | data model: atom, pair, polynomial representation, structural hash |
 | patterns.md | all 18 patterns: Layer 1 compute (0-15) + Layer 2 call (16) + look (17) |
 | reduction.md | reduction semantics, confluence, parallelism, memoization |
 | jets.md | Layer 3 jets, pure equivalents, hardware mapping, verifier costs |

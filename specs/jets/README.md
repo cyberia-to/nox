@@ -19,7 +19,7 @@ see [[jets|jets spec]] for principles, semantic contract, recognition mechanism,
 | polynomial-ring | R_q (polynomial ring) | 5 | Ikat | [[polynomial-ring]] |
 | isogeny-curves | F_q (isogeny curves) | 5 (incl. secret_hash boundary) | Porphyry | [[isogeny-curves]] |
 | tropical-semiring | (min,+) (tropical) | 6 (incl. witness_commit boundary) | Assayer | [[tropical-semiring]] |
-| state | F_p (polynomial nouns) | 6 (1 exact + 5 templates) | Brakedown | [[state]] |
+| state | F_p (polynomial data) | 6 (1 exact + 5 templates) | Brakedown | [[state]] |
 | decider | F_p (accumulator) | 1 | Brakedown | [[decider]] |
 
 boundary jets (quantize, dequantize, gadget_decompose, secret_hash, witness_commit) live within their parent algebra.

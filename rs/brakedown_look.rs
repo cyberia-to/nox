@@ -21,7 +21,7 @@ use cyb_lens_brakedown::Brakedown;
 use cyb_lens_core::{Commitment, Lens, MultilinearPoly};
 use nebu::Goldilocks;
 
-use crate::noun::{Order, NounId};
+use crate::data::{Order, OrderId};
 use crate::call::{CallProvider, LookProvider};
 
 /// A pending opening for batch proof generation.
@@ -37,7 +37,7 @@ pub struct LookOpening {
 /// `look` returns `poly.evals[key as usize]` and records the opening.
 /// The `commitment_field` is the first 8 bytes of the Brakedown hash,
 /// interpreted as a little-endian u64 — the same value stored in BBG root limb
-/// l0 (axis 4 of the object noun).
+/// l0 (axis 4 of the object data).
 pub struct BrakedownLookProvider {
     poly: MultilinearPoly<Goldilocks>,
     commitment: Commitment,
@@ -83,7 +83,7 @@ impl LookProvider for BrakedownLookProvider {
 }
 
 impl<const N: usize> CallProvider<N> for BrakedownLookProvider {
-    fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: NounId) -> Option<NounId> {
+    fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
         None
     }
 }
@@ -94,36 +94,36 @@ mod tests {
     use super::*;
     use crate::reduce::{reduce, Outcome};
     use crate::trace::NoTrace;
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    /// Build object noun `[[l0|[l1|[l2|l3]]]|rest]` with the BBG root limbs.
+    /// Build object data `[[l0|[l1|[l2|l3]]]|rest]` with the BBG root limbs.
     fn make_object<const N: usize>(
         order: &mut Order<N>,
         l0: Goldilocks, l1: Goldilocks, l2: Goldilocks, l3: Goldilocks,
-        rest: NounId,
-    ) -> NounId {
-        let a0 = order.atom(l0, Tag::Field).unwrap();
-        let a1 = order.atom(l1, Tag::Field).unwrap();
-        let a2 = order.atom(l2, Tag::Field).unwrap();
-        let a3 = order.atom(l3, Tag::Field).unwrap();
-        let inner = order.cell(a2, a3).unwrap();
-        let mid = order.cell(a1, inner).unwrap();
-        let root_cell = order.cell(a0, mid).unwrap();
-        order.cell(root_cell, rest).unwrap()
+        rest: OrderId,
+    ) -> OrderId {
+        let a0 = order.atom(l0).unwrap();
+        let a1 = order.atom(l1).unwrap();
+        let a2 = order.atom(l2).unwrap();
+        let a3 = order.atom(l3).unwrap();
+        let inner = order.pair(a2, a3).unwrap();
+        let mid = order.pair(a1, inner).unwrap();
+        let root_pair = order.pair(a0, mid).unwrap();
+        order.pair(root_pair, rest).unwrap()
     }
 
     /// Build formula [17 | [[1|ns] | [1|key]]] — look with quoted ns and key.
-    fn make_look<const N: usize>(order: &mut Order<N>, ns: u64, key: u64) -> NounId {
-        let t17 = order.atom(g(17), Tag::Field).unwrap();
-        let t1  = order.atom(g(1),  Tag::Field).unwrap();
-        let vns  = order.atom(g(ns),  Tag::Field).unwrap();
-        let vkey = order.atom(g(key), Tag::Field).unwrap();
-        let ns_formula  = order.cell(t1, vns).unwrap();
-        let key_formula = order.cell(t1, vkey).unwrap();
-        let body = order.cell(ns_formula, key_formula).unwrap();
-        order.cell(t17, body).unwrap()
+    fn make_look<const N: usize>(order: &mut Order<N>, ns: u64, key: u64) -> OrderId {
+        let t17 = order.atom(g(17)).unwrap();
+        let t1  = order.atom(g(1)).unwrap();
+        let vns  = order.atom(g(ns)).unwrap();
+        let vkey = order.atom(g(key)).unwrap();
+        let ns_formula  = order.pair(t1, vns).unwrap();
+        let key_formula = order.pair(t1, vkey).unwrap();
+        let body = order.pair(ns_formula, key_formula).unwrap();
+        order.pair(t17, body).unwrap()
     }
 
     #[test]
@@ -133,14 +133,14 @@ mod tests {
         let l0 = provider.commitment_field();
 
         let mut ar = Order::<512>::new();
-        let rest = ar.atom(g(0), Tag::Field).unwrap();
+        let rest = ar.atom(g(0)).unwrap();
         let object = make_object(&mut ar, l0, g(0), g(0), g(0), rest);
         // key=2 → evals[2] = 30
         let formula = make_look(&mut ar, 0, 2);
 
         match reduce(&mut ar, object, formula, 10_000, &provider, &mut NoTrace) {
             Outcome::Ok(r, _) => {
-                let (v, _) = ar.atom_value(r).unwrap();
+                let v = ar.atom_value(r).unwrap();
                 assert_eq!(v, g(30));
             }
             o => panic!("{:?}", o),

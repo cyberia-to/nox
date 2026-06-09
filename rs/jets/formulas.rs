@@ -3,9 +3,9 @@
 // crystal-type: source
 // crystal-domain: comp
 // ---
-//! Pure Layer 1 formula nouns for the genesis jet set.
+//! Pure Layer 1 formula data for the genesis jet set.
 //!
-//! Each jet is identified by H(formula_noun) — the ContentId of its pure L1
+//! Each jet is identified by H(formula_data) — the Particle of its pure L1
 //! definition.  The jet implementation is an optimization; removing all jets
 //! produces identical results, only slower.
 //!
@@ -24,12 +24,12 @@
 //!   object = [[depth | [root | formula]] | [current | path]]
 //!   axis 4  = depth        steps remaining
 //!   axis 5  = [root|formula]
-//!   axis 10 = root         expected root hash-noun
+//!   axis 10 = root         expected root hash-data
 //!   axis 11 = formula      self-reference
-//!   axis 6  = current      current hash-noun
+//!   axis 6  = current      current hash-data
 //!   axis 7  = path         right-nested list of [sibling | dir] pairs
 //!   axis 14 = [sibling|dir] head of path
-//!   axis 28 = sibling      sibling hash-noun
+//!   axis 28 = sibling      sibling hash-data
 //!   axis 29 = dir          0=sibling is left, 1=sibling is right
 //!
 //! Hash semantics: merkle_verify uses pattern 15 (hash) to compute each node
@@ -40,63 +40,63 @@
 extern crate alloc;
 
 use nebu::Goldilocks;
-use crate::noun::{Order, NounId, Tag};
-use crate::encode::{ContentId, content_id};
+use crate::data::{Order, OrderId};
+use crate::encode::{Particle, particle_id};
 
 // ── primitive builders ────────────────────────────────────────────────────────
 
 fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-fn atom<const N: usize>(ar: &mut Order<N>, v: u64) -> Option<NounId> {
-    ar.atom(g(v), Tag::Field)
+fn atom<const N: usize>(ar: &mut Order<N>, v: u64) -> Option<OrderId> {
+    ar.atom(g(v))
 }
 
 /// [tag | addr] — axis pattern
-fn axis_f<const N: usize>(ar: &mut Order<N>, n: u64) -> Option<NounId> {
+fn axis_f<const N: usize>(ar: &mut Order<N>, n: u64) -> Option<OrderId> {
     let t = atom(ar, 0)?;
     let a = atom(ar, n)?;
-    ar.cell(t, a)
+    ar.pair(t, a)
 }
 
 /// [1 | x] — quote pattern
-fn quote_f<const N: usize>(ar: &mut Order<N>, x: NounId) -> Option<NounId> {
+fn quote_f<const N: usize>(ar: &mut Order<N>, x: OrderId) -> Option<OrderId> {
     let t = atom(ar, 1)?;
-    ar.cell(t, x)
+    ar.pair(t, x)
 }
 
 /// [2 | [a | b]] — compose pattern
-fn compose_f<const N: usize>(ar: &mut Order<N>, a: NounId, b: NounId) -> Option<NounId> {
+fn compose_f<const N: usize>(ar: &mut Order<N>, a: OrderId, b: OrderId) -> Option<OrderId> {
     let t = atom(ar, 2)?;
-    let body = ar.cell(a, b)?;
-    ar.cell(t, body)
+    let body = ar.pair(a, b)?;
+    ar.pair(t, body)
 }
 
 /// [3 | [a | b]] — cons pattern
-fn cons_f<const N: usize>(ar: &mut Order<N>, a: NounId, b: NounId) -> Option<NounId> {
+fn cons_f<const N: usize>(ar: &mut Order<N>, a: OrderId, b: OrderId) -> Option<OrderId> {
     let t = atom(ar, 3)?;
-    let body = ar.cell(a, b)?;
-    ar.cell(t, body)
+    let body = ar.pair(a, b)?;
+    ar.pair(t, body)
 }
 
 /// [4 | [test | [yes | no]]] — branch pattern (test=0 → yes)
-fn branch_f<const N: usize>(ar: &mut Order<N>, test: NounId, yes: NounId, no: NounId) -> Option<NounId> {
+fn branch_f<const N: usize>(ar: &mut Order<N>, test: OrderId, yes: OrderId, no: OrderId) -> Option<OrderId> {
     let t = atom(ar, 4)?;
-    let arms = ar.cell(yes, no)?;
-    let body = ar.cell(test, arms)?;
-    ar.cell(t, body)
+    let arms = ar.pair(yes, no)?;
+    let body = ar.pair(test, arms)?;
+    ar.pair(t, body)
 }
 
 /// [tag | [a | b]] — binary arithmetic/logic patterns (add/sub/mul/eq/…)
-fn binop_f<const N: usize>(ar: &mut Order<N>, tag: u64, a: NounId, b: NounId) -> Option<NounId> {
+fn binop_f<const N: usize>(ar: &mut Order<N>, tag: u64, a: OrderId, b: OrderId) -> Option<OrderId> {
     let t = atom(ar, tag)?;
-    let body = ar.cell(a, b)?;
-    ar.cell(t, body)
+    let body = ar.pair(a, b)?;
+    ar.pair(t, body)
 }
 
 /// [15 | sub_formula] — hash pattern (Poseidon2 of structural digest of result)
-fn hash_f<const N: usize>(ar: &mut Order<N>, sub: NounId) -> Option<NounId> {
+fn hash_f<const N: usize>(ar: &mut Order<N>, sub: OrderId) -> Option<OrderId> {
     let t = atom(ar, 15)?;
-    ar.cell(t, sub)
+    ar.pair(t, sub)
 }
 
 // ── poly_eval formula ─────────────────────────────────────────────────────────
@@ -110,7 +110,7 @@ fn hash_f<const N: usize>(ar: &mut Order<N>, sub: NounId) -> Option<NounId> {
 ///
 /// The formula is self-contained: axis 5 retrieves the formula from the object
 /// at runtime (quining). No circular reference at build time.
-pub fn build_poly_eval_formula<const N: usize>(ar: &mut Order<N>) -> Option<NounId> {
+pub fn build_poly_eval_formula<const N: usize>(ar: &mut Order<N>) -> Option<OrderId> {
     // ── axis references in the calling object ─────────────────────────────────
     let ax4  = axis_f(ar, 4)?;   // k
     let ax5  = axis_f(ar, 5)?;   // formula (self-ref)
@@ -164,10 +164,10 @@ pub fn build_poly_eval_formula<const N: usize>(ar: &mut Order<N>) -> Option<Noun
     branch_f(ar, test, ax6, recursive_step)
 }
 
-/// Content-addressed identity of the poly_eval formula noun.
-pub fn poly_eval_formula_hash<const N: usize>(ar: &mut Order<N>) -> Option<ContentId> {
+/// Content-addressed identity of the poly_eval formula data.
+pub fn poly_eval_formula_hash<const N: usize>(ar: &mut Order<N>) -> Option<Particle> {
     let formula = build_poly_eval_formula(ar)?;
-    content_id(ar, formula)
+    particle_id(ar, formula)
 }
 
 // ── merkle_verify formula ─────────────────────────────────────────────────────
@@ -179,15 +179,15 @@ pub fn poly_eval_formula_hash<const N: usize>(ar: &mut Order<N>) -> Option<Conte
 /// This defines the nox-native Merkle tree — no external hash convention needed.
 ///
 /// Returns field atom 1 if the path is valid, 0 if not.
-pub fn build_merkle_verify_formula<const N: usize>(ar: &mut Order<N>) -> Option<NounId> {
+pub fn build_merkle_verify_formula<const N: usize>(ar: &mut Order<N>) -> Option<OrderId> {
     // ── axis references in the calling object ─────────────────────────────────
     let ax4  = axis_f(ar, 4)?;   // depth (steps remaining)
     let ax5  = axis_f(ar, 5)?;   // [root | formula]
-    let ax6  = axis_f(ar, 6)?;   // current hash-noun
-    let ax10 = axis_f(ar, 10)?;  // root hash-noun
+    let ax6  = axis_f(ar, 6)?;   // current hash-data
+    let ax10 = axis_f(ar, 10)?;  // root hash-data
     let ax11 = axis_f(ar, 11)?;  // formula (self-ref)
     let ax15 = axis_f(ar, 15)?;  // rest_path
-    let ax28 = axis_f(ar, 28)?;  // sibling hash-noun
+    let ax28 = axis_f(ar, 28)?;  // sibling hash-data
     let ax29 = axis_f(ar, 29)?;  // dir (0=sib left, 1=sib right)
 
     // ── base case: depth=0 → compare current with root ───────────────────────
@@ -232,10 +232,10 @@ pub fn build_merkle_verify_formula<const N: usize>(ar: &mut Order<N>) -> Option<
     branch_f(ar, eq_depth_0, base_case, recursive_step)
 }
 
-/// Content-addressed identity of the merkle_verify formula noun.
-pub fn merkle_verify_formula_hash<const N: usize>(ar: &mut Order<N>) -> Option<ContentId> {
+/// Content-addressed identity of the merkle_verify formula data.
+pub fn merkle_verify_formula_hash<const N: usize>(ar: &mut Order<N>) -> Option<Particle> {
     let formula = build_merkle_verify_formula(ar)?;
-    content_id(ar, formula)
+    particle_id(ar, formula)
 }
 
 // ── fri_fold formula ─────────────────────────────────────────────────────────
@@ -253,7 +253,7 @@ pub fn merkle_verify_formula_hash<const N: usize>(ar: &mut Order<N>) -> Option<C
 ///   axis 7  = r (challenge — reused at every level, unlike poly_eval)
 ///   axis 12 = left half of evals_tree
 ///   axis 13 = right half of evals_tree
-pub fn build_fri_fold_formula<const N: usize>(ar: &mut Order<N>) -> Option<NounId> {
+pub fn build_fri_fold_formula<const N: usize>(ar: &mut Order<N>) -> Option<OrderId> {
     let ax4  = axis_f(ar, 4)?;   // k
     let ax5  = axis_f(ar, 5)?;   // formula (self-ref)
     let ax6  = axis_f(ar, 6)?;   // evals_tree
@@ -305,7 +305,7 @@ pub fn build_fri_fold_formula<const N: usize>(ar: &mut Order<N>) -> Option<NounI
 ///
 /// This formula computes one butterfly step (correct for n=1; the jet handles
 /// the full Cooley-Tukey recursion for n>1). The formula's hash anchors the jet.
-pub fn build_ntt_formula<const N: usize>(ar: &mut Order<N>) -> Option<NounId> {
+pub fn build_ntt_formula<const N: usize>(ar: &mut Order<N>) -> Option<OrderId> {
     let ax4  = axis_f(ar, 4)?;   // n
     let ax6  = axis_f(ar, 6)?;   // values_tree (returned at base)
     let ax7  = axis_f(ar, 7)?;   // omega
@@ -341,10 +341,10 @@ pub(crate) const CONSERVE_TAG:   u64 = 1005;
 /// Formula = [CYBERLINK_TAG | axis(1)]
 /// Applied to object [from_cid | to_cid]: the formula returns the whole object.
 /// The formula's hash uniquely identifies the CYBERLINK jet.
-pub fn build_cyberlink_formula<const N: usize>(ar: &mut Order<N>) -> Option<NounId> {
+pub fn build_cyberlink_formula<const N: usize>(ar: &mut Order<N>) -> Option<OrderId> {
     let tag  = atom(ar, CYBERLINK_TAG)?;
     let body = axis_f(ar, 1)?;                      // axis(1) = whole object
-    ar.cell(tag, body)
+    ar.pair(tag, body)
 }
 
 // ── decider formula ───────────────────────────────────────────────────────────
@@ -354,13 +354,13 @@ pub fn build_cyberlink_formula<const N: usize>(ar: &mut Order<N>) -> Option<Noun
 /// Formula = [DECIDER_TAG | [axis(2) | axis(3)]]
 /// The formula's hash uniquely identifies the HyperNova verifier jet.
 /// Full 89/825-constraint verification is implemented in the jet and hints.
-pub fn build_decider_formula<const N: usize>(ar: &mut Order<N>) -> Option<NounId> {
+pub fn build_decider_formula<const N: usize>(ar: &mut Order<N>) -> Option<OrderId> {
     const DECIDER_TAG: u64 = 1099;
     let tag  = atom(ar, DECIDER_TAG)?;
     let lhs  = axis_f(ar, 2)?;
     let rhs  = axis_f(ar, 3)?;
-    let body = ar.cell(lhs, rhs)?;
-    ar.cell(tag, body)
+    let body = ar.pair(lhs, rhs)?;
+    ar.pair(tag, body)
 }
 
 // ── tests ─────────────────────────────────────────────────────────────────────
@@ -372,7 +372,7 @@ mod tests {
     use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
     use crate::trace::NoTrace;
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order, OrderId};
     use hemera::StepSponge;
     use hemera::field::Goldilocks as HemeraGold;
 
@@ -381,25 +381,25 @@ mod tests {
     // ── poly_eval helpers ─────────────────────────────────────────────────────
 
     /// Build a balanced binary tree from evaluations (must be power-of-two length).
-    fn build_evals_tree<const N: usize>(ar: &mut Order<N>, vals: &[Goldilocks]) -> NounId {
+    fn build_evals_tree<const N: usize>(ar: &mut Order<N>, vals: &[Goldilocks]) -> OrderId {
         assert!(vals.len().is_power_of_two() && !vals.is_empty());
         if vals.len() == 1 {
-            return ar.atom(vals[0], Tag::Field).unwrap();
+            return ar.atom(vals[0]).unwrap();
         }
         let mid = vals.len() / 2;
         let left  = build_evals_tree(ar, &vals[..mid]);
         let right = build_evals_tree(ar, &vals[mid..]);
-        ar.cell(left, right).unwrap()
+        ar.pair(left, right).unwrap()
     }
 
     /// Build a right-nested cons list from point coordinates, with atom terminator.
-    /// Always produces a cons cell so axis(14)=head(point) is valid even for 1 var.
-    fn build_point<const N: usize>(ar: &mut Order<N>, coords: &[Goldilocks]) -> NounId {
+    /// Always produces a cons pair so axis(14)=head(point) is valid even for 1 var.
+    fn build_point<const N: usize>(ar: &mut Order<N>, coords: &[Goldilocks]) -> OrderId {
         assert!(!coords.is_empty());
-        let term = ar.atom(g(0), Tag::Field).unwrap();
+        let term = ar.atom(g(0)).unwrap();
         coords.iter().rev().fold(term, |acc, &c| {
-            let head = ar.atom(c, Tag::Field).unwrap();
-            ar.cell(head, acc).unwrap()
+            let head = ar.atom(c).unwrap();
+            ar.pair(head, acc).unwrap()
         })
     }
 
@@ -409,12 +409,12 @@ mod tests {
     ) -> Outcome {
         let formula = build_poly_eval_formula(ar).unwrap();
         let evals_tree  = build_evals_tree(ar, evals);
-        let point_noun  = build_point(ar, point);
-        let k           = ar.atom(g(evals.len().trailing_zeros() as u64), Tag::Field).unwrap();
+        let point_data  = build_point(ar, point);
+        let k           = ar.atom(g(evals.len().trailing_zeros() as u64)).unwrap();
         // object = [[k | formula] | [evals_tree | point]]
-        let lhs = ar.cell(k, formula).unwrap();
-        let rhs = ar.cell(evals_tree, point_noun).unwrap();
-        let obj = ar.cell(lhs, rhs).unwrap();
+        let lhs = ar.pair(k, formula).unwrap();
+        let rhs = ar.pair(evals_tree, point_data).unwrap();
+        let obj = ar.pair(lhs, rhs).unwrap();
         reduce(ar, obj, formula, 1_000_000, &NullCalls, &mut NoTrace)
     }
 
@@ -422,7 +422,7 @@ mod tests {
     fn poly_eval_formula_at_zero() {
         let mut ar = Order::<4096>::new();
         match run_poly_eval_formula(&mut ar, &[g(3), g(7)], &[g(0)]) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(3)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(3)),
             o => panic!("{:?}", o),
         }
     }
@@ -431,7 +431,7 @@ mod tests {
     fn poly_eval_formula_at_one() {
         let mut ar = Order::<4096>::new();
         match run_poly_eval_formula(&mut ar, &[g(3), g(7)], &[g(1)]) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(7)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(7)),
             o => panic!("{:?}", o),
         }
     }
@@ -451,7 +451,7 @@ mod tests {
         let half = (p + 1) / 2;           // multiplicative inverse of 2 mod p
         // point = [x1=0, x0=1/2]  (big-endian: most-significant variable first)
         match run_poly_eval_formula(&mut ar, &[g(0), g(2), g(4), g(6)], &[g(0), g(half)]) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(1)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(1)),
             o => panic!("{:?}", o),
         }
     }
@@ -467,9 +467,9 @@ mod tests {
 
     // ── merkle_verify helpers ─────────────────────────────────────────────────
 
-    /// Compute the nox-native hash of a noun (pattern 15 semantics):
-    /// Poseidon2 of the noun's structural digest.
-    fn nox_hash_noun<const N: usize>(ar: &mut Order<N>, id: NounId) -> NounId {
+    /// Compute the nox-native hash of a data (pattern 15 semantics):
+    /// Poseidon2 of the data's structural digest.
+    fn nox_hash_data<const N: usize>(ar: &mut Order<N>, id: OrderId) -> OrderId {
         let dig = *ar.digest(id).unwrap();
         let mut rate = [HemeraGold::ZERO; 8];
         for i in 0..4 { rate[i] = HemeraGold::new(dig[i].as_u64()); }
@@ -482,45 +482,45 @@ mod tests {
             g(state[2].as_canonical_u64()),
             g(state[3].as_canonical_u64()),
         ];
-        ar.hash_noun(&out).unwrap()
+        ar.hash_data(&out).unwrap()
     }
 
     /// Build a two-leaf nox-native merkle tree.
-    /// Returns (root_hash_noun, leaf0_hash_noun, leaf1_hash_noun).
-    fn two_leaf_tree<const N: usize>(ar: &mut Order<N>) -> (NounId, NounId, NounId) {
-        let leaf0 = ar.atom(g(100), Tag::Field).unwrap();
-        let leaf1 = ar.atom(g(200), Tag::Field).unwrap();
-        let hn0 = nox_hash_noun(ar, leaf0);
-        let hn1 = nox_hash_noun(ar, leaf1);
+    /// Returns (root_hash_data, leaf0_hash_data, leaf1_hash_data).
+    fn two_leaf_tree<const N: usize>(ar: &mut Order<N>) -> (OrderId, OrderId, OrderId) {
+        let leaf0 = ar.atom(g(100)).unwrap();
+        let leaf1 = ar.atom(g(200)).unwrap();
+        let hn0 = nox_hash_data(ar, leaf0);
+        let hn1 = nox_hash_data(ar, leaf1);
         // root = hash(cons(hn0, hn1))
-        let cons_id = ar.cell(hn0, hn1).unwrap();
-        let root = nox_hash_noun(ar, cons_id);
+        let cons_id = ar.pair(hn0, hn1).unwrap();
+        let root = nox_hash_data(ar, cons_id);
         (root, hn0, hn1)
     }
 
     /// Build the path cons list: right-nested [sibling | dir] pairs + atom terminator.
-    fn build_path<const N: usize>(ar: &mut Order<N>, steps: &[(NounId, u64)]) -> NounId {
-        let term = ar.atom(g(0), Tag::Field).unwrap();
+    fn build_path<const N: usize>(ar: &mut Order<N>, steps: &[(OrderId, u64)]) -> OrderId {
+        let term = ar.atom(g(0)).unwrap();
         steps.iter().rev().fold(term, |acc, &(sib, dir)| {
-            let d   = ar.atom(g(dir), Tag::Field).unwrap();
-            let step = ar.cell(sib, d).unwrap();
-            ar.cell(step, acc).unwrap()
+            let d   = ar.atom(g(dir)).unwrap();
+            let step = ar.pair(sib, d).unwrap();
+            ar.pair(step, acc).unwrap()
         })
     }
 
     /// Run the merkle_verify formula via reduce().
     fn run_merkle_formula<const N: usize>(
         ar: &mut Order<N>,
-        root: NounId, leaf_hash: NounId,
-        path: &[(NounId, u64)],
+        root: OrderId, leaf_hash: OrderId,
+        path: &[(OrderId, u64)],
     ) -> Outcome {
         let formula = build_merkle_verify_formula(ar).unwrap();
-        let depth   = ar.atom(g(path.len() as u64), Tag::Field).unwrap();
-        let root_pair = ar.cell(root, formula).unwrap();
-        let meta    = ar.cell(depth, root_pair).unwrap();
-        let path_noun = build_path(ar, path);
-        let data    = ar.cell(leaf_hash, path_noun).unwrap();
-        let obj     = ar.cell(meta, data).unwrap();
+        let depth   = ar.atom(g(path.len() as u64)).unwrap();
+        let root_pair = ar.pair(root, formula).unwrap();
+        let meta    = ar.pair(depth, root_pair).unwrap();
+        let path_data = build_path(ar, path);
+        let data    = ar.pair(leaf_hash, path_data).unwrap();
+        let obj     = ar.pair(meta, data).unwrap();
         reduce(ar, obj, formula, 10_000_000, &NullCalls, &mut NoTrace)
     }
 
@@ -530,7 +530,7 @@ mod tests {
         let (root, hn0, hn1) = two_leaf_tree(&mut ar);
         // leaf0 is left → sibling (hn1) is right → dir=1
         match run_merkle_formula(&mut ar, root, hn0, &[(hn1, 1)]) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(1)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(1)),
             o => panic!("{:?}", o),
         }
     }
@@ -539,10 +539,10 @@ mod tests {
     fn merkle_formula_wrong_leaf_returns_zero() {
         let mut ar = Order::<4096>::new();
         let (root, _hn0, hn1) = two_leaf_tree(&mut ar);
-        let wrong = ar.atom(g(999), Tag::Field).unwrap();
-        let wrong_hash = nox_hash_noun(&mut ar, wrong);
+        let wrong = ar.atom(g(999)).unwrap();
+        let wrong_hash = nox_hash_data(&mut ar, wrong);
         match run_merkle_formula(&mut ar, root, wrong_hash, &[(hn1, 1)]) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(0)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(0)),
             o => panic!("{:?}", o),
         }
     }
@@ -560,44 +560,44 @@ mod tests {
 
     #[test]
     fn fri_fold_formula_hash_is_stable() {
-        use crate::encode::content_id;
+        use crate::encode::particle_id;
         let mut ar1 = Order::<4096>::new();
         let mut ar2 = Order::<4096>::new();
         let f1 = build_fri_fold_formula(&mut ar1).unwrap();
-        let h1 = content_id(&ar1, f1).unwrap();
+        let h1 = particle_id(&ar1, f1).unwrap();
         let f2 = build_fri_fold_formula(&mut ar2).unwrap();
-        let h2 = content_id(&ar2, f2).unwrap();
+        let h2 = particle_id(&ar2, f2).unwrap();
         assert_eq!(h1, h2);
     }
 
     #[test]
     fn ntt_formula_hash_is_stable() {
-        use crate::encode::content_id;
+        use crate::encode::particle_id;
         let mut ar1 = Order::<4096>::new();
         let mut ar2 = Order::<4096>::new();
         let f1 = build_ntt_formula(&mut ar1).unwrap();
-        let h1 = content_id(&ar1, f1).unwrap();
+        let h1 = particle_id(&ar1, f1).unwrap();
         let f2 = build_ntt_formula(&mut ar2).unwrap();
-        let h2 = content_id(&ar2, f2).unwrap();
+        let h2 = particle_id(&ar2, f2).unwrap();
         assert_eq!(h1, h2);
     }
 
     #[test]
     fn genesis_formulas_have_distinct_hashes() {
-        use crate::encode::content_id;
+        use crate::encode::particle_id;
         let mut ar = Order::<8192>::new();
         let id_pe = build_poly_eval_formula(&mut ar).unwrap();
-        let h_pe  = content_id(&ar, id_pe).unwrap();
+        let h_pe  = particle_id(&ar, id_pe).unwrap();
         let id_mv = build_merkle_verify_formula(&mut ar).unwrap();
-        let h_mv  = content_id(&ar, id_mv).unwrap();
+        let h_mv  = particle_id(&ar, id_mv).unwrap();
         let id_ff = build_fri_fold_formula(&mut ar).unwrap();
-        let h_ff  = content_id(&ar, id_ff).unwrap();
+        let h_ff  = particle_id(&ar, id_ff).unwrap();
         let id_nt = build_ntt_formula(&mut ar).unwrap();
-        let h_nt  = content_id(&ar, id_nt).unwrap();
+        let h_nt  = particle_id(&ar, id_nt).unwrap();
         let id_cl = build_cyberlink_formula(&mut ar).unwrap();
-        let h_cl  = content_id(&ar, id_cl).unwrap();
+        let h_cl  = particle_id(&ar, id_cl).unwrap();
         let id_dc = build_decider_formula(&mut ar).unwrap();
-        let h_dc  = content_id(&ar, id_dc).unwrap();
+        let h_dc  = particle_id(&ar, id_dc).unwrap();
         let hashes = [h_pe, h_mv, h_ff, h_nt, h_cl, h_dc];
         for i in 0..hashes.len() {
             for j in (i + 1)..hashes.len() {

@@ -6,17 +6,17 @@
 //! Emits 64 rows: 1 init row + 63 step rows (one per exponent bit processed).
 
 use nebu::Goldilocks;
-use crate::noun::{Order, NounId};
+use crate::data::{Order, OrderId};
 use crate::reduce::{Outcome, ErrorKind, evaluate_unary_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::jets::registry::JetRegistry;
-use crate::noun::NIL;
+use crate::data::NIL;
 
 const P_MINUS_2: u64 = 0xFFFFFFFEFFFFFFFF;
 
 pub fn inv<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
@@ -75,8 +75,8 @@ pub fn inv<const N: usize, T: Tracer>(
         step_row.r[12] = step;
 
         if step == 63 {
-            // final step: allocate result noun
-            match order.atom(acc, crate::noun::Tag::Field) {
+            // final step: allocate result data
+            match order.atom(acc) {
                 Some(result) => {
                     step_row.r[3] = result as u64;
                     step_row.r[6] = acc.as_u64();
@@ -105,28 +105,28 @@ mod tests {
     use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, VecTrace};
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
     /// formula = [8 [1 v]]  (inv of a quoted field element)
-    fn make_inv<const N: usize>(ar: &mut Order<N>, v: u64) -> crate::noun::NounId {
-        let t8 = ar.atom(g(8), Tag::Field).unwrap();
-        let t1 = ar.atom(g(1), Tag::Field).unwrap();
-        let val = ar.atom(g(v), Tag::Field).unwrap();
-        let body = ar.cell(t1, val).unwrap();
-        ar.cell(t8, body).unwrap()
+    fn make_inv<const N: usize>(ar: &mut Order<N>, v: u64) -> crate::data::OrderId {
+        let t8 = ar.atom(g(8)).unwrap();
+        let t1 = ar.atom(g(1)).unwrap();
+        let val = ar.atom(g(v)).unwrap();
+        let body = ar.pair(t1, val).unwrap();
+        ar.pair(t8, body).unwrap()
     }
 
     #[test]
     fn inv_nonzero() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_inv(&mut ar, 2);
         match reduce(&mut ar, obj, formula, 10000, &NullCalls, &mut NoTrace) {
             Outcome::Ok(r, _) => {
-                let (inv2, _) = ar.atom_value(r).unwrap();
+                let inv2 = ar.atom_value(r).unwrap();
                 // inv(2) * 2 should equal 1 in the Goldilocks field
                 assert_eq!(inv2 * g(2), g(1));
             }
@@ -137,7 +137,7 @@ mod tests {
     #[test]
     fn inv_zero_errors() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_inv(&mut ar, 0);
         match reduce(&mut ar, obj, formula, 10000, &NullCalls, &mut NoTrace) {
             Outcome::Error(ErrorKind::InvZero) => {}
@@ -162,11 +162,11 @@ mod tests {
         ];
         for &k in &samples {
             let mut ar = Order::<2048>::new();
-            let obj = ar.atom(g(0), Tag::Field).unwrap();
+            let obj = ar.atom(g(0)).unwrap();
             let formula = make_inv(&mut ar, k);
             match reduce(&mut ar, obj, formula, 10_000, &NullCalls, &mut NoTrace) {
                 Outcome::Ok(r, _) => {
-                    let (inv_k, _) = ar.atom_value(r).unwrap();
+                    let inv_k = ar.atom_value(r).unwrap();
                     assert_eq!(inv_k * g(k), g(1), "inv({}) * {} != 1", k, k);
                 }
                 o => panic!("inv({}) failed: {:?}", k, o),
@@ -179,11 +179,11 @@ mod tests {
     fn inv_neg_one_is_self() {
         const P: u64 = 0xFFFF_FFFF_0000_0001;
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_inv(&mut ar, P - 1);
         match reduce(&mut ar, obj, formula, 10_000, &NullCalls, &mut NoTrace) {
             Outcome::Ok(r, _) => {
-                let (inv_neg1, _) = ar.atom_value(r).unwrap();
+                let inv_neg1 = ar.atom_value(r).unwrap();
                 assert_eq!(inv_neg1, g(P - 1));
             }
             o => panic!("{:?}", o),
@@ -203,11 +203,11 @@ mod tests {
         ];
         for &(k, desc) in cases {
             let mut ar = Order::<2048>::new();
-            let obj = ar.atom(g(0), Tag::Field).unwrap();
+            let obj = ar.atom(g(0)).unwrap();
             let formula = make_inv(&mut ar, k);
             match reduce(&mut ar, obj, formula, 10_000, &NullCalls, &mut NoTrace) {
                 Outcome::Ok(r, _) => {
-                    let (inv_k, _) = ar.atom_value(r).unwrap();
+                    let inv_k = ar.atom_value(r).unwrap();
                     assert_eq!(inv_k * g(k), g(1), "{}", desc);
                 }
                 o => panic!("{}: got {:?}", desc, o),
@@ -218,7 +218,7 @@ mod tests {
     #[test]
     fn inv_emits_64_rows() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_inv(&mut ar, 3);
         let mut tracer = VecTrace::default();
         match reduce(&mut ar, obj, formula, 10000, &NullCalls, &mut tracer) {

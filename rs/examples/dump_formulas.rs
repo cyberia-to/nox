@@ -11,7 +11,7 @@
 //! Output one block per formula: === <name> === followed by the bracket text.
 //! Redirect to generate the canonical .nox files in jets/.
 
-use nox::noun::{Order, NounId, Noun};
+use nox::data::{Order, OrderId, Data};
 use nox::jets::formulas::{
     build_poly_eval_formula,
     build_merkle_verify_formula,
@@ -23,21 +23,21 @@ use nox::jets::formulas::{
 
 const N: usize = 1 << 14; // 16 K nodes — enough for all six formulas
 
-fn print_noun(order: &Order<N>, id: NounId) -> String {
+fn print_data(order: &Order<N>, id: OrderId) -> String {
     match order.get(id).map(|e| e.inner) {
-        Some(Noun::Atom { value, .. }) => value.as_u64().to_string(),
-        Some(Noun::Cell { left, right }) => {
-            format!("[{} {}]", print_noun(order, left), print_noun(order, right))
+        Some(Data::Atom { value, .. }) => value.as_u64().to_string(),
+        Some(Data::Pair { left, right }) => {
+            format!("[{} {}]", print_data(order, left), print_data(order, right))
         }
         None => "<invalid>".to_string(),
     }
 }
 
-fn dump(order: &Order<N>, name: &str, formula: Option<NounId>) {
+fn dump(order: &Order<N>, name: &str, formula: Option<OrderId>) {
     match formula {
         Some(id) => {
             println!("=== {} ===", name);
-            println!("{}", print_noun(order, id));
+            println!("{}", print_data(order, id));
             println!();
         }
         None => eprintln!("error: {} formula build failed (order full?)", name),

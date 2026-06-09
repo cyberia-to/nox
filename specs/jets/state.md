@@ -12,7 +12,7 @@ state operations are compositions of the 16 nox patterns applied to the polynomi
 
 ## five primitive operations
 
-the BBG polynomial evaluation table is a noun. state operations are standard nox patterns operating on this noun:
+the BBG polynomial evaluation table is a data. state operations are standard nox patterns operating on this data:
 
 | operation | nox patterns | what it does | constraints |
 |-----------|-------------|--------------|-------------|

@@ -22,36 +22,36 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 use nebu::Goldilocks;
-use crate::noun::{Order, NounId, Noun, Tag};
-use crate::reduce::{Outcome, ErrorKind, cell_pair};
+use crate::data::{Order, OrderId, Data};
+use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
 pub fn ntt_jet<const N: usize>(
-    order: &mut Order<N>, object: NounId, _body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
     _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [[n | formula] | [values_tree | omega]]
-    let (lhs, rhs) = match cell_pair(order, object) {
+    let (lhs, rhs) = match pair_children(order, object) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (n_id, _formula_id) = match cell_pair(order, lhs) {
+    let (n_id, _formula_id) = match pair_children(order, lhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (tree_id, omega_id) = match cell_pair(order, rhs) {
+    let (tree_id, omega_id) = match pair_children(order, rhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
 
     let n = match order.atom_value(n_id) {
-        Some((v, _)) => v.as_u64() as usize,
+        Some(v) => v.as_u64() as usize,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
     let omega = match order.atom_value(omega_id) {
-        Some((v, _)) => v,
+        Some(v) => v,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
 
@@ -144,30 +144,30 @@ fn bit_reverse(mut x: usize, bits: usize) -> usize {
     result
 }
 
-fn flatten_tree<const N: usize>(order: &Order<N>, id: NounId, out: &mut Vec<Goldilocks>) -> bool {
+fn flatten_tree<const N: usize>(order: &Order<N>, id: OrderId, out: &mut Vec<Goldilocks>) -> bool {
     let inner = match order.get(id) {
         Some(e) => e.inner,
         None => return false,
     };
     match inner {
-        Noun::Atom { .. } => match order.atom_value(id) {
-            Some((v, _)) => { out.push(v); true }
+        Data::Atom { .. } => match order.atom_value(id) {
+            Some(v) => { out.push(v); true }
             None => false,
         },
-        Noun::Cell { left, right } => {
+        Data::Pair { left, right } => {
             flatten_tree(order, left, out) && flatten_tree(order, right, out)
         }
     }
 }
 
-fn build_tree<const N: usize>(order: &mut Order<N>, vals: &[Goldilocks]) -> Option<NounId> {
+fn build_tree<const N: usize>(order: &mut Order<N>, vals: &[Goldilocks]) -> Option<OrderId> {
     if vals.len() == 1 {
-        return order.atom(vals[0], Tag::Field);
+        return order.atom(vals[0]);
     }
     let mid = vals.len() / 2;
     let left  = build_tree(order, &vals[..mid])?;
     let right = build_tree(order, &vals[mid..])?;
-    order.cell(left, right)
+    order.pair(left, right)
 }
 
 #[cfg(test)]
@@ -176,11 +176,11 @@ mod tests {
     use crate::reduce::Outcome;
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn make_tree<const N: usize>(ar: &mut Order<N>, vals: &[Goldilocks]) -> NounId {
+    fn make_tree<const N: usize>(ar: &mut Order<N>, vals: &[Goldilocks]) -> OrderId {
         build_tree(ar, vals).unwrap()
     }
 
@@ -188,14 +188,14 @@ mod tests {
         ar: &mut Order<M>, vals: &[Goldilocks], omega: Goldilocks,
     ) -> Outcome {
         let n_val = vals.len().trailing_zeros() as u64;
-        let n_id  = ar.atom(g(n_val), Tag::Field).unwrap();
-        let dummy = ar.atom(g(0), Tag::Field).unwrap();
-        let lhs   = ar.cell(n_id, dummy).unwrap();
+        let n_id  = ar.atom(g(n_val)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs   = ar.pair(n_id, dummy).unwrap();
         let tree  = make_tree(ar, vals);
-        let om_id = ar.atom(omega, Tag::Field).unwrap();
-        let rhs   = ar.cell(tree, om_id).unwrap();
-        let obj   = ar.cell(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0), Tag::Field).unwrap();
+        let om_id = ar.atom(omega).unwrap();
+        let rhs   = ar.pair(tree, om_id).unwrap();
+        let obj   = ar.pair(lhs, rhs).unwrap();
+        let body  = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
         ntt_jet(ar, obj, body, 1_000_000, &NullCalls, &mut NoTrace, 0, &mut row)
     }
@@ -206,7 +206,7 @@ mod tests {
         match run_ntt(&mut ar, &[g(42)], g(1)) {
             Outcome::Ok(r, _) => {
                 // Single element: the tree is the element itself.
-                assert_eq!(ar.atom_value(r).unwrap().0, g(42));
+                assert_eq!(ar.atom_value(r).unwrap(), g(42));
             }
             o => panic!("{:?}", o),
         }
@@ -223,14 +223,14 @@ mod tests {
             Outcome::Ok(result_tree, _) => {
                 // Extract left and right from the result tree.
                 match ar.get(result_tree).map(|e| e.inner) {
-                    Some(Noun::Cell { left, right }) => {
-                        let top = ar.atom_value(left).unwrap().0;
-                        let bot = ar.atom_value(right).unwrap().0;
+                    Some(Data::Pair { left, right }) => {
+                        let top = ar.atom_value(left).unwrap();
+                        let bot = ar.atom_value(right).unwrap();
                         // a+b and a-b in the Goldilocks field
                         assert_eq!(top, a + b);
                         assert_eq!(bot, a - b);
                     }
-                    _ => panic!("expected cell result"),
+                    _ => panic!("expected pair result"),
                 }
             }
             o => panic!("{:?}", o),
@@ -247,14 +247,14 @@ mod tests {
             o => panic!("{:?}", o),
         }
         // Now test with insufficient budget
-        let n_id  = ar.atom(g(2), Tag::Field).unwrap();
-        let dummy = ar.atom(g(0), Tag::Field).unwrap();
-        let lhs   = ar.cell(n_id, dummy).unwrap();
+        let n_id  = ar.atom(g(2)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs   = ar.pair(n_id, dummy).unwrap();
         let tree  = make_tree(&mut ar, &[g(1), g(2), g(3), g(4)]);
-        let om    = ar.atom(g(1), Tag::Field).unwrap();
-        let rhs   = ar.cell(tree, om).unwrap();
-        let obj   = ar.cell(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0), Tag::Field).unwrap();
+        let om    = ar.atom(g(1)).unwrap();
+        let rhs   = ar.pair(tree, om).unwrap();
+        let obj   = ar.pair(lhs, rhs).unwrap();
+        let body  = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
         match ntt_jet(&mut ar, obj, body, 5, &NullCalls, &mut NoTrace, 0, &mut row) {
             Outcome::Halt(_) => {}

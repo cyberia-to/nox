@@ -8,10 +8,10 @@
 //! Registry calling convention:
 //!   object = [[depth | [root | formula]] | [current | path]]
 //!   depth   = number of path steps remaining
-//!   root    = expected root hash-noun
+//!   root    = expected root hash-data
 //!   formula = self-reference (jet ignores)
-//!   current = current hash-noun (leaf at start)
-//!   path    = right-nested cons list of [sibling_hash_noun | dir_atom] pairs,
+//!   current = current hash-data (leaf at start)
+//!   path    = right-nested cons list of [sibling_hash_data | dir_atom] pairs,
 //!             terminated by any atom
 //!   dir     = 0: sibling is left child; 1: sibling is right child
 //!
@@ -24,37 +24,37 @@ use alloc::vec::Vec;
 use hemera::StepSponge;
 use hemera::field::Goldilocks as HemeraGold;
 use nebu::Goldilocks;
-use crate::noun::{Order, NounId, Noun};
-use crate::noun::hash::hash_cell;
-use crate::reduce::{Outcome, ErrorKind, cell_pair, make_field};
+use crate::data::{Order, OrderId, Data};
+use crate::data::hash::hash_pair;
+use crate::reduce::{Outcome, ErrorKind, pair_children, make_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
 pub fn merkle_verify_jet<const N: usize>(
-    order: &mut Order<N>, object: NounId, _body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
     _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [[depth | [root | formula]] | [current | path]]
-    let (meta, data) = match cell_pair(order, object) {
+    let (meta, data) = match pair_children(order, object) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (depth_id, root_formula) = match cell_pair(order, meta) {
+    let (depth_id, root_formula) = match pair_children(order, meta) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (root_id, _formula_id) = match cell_pair(order, root_formula) {
+    let (root_id, _formula_id) = match pair_children(order, root_formula) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (current_id, path_id) = match cell_pair(order, data) {
+    let (current_id, path_id) = match pair_children(order, data) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
 
     let depth = match order.atom_value(depth_id) {
-        Some((v, _)) => v.as_u64(),
+        Some(v) => v.as_u64(),
         None => return Outcome::Error(ErrorKind::TypeError),
     };
 
@@ -81,15 +81,15 @@ pub fn merkle_verify_jet<const N: usize>(
     make_field(order, result_val, remaining)
 }
 
-fn decode_path<const N: usize>(order: &Order<N>, mut id: NounId) -> Option<Vec<(NounId, u64)>> {
+fn decode_path<const N: usize>(order: &Order<N>, mut id: OrderId) -> Option<Vec<(OrderId, u64)>> {
     let mut steps = Vec::new();
     loop {
         let inner = order.get(id)?.inner;
         match inner {
-            Noun::Atom { .. } => break,
-            Noun::Cell { left, right } => {
-                let (sibling_id, dir_id) = cell_pair(order, left)?;
-                let (dir_val, _) = order.atom_value(dir_id)?;
+            Data::Atom { .. } => break,
+            Data::Pair { left, right } => {
+                let (sibling_id, dir_id) = pair_children(order, left)?;
+                let dir_val = order.atom_value(dir_id)?;
                 steps.push((sibling_id, dir_val.as_u64()));
                 id = right;
             }
@@ -100,13 +100,13 @@ fn decode_path<const N: usize>(order: &Order<N>, mut id: NounId) -> Option<Vec<(
 
 /// Verify a Merkle path using nox-native hash semantics.
 ///
-/// Each step: new_current = Poseidon2(hash_cell(dig_sib, dig_cur)) or reversed.
+/// Each step: new_current = Poseidon2(hash_pair(dig_sib, dig_cur)) or reversed.
 /// Matches what pattern 15 applied to cons(sibling, current) computes.
 fn verify_path<const N: usize>(
     order: &mut Order<N>,
-    leaf_id: NounId,
-    path: &[(NounId, u64)],
-    root_id: NounId,
+    leaf_id: OrderId,
+    path: &[(OrderId, u64)],
+    root_id: OrderId,
 ) -> bool {
     let mut current_id = leaf_id;
     for &(sibling_id, dir) in path {
@@ -118,13 +118,13 @@ fn verify_path<const N: usize>(
             Some(d) => *d,
             None => return false,
         };
-        let cell_dig = if dir == 0 {
-            hash_cell(&sib_dig, &cur_dig)
+        let pair_dig = if dir == 0 {
+            hash_pair(&sib_dig, &cur_dig)
         } else {
-            hash_cell(&cur_dig, &sib_dig)
+            hash_pair(&cur_dig, &sib_dig)
         };
-        let new_hash = poseidon2_digest(&cell_dig);
-        current_id = match order.hash_noun(&new_hash) {
+        let new_hash = poseidon2_digest(&pair_dig);
+        current_id = match order.hash_data(&new_hash) {
             Some(id) => id,
             None => return false,
         };
@@ -159,22 +159,22 @@ mod tests {
     use crate::reduce::Outcome;
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn nox_hash<const N: usize>(ar: &mut Order<N>, id: NounId) -> NounId {
+    fn nox_hash<const N: usize>(ar: &mut Order<N>, id: OrderId) -> OrderId {
         let dig = *ar.digest(id).unwrap();
         let out = poseidon2_digest(&dig);
-        ar.hash_noun(&out).unwrap()
+        ar.hash_data(&out).unwrap()
     }
 
-    fn two_leaf_tree<const N: usize>(ar: &mut Order<N>) -> (NounId, NounId, NounId) {
-        let leaf0 = ar.atom(g(100), Tag::Field).unwrap();
-        let leaf1 = ar.atom(g(200), Tag::Field).unwrap();
+    fn two_leaf_tree<const N: usize>(ar: &mut Order<N>) -> (OrderId, OrderId, OrderId) {
+        let leaf0 = ar.atom(g(100)).unwrap();
+        let leaf1 = ar.atom(g(200)).unwrap();
         let hn0   = nox_hash(ar, leaf0);
         let hn1   = nox_hash(ar, leaf1);
-        let cons  = ar.cell(hn0, hn1).unwrap();
+        let cons  = ar.pair(hn0, hn1).unwrap();
         let root  = nox_hash(ar, cons);
         (root, hn0, hn1)
     }
@@ -182,19 +182,19 @@ mod tests {
     /// Build calling object and run merkle_verify_jet.
     fn run<const N: usize>(
         ar: &mut Order<N>,
-        root: NounId, current: NounId, sibling: NounId, dir: u64,
+        root: OrderId, current: OrderId, sibling: OrderId, dir: u64,
     ) -> Outcome {
-        let depth_id  = ar.atom(g(1), Tag::Field).unwrap();
-        let formula_p = ar.atom(g(0), Tag::Field).unwrap(); // placeholder
-        let root_f    = ar.cell(root, formula_p).unwrap();
-        let meta      = ar.cell(depth_id, root_f).unwrap();
-        let dir_atom  = ar.atom(g(dir), Tag::Field).unwrap();
-        let step      = ar.cell(sibling, dir_atom).unwrap();
-        let term      = ar.atom(g(0), Tag::Field).unwrap();
-        let path      = ar.cell(step, term).unwrap();
-        let data      = ar.cell(current, path).unwrap();
-        let object    = ar.cell(meta, data).unwrap();
-        let dummy_body = ar.atom(g(0), Tag::Field).unwrap();
+        let depth_id  = ar.atom(g(1)).unwrap();
+        let formula_p = ar.atom(g(0)).unwrap(); // placeholder
+        let root_f    = ar.pair(root, formula_p).unwrap();
+        let meta      = ar.pair(depth_id, root_f).unwrap();
+        let dir_atom  = ar.atom(g(dir)).unwrap();
+        let step      = ar.pair(sibling, dir_atom).unwrap();
+        let term      = ar.atom(g(0)).unwrap();
+        let path      = ar.pair(step, term).unwrap();
+        let data      = ar.pair(current, path).unwrap();
+        let object    = ar.pair(meta, data).unwrap();
+        let dummy_body = ar.atom(g(0)).unwrap();
         let mut row  = TraceRow::default();
         merkle_verify_jet(ar, object, dummy_body, 10_000, &NullCalls, &mut NoTrace, 0, &mut row)
     }
@@ -205,7 +205,7 @@ mod tests {
         let (root, hn0, hn1) = two_leaf_tree(&mut ar);
         // leaf0 is left child → sibling (hn1) is right → dir=1
         match run(&mut ar, root, hn0, hn1, 1) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(1)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(1)),
             o => panic!("{:?}", o),
         }
     }
@@ -214,10 +214,10 @@ mod tests {
     fn wrong_leaf_returns_zero() {
         let mut ar = Order::<512>::new();
         let (root, _hn0, hn1) = two_leaf_tree(&mut ar);
-        let wrong_atom = ar.atom(g(999), Tag::Field).unwrap();
+        let wrong_atom = ar.atom(g(999)).unwrap();
         let wrong_hash = nox_hash(&mut ar, wrong_atom);
         match run(&mut ar, root, wrong_hash, hn1, 1) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(0)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(0)),
             o => panic!("{:?}", o),
         }
     }
@@ -228,7 +228,7 @@ mod tests {
         let (root, hn0, hn1) = two_leaf_tree(&mut ar);
         // leaf1 is right child → sibling (hn0) is left → dir=0
         match run(&mut ar, root, hn1, hn0, 0) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(1)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(1)),
             o => panic!("{:?}", o),
         }
     }
@@ -238,17 +238,17 @@ mod tests {
         let mut ar = Order::<512>::new();
         let (root, hn0, hn1) = two_leaf_tree(&mut ar);
         // depth=1, cost=25 — pass budget=10 → Halt
-        let depth_id  = ar.atom(g(1), Tag::Field).unwrap();
-        let formula_p = ar.atom(g(0), Tag::Field).unwrap();
-        let root_f    = ar.cell(root, formula_p).unwrap();
-        let meta      = ar.cell(depth_id, root_f).unwrap();
-        let dir_atom  = ar.atom(g(1), Tag::Field).unwrap();
-        let step      = ar.cell(hn1, dir_atom).unwrap();
-        let term      = ar.atom(g(0), Tag::Field).unwrap();
-        let path      = ar.cell(step, term).unwrap();
-        let data      = ar.cell(hn0, path).unwrap();
-        let object    = ar.cell(meta, data).unwrap();
-        let dummy_body = ar.atom(g(0), Tag::Field).unwrap();
+        let depth_id  = ar.atom(g(1)).unwrap();
+        let formula_p = ar.atom(g(0)).unwrap();
+        let root_f    = ar.pair(root, formula_p).unwrap();
+        let meta      = ar.pair(depth_id, root_f).unwrap();
+        let dir_atom  = ar.atom(g(1)).unwrap();
+        let step      = ar.pair(hn1, dir_atom).unwrap();
+        let term      = ar.atom(g(0)).unwrap();
+        let path      = ar.pair(step, term).unwrap();
+        let data      = ar.pair(hn0, path).unwrap();
+        let object    = ar.pair(meta, data).unwrap();
+        let dummy_body = ar.atom(g(0)).unwrap();
         let mut row  = TraceRow::default();
         match merkle_verify_jet(&mut ar, object, dummy_body, 10, &NullCalls, &mut NoTrace, 0, &mut row) {
             Outcome::Halt(_) => {}

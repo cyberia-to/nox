@@ -19,7 +19,7 @@ reduce(o, [17 [ns_f key_f]], f) =
 ```
 
 deterministic read from the authenticated state layer (BBG). extracts the BBG
-commitment root from the object noun (four 64-bit Goldilocks limbs at fixed axes),
+commitment root from the object data (four 64-bit Goldilocks limbs at fixed axes),
 then asks a `LookProvider` for the polynomial value at the given namespace and key.
 the provider returns `Option<Goldilocks>` — `Some(v)` for a successful read,
 `None` when the value is not available.
@@ -74,7 +74,7 @@ output; the proof is assembled after reduction completes, not during.
 
 ## C_t extraction
 
-the BBG commitment root lives in the object noun at a fixed structure. four Goldilocks
+the BBG commitment root lives in the object data at a fixed structure. four Goldilocks
 field atoms at axes [4, 10, 22, 23] form the four 64-bit limbs of C_t:
 
 ```
@@ -137,7 +137,7 @@ look — private records require call (pattern 16) with ZK witness injection.
 - **pure**: no side effects. look reads state but never modifies it
 - **memoizable**: look results are fully cacheable. given the same C_t, namespace,
   and key, the result is identical
-- **read-only**: look never modifies BBG state, the object noun, or C_t
+- **read-only**: look never modifies BBG state, the object data, or C_t
 
 ## comparison with call (16)
 
@@ -176,7 +176,7 @@ by re-evaluating during reduction.
   the provider is never called for invalid namespaces.
 
 ⊥_unavailable (C_t extraction failed):
-  the object noun does not contain field atoms at axes [4, 10, 22, 23].
+  the object data does not contain field atoms at axes [4, 10, 22, 23].
   happens when the object is an atom, or a path hits an atom mid-way.
 
 ⊥_unavailable (provider returned None):

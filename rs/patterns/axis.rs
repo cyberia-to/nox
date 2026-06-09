@@ -1,27 +1,27 @@
-//! pattern 0: axis — navigate the noun tree
+//! pattern 0: axis — navigate the data tree
 //! axis(s, 0) = H(s) hash introspection
 //! axis(s, 1) = s identity
 //! axis(s, 2n) = head(axis(s, n))
 //! axis(s, 2n+1) = tail(axis(s, n))
 
 use crate::call::CallProvider;
-use crate::noun::{Order, NounId, Noun};
+use crate::data::{Order, OrderId, Data};
 use crate::reduce::{Outcome, ErrorKind};
 use crate::trace::TraceRow;
 
 pub fn axis<const N: usize>(
-    order: &mut Order<N>, object: NounId, addr_ref: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, addr_ref: OrderId, budget: u64,
     hints: &dyn CallProvider<N>,
     row: &mut TraceRow,
 ) -> Outcome {
     let addr = match order.atom_value(addr_ref) {
-        Some((v, _)) => v.as_u64(),
+        Some(v) => v.as_u64(),
         None => return Outcome::Error(ErrorKind::Malformed),
     };
     // r4     = first field element of Lens commitment (0 when prover not active)
     // r5     = axis address (raw u64)
     // r6     = levels descended (depth of navigation)
-    // r7     = result NounId
+    // r7     = result OrderId
     // r11-r14 = full 32-byte Lens commitment split into 4 u64s (little-endian)
     //
     // When hints.axis_commitment() is provided, r4 = r11 = commitment[0..8].
@@ -43,7 +43,7 @@ pub fn axis<const N: usize>(
                 Some(d) => *d,
                 None => return Outcome::Error(ErrorKind::Unavailable),
             };
-            match order.hash_noun(&digest) {
+            match order.hash_data(&digest) {
                 Some(r) => {
                     row.r[6] = 0;
                     row.r[7] = r as u64;
@@ -64,7 +64,7 @@ pub fn axis<const N: usize>(
             for i in (0..bits).rev() {
                 match order.get(node) {
                     Some(e) => match e.inner {
-                        Noun::Cell { left, right } => {
+                        Data::Pair { left, right } => {
                             node = if (addr >> i) & 1 == 1 { right } else { left };
                             levels += 1;
                         }
@@ -86,26 +86,26 @@ mod tests {
     use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::NullCalls;
     use crate::trace::NoTrace;
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn make_axis<const N: usize>(order: &mut Order<N>, n: u64) -> NounId {
-        let tag = order.atom(g(0), Tag::Field).unwrap();
-        let addr = order.atom(g(n), Tag::Field).unwrap();
-        order.cell(tag, addr).unwrap()
+    fn make_axis<const N: usize>(order: &mut Order<N>, n: u64) -> OrderId {
+        let tag = order.atom(g(0)).unwrap();
+        let addr = order.atom(g(n)).unwrap();
+        order.pair(tag, addr).unwrap()
     }
 
     #[test]
     fn axis_head() {
         let mut ar = Order::<1024>::new();
-        let a = ar.atom(g(10), Tag::Field).unwrap();
-        let b = ar.atom(g(20), Tag::Field).unwrap();
-        let s = ar.cell(a, b).unwrap();
+        let a = ar.atom(g(10)).unwrap();
+        let b = ar.atom(g(20)).unwrap();
+        let s = ar.pair(a, b).unwrap();
         let f = make_axis(&mut ar, 2);
         match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(10)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(10)),
             o => panic!("{:?}", o),
         }
     }
@@ -113,12 +113,12 @@ mod tests {
     #[test]
     fn axis_tail() {
         let mut ar = Order::<1024>::new();
-        let a = ar.atom(g(10), Tag::Field).unwrap();
-        let b = ar.atom(g(20), Tag::Field).unwrap();
-        let s = ar.cell(a, b).unwrap();
+        let a = ar.atom(g(10)).unwrap();
+        let b = ar.atom(g(20)).unwrap();
+        let s = ar.pair(a, b).unwrap();
         let f = make_axis(&mut ar, 3);
         match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(20)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(20)),
             o => panic!("{:?}", o),
         }
     }
@@ -126,7 +126,7 @@ mod tests {
     #[test]
     fn axis_identity() {
         let mut ar = Order::<1024>::new();
-        let s = ar.atom(g(42), Tag::Field).unwrap();
+        let s = ar.atom(g(42)).unwrap();
         let f = make_axis(&mut ar, 1);
         match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
             Outcome::Ok(r, _) => assert_eq!(r, s),
@@ -137,32 +137,32 @@ mod tests {
     #[test]
     fn axis_zero_hash_introspection() {
         let mut ar = Order::<1024>::new();
-        let s = ar.atom(g(42), Tag::Field).unwrap();
+        let s = ar.atom(g(42)).unwrap();
         let f = make_axis(&mut ar, 0);
         match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
             Outcome::Ok(r, _) => {
-                assert!(ar.is_cell(r));
-                let d = ar.read_hash_noun(r).unwrap();
+                assert!(ar.is_pair(r));
+                let d = ar.read_hash_data(r).unwrap();
                 assert_eq!(d, *ar.digest(s).unwrap());
             }
             o => panic!("{:?}", o),
         }
     }
 
-    /// axis(s, 0) on a cell object also returns the cell's digest hashed.
+    /// axis(s, 0) on a pair object also returns the pair's digest hashed.
     #[test]
-    fn axis_zero_hash_on_cell() {
+    fn axis_zero_hash_on_pair() {
         let mut ar = Order::<1024>::new();
-        let a = ar.atom(g(10), Tag::Field).unwrap();
-        let b = ar.atom(g(20), Tag::Field).unwrap();
-        let s = ar.cell(a, b).unwrap();
+        let a = ar.atom(g(10)).unwrap();
+        let b = ar.atom(g(20)).unwrap();
+        let s = ar.pair(a, b).unwrap();
         let f = make_axis(&mut ar, 0);
         let s_digest = *ar.digest(s).unwrap();
         match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
             Outcome::Ok(r, _) => {
-                assert!(ar.is_cell(r));
-                let d = ar.read_hash_noun(r).unwrap();
-                assert_eq!(d, s_digest, "axis(cell, 0) returns hash noun of cell digest");
+                assert!(ar.is_pair(r));
+                let d = ar.read_hash_data(r).unwrap();
+                assert_eq!(d, s_digest, "axis(pair, 0) returns hash data of pair digest");
             }
             o => panic!("{:?}", o),
         }
@@ -171,7 +171,7 @@ mod tests {
     #[test]
     fn axis_on_atom_errors() {
         let mut ar = Order::<1024>::new();
-        let s = ar.atom(g(42), Tag::Field).unwrap();
+        let s = ar.atom(g(42)).unwrap();
         let f = make_axis(&mut ar, 2); // head of atom → error
         match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
             Outcome::Error(ErrorKind::AxisError) => {}
@@ -183,17 +183,17 @@ mod tests {
     fn axis_deep_navigation() {
         let mut ar = Order::<1024>::new();
         // s = [[1, 2], [3, 4]]
-        let a = ar.atom(g(1), Tag::Field).unwrap();
-        let b = ar.atom(g(2), Tag::Field).unwrap();
-        let c = ar.atom(g(3), Tag::Field).unwrap();
-        let d = ar.atom(g(4), Tag::Field).unwrap();
-        let left = ar.cell(a, b).unwrap();
-        let right = ar.cell(c, d).unwrap();
-        let s = ar.cell(left, right).unwrap();
+        let a = ar.atom(g(1)).unwrap();
+        let b = ar.atom(g(2)).unwrap();
+        let c = ar.atom(g(3)).unwrap();
+        let d = ar.atom(g(4)).unwrap();
+        let left = ar.pair(a, b).unwrap();
+        let right = ar.pair(c, d).unwrap();
+        let s = ar.pair(left, right).unwrap();
         // axis 7 = tail of tail = right of right = 4
         let f = make_axis(&mut ar, 7);
         match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(4)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(4)),
             o => panic!("{:?}", o),
         }
     }
@@ -201,7 +201,7 @@ mod tests {
     #[test]
     fn budget_zero_halts_immediately() {
         let mut ar = Order::<1024>::new();
-        let s = ar.atom(g(42), Tag::Field).unwrap();
+        let s = ar.atom(g(42)).unwrap();
         let f = make_axis(&mut ar, 1);
         match reduce(&mut ar, s, f, 0, &NullCalls, &mut NoTrace) {
             Outcome::Halt(0) => {}

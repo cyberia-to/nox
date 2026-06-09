@@ -6,9 +6,9 @@ algebra-independent.
 reduce(o, [0 a], f) = (axis(s, a), f - 1)
 ```
 
-the address `a` is a literal atom in the formula structure — it is NOT reduced before use. axis reads the address directly from the formula noun body. the address must be a field-type or word-type atom, interpreted as an integer. if `a` is a cell or hash-type atom → ⊥_error.
+the address `a` is a literal atom in the formula structure — it is NOT reduced before use. axis reads the address directly from the formula data body. the address must be a field-type or word-type atom, interpreted as an integer. if `a` is a pair or hash-type atom → ⊥_error.
 
-with polynomial nouns, axis is O(1) via Lens opening: the binary encoding of the axis address is the evaluation point. this replaces O(depth) tree traversal with a single polynomial evaluation.
+with polynomial data, axis is O(1) via Lens opening: the binary encoding of the axis address is the evaluation point. this replaces O(depth) tree traversal with a single polynomial evaluation.
 
 cost: 1. constraints: 1 (budget) + 4 (commitment binding, when lens hints provided).
 
@@ -16,14 +16,14 @@ cost: 1. constraints: 1 (budget) + 4 (commitment binding, when lens hints provid
 
 ```
 r0  = 0
-r1  = object NounId
-r2  = formula NounId
-r3  = result NounId               — NounId of the value at the addressed position
+r1  = object particle
+r2  = formula particle
+r3  = result particle               — particle of the value at the addressed position
 r4  = commitment[0] from axis_commitment() when prover active, 0 otherwise
       (equals r11: first 8-byte LE limb of the 32-byte Lens commitment)
 r5  = axis address (raw u64)      — literal address from formula body
 r6  = levels descended            — number of tree levels descended (0 for addr ≤ 1)
-r7  = result NounId               — NounId of the value at the addressed position
+r7  = result particle               — particle of the value at the addressed position
 r8  = budget_in
 r9  = budget_out                  — r8 - 1
 r10 = 0 (success) / error kind

@@ -13,18 +13,18 @@
 //! result follows spec/patterns/10-lt.md: 0 when a < b, 1 otherwise.
 
 use nebu::Goldilocks;
-use crate::noun::{Order, NounId, Tag};
-use crate::reduce::{Outcome, ErrorKind, cell_pair, evaluate_binary_field};
+use crate::data::{Order, OrderId};
+use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::jets::registry::JetRegistry;
 
 pub fn lt<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (af, bf) = match cell_pair(order, body) {
+    let (af, bf) = match pair_children(order, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
@@ -35,7 +35,7 @@ pub fn lt<const N: usize, T: Tracer>(
     let b = vb.as_u64();
     let is_lt = a < b;
     let result_val = if is_lt { Goldilocks::ZERO } else { Goldilocks::ONE };
-    let result_id = match order.atom(result_val, Tag::Field) {
+    let result_id = match order.atom(result_val) {
         Some(r) => r,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
@@ -70,29 +70,29 @@ mod tests {
     use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, VecTrace};
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn make_lt<const N: usize>(ar: &mut Order<N>, a: u64, b: u64) -> crate::noun::NounId {
-        let t10 = ar.atom(g(10), Tag::Field).unwrap();
-        let t1 = ar.atom(g(1), Tag::Field).unwrap();
-        let va = ar.atom(g(a), Tag::Field).unwrap();
-        let vb = ar.atom(g(b), Tag::Field).unwrap();
-        let qa = ar.cell(t1, va).unwrap();
-        let qb = ar.cell(t1, vb).unwrap();
-        let body = ar.cell(qa, qb).unwrap();
-        ar.cell(t10, body).unwrap()
+    fn make_lt<const N: usize>(ar: &mut Order<N>, a: u64, b: u64) -> crate::data::OrderId {
+        let t10 = ar.atom(g(10)).unwrap();
+        let t1 = ar.atom(g(1)).unwrap();
+        let va = ar.atom(g(a)).unwrap();
+        let vb = ar.atom(g(b)).unwrap();
+        let qa = ar.pair(t1, va).unwrap();
+        let qb = ar.pair(t1, vb).unwrap();
+        let body = ar.pair(qa, qb).unwrap();
+        ar.pair(t10, body).unwrap()
     }
 
     #[test]
     fn lt_less_returns_zero() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_lt(&mut ar, 3, 5);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(0)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(0)),
             o => panic!("{:?}", o),
         }
     }
@@ -100,10 +100,10 @@ mod tests {
     #[test]
     fn lt_greater_returns_one() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_lt(&mut ar, 5, 3);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(1)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(1)),
             o => panic!("{:?}", o),
         }
     }
@@ -111,10 +111,10 @@ mod tests {
     #[test]
     fn lt_equal_returns_one() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_lt(&mut ar, 5, 5);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0, g(1)),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(1)),
             o => panic!("{:?}", o),
         }
     }
@@ -122,7 +122,7 @@ mod tests {
     #[test]
     fn lt_emits_64_rows() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_lt(&mut ar, 100, 200);
         let mut tr = VecTrace::default();
         reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut tr);
@@ -133,7 +133,7 @@ mod tests {
     #[test]
     fn lt_bit_witnesses_correct() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let a = 0xDEAD_BEEFu64;
         let b = 0xCAFE_BABEu64;
         let formula = make_lt(&mut ar, a, b);

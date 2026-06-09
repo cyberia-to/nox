@@ -25,7 +25,7 @@
 //! - Two changes only:
 //!   1. `evaluate_binary` spawns its two `evaluate` calls on separate
 //!      threads when `can_partition` is true.
-//!   2. `Order::cell` / `Order::atom` become thread-safe (atomic hash-cons
+//!   2. `Order::pair` / `Order::atom` become thread-safe (atomic hash-cons
 //!      table or per-thread scratch with merge-at-join).
 //!
 //! - **Zero changes to observable Result or per-row trace.** This is T1
@@ -54,7 +54,7 @@
 //! commutativity).
 
 use crate::call::CallProvider;
-use crate::noun::{NounId, Order};
+use crate::data::{OrderId, Order};
 use crate::reduce::{reduce, Outcome};
 use crate::trace::Tracer;
 
@@ -75,8 +75,8 @@ use crate::trace::Tracer;
 /// See `specs/props/parallel-reduction.md`; `proofs/lean/T1.lean`.
 pub fn reduce_parallel<const N: usize, T: Tracer>(
     order: &mut Order<N>,
-    object: NounId,
-    formula: NounId,
+    object: OrderId,
+    formula: OrderId,
     budget: u64,
     hints: &dyn CallProvider<N>,
     tracer: &mut T,
@@ -167,23 +167,23 @@ extern crate alloc;
 // T1 (sequential-equivalence) holds: the `Outcome` and the budgets returned
 // are identical to the sequential path because:
 //   1. Each sub-formula receives exactly `bound(sub)` budget.
-//   2. `reinter` finds pre-existing atoms/cells via hash-consing (same ID
-//      as sequential path for nouns in the base snapshot).
+//   2. `reinter` finds pre-existing atoms/pairs via hash-consing (same ID
+//      as sequential path for data in the base snapshot).
 //   3. Traces are merged in deterministic left-before-right order.
 
 #[cfg(feature = "std")]
 pub(crate) fn par_binary<const N: usize, T: Tracer>(
     order: &mut Order<N>,
-    object: NounId,
-    a: NounId,
-    b: NounId,
+    object: OrderId,
+    a: OrderId,
+    b: OrderId,
     ba: u64,
     bb: u64,
     budget: u64,
     hints: &dyn CallProvider<N>,
     tracer: &mut T,
     depth: u64,
-) -> core::result::Result<(NounId, NounId, u64), Outcome> {
+) -> core::result::Result<(OrderId, OrderId, u64), Outcome> {
     use crate::reduce::{evaluate, ErrorKind};
     use crate::trace::VecTrace;
     use crate::jets::registry::JetRegistry;
@@ -252,8 +252,8 @@ pub(crate) fn par_binary<const N: usize, T: Tracer>(
 #[cfg(feature = "std")]
 pub fn reduce_parallel_threaded<const N: usize, T: Tracer>(
     order: &mut Order<N>,
-    object: NounId,
-    formula: NounId,
+    object: OrderId,
+    formula: OrderId,
     budget: u64,
     hints: &dyn CallProvider<N>,
     tracer: &mut T,
@@ -269,7 +269,7 @@ pub fn reduce_parallel_threaded<const N: usize, T: Tracer>(
 mod tests {
     use super::*;
     use crate::call::NullCalls;
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
     use crate::trace::{NoTrace, VecTrace};
     use nebu::Goldilocks;
 
@@ -280,29 +280,29 @@ mod tests {
     #[test]
     fn reduce_parallel_matches_reduce_on_add() {
         let formula = |ar: &mut Order<256>| {
-            let t5 = ar.atom(g(5), Tag::Field).unwrap();
-            let t1 = ar.atom(g(1), Tag::Field).unwrap();
-            let v3 = ar.atom(g(3), Tag::Field).unwrap();
-            let v5 = ar.atom(g(5), Tag::Field).unwrap();
-            let qa = ar.cell(t1, v3).unwrap();
-            let qb = ar.cell(t1, v5).unwrap();
-            let body = ar.cell(qa, qb).unwrap();
-            ar.cell(t5, body).unwrap()
+            let t5 = ar.atom(g(5)).unwrap();
+            let t1 = ar.atom(g(1)).unwrap();
+            let v3 = ar.atom(g(3)).unwrap();
+            let v5 = ar.atom(g(5)).unwrap();
+            let qa = ar.pair(t1, v3).unwrap();
+            let qb = ar.pair(t1, v5).unwrap();
+            let body = ar.pair(qa, qb).unwrap();
+            ar.pair(t5, body).unwrap()
         };
 
         let mut ar1 = Order::<256>::new();
-        let obj1 = ar1.atom(g(0), Tag::Field).unwrap();
+        let obj1 = ar1.atom(g(0)).unwrap();
         let f1 = formula(&mut ar1);
         let r1 = reduce(&mut ar1, obj1, f1, 1000, &NullCalls, &mut NoTrace);
 
         let mut ar2 = Order::<256>::new();
-        let obj2 = ar2.atom(g(0), Tag::Field).unwrap();
+        let obj2 = ar2.atom(g(0)).unwrap();
         let f2 = formula(&mut ar2);
         let r2 = reduce_parallel(&mut ar2, obj2, f2, 1000, &NullCalls, &mut NoTrace);
 
         match (r1, r2) {
             (Outcome::Ok(a, ba), Outcome::Ok(b, bb)) => {
-                assert_eq!(ar1.atom_value(a).unwrap().0, ar2.atom_value(b).unwrap().0);
+                assert_eq!(ar1.atom_value(a).unwrap(), ar2.atom_value(b).unwrap());
                 assert_eq!(ba, bb, "remaining budget must match");
             }
             (x, y) => panic!("Outcome variants diverged: {:?} vs {:?}", x, y),
@@ -315,21 +315,21 @@ mod tests {
     #[test]
     fn reduce_parallel_trace_matches_reduce_on_hash() {
         let formula = |ar: &mut Order<256>| {
-            let t15 = ar.atom(g(15), Tag::Field).unwrap();
-            let t1 = ar.atom(g(1), Tag::Field).unwrap();
-            let v = ar.atom(g(7), Tag::Field).unwrap();
-            let body = ar.cell(t1, v).unwrap();
-            ar.cell(t15, body).unwrap()
+            let t15 = ar.atom(g(15)).unwrap();
+            let t1 = ar.atom(g(1)).unwrap();
+            let v = ar.atom(g(7)).unwrap();
+            let body = ar.pair(t1, v).unwrap();
+            ar.pair(t15, body).unwrap()
         };
 
         let mut ar1 = Order::<256>::new();
-        let obj1 = ar1.atom(g(0), Tag::Field).unwrap();
+        let obj1 = ar1.atom(g(0)).unwrap();
         let f1 = formula(&mut ar1);
         let mut tr1 = VecTrace::default();
         reduce(&mut ar1, obj1, f1, 10_000, &NullCalls, &mut tr1);
 
         let mut ar2 = Order::<256>::new();
-        let obj2 = ar2.atom(g(0), Tag::Field).unwrap();
+        let obj2 = ar2.atom(g(0)).unwrap();
         let f2 = formula(&mut ar2);
         let mut tr2 = VecTrace::default();
         reduce_parallel(&mut ar2, obj2, f2, 10_000, &NullCalls, &mut tr2);
@@ -350,24 +350,24 @@ mod tests {
     #[test]
     fn threaded_add_matches_sequential() {
         let make_add = |ar: &mut Order<256>| {
-            let t5 = ar.atom(g(5), Tag::Field).unwrap();
-            let t1 = ar.atom(g(1), Tag::Field).unwrap();
-            let v7 = ar.atom(g(7), Tag::Field).unwrap();
-            let v11 = ar.atom(g(11), Tag::Field).unwrap();
-            let qa = ar.cell(t1, v7).unwrap();
-            let qb = ar.cell(t1, v11).unwrap();
-            let body = ar.cell(qa, qb).unwrap();
-            ar.cell(t5, body).unwrap()
+            let t5 = ar.atom(g(5)).unwrap();
+            let t1 = ar.atom(g(1)).unwrap();
+            let v7 = ar.atom(g(7)).unwrap();
+            let v11 = ar.atom(g(11)).unwrap();
+            let qa = ar.pair(t1, v7).unwrap();
+            let qb = ar.pair(t1, v11).unwrap();
+            let body = ar.pair(qa, qb).unwrap();
+            ar.pair(t5, body).unwrap()
         };
 
         let mut ar_seq = Order::<256>::new();
-        let obj_seq = ar_seq.atom(g(0), Tag::Field).unwrap();
+        let obj_seq = ar_seq.atom(g(0)).unwrap();
         let f_seq = make_add(&mut ar_seq);
         let mut tr_seq = VecTrace::default();
         let r_seq = reduce(&mut ar_seq, obj_seq, f_seq, 1000, &NullCalls, &mut tr_seq);
 
         let mut ar_par = Order::<256>::new();
-        let obj_par = ar_par.atom(g(0), Tag::Field).unwrap();
+        let obj_par = ar_par.atom(g(0)).unwrap();
         let f_par = make_add(&mut ar_par);
         let mut tr_par = VecTrace::default();
         let r_par = reduce_parallel_threaded(
@@ -377,8 +377,8 @@ mod tests {
         match (r_seq, r_par) {
             (Outcome::Ok(vs, bs), Outcome::Ok(vp, bp)) => {
                 assert_eq!(
-                    ar_seq.atom_value(vs).unwrap().0,
-                    ar_par.atom_value(vp).unwrap().0,
+                    ar_seq.atom_value(vs).unwrap(),
+                    ar_par.atom_value(vp).unwrap(),
                     "threaded result must match sequential",
                 );
                 assert_eq!(bs, bp, "remaining budget must match");
@@ -411,9 +411,9 @@ mod tests {
     #[test]
     fn fork_is_independent() {
         let mut ar = Order::<256>::new();
-        let a = ar.atom(g(3), Tag::Field).unwrap();
-        let b = ar.atom(g(7), Tag::Field).unwrap();
-        let c = ar.cell(a, b).unwrap();
+        let a = ar.atom(g(3)).unwrap();
+        let b = ar.atom(g(7)).unwrap();
+        let c = ar.pair(a, b).unwrap();
 
         let base_count = ar.count();
         let mut fork = ar.fork();
@@ -422,12 +422,12 @@ mod tests {
         assert_eq!(fork.count(), base_count);
 
         // Adding to fork doesn't change parent.
-        fork.atom(g(99), Tag::Field).unwrap();
+        fork.atom(g(99)).unwrap();
         assert_eq!(ar.count(), base_count, "parent count unchanged after fork write");
 
-        // Reinter re-finds existing noun by hash-consing.
+        // Reinter re-finds existing data by hash-consing.
         let c_back = ar.reinter(&fork, c).unwrap();
-        assert_eq!(c_back, c, "reinter on pre-fork noun returns same ID");
+        assert_eq!(c_back, c, "reinter on pre-fork data returns same ID");
     }
 
     #[test]

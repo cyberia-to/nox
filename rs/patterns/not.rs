@@ -3,7 +3,7 @@
 //! cost 32. emits 32 rows. unary: r5 / r11 (b register) are zero on every row.
 //! per-row constraint: c_k = 1 - a_k (with a_k boolean).
 
-use crate::noun::{Order, NounId, Tag};
+use crate::data::{Order, OrderId};
 use crate::reduce::{Outcome, ErrorKind, evaluate_unary_word, emit_bit_row, WORD_MASK};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
@@ -11,7 +11,7 @@ use crate::jets::registry::JetRegistry;
 use nebu::Goldilocks;
 
 pub fn not<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
@@ -19,7 +19,7 @@ pub fn not<const N: usize, T: Tracer>(
         Ok(v) => v, Err(o) => return o,
     };
     let c = (!a) & WORD_MASK;
-    let result = match order.atom(Goldilocks::new(c), Tag::Word) {
+    let result = match order.atom(Goldilocks::new(c)) {
         Some(r) => r,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
@@ -38,26 +38,26 @@ mod tests {
     use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, VecTrace};
-    use crate::noun::{Order, Tag};
+    use crate::data::{Order};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn make_not<const N: usize>(ar: &mut Order<N>, v: u64) -> crate::noun::NounId {
-        let t = ar.atom(g(13), Tag::Field).unwrap();
-        let t1 = ar.atom(g(1), Tag::Field).unwrap();
-        let vv = ar.atom(g(v), Tag::Word).unwrap();
-        let body = ar.cell(t1, vv).unwrap();
-        ar.cell(t, body).unwrap()
+    fn make_not<const N: usize>(ar: &mut Order<N>, v: u64) -> crate::data::OrderId {
+        let t = ar.atom(g(13)).unwrap();
+        let t1 = ar.atom(g(1)).unwrap();
+        let vv = ar.atom(g(v)).unwrap();
+        let body = ar.pair(t1, vv).unwrap();
+        ar.pair(t, body).unwrap()
     }
 
     #[test]
     fn not_zero_gives_all_ones() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_not(&mut ar, 0);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0.as_u64(), 0xFFFF_FFFF),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().as_u64(), 0xFFFF_FFFF),
             o => panic!("{:?}", o),
         }
     }
@@ -65,10 +65,10 @@ mod tests {
     #[test]
     fn not_pattern() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_not(&mut ar, 0xAAAA_AAAA);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
-            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().0.as_u64(), 0x5555_5555),
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().as_u64(), 0x5555_5555),
             o => panic!("{:?}", o),
         }
     }
@@ -76,7 +76,7 @@ mod tests {
     #[test]
     fn not_emits_32_rows() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_not(&mut ar, 0xDEADBEEF);
         let mut tr = VecTrace::default();
         reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut tr);
@@ -87,7 +87,7 @@ mod tests {
     #[test]
     fn not_bit_witnesses() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let a = 0xC0FFEEFEu64;
         let formula = make_not(&mut ar, a);
         let mut tr = VecTrace::default();

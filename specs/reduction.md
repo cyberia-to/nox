@@ -15,8 +15,8 @@ the top-level invocation is `order` — the seven fields of a [[cyberlink]]:
 order : (ν, Object, Formula, τ, a, v, t) → Result
 
   ν        : Neuron  — who orders the computation
-  Object   : Noun    — the environment, the data, the context
-  Formula  : Noun    — the code (cell of form [tag body])
+  Object   : Data    — the environment, the data, the context
+  Formula  : Data    — the code (pair of form [tag body])
   τ        : Token   — denomination of payment
   a        : Amount  — how much to pay (resource budget)
   v        : Valence — prediction about result quality {-1, 0, +1}
@@ -32,14 +32,14 @@ the internal execution engine:
 ```
 reduce : (Object, Formula, Budget) → Result
 
-  Object   : Noun    — the environment, the data, the context
-  Formula  : Noun    — the code (cell of form [tag body])
+  Object   : Data    — the environment, the data, the context
+  Formula  : Data    — the code (pair of form [tag body])
   Budget   : F       — resource budget (element of the instantiated field),
                        decremented per pattern
                        comparison (f < cost) uses integer ordering on canonical representatives
                        the Halt guard prevents subtraction from ever wrapping
 
-Result = (Noun, Budget')     — success with remaining budget
+Result = (Data, Budget')     — success with remaining budget
        | Halt               — budget exhausted (f < cost of next pattern)
        | ⊥_error            — type/semantic error (bitwise on hash, inv(0), axis on atom)
        | ⊥_unavailable      — referenced content not retrievable (network partition)
@@ -66,7 +66,7 @@ formulas are evaluated recursively. the tag determines which pattern fires. the 
 
 ```
 dispatch(s, formula, f) =
-  let (tag, body) = formula        — formula must be a cell, else ⊥_error
+  let (tag, body) = formula        — formula must be a pair, else ⊥_error
   match tag:
     0  → axis(s, body, f)
     1  → quote(body, f)
@@ -81,7 +81,7 @@ dispatch(s, formula, f) =
     _  → ⊥_error                   — unknown pattern tag
 ```
 
-if formula is an atom (not a cell), reduction produces ⊥_error.
+if formula is an atom (not a pair), reduction produces ⊥_error.
 
 ## confluence
 
@@ -92,7 +92,7 @@ Layer 1 patterns form an orthogonal rewrite system:
 
 by the Huet-Levy theorem (1980), orthogonal term rewriting systems are confluent without requiring termination.
 
-confluence holds for the term rewriting system (the pure reduction rules). with finite budget, the full reduce() function is confluent only when budget is sufficient for all reduction paths to reach a normal form. with insufficient budget, different evaluation strategies may halt at different points — one path may succeed where another exhausts budget. the result noun, when produced, is always the same; whether it is produced depends on evaluation strategy and available budget.
+confluence holds for the term rewriting system (the pure reduction rules). with finite budget, the full reduce() function is confluent only when budget is sufficient for all reduction paths to reach a normal form. with insufficient budget, different evaluation strategies may halt at different points — one path may succeed where another exhausts budget. the result data, when produced, is always the same; whether it is produced depends on evaluation strategy and available budget.
 
 consequence: for any (object, formula) pair with sufficient budget, the result depends only on what the program IS, never on how it was evaluated. parallel reduction, lazy reduction, eager reduction, any mixture — the answer is the same.
 
@@ -212,7 +212,7 @@ reduce(o, [16 [tag check]], f) =
   let (vtag, rt) = reduce(o, tag, bound(tag))
   let witness    = provider(vtag, o)
   if witness is None                then Halt(f - 1 - (bound(tag) - rt))
-  let witness_object = cell(witness, o)
+  let witness_object = pair(witness, o)
   let f_after_witness = f - 1 - (bound(tag) - rt)
   sequential_reduce(witness_object, check, f_after_witness)
 ```
@@ -238,7 +238,7 @@ for every formula `t`, object `o`, and budget `f`:
 
   `reduce_serial(o, t, f) = reduce_parallel(o, t, f)`
 
-on every observable field — `Result` variant, result `Noun`, remaining
+on every observable field — `Result` variant, result `Data`, remaining
 budget, error kind. the two implementations differ only in scheduling.
 
 **proof sketch**: by structural induction on `t`. base cases (atom,
@@ -280,7 +280,7 @@ tag  pattern   subs  strategy     parallel  reduction rule
  0   axis       0    —            —         body is literal axis address, no reduce()
  1   quote      0    —            —         body returned literally, no reduce()
  2   compose    2    eager+seq    yes*      reduce(o,x), reduce(o,y), then reduce(rx, ry)
- 3   cons       2    eager        yes       reduce(o,a), reduce(o,b), then cell(ra, rb)
+ 3   cons       2    eager        yes       reduce(o,a), reduce(o,b), then pair(ra, rb)
  4   branch     1+1  lazy         no        reduce(o,test), then ONE of reduce(o,yes) or reduce(o,no)
  5   add        2    eager        yes       reduce(o,a), reduce(o,b), then a + b
  6   sub        2    eager        yes       reduce(o,a), reduce(o,b), then a - b
@@ -347,7 +347,7 @@ the sequential budget threading (f -> f1 -> f2) is a formalism. since reduce(o,a
 
 ### structural evaluation (tags 2-4)
 
-**cons** (3): two sub-expressions evaluated eagerly. both receive the same object `o`, both are independent, both can run in parallel. results assembled into a cell.
+**cons** (3): two sub-expressions evaluated eagerly. both receive the same object `o`, both are independent, both can run in parallel. results assembled into a pair.
 
 **compose** (2): two sub-expressions evaluated eagerly, but the pattern has a third step that creates a sequential dependency. reduce(o,x) produces a new object, reduce(o,y) produces a formula, then reduce(rx, ry) applies the formula to the new object. the first two evaluations are independent and parallelizable. the third evaluation depends on both results.
 
@@ -403,15 +403,15 @@ computations containing call anywhere in their reduction tree are excluded from 
 
 ## error specification
 
-errors are not nouns. they are Result variants — they exist in the reduction return type, not in the noun store. an error has no identity (no hash) and no content-addressed storage entry.
+errors are not data. they are Result variants — they exist in the reduction return type, not in the data store. an error has no identity (no hash) and no content-addressed storage entry.
 
 ```
 error kinds:
   0: type_error      — wrong atom type for operation (bitwise on hash, arithmetic on hash)
   1: axis_error      — axis on atom with index > 1
   2: inv_zero        — inv(0)
-  3: unavailable     — referenced content not in store (network partition, missing noun)
-  4: malformed       — formula is atom (not cell), or body has wrong structure
+  3: unavailable     — referenced content not in store (network partition, missing data)
+  4: malformed       — formula is atom (not pair), or body has wrong structure
   5: call_rejected   — call witness failed check (check formula returned non-zero)
 ```
 
@@ -440,12 +440,12 @@ look (pattern 17) is the deterministic BBG read. see patterns/17-look.md for the
 
 ## Result encoding
 
-Result is not a noun. it is the return type of reduce(). in the content-addressed protocol:
+Result is not a data. it is the return type of reduce(). in the content-addressed protocol:
 
 ```
-success:     (status=0, H(result), budget_remaining)   — noun identity + remaining budget
-halt:        (status=1, budget_remaining)               — no result noun
-error:       (status=2, error_kind)                    — no result noun
+success:     (status=0, H(result), budget_remaining)   — particle + remaining budget
+halt:        (status=1, budget_remaining)               — no result data
+error:       (status=2, error_kind)                    — no result data
 ```
 
 unavailable is an error (status=2) with error_kind=3. it is not a separate status code — the trace only encodes three status values (0, 1, 2). the Result type in the reduction semantics distinguishes ⊥_error from ⊥_unavailable for error reporting, but the trace encoding folds them into status=2 with the error_kind discriminant.
@@ -478,10 +478,10 @@ example: reduce([1,2], [5 [[0 2] [0 3]]], 100)
 reduce #1: dispatch pattern 5 (add), deduct 1 → f=99
 reduce #2: reduce(o, [0 2], 99)
   dispatch pattern 0 (axis), deduct 1 → f=98
-  axis(cell(1,2), 2) = 1
+  axis(pair(1,2), 2) = 1
 reduce #3: reduce(o, [0 3], 98)
   dispatch pattern 0 (axis), deduct 1 → f=97
-  axis(cell(1,2), 3) = 2
+  axis(pair(1,2), 3) = 2
 apply: 1 + 2 = 3
 result: (3, 97)
 ```
@@ -521,7 +521,7 @@ reduce_with_proof(s, formula, f, acc) =
 
 at computation end, the accumulator IS the proof. run one decider to produce the final verifiable [[zheng]] proof. no separate proving phase — proving overhead is ~30 field operations per reduce() call, folded into execution.
 
-with polynomial nouns, hemera drops to ~3 calls per execution: (1) domain separation wrap for noun identity, (2) Fiat-Shamir seed for the proof, (3) Brakedown binding for the Lens commitment. the legacy model required hundreds of hemera calls for recursive tree hashing (one permutation per cell in the noun). polynomial commitment replaces recursive hashing with O(N) field operations + 1 hemera call per identity.
+with polynomial data, hemera drops to ~3 calls per execution: (1) domain separation wrap for the particle, (2) Fiat-Shamir seed for the proof, (3) Brakedown binding for the Lens commitment. the legacy model required hundreds of hemera calls for recursive tree hashing (one permutation per pair in the data). polynomial commitment replaces recursive hashing with O(N) field operations + 1 hemera call per identity.
 
 hemera hash operations (pattern 15) during execution also fold via the sponge construction: each absorption block folds into the accumulator (~30 field ops) instead of being proved independently. a 4 KiB particle hash: ~2,956 constraints folded (was ~54,464 with independent permutations, 18× savings).
 
@@ -545,7 +545,7 @@ signal = {
   - all reduce() calls were valid (correct pattern dispatch)
   - all hemera hashes were computed correctly (folded sponge)
   - budget was sufficient and correctly metered
-  - the result noun has the claimed identity H(result)
+  - the result data has the claimed identity H(result)
 
 verification: one zheng decider call (10-50 μs), independent of computation size.
 signal size: ~1-5 KiB (proof + impulse + 160 bytes ordering metadata)

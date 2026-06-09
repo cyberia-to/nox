@@ -23,7 +23,7 @@ committed in genesis BBG state.
 | content addressing | every particle | identity = H(content) |
 | Fiat-Shamir | ~3 per proof | verifier challenges |
 | domain separation | every commitment, nullifier, Merkle op | collision isolation |
-| structural hash | every noun | H(cell) = H(H(left) ‖ H(right)) |
+| structural hash | every data | H(pair) = H(H(left) ‖ H(right)) |
 | cross-algebra boundary | every type transition | hemera commitment at algebra crossing |
 
 hash is the most frequently executed jet in the system. without it, one Poseidon2 permutation = ~1,000 Layer 1 patterns. with it, 25 execution cost (24 rounds + 1 squeeze), ~736 zheng constraints.

@@ -2,20 +2,20 @@
 //!
 //! Drives a [`hemera::StepSponge`] one round at a time and emits one trace
 //! row per Poseidon2 round (24 rounds) plus a final squeeze row — 25 rows
-//! total. The input rate is the noun's cached structural digest (4 elements,
+//! total. The input rate is the data's cached structural digest (4 elements,
 //! zero-padded to RATE = 8). The output is a 4-element digest derived from
-//! the post-permutation state, wrapped into a hash-noun `cell(cell(h0,h1),
-//! cell(h2,h3))`.
+//! the post-permutation state, wrapped into a hash-data `pair(pair(h0,h1),
+//! pair(h2,h3))`.
 //!
 //! Per-round register layout (k = 0..23):
-//!   r0  = 15 (tag)               r1 = object NounId
-//!   r2  = formula NounId         r3 = NIL (set only on squeeze row)
+//!   r0  = 15 (tag)               r1 = object OrderId
+//!   r2  = formula OrderId         r3 = NIL (set only on squeeze row)
 //!   r4..r7  = state[0..3]        r10..r13 = state[4..7] (rate region)
 //!   r8  = budget_in              r9 = 0 (set only on squeeze row)
-//!   r14 = round index k          r15 = input NounId
+//!   r14 = round index k          r15 = input OrderId
 //!
 //! Squeeze row (k = 24):
-//!   r3  = result NounId          r4..r7 = output digest (4 elements)
+//!   r3  = result OrderId          r4..r7 = output digest (4 elements)
 //!   r9  = budget_out             r14 = 24 (sentinel)
 //!   r10..r13 = state[4..7] of the final post-permutation state
 //!
@@ -24,8 +24,8 @@
 use hemera::StepSponge;
 use hemera::field::Goldilocks as HemeraGold;
 use nebu::Goldilocks;
-use crate::noun::{Order, NounId};
-use crate::noun::hash::Digest;
+use crate::data::{Order, OrderId};
+use crate::data::hash::Digest;
 use crate::reduce::{Outcome, ErrorKind, evaluate_unary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
@@ -35,7 +35,7 @@ const RATE: usize = 8;
 const ROUNDS_TOTAL: u64 = 24;
 
 pub fn hash<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: NounId, body: NounId, budget: u64,
+    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
@@ -76,7 +76,7 @@ pub fn hash<const N: usize, T: Tracer>(
         Goldilocks::new(last_state[2].as_canonical_u64()),
         Goldilocks::new(last_state[3].as_canonical_u64()),
     ];
-    let result = match order.hash_noun(&out_digest) {
+    let result = match order.hash_data(&out_digest) {
         Some(r) => r,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
@@ -87,7 +87,7 @@ pub fn hash<const N: usize, T: Tracer>(
 
 fn emit_round_row<T: Tracer>(
     tracer: &mut T, template: &TraceRow,
-    state: &[HemeraGold; 16], k: u64, input: NounId, budget_in: u64,
+    state: &[HemeraGold; 16], k: u64, input: OrderId, budget_in: u64,
 ) {
     let mut r = TraceRow::default();
     r.r[0] = template.r()[0];
@@ -110,7 +110,7 @@ fn emit_round_row<T: Tracer>(
 fn emit_squeeze_row<T: Tracer>(
     tracer: &mut T, template: &TraceRow,
     final_state: &[HemeraGold; 16], out_digest: &Digest,
-    result: NounId, input: NounId, budget_in: u64, budget_out: u64,
+    result: OrderId, input: OrderId, budget_in: u64, budget_out: u64,
 ) {
     let mut r = TraceRow::default();
     r.r[0] = template.r()[0];
@@ -139,28 +139,28 @@ mod tests {
     use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, VecTrace};
-    use crate::noun::{Order, Tag, Noun};
+    use crate::data::{Order, Data};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn make_hash<const N: usize>(ar: &mut Order<N>, val: u64) -> crate::noun::NounId {
-        let t15 = ar.atom(g(15), Tag::Field).unwrap();
-        let t1 = ar.atom(g(1), Tag::Field).unwrap();
-        let vval = ar.atom(g(val), Tag::Field).unwrap();
-        let body = ar.cell(t1, vval).unwrap();
-        ar.cell(t15, body).unwrap()
+    fn make_hash<const N: usize>(ar: &mut Order<N>, val: u64) -> crate::data::OrderId {
+        let t15 = ar.atom(g(15)).unwrap();
+        let t1 = ar.atom(g(1)).unwrap();
+        let vval = ar.atom(g(val)).unwrap();
+        let body = ar.pair(t1, vval).unwrap();
+        ar.pair(t15, body).unwrap()
     }
 
     #[test]
-    fn hash_returns_cell_of_cells() {
+    fn hash_returns_pair_of_pairs() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_hash(&mut ar, 42);
         match reduce(&mut ar, obj, formula, 10000, &NullCalls, &mut NoTrace) {
             Outcome::Ok(r, _) => {
                 // result should be [[h0 h1] [h2 h3]]
-                assert!(matches!(ar.get(r).unwrap().inner, Noun::Cell { .. }));
+                assert!(matches!(ar.get(r).unwrap().inner, Data::Pair { .. }));
             }
             o => panic!("{:?}", o),
         }
@@ -169,7 +169,7 @@ mod tests {
     #[test]
     fn hash_emits_25_rows() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_hash(&mut ar, 7);
         let mut tracer = VecTrace::default();
         match reduce(&mut ar, obj, formula, 10000, &NullCalls, &mut tracer) {
@@ -183,7 +183,7 @@ mod tests {
     #[test]
     fn hash_round_counter_increments() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_hash(&mut ar, 11);
         let mut tracer = VecTrace::default();
         reduce(&mut ar, obj, formula, 10000, &NullCalls, &mut tracer);
@@ -196,7 +196,7 @@ mod tests {
     #[test]
     fn hash_squeeze_row_carries_result() {
         let mut ar = Order::<1024>::new();
-        let obj = ar.atom(g(0), Tag::Field).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let formula = make_hash(&mut ar, 11);
         let mut tracer = VecTrace::default();
         let result_id = match reduce(&mut ar, obj, formula, 10000, &NullCalls, &mut tracer) {
@@ -211,18 +211,18 @@ mod tests {
     #[test]
     fn hash_deterministic() {
         let mut ar1 = Order::<1024>::new();
-        let obj1 = ar1.atom(g(0), Tag::Field).unwrap();
+        let obj1 = ar1.atom(g(0)).unwrap();
         let f1 = make_hash(&mut ar1, 99);
         let r1 = match reduce(&mut ar1, obj1, f1, 10000, &NullCalls, &mut NoTrace) {
-            Outcome::Ok(r, _) => ar1.read_hash_noun(r).unwrap(),
+            Outcome::Ok(r, _) => ar1.read_hash_data(r).unwrap(),
             o => panic!("{:?}", o),
         };
 
         let mut ar2 = Order::<1024>::new();
-        let obj2 = ar2.atom(g(0), Tag::Field).unwrap();
+        let obj2 = ar2.atom(g(0)).unwrap();
         let f2 = make_hash(&mut ar2, 99);
         let r2 = match reduce(&mut ar2, obj2, f2, 10000, &NullCalls, &mut NoTrace) {
-            Outcome::Ok(r, _) => ar2.read_hash_noun(r).unwrap(),
+            Outcome::Ok(r, _) => ar2.read_hash_data(r).unwrap(),
             o => panic!("{:?}", o),
         };
 

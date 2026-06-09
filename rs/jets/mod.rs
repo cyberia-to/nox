@@ -9,7 +9,7 @@
 //! They are NOT new patterns with dedicated tags — tags 0-17 are the
 //! complete Layer 1+2 pattern set. Jets are recognized by formula hash:
 //!
-//!   jet_registry: H(formula_noun) → jet_implementation
+//!   jet_registry: H(formula_data) → jet_implementation
 //!
 //! At reduction time, before tag-dispatching, reduce_inner checks whether
 //! H(formula) is in the jet registry. If yes the jet runs; if no the formula

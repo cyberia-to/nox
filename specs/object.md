@@ -2,12 +2,12 @@
 tags: nox
 crystal-type: entity
 crystal-domain: comp
-alias: object noun, nox object, computation context
+alias: object, nox object, computation context
 ---
-# object noun
+# object
 
 the object is the data environment for a nox computation. every reduction
-`reduce(object, formula, budget)` receives one object noun. formulas navigate
+`reduce(object, formula, budget)` receives one object. formulas navigate
 the object via axis (pattern 0) and read committed state via look (pattern 17).
 
 ## structure
@@ -29,7 +29,7 @@ four 64-bit limbs of the BBG commitment root C_t — the hash
 `H(Lens.commit(BBG_poly) ‖ Lens.commit(A) ‖ Lens.commit(N))` split across four
 field elements.
 
-`rest` is the payload noun — the data the computation operates on. its structure
+`rest` is the payload — the data the computation operates on. its structure
 depends on the application; nox does not constrain it.
 
 ## axis derivation
@@ -60,24 +60,24 @@ the constant is defined in `nox/rs/patterns/look.rs` and used by the look
 pattern (17) to extract C_t before calling the `LookProvider`.
 
 C_t carries the entire authenticated state commitment. it travels with the
-computation — every object noun embeds the BBG root at the time the computation
+computation — every object embeds the BBG root at the time the computation
 begins. the look pattern verifies reads against this root; the prover cannot
-substitute a different C_t without changing the object noun (which changes the
+substitute a different C_t without changing the object (which changes the
 computation input).
 
 ## construction
 
 ```rust
-// pseudo-code: build an object noun in an Order
-fn make_object(order, l0, l1, l2, l3, rest) -> NounId {
-    let inner     = order.cell(l2, l3);      // [l2 | l3]
-    let mid       = order.cell(l1, inner);   // [l1 | [l2 | l3]]
-    let root_cell = order.cell(l0, mid);     // [l0 | [l1 | [l2 | l3]]]
-    order.cell(root_cell, rest)              // [[l0 | [l1 | [l2 | l3]]] | rest]
+// pseudo-code: build an object in an Order
+fn make_object(order, l0, l1, l2, l3, rest) -> OrderId {
+    let inner     = order.pair(l2, l3);      // [l2 | l3]
+    let mid       = order.pair(l1, inner);   // [l1 | [l2 | l3]]
+    let root_pair = order.pair(l0, mid);     // [l0 | [l1 | [l2 | l3]]]
+    order.pair(root_pair, rest)              // [[l0 | [l1 | [l2 | l3]]] | rest]
 }
 ```
 
-all four limbs must be `Tag::Field` atoms. `rest` is an arbitrary noun.
+all four limbs must be field atoms. `rest` is arbitrary data.
 
 ## invariants
 
