@@ -21,7 +21,7 @@ use cyb_lens_brakedown::Brakedown;
 use cyb_lens_core::{Commitment, Lens, MultilinearPoly};
 use nebu::Goldilocks;
 
-use crate::data::{Order, OrderId};
+use crate::data::{Reduction, Order};
 use crate::call::{CallProvider, LookProvider};
 
 /// A pending opening for batch proof generation.
@@ -83,7 +83,7 @@ impl LookProvider for BrakedownLookProvider {
 }
 
 impl<const N: usize> CallProvider<N> for BrakedownLookProvider {
-    fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
+    fn provide(&self, _order: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
         None
     }
 }
@@ -94,36 +94,36 @@ mod tests {
     use super::*;
     use crate::reduce::{reduce, Outcome};
     use crate::trace::NoTrace;
-    use crate::data::{Order};
+    use crate::data::{Reduction};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
     /// Build object data `[[l0|[l1|[l2|l3]]]|rest]` with the BBG root limbs.
     fn make_object<const N: usize>(
-        order: &mut Order<N>,
+        reduction: &mut Reduction<N>,
         l0: Goldilocks, l1: Goldilocks, l2: Goldilocks, l3: Goldilocks,
-        rest: OrderId,
-    ) -> OrderId {
-        let a0 = order.atom(l0).unwrap();
-        let a1 = order.atom(l1).unwrap();
-        let a2 = order.atom(l2).unwrap();
-        let a3 = order.atom(l3).unwrap();
-        let inner = order.pair(a2, a3).unwrap();
-        let mid = order.pair(a1, inner).unwrap();
-        let root_pair = order.pair(a0, mid).unwrap();
-        order.pair(root_pair, rest).unwrap()
+        rest: Order,
+    ) -> Order {
+        let a0 = reduction.atom(l0).unwrap();
+        let a1 = reduction.atom(l1).unwrap();
+        let a2 = reduction.atom(l2).unwrap();
+        let a3 = reduction.atom(l3).unwrap();
+        let inner = reduction.pair(a2, a3).unwrap();
+        let mid = reduction.pair(a1, inner).unwrap();
+        let root_pair = reduction.pair(a0, mid).unwrap();
+        reduction.pair(root_pair, rest).unwrap()
     }
 
     /// Build formula [17 | [[1|ns] | [1|key]]] — look with quoted ns and key.
-    fn make_look<const N: usize>(order: &mut Order<N>, ns: u64, key: u64) -> OrderId {
-        let t17 = order.atom(g(17)).unwrap();
-        let t1  = order.atom(g(1)).unwrap();
-        let vns  = order.atom(g(ns)).unwrap();
-        let vkey = order.atom(g(key)).unwrap();
-        let ns_formula  = order.pair(t1, vns).unwrap();
-        let key_formula = order.pair(t1, vkey).unwrap();
-        let body = order.pair(ns_formula, key_formula).unwrap();
-        order.pair(t17, body).unwrap()
+    fn make_look<const N: usize>(reduction: &mut Reduction<N>, ns: u64, key: u64) -> Order {
+        let t17 = reduction.atom(g(17)).unwrap();
+        let t1  = reduction.atom(g(1)).unwrap();
+        let vns  = reduction.atom(g(ns)).unwrap();
+        let vkey = reduction.atom(g(key)).unwrap();
+        let ns_formula  = reduction.pair(t1, vns).unwrap();
+        let key_formula = reduction.pair(t1, vkey).unwrap();
+        let body = reduction.pair(ns_formula, key_formula).unwrap();
+        reduction.pair(t17, body).unwrap()
     }
 
     #[test]
@@ -132,7 +132,7 @@ mod tests {
         let provider = BrakedownLookProvider::new(MultilinearPoly::new(evals));
         let l0 = provider.commitment_field();
 
-        let mut ar = Order::<512>::new();
+        let mut ar = Reduction::<512>::new();
         let rest = ar.atom(g(0)).unwrap();
         let object = make_object(&mut ar, l0, g(0), g(0), g(0), rest);
         // key=2 → evals[2] = 30

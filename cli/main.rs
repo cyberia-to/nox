@@ -16,7 +16,7 @@
 use std::io::Read;
 
 use nebu::Goldilocks;
-use nox::data::{Order, OrderId, Data};
+use nox::data::{Reduction, Order, Data};
 use nox::reduce::{reduce_with_registry, Outcome};
 use nox::call::NullCalls;
 use nox::trace::NoTrace;
@@ -27,10 +27,10 @@ const ORDER_SIZE: usize = 1 << 16; // 64K data
 // ─── data parser ─────────────────────────────────────────────────
 
 /// Parse a textual data `[a b]` or `42` into the order.
-fn parse_data(order: &mut Order<ORDER_SIZE>, input: &str) -> Result<OrderId, String> {
+fn parse_data(reduction: &mut Reduction<ORDER_SIZE>, input: &str) -> Result<Order, String> {
     let tokens = tokenize(input)?;
     let mut pos = 0;
-    let result = parse_expr(order, &tokens, &mut pos, 0)?;
+    let result = parse_expr(reduction, &tokens, &mut pos, 0)?;
     Ok(result)
 }
 
@@ -85,11 +85,11 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
 }
 
 fn parse_expr(
-    order: &mut Order<ORDER_SIZE>,
+    reduction: &mut Reduction<ORDER_SIZE>,
     tokens: &[Token],
     pos: &mut usize,
     depth: usize,
-) -> Result<OrderId, String> {
+) -> Result<Order, String> {
     if depth > MAX_PARSE_DEPTH {
         return Err("expression too deeply nested".into());
     }
@@ -99,8 +99,8 @@ fn parse_expr(
     match &tokens[*pos] {
         Token::Num(v) => {
             *pos += 1;
-            order.atom(Goldilocks::new(*v))
-                .ok_or_else(|| "order full".to_string())
+            reduction.atom(Goldilocks::new(*v))
+                .ok_or_else(|| "reduction full".to_string())
         }
         Token::Open => {
             *pos += 1; // skip [
@@ -108,7 +108,7 @@ fn parse_expr(
             // [a b c d] → Pair(a, Pair(b, Pair(c, d)))
             let mut elems = Vec::new();
             while *pos < tokens.len() && !matches!(tokens[*pos], Token::Close) {
-                elems.push(parse_expr(order, tokens, pos, depth + 1)?);
+                elems.push(parse_expr(reduction, tokens, pos, depth + 1)?);
             }
             if *pos < tokens.len() && matches!(tokens[*pos], Token::Close) {
                 *pos += 1;
@@ -126,8 +126,8 @@ fn parse_expr(
             // Right-nest: [a b c] → Pair(a, Pair(b, c))
             let mut result = elems.pop().unwrap();
             while let Some(head) = elems.pop() {
-                result = order.pair(head, result)
-                    .ok_or_else(|| "order full".to_string())?;
+                result = reduction.pair(head, result)
+                    .ok_or_else(|| "reduction full".to_string())?;
             }
             Ok(result)
         }
@@ -139,11 +139,11 @@ fn parse_expr(
 
 // ─── data printer ────────────────────────────────────────────────
 
-fn print_data(order: &Order<ORDER_SIZE>, r: OrderId) -> String {
-    match order.get(r).map(|e| e.inner) {
+fn print_data(reduction: &Reduction<ORDER_SIZE>, r: Order) -> String {
+    match reduction.get(r).map(|e| e.inner) {
         Some(Data::Atom { value, .. }) => format!("{}", value.as_u64()),
         Some(Data::Pair { left, right }) => {
-            format!("[{} {}]", print_data(order, left), print_data(order, right))
+            format!("[{} {}]", print_data(reduction, left), print_data(reduction, right))
         }
         None => "<invalid>".to_string(),
     }
@@ -152,7 +152,7 @@ fn print_data(order: &Order<ORDER_SIZE>, r: OrderId) -> String {
 // ─── main ────────────────────────────────────────────────────────
 
 fn main() {
-    // Order<65536> is ~6 MB — too large for the default 8 MB main thread stack.
+    // Reduction<65536> is ~6 MB — too large for the default 8 MB main thread stack.
     // Spawn a thread with an explicit 32 MB stack so the heap-allocated order is safe.
     let exit_code = std::thread::Builder::new()
         .stack_size(32 * 1024 * 1024)
@@ -235,23 +235,23 @@ fn run() -> i32 {
         return 1;
     }
 
-    let mut order = Order::<ORDER_SIZE>::new();
+    let mut reduction = Reduction::<ORDER_SIZE>::new();
     let hints = NullCalls;
     let registry = JetRegistry::<ORDER_SIZE>::genesis();
 
-    let object = match parse_data(&mut order, &object_text) {
+    let object = match parse_data(&mut reduction, &object_text) {
         Ok(n) => n,
         Err(e) => { eprintln!("error parsing object: {}", e); return 1; }
     };
 
-    let formula = match parse_data(&mut order, &formula_text) {
+    let formula = match parse_data(&mut reduction, &formula_text) {
         Ok(n) => n,
         Err(e) => { eprintln!("error parsing formula: {}", e); return 1; }
     };
 
-    match reduce_with_registry(&mut order, object, formula, budget, &hints, &mut NoTrace, &registry) {
+    match reduce_with_registry(&mut reduction, object, formula, budget, &hints, &mut NoTrace, &registry) {
         Outcome::Ok(result, remaining) => {
-            println!("{}", print_data(&order, result));
+            println!("{}", print_data(&reduction, result));
             eprintln!("cost: {} (budget remaining: {})", budget - remaining, remaining);
             0
         }

@@ -24,36 +24,36 @@ use alloc::vec::Vec;
 use hemera::StepSponge;
 use hemera::field::Goldilocks as HemeraGold;
 use nebu::Goldilocks;
-use crate::data::{Order, OrderId, Data};
+use crate::data::{Reduction, Order, Data};
 use crate::data::hash::hash_pair;
 use crate::reduce::{Outcome, ErrorKind, pair_children, make_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
 pub fn merkle_verify_jet<const N: usize>(
-    order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
     _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [[depth | [root | formula]] | [current | path]]
-    let (meta, data) = match pair_children(order, object) {
+    let (meta, data) = match pair_children(reduction, object) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (depth_id, root_formula) = match pair_children(order, meta) {
+    let (depth_id, root_formula) = match pair_children(reduction, meta) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (root_id, _formula_id) = match pair_children(order, root_formula) {
+    let (root_id, _formula_id) = match pair_children(reduction, root_formula) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (current_id, path_id) = match pair_children(order, data) {
+    let (current_id, path_id) = match pair_children(reduction, data) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
 
-    let depth = match order.atom_value(depth_id) {
+    let depth = match reduction.atom_value(depth_id) {
         Some(v) => v.as_u64(),
         None => return Outcome::Error(ErrorKind::TypeError),
     };
@@ -65,12 +65,12 @@ pub fn merkle_verify_jet<const N: usize>(
     }
     let remaining = budget - cost;
 
-    let path = match decode_path(order, path_id) {
+    let path = match decode_path(reduction, path_id) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
 
-    let valid = verify_path(order, current_id, &path, root_id);
+    let valid = verify_path(reduction, current_id, &path, root_id);
     let result_val = if valid { Goldilocks::ONE } else { Goldilocks::ZERO };
 
     row.r[4] = root_id as u64;
@@ -78,18 +78,18 @@ pub fn merkle_verify_jet<const N: usize>(
     row.r[6] = path_id as u64;
     row.r[7] = valid as u64;
 
-    make_field(order, result_val, remaining)
+    make_field(reduction, result_val, remaining)
 }
 
-fn decode_path<const N: usize>(order: &Order<N>, mut id: OrderId) -> Option<Vec<(OrderId, u64)>> {
+fn decode_path<const N: usize>(reduction: &Reduction<N>, mut id: Order) -> Option<Vec<(Order, u64)>> {
     let mut steps = Vec::new();
     loop {
-        let inner = order.get(id)?.inner;
+        let inner = reduction.get(id)?.inner;
         match inner {
             Data::Atom { .. } => break,
             Data::Pair { left, right } => {
-                let (sibling_id, dir_id) = pair_children(order, left)?;
-                let dir_val = order.atom_value(dir_id)?;
+                let (sibling_id, dir_id) = pair_children(reduction, left)?;
+                let dir_val = reduction.atom_value(dir_id)?;
                 steps.push((sibling_id, dir_val.as_u64()));
                 id = right;
             }
@@ -103,18 +103,18 @@ fn decode_path<const N: usize>(order: &Order<N>, mut id: OrderId) -> Option<Vec<
 /// Each step: new_current = Poseidon2(hash_pair(dig_sib, dig_cur)) or reversed.
 /// Matches what pattern 15 applied to cons(sibling, current) computes.
 fn verify_path<const N: usize>(
-    order: &mut Order<N>,
-    leaf_id: OrderId,
-    path: &[(OrderId, u64)],
-    root_id: OrderId,
+    reduction: &mut Reduction<N>,
+    leaf_id: Order,
+    path: &[(Order, u64)],
+    root_id: Order,
 ) -> bool {
     let mut current_id = leaf_id;
     for &(sibling_id, dir) in path {
-        let sib_dig = match order.digest(sibling_id) {
+        let sib_dig = match reduction.digest(sibling_id) {
             Some(d) => *d,
             None => return false,
         };
-        let cur_dig = match order.digest(current_id) {
+        let cur_dig = match reduction.digest(current_id) {
             Some(d) => *d,
             None => return false,
         };
@@ -124,13 +124,13 @@ fn verify_path<const N: usize>(
             hash_pair(&cur_dig, &sib_dig)
         };
         let new_hash = poseidon2_digest(&pair_dig);
-        current_id = match order.hash_data(&new_hash) {
+        current_id = match reduction.hash_data(&new_hash) {
             Some(id) => id,
             None => return false,
         };
     }
-    let cur_dig  = match order.digest(current_id) { Some(d) => *d, None => return false };
-    let root_dig = match order.digest(root_id)    { Some(d) => *d, None => return false };
+    let cur_dig  = match reduction.digest(current_id) { Some(d) => *d, None => return false };
+    let root_dig = match reduction.digest(root_id)    { Some(d) => *d, None => return false };
     cur_dig == root_dig
 }
 
@@ -159,17 +159,17 @@ mod tests {
     use crate::reduce::Outcome;
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::data::{Order};
+    use crate::data::{Reduction};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn nox_hash<const N: usize>(ar: &mut Order<N>, id: OrderId) -> OrderId {
+    fn nox_hash<const N: usize>(ar: &mut Reduction<N>, id: Order) -> Order {
         let dig = *ar.digest(id).unwrap();
         let out = poseidon2_digest(&dig);
         ar.hash_data(&out).unwrap()
     }
 
-    fn two_leaf_tree<const N: usize>(ar: &mut Order<N>) -> (OrderId, OrderId, OrderId) {
+    fn two_leaf_tree<const N: usize>(ar: &mut Reduction<N>) -> (Order, Order, Order) {
         let leaf0 = ar.atom(g(100)).unwrap();
         let leaf1 = ar.atom(g(200)).unwrap();
         let hn0   = nox_hash(ar, leaf0);
@@ -181,8 +181,8 @@ mod tests {
 
     /// Build calling object and run merkle_verify_jet.
     fn run<const N: usize>(
-        ar: &mut Order<N>,
-        root: OrderId, current: OrderId, sibling: OrderId, dir: u64,
+        ar: &mut Reduction<N>,
+        root: Order, current: Order, sibling: Order, dir: u64,
     ) -> Outcome {
         let depth_id  = ar.atom(g(1)).unwrap();
         let formula_p = ar.atom(g(0)).unwrap(); // placeholder
@@ -201,7 +201,7 @@ mod tests {
 
     #[test]
     fn valid_left_leaf_returns_one() {
-        let mut ar = Order::<512>::new();
+        let mut ar = Reduction::<512>::new();
         let (root, hn0, hn1) = two_leaf_tree(&mut ar);
         // leaf0 is left child → sibling (hn1) is right → dir=1
         match run(&mut ar, root, hn0, hn1, 1) {
@@ -212,7 +212,7 @@ mod tests {
 
     #[test]
     fn wrong_leaf_returns_zero() {
-        let mut ar = Order::<512>::new();
+        let mut ar = Reduction::<512>::new();
         let (root, _hn0, hn1) = two_leaf_tree(&mut ar);
         let wrong_atom = ar.atom(g(999)).unwrap();
         let wrong_hash = nox_hash(&mut ar, wrong_atom);
@@ -224,7 +224,7 @@ mod tests {
 
     #[test]
     fn valid_right_leaf_returns_one() {
-        let mut ar = Order::<512>::new();
+        let mut ar = Reduction::<512>::new();
         let (root, hn0, hn1) = two_leaf_tree(&mut ar);
         // leaf1 is right child → sibling (hn0) is left → dir=0
         match run(&mut ar, root, hn1, hn0, 0) {
@@ -235,7 +235,7 @@ mod tests {
 
     #[test]
     fn budget_exhaustion_halts() {
-        let mut ar = Order::<512>::new();
+        let mut ar = Reduction::<512>::new();
         let (root, hn0, hn1) = two_leaf_tree(&mut ar);
         // depth=1, cost=25 — pass budget=10 → Halt
         let depth_id  = ar.atom(g(1)).unwrap();

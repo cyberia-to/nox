@@ -26,7 +26,7 @@ mod hc_jets {
     use alloc::vec::Vec;
 
     use nebu::Goldilocks;
-    use crate::data::{Order, OrderId, Data};
+    use crate::data::{Reduction, Order, Data};
     use crate::reduce::{Outcome, ErrorKind, pair_children};
     use crate::call::CallProvider;
     use crate::trace::{Tracer, TraceRow};
@@ -34,29 +34,29 @@ mod hc_jets {
     // ── NTT jet ──────────────────────────────────────────────────────────────
 
     pub fn honeycrisp_ntt_jet<const N: usize>(
-        order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
+        reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
         _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
         row: &mut TraceRow,
     ) -> Outcome {
         // object = [[n | formula] | [values_tree | omega]]
-        let (lhs, rhs) = match pair_children(order, object) {
+        let (lhs, rhs) = match pair_children(reduction, object) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
-        let (n_id, _formula_id) = match pair_children(order, lhs) {
+        let (n_id, _formula_id) = match pair_children(reduction, lhs) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
-        let (tree_id, omega_id) = match pair_children(order, rhs) {
+        let (tree_id, omega_id) = match pair_children(reduction, rhs) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
 
-        let n = match order.atom_value(n_id) {
+        let n = match reduction.atom_value(n_id) {
             Some(v) => v.as_u64() as usize,
             None => return Outcome::Error(ErrorKind::TypeError),
         };
-        let omega = match order.atom_value(omega_id) {
+        let omega = match reduction.atom_value(omega_id) {
             Some(v) => v,
             None => return Outcome::Error(ErrorKind::TypeError),
         };
@@ -72,7 +72,7 @@ mod hc_jets {
 
         // Flatten the balanced binary tree into a Vec<Goldilocks>.
         let mut vals: Vec<Goldilocks> = Vec::with_capacity(size);
-        if !flatten_tree(order, tree_id, &mut vals) {
+        if !flatten_tree(reduction, tree_id, &mut vals) {
             return Outcome::Error(ErrorKind::TypeError);
         }
         if vals.len() != size {
@@ -86,7 +86,7 @@ mod hc_jets {
         let vals_out: Vec<Goldilocks> = vals_u64.into_iter().map(Goldilocks::new).collect();
 
         // Write result back as a balanced binary tree into the order.
-        let result_tree = match build_tree(order, &vals_out) {
+        let result_tree = match build_tree(reduction, &vals_out) {
             Some(id) => id,
             None => return Outcome::Error(ErrorKind::Unavailable),
         };
@@ -101,32 +101,32 @@ mod hc_jets {
     // ── poly_eval jet ─────────────────────────────────────────────────────────
 
     pub fn honeycrisp_poly_eval_jet<const N: usize>(
-        order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
+        reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
         _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
         row: &mut TraceRow,
     ) -> Outcome {
         // object = [[k | formula] | [evals_tree | point]]
-        let (lhs, rhs) = match pair_children(order, object) {
+        let (lhs, rhs) = match pair_children(reduction, object) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
-        let (k_id, _formula_id) = match pair_children(order, lhs) {
+        let (k_id, _formula_id) = match pair_children(reduction, lhs) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
-        let (evals_id, point_id) = match pair_children(order, rhs) {
+        let (evals_id, point_id) = match pair_children(reduction, rhs) {
             Some(p) => p,
             None => return Outcome::Error(ErrorKind::Malformed),
         };
 
-        let k = match order.atom_value(k_id) {
+        let k = match reduction.atom_value(k_id) {
             Some(v) => v.as_u64() as usize,
             None => return Outcome::Error(ErrorKind::TypeError),
         };
 
         // Flatten the balanced binary tree of evaluations into a Vec<Goldilocks>.
         let mut evals: Vec<Goldilocks> = Vec::new();
-        if !flatten_tree(order, evals_id, &mut evals) {
+        if !flatten_tree(reduction, evals_id, &mut evals) {
             return Outcome::Error(ErrorKind::TypeError);
         }
         let expected = 1usize << k;
@@ -138,8 +138,8 @@ mod hc_jets {
         let mut point: Vec<Goldilocks> = Vec::with_capacity(k);
         let mut cur = point_id;
         for _ in 0..k {
-            match pair_children(order, cur) {
-                Some((head, tail)) => match order.atom_value(head) {
+            match pair_children(reduction, cur) {
+                Some((head, tail)) => match reduction.atom_value(head) {
                     Some(v) => { point.push(v); cur = tail; }
                     None => return Outcome::Error(ErrorKind::TypeError),
                 },
@@ -163,7 +163,7 @@ mod hc_jets {
         row.r[5] = point_id as u64;
         row.r[6] = value.as_u64();
 
-        match order.atom(value) {
+        match reduction.atom(value) {
             Some(r) => Outcome::Ok(r, remaining),
             None => Outcome::Error(ErrorKind::Unavailable),
         }
@@ -171,30 +171,30 @@ mod hc_jets {
 
     // ── shared tree helpers ───────────────────────────────────────────────────
 
-    fn flatten_tree<const N: usize>(order: &Order<N>, id: OrderId, out: &mut Vec<Goldilocks>) -> bool {
-        let inner = match order.get(id) {
+    fn flatten_tree<const N: usize>(reduction: &Reduction<N>, id: Order, out: &mut Vec<Goldilocks>) -> bool {
+        let inner = match reduction.get(id) {
             Some(e) => e.inner,
             None => return false,
         };
         match inner {
-            Data::Atom { .. } => match order.atom_value(id) {
+            Data::Atom { .. } => match reduction.atom_value(id) {
                 Some(v) => { out.push(v); true }
                 None => false,
             },
             Data::Pair { left, right } => {
-                flatten_tree(order, left, out) && flatten_tree(order, right, out)
+                flatten_tree(reduction, left, out) && flatten_tree(reduction, right, out)
             }
         }
     }
 
-    fn build_tree<const N: usize>(order: &mut Order<N>, vals: &[Goldilocks]) -> Option<OrderId> {
+    fn build_tree<const N: usize>(reduction: &mut Reduction<N>, vals: &[Goldilocks]) -> Option<Order> {
         if vals.len() == 1 {
-            return order.atom(vals[0]);
+            return reduction.atom(vals[0]);
         }
         let mid = vals.len() / 2;
-        let left  = build_tree(order, &vals[..mid])?;
-        let right = build_tree(order, &vals[mid..])?;
-        order.pair(left, right)
+        let left  = build_tree(reduction, &vals[..mid])?;
+        let right = build_tree(reduction, &vals[mid..])?;
+        reduction.pair(left, right)
     }
 }
 

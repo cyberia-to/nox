@@ -7,7 +7,7 @@
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
 use nebu::Goldilocks;
-use nox::data::{Order};
+use nox::data::{Reduction};
 use nox::call::NullCalls;
 use nox::trace::NoTrace;
 use nox::reduce::reduce;
@@ -22,7 +22,7 @@ fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 fn bench_add(c: &mut Criterion) {
     c.bench_function("pattern/add", |b| {
         b.iter(|| {
-            let mut ar = Order::<4096>::new();
+            let mut ar = Reduction::<4096>::new();
             let obj  = ar.atom(g(0)).unwrap();
             let t5   = ar.atom(g(5)).unwrap();
             let t1   = ar.atom(g(1)).unwrap();
@@ -40,7 +40,7 @@ fn bench_add(c: &mut Criterion) {
 fn bench_mul(c: &mut Criterion) {
     c.bench_function("pattern/mul", |b| {
         b.iter(|| {
-            let mut ar = Order::<4096>::new();
+            let mut ar = Reduction::<4096>::new();
             let obj  = ar.atom(g(0)).unwrap();
             let t7   = ar.atom(g(7)).unwrap();
             let t1   = ar.atom(g(1)).unwrap();
@@ -58,7 +58,7 @@ fn bench_mul(c: &mut Criterion) {
 fn bench_inv(c: &mut Criterion) {
     c.bench_function("pattern/inv", |b| {
         b.iter(|| {
-            let mut ar = Order::<4096>::new();
+            let mut ar = Reduction::<4096>::new();
             let obj  = ar.atom(g(0)).unwrap();
             let t8   = ar.atom(g(8)).unwrap();
             let t1   = ar.atom(g(1)).unwrap();
@@ -80,7 +80,7 @@ fn bench_hash(c: &mut Criterion) {
 
     group.bench_function("pattern/hash", |b| {
         b.iter(|| {
-            let mut ar = Order::<4096>::new();
+            let mut ar = Reduction::<4096>::new();
             let obj   = ar.atom(g(0)).unwrap();
             let t15   = ar.atom(g(15)).unwrap();
             let t1    = ar.atom(g(1)).unwrap();
@@ -91,13 +91,13 @@ fn bench_hash(c: &mut Criterion) {
         })
     });
 
-    // Batch: chain N hashes in one reduce call to amortize Order allocation.
+    // Batch: chain N hashes in one reduce call to amortize Reduction allocation.
     // Measures sustained hashrate under real workload pressure.
     const CHAIN: u64 = 64;
     group.throughput(Throughput::Elements(CHAIN));
     group.bench_function("pattern/hash_chain_64", |b| {
         b.iter(|| {
-            let mut ar = Order::<4096>::new();
+            let mut ar = Reduction::<4096>::new();
             let obj   = ar.atom(g(0)).unwrap();
             let t15   = ar.atom(g(15)).unwrap();
             let t1    = ar.atom(g(1)).unwrap();
@@ -126,7 +126,7 @@ fn bench_hash(c: &mut Criterion) {
 fn bench_look(c: &mut Criterion) {
     c.bench_function("pattern/look_null", |b| {
         b.iter(|| {
-            let mut ar = Order::<4096>::new();
+            let mut ar = Reduction::<4096>::new();
             let l0   = ar.atom(g(0)).unwrap();
             let l1   = ar.atom(g(0)).unwrap();
             let l2   = ar.atom(g(0)).unwrap();
@@ -159,7 +159,7 @@ fn bench_merkle_verify(c: &mut Criterion) {
     let leaf1 = hash_leaf(b"leaf1", 1, false);
     let root  = hash_node(&leaf0, &leaf1, true);
 
-    let build_hash_data = |ar: &mut Order<4096>, hash: &Hash| {
+    let build_hash_data = |ar: &mut Reduction<4096>, hash: &Hash| {
         let bytes = hash.as_bytes();
         let mut limb = |off: usize| -> u32 {
             let mut buf = [0u8; 8];
@@ -175,7 +175,7 @@ fn bench_merkle_verify(c: &mut Criterion) {
 
     c.bench_function("jet/merkle_verify", |b| {
         b.iter(|| {
-            let mut ar = Order::<4096>::new();
+            let mut ar = Reduction::<4096>::new();
             // object = [[depth | [root | formula]] | [current | path]]
             let root_data = build_hash_data(&mut ar, &root);
             let leaf_data = build_hash_data(&mut ar, &leaf0);
@@ -200,7 +200,7 @@ fn bench_merkle_verify(c: &mut Criterion) {
 // ── encode_tree ───────────────────────────────────────────────────────────────
 
 fn bench_encode_tree(c: &mut Criterion) {
-    let mut ar = Order::<4096>::new();
+    let mut ar = Reduction::<4096>::new();
     let mut cur = ar.atom(g(0)).unwrap();
     for i in 1u64..=64 {
         let a = ar.atom(g(i)).unwrap();

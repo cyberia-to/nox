@@ -7,29 +7,29 @@
 //! equal. zheng constrains the gadget (r4 - r5) * r7 = r6 with r6 ∈ {0, 1}.
 
 use nebu::Goldilocks;
-use crate::data::{Order, OrderId};
+use crate::data::{Reduction, Order};
 use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary, make_field};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::jets::registry::JetRegistry;
 
 pub fn eq<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (a, b) = match pair_children(order, body) {
+    let (a, b) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (ra, rb, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth, registry) {
+    let (ra, rb, budget) = match evaluate_binary(reduction, object, a, b, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
-    let da = match order.digest(ra) {
+    let da = match reduction.digest(ra) {
         Some(d) => *d,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
-    let db = match order.digest(rb) {
+    let db = match reduction.digest(rb) {
         Some(d) => *d,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
@@ -37,8 +37,8 @@ pub fn eq<const N: usize, T: Tracer>(
     let r6 = if equal { 0u64 } else { 1u64 };
     // when both operands are atoms, expose canonical values and inverse hint.
     // otherwise fall back to particle identity (digest equality is the binding constraint).
-    let va = order.atom_value(ra);
-    let vb = order.atom_value(rb);
+    let va = reduction.atom_value(ra);
+    let vb = reduction.atom_value(rb);
     match (va, vb) {
         (Some(va), Some(vb)) => {
             row.r[4] = va.as_u64();
@@ -63,7 +63,7 @@ pub fn eq<const N: usize, T: Tracer>(
         }
     }
     let result = if equal { Goldilocks::ZERO } else { Goldilocks::ONE };
-    make_field(order, result, budget)
+    make_field(reduction, result, budget)
 }
 
 #[cfg(test)]
@@ -71,13 +71,13 @@ mod tests {
     use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
     use crate::trace::NoTrace;
-    use crate::data::{Order};
+    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
     /// formula = [9 [[1 a] [1 b]]]
-    fn make_eq<const N: usize>(ar: &mut Order<N>, a: u64, b: u64) -> crate::data::OrderId {
+    fn make_eq<const N: usize>(ar: &mut Reduction<N>, a: u64, b: u64) -> crate::data::Order {
         let t9 = ar.atom(g(9)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let va = ar.atom(g(a)).unwrap();
@@ -90,7 +90,7 @@ mod tests {
 
     #[test]
     fn eq_equal_returns_zero() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let formula = make_eq(&mut ar, 5, 5);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
@@ -101,7 +101,7 @@ mod tests {
 
     #[test]
     fn eq_unequal_returns_one() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let formula = make_eq(&mut ar, 5, 7);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
@@ -111,11 +111,11 @@ mod tests {
     }
 
     /// formula = [9 [[1 (1,2)] [1 (1,2)]]] — quote two structurally-equal pairs.
-    /// Hash-cons means both sub-quotes resolve to the same OrderId, but the test
+    /// Hash-cons means both sub-quotes resolve to the same Order, but the test
     /// is meaningful: the eq pattern must work on pairs via digest comparison.
     #[test]
     fn eq_pairs_structurally_equal_returns_zero() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let one = ar.atom(g(1)).unwrap();
         let two = ar.atom(g(2)).unwrap();
@@ -138,7 +138,7 @@ mod tests {
     #[test]
     fn eq_pairs_equal_r7_zero() {
         use crate::trace::VecTrace;
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let one = ar.atom(g(1)).unwrap();
         let two = ar.atom(g(2)).unwrap();
@@ -165,7 +165,7 @@ mod tests {
     #[test]
     fn eq_pairs_unequal_r7_nonzero() {
         use crate::trace::VecTrace;
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let one = ar.atom(g(1)).unwrap();
         let two = ar.atom(g(2)).unwrap();
@@ -192,7 +192,7 @@ mod tests {
     /// Cells with different contents — verify digest path returns 1.
     #[test]
     fn eq_pairs_different_returns_one() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let one = ar.atom(g(1)).unwrap();
         let two = ar.atom(g(2)).unwrap();

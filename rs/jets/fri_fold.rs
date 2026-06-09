@@ -22,41 +22,41 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 use nebu::Goldilocks;
-use crate::data::{Order, OrderId, Data};
+use crate::data::{Reduction, Order, Data};
 use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
 pub fn fri_fold_jet<const N: usize>(
-    order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
     _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [[k | formula] | [evals_tree | r]]
-    let (lhs, rhs) = match pair_children(order, object) {
+    let (lhs, rhs) = match pair_children(reduction, object) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (k_id, _formula_id) = match pair_children(order, lhs) {
+    let (k_id, _formula_id) = match pair_children(reduction, lhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (evals_id, r_id) = match pair_children(order, rhs) {
+    let (evals_id, r_id) = match pair_children(reduction, rhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
 
-    let k = match order.atom_value(k_id) {
+    let k = match reduction.atom_value(k_id) {
         Some(v) => v.as_u64() as usize,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
-    let r = match order.atom_value(r_id) {
+    let r = match reduction.atom_value(r_id) {
         Some(v) => v,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
 
     let mut evals: Vec<Goldilocks> = Vec::new();
-    if !flatten_tree(order, evals_id, &mut evals) {
+    if !flatten_tree(reduction, evals_id, &mut evals) {
         return Outcome::Error(ErrorKind::TypeError);
     }
     let expected = 1usize << k;
@@ -89,24 +89,24 @@ pub fn fri_fold_jet<const N: usize>(
     row.r[5] = r_id as u64;
     row.r[6] = value.as_u64();
 
-    match order.atom(value) {
+    match reduction.atom(value) {
         Some(result) => Outcome::Ok(result, remaining),
         None => Outcome::Error(ErrorKind::Unavailable),
     }
 }
 
-fn flatten_tree<const N: usize>(order: &Order<N>, id: OrderId, out: &mut Vec<Goldilocks>) -> bool {
-    let inner = match order.get(id) {
+fn flatten_tree<const N: usize>(reduction: &Reduction<N>, id: Order, out: &mut Vec<Goldilocks>) -> bool {
+    let inner = match reduction.get(id) {
         Some(e) => e.inner,
         None => return false,
     };
     match inner {
-        Data::Atom { .. } => match order.atom_value(id) {
+        Data::Atom { .. } => match reduction.atom_value(id) {
             Some(v) => { out.push(v); true }
             None => false,
         },
         Data::Pair { left, right } => {
-            flatten_tree(order, left, out) && flatten_tree(order, right, out)
+            flatten_tree(reduction, left, out) && flatten_tree(reduction, right, out)
         }
     }
 }
@@ -117,11 +117,11 @@ mod tests {
     use crate::reduce::Outcome;
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::data::{Order};
+    use crate::data::{Reduction};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn build_tree<const N: usize>(ar: &mut Order<N>, vals: &[Goldilocks]) -> OrderId {
+    fn build_tree<const N: usize>(ar: &mut Reduction<N>, vals: &[Goldilocks]) -> Order {
         assert!(vals.len().is_power_of_two() && !vals.is_empty());
         if vals.len() == 1 {
             return ar.atom(vals[0]).unwrap();
@@ -133,7 +133,7 @@ mod tests {
     }
 
     fn run<const N: usize>(
-        ar: &mut Order<N>, evals: &[Goldilocks], r: Goldilocks,
+        ar: &mut Reduction<N>, evals: &[Goldilocks], r: Goldilocks,
     ) -> Outcome {
         let k_val = evals.len().trailing_zeros() as u64;
         let k_id  = ar.atom(g(k_val)).unwrap();
@@ -150,7 +150,7 @@ mod tests {
 
     #[test]
     fn single_element_returns_itself() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         // k=0, evals=[7], any r → result=7
         match run(&mut ar, &[g(7)], g(3)) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(7)),
@@ -161,7 +161,7 @@ mod tests {
     #[test]
     fn two_elements_at_r_zero_returns_left() {
         // r=0: result = left + 0*(right-left) = left
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         match run(&mut ar, &[g(3), g(7)], g(0)) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(3)),
             o => panic!("{:?}", o),
@@ -171,7 +171,7 @@ mod tests {
     #[test]
     fn two_elements_at_r_one_returns_right() {
         // r=1: result = left + 1*(right-left) = right
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         match run(&mut ar, &[g(3), g(7)], g(1)) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(7)),
             o => panic!("{:?}", o),
@@ -183,7 +183,7 @@ mod tests {
         // evals=[0,4,8,12], r=1/2 (half in Goldilocks)
         // level-1: [(0+4)/2, (8+12)/2] = [2, 10]
         // level-2: (2+10)/2 = 6
-        let mut ar = Order::<512>::new();
+        let mut ar = Reduction::<512>::new();
         let p = 0xFFFF_FFFF_0000_0001u64;
         let half = Goldilocks::new((p + 1) / 2);
         match run(&mut ar, &[g(0), g(4), g(8), g(12)], half) {

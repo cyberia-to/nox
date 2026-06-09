@@ -19,38 +19,38 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 use nebu::Goldilocks;
-use crate::data::{Order, OrderId, Data};
+use crate::data::{Reduction, Order, Data};
 use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
 pub fn poly_eval_jet<const N: usize>(
-    order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
     _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [[k | formula] | [evals_tree | point]]
-    let (lhs, rhs) = match pair_children(order, object) {
+    let (lhs, rhs) = match pair_children(reduction, object) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (k_id, _formula_id) = match pair_children(order, lhs) {
+    let (k_id, _formula_id) = match pair_children(reduction, lhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (evals_id, point_id) = match pair_children(order, rhs) {
+    let (evals_id, point_id) = match pair_children(reduction, rhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
 
-    let k = match order.atom_value(k_id) {
+    let k = match reduction.atom_value(k_id) {
         Some(v) => v.as_u64() as usize,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
 
     // Flatten the balanced binary tree of evaluations into a Vec.
     let mut evals: Vec<Goldilocks> = Vec::new();
-    if !flatten_tree(order, evals_id, &mut evals) {
+    if !flatten_tree(reduction, evals_id, &mut evals) {
         return Outcome::Error(ErrorKind::TypeError);
     }
     let expected = 1usize << k;
@@ -62,8 +62,8 @@ pub fn poly_eval_jet<const N: usize>(
     let mut point: Vec<Goldilocks> = Vec::with_capacity(k);
     let mut cur = point_id;
     for _ in 0..k {
-        match pair_children(order, cur) {
-            Some((head, tail)) => match order.atom_value(head) {
+        match pair_children(reduction, cur) {
+            Some((head, tail)) => match reduction.atom_value(head) {
                 Some(v) => { point.push(v); cur = tail; }
                 None => return Outcome::Error(ErrorKind::TypeError),
             },
@@ -83,25 +83,25 @@ pub fn poly_eval_jet<const N: usize>(
     row.r[5] = point_id as u64;
     row.r[6] = value.as_u64();
 
-    match order.atom(value) {
+    match reduction.atom(value) {
         Some(r) => Outcome::Ok(r, remaining),
         None => Outcome::Error(ErrorKind::Unavailable),
     }
 }
 
 /// Flatten a balanced binary tree of field atoms into a Vec (left-to-right DFS).
-fn flatten_tree<const N: usize>(order: &Order<N>, id: OrderId, out: &mut Vec<Goldilocks>) -> bool {
-    let inner = match order.get(id) {
+fn flatten_tree<const N: usize>(reduction: &Reduction<N>, id: Order, out: &mut Vec<Goldilocks>) -> bool {
+    let inner = match reduction.get(id) {
         Some(e) => e.inner,
         None => return false,
     };
     match inner {
-        Data::Atom { .. } => match order.atom_value(id) {
+        Data::Atom { .. } => match reduction.atom_value(id) {
             Some(v) => { out.push(v); true }
             None => false,
         },
         Data::Pair { left, right } => {
-            flatten_tree(order, left, out) && flatten_tree(order, right, out)
+            flatten_tree(reduction, left, out) && flatten_tree(reduction, right, out)
         }
     }
 }
@@ -127,12 +127,12 @@ mod tests {
     use crate::reduce::Outcome;
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::data::{Order};
+    use crate::data::{Reduction};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
     /// Build a balanced binary tree from evaluations (power-of-two length).
-    fn build_tree<const N: usize>(ar: &mut Order<N>, vals: &[Goldilocks]) -> OrderId {
+    fn build_tree<const N: usize>(ar: &mut Reduction<N>, vals: &[Goldilocks]) -> Order {
         assert!(vals.len().is_power_of_two() && !vals.is_empty());
         if vals.len() == 1 {
             return ar.atom(vals[0]).unwrap();
@@ -144,7 +144,7 @@ mod tests {
     }
 
     /// Build a right-nested point list [x0 | [x1 | ... term]] with atom terminator.
-    fn build_point<const N: usize>(ar: &mut Order<N>, coords: &[Goldilocks]) -> OrderId {
+    fn build_point<const N: usize>(ar: &mut Reduction<N>, coords: &[Goldilocks]) -> Order {
         let term = ar.atom(g(0)).unwrap();
         coords.iter().rev().fold(term, |acc, &c| {
             let h = ar.atom(c).unwrap();
@@ -154,7 +154,7 @@ mod tests {
 
     /// Build full calling object and run poly_eval_jet.
     fn run<const N: usize>(
-        ar: &mut Order<N>, evals: &[Goldilocks], point: &[Goldilocks],
+        ar: &mut Reduction<N>, evals: &[Goldilocks], point: &[Goldilocks],
     ) -> Outcome {
         let k = evals.len().trailing_zeros() as u64;
         let k_id  = ar.atom(g(k)).unwrap();
@@ -171,7 +171,7 @@ mod tests {
 
     #[test]
     fn at_zero_returns_first_eval() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         match run(&mut ar, &[g(3), g(7)], &[g(0)]) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(3)),
             o => panic!("{:?}", o),
@@ -180,7 +180,7 @@ mod tests {
 
     #[test]
     fn at_one_returns_second_eval() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         match run(&mut ar, &[g(3), g(7)], &[g(1)]) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(7)),
             o => panic!("{:?}", o),
@@ -190,7 +190,7 @@ mod tests {
     #[test]
     fn two_vars_at_origin() {
         // f(x0,x1) with evals [10,20,30,40]; evaluate at x1=0, x0=0 → 10
-        let mut ar = Order::<512>::new();
+        let mut ar = Reduction::<512>::new();
         match run(&mut ar, &[g(10), g(20), g(30), g(40)], &[g(0), g(0)]) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(10)),
             o => panic!("{:?}", o),
@@ -200,7 +200,7 @@ mod tests {
     #[test]
     fn two_vars_at_one_one() {
         // f(1,1) = evals[3] = 40
-        let mut ar = Order::<512>::new();
+        let mut ar = Reduction::<512>::new();
         match run(&mut ar, &[g(10), g(20), g(30), g(40)], &[g(1), g(1)]) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(40)),
             o => panic!("{:?}", o),
@@ -209,7 +209,7 @@ mod tests {
 
     #[test]
     fn budget_exhaustion() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         // k=1 needs cost=2, pass budget=1 → Halt
         let k_id  = ar.atom(g(1)).unwrap();
         let dummy = ar.atom(g(0)).unwrap();

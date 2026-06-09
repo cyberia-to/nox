@@ -14,7 +14,7 @@
 use alloc::vec::Vec;
 use alloc::vec;
 use nebu::Goldilocks;
-use crate::data::{Order, OrderId, Data};
+use crate::data::{Reduction, Order, Data};
 use crate::data::{digest_bytes, digest_from_bytes, hash_atom, hash_pair};
 
 /// content-addressed identity: 32-byte view of the tree-hash digest
@@ -32,7 +32,7 @@ pub enum DecodeError {
     InvalidMessageType,
 }
 
-/// standalone decoded data not bound to an Order
+/// standalone decoded data not bound to an Reduction
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DecodedData {
     /// a leaf — one field. a `word` is just an atom whose value is < 2^32;
@@ -110,23 +110,23 @@ pub fn particle_of(encoded: &[u8]) -> Result<Particle, DecodeError> {
     }
 }
 
-// ── Order encoding ────────────────────────────────────────────────────────────
+// ── Reduction encoding ────────────────────────────────────────────────────────────
 
 /// encode all data reachable from `root` in topological order (children before
 /// parents). returns (Particle, encoded_bytes) pairs ready for wire transmission.
 ///
-/// children in an Order always have smaller OrderId than their parents, so sorting
+/// children in an Reduction always have smaller Order than their parents, so sorting
 /// reachable order ids ascending gives topological order.
 pub fn encode_tree<const N: usize>(
-    order: &Order<N>,
-    root: OrderId,
+    reduction: &Reduction<N>,
+    root: Order,
 ) -> Option<Vec<(Particle, Vec<u8>)>> {
-    let reachable = collect_reachable(order, root)?;
-    let mut cache: Vec<(OrderId, Particle)> = Vec::with_capacity(reachable.len());
+    let reachable = collect_reachable(reduction, root)?;
+    let mut cache: Vec<(Order, Particle)> = Vec::with_capacity(reachable.len());
     let mut result: Vec<(Particle, Vec<u8>)> = Vec::with_capacity(reachable.len());
 
     for &nid in &reachable {
-        let bytes: Vec<u8> = match order.get(nid)?.inner {
+        let bytes: Vec<u8> = match reduction.get(nid)?.inner {
             Data::Atom { value } => encode_atom(value).to_vec(),
             Data::Pair { left, right } => {
                 let l = cache_lookup(&cache, left)?;
@@ -136,35 +136,35 @@ pub fn encode_tree<const N: usize>(
         };
         // identity is the node's already-computed tree-hash digest — the same
         // bytes the hash-cons table keys on. no re-hashing, no second scheme.
-        let pid = digest_bytes(&order.get(nid)?.hash);
+        let pid = digest_bytes(&reduction.get(nid)?.hash);
         cache.push((nid, pid));
         result.push((pid, bytes));
     }
     Some(result)
 }
 
-/// canonical encoded bytes of a single data node from an Order
-pub fn encoded_bytes<const N: usize>(order: &Order<N>, id: OrderId) -> Option<Vec<u8>> {
-    match order.get(id)?.inner {
+/// canonical encoded bytes of a single data node from an Reduction
+pub fn encoded_bytes<const N: usize>(reduction: &Reduction<N>, id: Order) -> Option<Vec<u8>> {
+    match reduction.get(id)?.inner {
         Data::Atom { value } => Some(encode_atom(value).to_vec()),
-        Data::Pair { .. } => Some(encode_tree(order, id)?.into_iter().last()?.1),
+        Data::Pair { .. } => Some(encode_tree(reduction, id)?.into_iter().last()?.1),
     }
 }
 
-/// particle of a data node in an Order — the stored tree-hash digest.
-pub fn particle_id<const N: usize>(order: &Order<N>, id: OrderId) -> Option<Particle> {
-    Some(digest_bytes(&order.get(id)?.hash))
+/// particle of a data node in an Reduction — the stored tree-hash digest.
+pub fn particle_id<const N: usize>(reduction: &Reduction<N>, id: Order) -> Option<Particle> {
+    Some(digest_bytes(&reduction.get(id)?.hash))
 }
 
 /// collect all order ids reachable from root via DFS, sorted ascending (topological order)
-fn collect_reachable<const N: usize>(order: &Order<N>, root: OrderId) -> Option<Vec<OrderId>> {
-    let count = order.count() as usize;
+fn collect_reachable<const N: usize>(reduction: &Reduction<N>, root: Order) -> Option<Vec<Order>> {
+    let count = reduction.count() as usize;
     if root as usize >= count {
         return None;
     }
     let mut visited = vec![false; count];
-    let mut stack: Vec<OrderId> = Vec::new();
-    let mut result: Vec<OrderId> = Vec::new();
+    let mut stack: Vec<Order> = Vec::new();
+    let mut result: Vec<Order> = Vec::new();
     stack.push(root);
     while let Some(id) = stack.pop() {
         let idx = id as usize;
@@ -173,7 +173,7 @@ fn collect_reachable<const N: usize>(order: &Order<N>, root: OrderId) -> Option<
         }
         visited[idx] = true;
         result.push(id);
-        if let Data::Pair { left, right } = order.get(id)?.inner {
+        if let Data::Pair { left, right } = reduction.get(id)?.inner {
             stack.push(left);
             stack.push(right);
         }
@@ -182,7 +182,7 @@ fn collect_reachable<const N: usize>(order: &Order<N>, root: OrderId) -> Option<
     Some(result)
 }
 
-fn cache_lookup(cache: &[(OrderId, Particle)], id: OrderId) -> Option<Particle> {
+fn cache_lookup(cache: &[(Order, Particle)], id: Order) -> Option<Particle> {
     cache
         .binary_search_by_key(&id, |&(n, _)| n)
         .ok()
@@ -364,17 +364,17 @@ pub fn poly_content_id(poly: &cyb_lens_core::MultilinearPoly<Goldilocks>) -> Par
 /// The jet 18 (poly_eval) reads this structure to reconstruct the polynomial.
 #[cfg(feature = "brakedown")]
 pub fn encode_poly<const N: usize>(
-    order: &mut Order<N>,
+    reduction: &mut Reduction<N>,
     poly: &cyb_lens_core::MultilinearPoly<Goldilocks>,
-) -> Option<OrderId> {
+) -> Option<Order> {
     let evals = &poly.evals;
     if evals.is_empty() {
         return None;
     }
-    let mut cur = order.atom(*evals.last().unwrap())?;
+    let mut cur = reduction.atom(*evals.last().unwrap())?;
     for &eval in evals[..evals.len() - 1].iter().rev() {
-        let atom = order.atom(eval)?;
-        cur = order.pair(atom, cur)?;
+        let atom = reduction.atom(eval)?;
+        cur = reduction.pair(atom, cur)?;
     }
     Some(cur)
 }
@@ -384,7 +384,7 @@ pub fn encode_poly<const N: usize>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::data::Order;
+    use crate::data::Reduction;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
@@ -439,20 +439,20 @@ mod tests {
     /// the wire particle equals the in-order hash-cons key — ONE scheme.
     #[test]
     fn particle_id_matches_order_hash() {
-        let mut order = Order::<1024>::new();
-        let id = order.atom(g(7)).unwrap();
-        let from_order = particle_id(&order, id).unwrap();
+        let mut reduction = Reduction::<1024>::new();
+        let id = reduction.atom(g(7)).unwrap();
+        let from_order = particle_id(&reduction, id).unwrap();
         let from_bytes = particle_of(&encode_atom(g(7))).unwrap();
         assert_eq!(from_order, from_bytes);
     }
 
     #[test]
     fn content_id_pair_matches_recompute() {
-        let mut order = Order::<1024>::new();
-        let a = order.atom(g(1)).unwrap();
-        let b = order.atom(g(2)).unwrap();
-        let c = order.pair(a, b).unwrap();
-        let pid = particle_id(&order, c).unwrap();
+        let mut reduction = Reduction::<1024>::new();
+        let a = reduction.atom(g(1)).unwrap();
+        let b = reduction.atom(g(2)).unwrap();
+        let c = reduction.pair(a, b).unwrap();
+        let pid = particle_id(&reduction, c).unwrap();
         let left_id  = particle_of(&encode_atom(g(1))).unwrap();
         let right_id = particle_of(&encode_atom(g(2))).unwrap();
         assert_eq!(pid, particle_of(&encode_pair(&left_id, &right_id)).unwrap());
@@ -460,11 +460,11 @@ mod tests {
 
     #[test]
     fn encode_tree_topological_order() {
-        let mut order = Order::<1024>::new();
-        let a = order.atom(g(10)).unwrap();
-        let b = order.atom(g(20)).unwrap();
-        let c = order.pair(a, b).unwrap();
-        let tree = encode_tree(&order, c).unwrap();
+        let mut reduction = Reduction::<1024>::new();
+        let a = reduction.atom(g(10)).unwrap();
+        let b = reduction.atom(g(20)).unwrap();
+        let c = reduction.pair(a, b).unwrap();
+        let tree = encode_tree(&reduction, c).unwrap();
         // children must appear before the pair
         assert_eq!(tree.len(), 3);
         let pair_entry = tree.last().unwrap();
@@ -473,18 +473,18 @@ mod tests {
 
     #[test]
     fn encode_tree_shared_child_deduplication() {
-        let mut order = Order::<1024>::new();
-        let a = order.atom(g(99)).unwrap();
-        let c = order.pair(a, a).unwrap();  // shared child
-        let tree = encode_tree(&order, c).unwrap();
+        let mut reduction = Reduction::<1024>::new();
+        let a = reduction.atom(g(99)).unwrap();
+        let c = reduction.pair(a, a).unwrap();  // shared child
+        let tree = encode_tree(&reduction, c).unwrap();
         assert_eq!(tree.len(), 2);  // atom appears once, pair appears once
     }
 
     #[test]
     fn wire_push_roundtrip() {
-        let mut order = Order::<1024>::new();
-        let id = order.atom(g(5)).unwrap();
-        let tree = encode_tree(&order, id).unwrap();
+        let mut reduction = Reduction::<1024>::new();
+        let id = reduction.atom(g(5)).unwrap();
+        let tree = encode_tree(&reduction, id).unwrap();
         let msg_bytes = write_push(&tree).unwrap();
         match parse_message(&msg_bytes).unwrap() {
             WireMessage::Push(entries) => {
@@ -497,11 +497,11 @@ mod tests {
 
     #[test]
     fn wire_pair_roundtrip() {
-        let mut order = Order::<1024>::new();
-        let a = order.atom(g(3)).unwrap();
-        let b = order.atom(g(4)).unwrap();
-        let c = order.pair(a, b).unwrap();
-        let tree = encode_tree(&order, c).unwrap();
+        let mut reduction = Reduction::<1024>::new();
+        let a = reduction.atom(g(3)).unwrap();
+        let b = reduction.atom(g(4)).unwrap();
+        let c = reduction.pair(a, b).unwrap();
+        let tree = encode_tree(&reduction, c).unwrap();
         let msg_bytes = write_push(&tree).unwrap();
         match parse_message(&msg_bytes).unwrap() {
             WireMessage::Push(entries) => {

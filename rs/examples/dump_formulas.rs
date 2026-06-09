@@ -11,7 +11,7 @@
 //! Output one block per formula: === <name> === followed by the bracket text.
 //! Redirect to generate the canonical .nox files in jets/.
 
-use nox::data::{Order, OrderId, Data};
+use nox::data::{Reduction, Order, Data};
 use nox::jets::formulas::{
     build_poly_eval_formula,
     build_merkle_verify_formula,
@@ -23,41 +23,41 @@ use nox::jets::formulas::{
 
 const N: usize = 1 << 14; // 16 K nodes — enough for all six formulas
 
-fn print_data(order: &Order<N>, id: OrderId) -> String {
-    match order.get(id).map(|e| e.inner) {
+fn print_data(reduction: &Reduction<N>, id: Order) -> String {
+    match reduction.get(id).map(|e| e.inner) {
         Some(Data::Atom { value, .. }) => value.as_u64().to_string(),
         Some(Data::Pair { left, right }) => {
-            format!("[{} {}]", print_data(order, left), print_data(order, right))
+            format!("[{} {}]", print_data(reduction, left), print_data(reduction, right))
         }
         None => "<invalid>".to_string(),
     }
 }
 
-fn dump(order: &Order<N>, name: &str, formula: Option<OrderId>) {
+fn dump(reduction: &Reduction<N>, name: &str, formula: Option<Order>) {
     match formula {
         Some(id) => {
             println!("=== {} ===", name);
-            println!("{}", print_data(order, id));
+            println!("{}", print_data(reduction, id));
             println!();
         }
-        None => eprintln!("error: {} formula build failed (order full?)", name),
+        None => eprintln!("error: {} formula build failed (reduction full?)", name),
     }
 }
 
 fn main() {
-    let mut order = Order::<N>::new();
+    let mut reduction = Reduction::<N>::new();
 
-    let poly_eval     = build_poly_eval_formula(&mut order);
-    let merkle_verify = build_merkle_verify_formula(&mut order);
-    let fri_fold      = build_fri_fold_formula(&mut order);
-    let ntt           = build_ntt_formula(&mut order);
-    let cyberlink     = build_cyberlink_formula(&mut order);
-    let decider       = build_decider_formula(&mut order);
+    let poly_eval     = build_poly_eval_formula(&mut reduction);
+    let merkle_verify = build_merkle_verify_formula(&mut reduction);
+    let fri_fold      = build_fri_fold_formula(&mut reduction);
+    let ntt           = build_ntt_formula(&mut reduction);
+    let cyberlink     = build_cyberlink_formula(&mut reduction);
+    let decider       = build_decider_formula(&mut reduction);
 
-    dump(&order, "poly_eval",     poly_eval);
-    dump(&order, "merkle_verify", merkle_verify);
-    dump(&order, "fri_fold",      fri_fold);
-    dump(&order, "ntt",           ntt);
-    dump(&order, "cyberlink",     cyberlink);
-    dump(&order, "decider",       decider);
+    dump(&reduction, "poly_eval",     poly_eval);
+    dump(&reduction, "merkle_verify", merkle_verify);
+    dump(&reduction, "fri_fold",      fri_fold);
+    dump(&reduction, "ntt",           ntt);
+    dump(&reduction, "cyberlink",     cyberlink);
+    dump(&reduction, "decider",       decider);
 }

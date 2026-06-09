@@ -497,7 +497,7 @@ transition constraints (rows 1..23):
     S-box on state[0] (degree 2 via y*state[0] = 1), matmul_internal
 
 init constraint (row 0): state initialized from rate input + initial MDS-light
-final constraint (squeeze): r3 = order.hash_data(state[0..4])
+final constraint (squeeze): r3 = reduction.hash_data(state[0..4])
 budget: r9 = r8 - 25 on squeeze row only.
 note: current implementation: single summary row; multi-row round-progression trace
       (25 rows with full state) is deferred to step-level hemera API integration.
@@ -629,7 +629,7 @@ when status = 2 (error):
     0 = type error    — wrong tag for operation
     1 = axis error    — axis navigation on atom
     2 = inv zero      — inversion of zero
-    3 = unavailable   — resource exhausted (order full, provider returned nothing)
+    3 = unavailable   — resource exhausted (reduction full, provider returned nothing)
     4 = malformed     — formula structure invalid or depth limit exceeded
     5 = call rejected — call pattern: check formula returned non-zero or error
   r3 = 0 (no result particle)

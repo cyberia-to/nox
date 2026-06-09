@@ -5,7 +5,7 @@
 //! compose (tag 2) or call (tag 16) at some depth — patterns where the
 //! continuation cost depends on runtime values.
 //!
-//! Cached on [`crate::data::order::DataEntry`] at construction time so that
+//! Cached on [`crate::data::reduction::DataEntry`] at construction time so that
 //! the parallel-scheduling decision `bound(child) ≤ budget?` is O(1) at
 //! reduce time, independent of formula depth.
 
@@ -63,7 +63,7 @@ impl Cost {
 }
 
 /// Per-pattern static dispatch cost — must mirror `reduce::COSTS`.
-/// Used by `Order::pair` to compute cached bounds at construction time.
+/// Used by `Reduction::pair` to compute cached bounds at construction time.
 pub(crate) const PATTERN_COSTS: [u64; 18] = [
     1,   // 0  axis
     1,   // 1  quote

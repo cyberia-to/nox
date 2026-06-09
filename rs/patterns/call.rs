@@ -5,7 +5,7 @@
 //! step 4: return witness
 
 use nebu::Goldilocks;
-use crate::data::{Order, OrderId};
+use crate::data::{Reduction, Order};
 use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_unary, evaluate};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
@@ -13,27 +13,27 @@ use crate::data::NIL;
 use crate::jets::registry::JetRegistry;
 
 pub fn call_witness<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
     calls: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (tag_formula, check_formula) = match pair_children(order, body) {
+    let (tag_formula, check_formula) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
     // Initial phase: tag is statically bounded — partitioned eval.
-    let (tag_result, budget) = match evaluate_unary(order, object, tag_formula, budget, calls, tracer, depth, registry) {
+    let (tag_result, budget) = match evaluate_unary(reduction, object, tag_formula, budget, calls, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
-    let tag_value = match order.atom_value(tag_result) {
+    let tag_value = match reduction.atom_value(tag_result) {
         Some(v) => v,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
-    let witness = match calls.provide(order, tag_value, object) {
+    let witness = match calls.provide(reduction, tag_value, object) {
         Some(w) => w,
         None => return Outcome::Halt(budget),
     };
-    let witness_object = match order.pair(witness, object) {
+    let witness_object = match reduction.pair(witness, object) {
         Some(c) => c,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
@@ -43,11 +43,11 @@ pub fn call_witness<const N: usize, T: Tracer>(
     // a Malformed/TypeError/Unavailable in check_f is a bug in check_f
     // itself, NOT a witness rejection. only a finished check returning
     // non-zero counts as CallRejected (handled below).
-    let (check_result, budget) = match evaluate(order, witness_object, check_formula, budget, calls, tracer, depth, registry) {
+    let (check_result, budget) = match evaluate(reduction, witness_object, check_formula, budget, calls, tracer, depth, registry) {
         Ok(v) => v,
         Err(o) => return o,
     };
-    match order.atom_value(check_result) {
+    match reduction.atom_value(check_result) {
         Some(v) if v == Goldilocks::ZERO => {
             row.r[4] = tag_value.as_u64();
             row.r[5] = witness as u64;
@@ -68,14 +68,14 @@ mod tests {
     use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::{CallProvider, LookProvider, NullCalls};
     use crate::trace::NoTrace;
-    use crate::data::{Order, OrderId};
+    use crate::data::{Reduction, Order};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
     #[test]
     fn call_null_provider_halts() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         // formula = [16 [[1 0] [1 [0 1]]]]
         // tag = quote(0), check = quote(identity = axis(1))
@@ -101,13 +101,13 @@ mod tests {
             fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
         }
         impl<const N: usize> CallProvider<N> for BadWitness {
-            fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
+            fn provide(&self, reduction: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
                 // provide witness = 99, but check expects 0
-                Some(order.atom(g(99)).unwrap())
+                Some(reduction.atom(g(99)).unwrap())
             }
         }
 
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         // formula = [16 [[1 0] [1 99]]]
         // tag=quote(0), check=quote(99) — check returns 99 ≠ 0 → CallRejected
@@ -134,12 +134,12 @@ mod tests {
             fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
         }
         impl<const N: usize> CallProvider<N> for ZeroWitness {
-            fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
-                Some(order.atom(g(0)).unwrap())
+            fn provide(&self, reduction: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
+                Some(reduction.atom(g(0)).unwrap())
             }
         }
 
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         // formula = [16 [[1 0] [1 0]]] — tag=quote(0), check=quote(0) (returns 0 → accepted)
         let t16 = ar.atom(g(16)).unwrap();
@@ -159,7 +159,7 @@ mod tests {
     }
 
     /// Provider injects witness=42, check formula `[1 0]` returns 0.
-    /// Expected: Outcome::Ok with result OrderId equal to the injected witness.
+    /// Expected: Outcome::Ok with result Order equal to the injected witness.
     #[test]
     fn call_accepts_valid_witness() {
         struct GoodWitness;
@@ -167,12 +167,12 @@ mod tests {
             fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
         }
         impl<const N: usize> CallProvider<N> for GoodWitness {
-            fn provide(&self, order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
-                Some(order.atom(g(42)).unwrap())
+            fn provide(&self, reduction: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
+                Some(reduction.atom(g(42)).unwrap())
             }
         }
 
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         // formula = [16 [[1 0] [1 0]]]  — tag=quote(0), check=quote(0) (always passes)
         let t16 = ar.atom(g(16)).unwrap();

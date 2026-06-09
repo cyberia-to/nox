@@ -74,5 +74,5 @@ axis on an atom (except 0 and 1) produces ⊥_error.
 | page | scope |
 |------|-------|
 | inner.md | atom, pair, polynomial representation |
-| order.md | order context, memory, bounds, structural sharing, lifecycle |
+| reduction.md | reduction context, memory, bounds, structural sharing, lifecycle |
 | hash.md | structural hash, identity |

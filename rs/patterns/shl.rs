@@ -13,7 +13,7 @@
 //! zheng constraints: r10/r11/r12 are bits; sum 2^k * r10 = a; sum 2^k * r12 = c;
 //! r12 = r11 per row; r11 ties to r10 of row (k - n).
 
-use crate::data::{Order, OrderId};
+use crate::data::{Reduction, Order};
 use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary_word, WORD_MASK};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
@@ -23,19 +23,19 @@ use nebu::Goldilocks;
 const SHIFT_OUT_OF_RANGE: u64 = 32;
 
 pub fn shl<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (af, nf) = match pair_children(order, body) {
+    let (af, nf) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (a, n, budget) = match evaluate_binary_word(order, object, af, nf, budget, hints, tracer, depth, registry) {
+    let (a, n, budget) = match evaluate_binary_word(reduction, object, af, nf, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     let c = if n >= 32 { 0 } else { (a << n) & WORD_MASK };
-    let result = match order.atom(Goldilocks::new(c)) {
+    let result = match reduction.atom(Goldilocks::new(c)) {
         Some(r) => r,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
@@ -77,12 +77,12 @@ mod tests {
     use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, VecTrace};
-    use crate::data::{Order};
+    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn make_shl<const N: usize>(ar: &mut Order<N>, v: u64, sh: u64) -> crate::data::OrderId {
+    fn make_shl<const N: usize>(ar: &mut Reduction<N>, v: u64, sh: u64) -> crate::data::Order {
         let t = ar.atom(g(14)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let vv = ar.atom(g(v)).unwrap();
@@ -95,7 +95,7 @@ mod tests {
 
     #[test]
     fn shl_basic() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let formula = make_shl(&mut ar, 1, 3);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn shl_large_shifts_clamp_to_zero() {
         for sh in [32u64, 33, 63, 64, u32::MAX as u64] {
-            let mut ar = Order::<1024>::new();
+            let mut ar = Reduction::<1024>::new();
             let obj = ar.atom(g(0)).unwrap();
             let formula = make_shl(&mut ar, 1, sh);
             match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
@@ -122,7 +122,7 @@ mod tests {
     #[test]
     fn shl_overflow_clamps_to_zero() {
         for sh in [32u64, 33, 63, 64, u32::MAX as u64] {
-            let mut ar = Order::<1024>::new();
+            let mut ar = Reduction::<1024>::new();
             let obj = ar.atom(g(0)).unwrap();
             let formula = make_shl(&mut ar, 1, sh);
             match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
@@ -135,7 +135,7 @@ mod tests {
 
     #[test]
     fn shl_masks_to_32_bits() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let formula = make_shl(&mut ar, 0xFFFF_FFFF, 1);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
@@ -146,7 +146,7 @@ mod tests {
 
     #[test]
     fn shl_emits_32_rows() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let formula = make_shl(&mut ar, 0xDEADBEEF, 4);
         let mut tr = VecTrace::default();
@@ -157,7 +157,7 @@ mod tests {
 
     #[test]
     fn shl_bit_witnesses_correct() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let a = 0xDEAD_BEEFu64;
         let n_shift = 4u64;

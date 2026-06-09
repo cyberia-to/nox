@@ -22,35 +22,35 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 use nebu::Goldilocks;
-use crate::data::{Order, OrderId, Data};
+use crate::data::{Reduction, Order, Data};
 use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
 pub fn ntt_jet<const N: usize>(
-    order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
     _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [[n | formula] | [values_tree | omega]]
-    let (lhs, rhs) = match pair_children(order, object) {
+    let (lhs, rhs) = match pair_children(reduction, object) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (n_id, _formula_id) = match pair_children(order, lhs) {
+    let (n_id, _formula_id) = match pair_children(reduction, lhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (tree_id, omega_id) = match pair_children(order, rhs) {
+    let (tree_id, omega_id) = match pair_children(reduction, rhs) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
 
-    let n = match order.atom_value(n_id) {
+    let n = match reduction.atom_value(n_id) {
         Some(v) => v.as_u64() as usize,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
-    let omega = match order.atom_value(omega_id) {
+    let omega = match reduction.atom_value(omega_id) {
         Some(v) => v,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
@@ -66,7 +66,7 @@ pub fn ntt_jet<const N: usize>(
 
     // Flatten the balanced binary tree into a Vec.
     let mut vals: Vec<Goldilocks> = Vec::with_capacity(size);
-    if !flatten_tree(order, tree_id, &mut vals) {
+    if !flatten_tree(reduction, tree_id, &mut vals) {
         return Outcome::Error(ErrorKind::TypeError);
     }
     if vals.len() != size {
@@ -78,7 +78,7 @@ pub fn ntt_jet<const N: usize>(
     ntt_dit(&mut vals, omega);
 
     // Write result back as a balanced binary tree into the order.
-    let result_tree = match build_tree(order, &vals) {
+    let result_tree = match build_tree(reduction, &vals) {
         Some(id) => id,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
@@ -144,30 +144,30 @@ fn bit_reverse(mut x: usize, bits: usize) -> usize {
     result
 }
 
-fn flatten_tree<const N: usize>(order: &Order<N>, id: OrderId, out: &mut Vec<Goldilocks>) -> bool {
-    let inner = match order.get(id) {
+fn flatten_tree<const N: usize>(reduction: &Reduction<N>, id: Order, out: &mut Vec<Goldilocks>) -> bool {
+    let inner = match reduction.get(id) {
         Some(e) => e.inner,
         None => return false,
     };
     match inner {
-        Data::Atom { .. } => match order.atom_value(id) {
+        Data::Atom { .. } => match reduction.atom_value(id) {
             Some(v) => { out.push(v); true }
             None => false,
         },
         Data::Pair { left, right } => {
-            flatten_tree(order, left, out) && flatten_tree(order, right, out)
+            flatten_tree(reduction, left, out) && flatten_tree(reduction, right, out)
         }
     }
 }
 
-fn build_tree<const N: usize>(order: &mut Order<N>, vals: &[Goldilocks]) -> Option<OrderId> {
+fn build_tree<const N: usize>(reduction: &mut Reduction<N>, vals: &[Goldilocks]) -> Option<Order> {
     if vals.len() == 1 {
-        return order.atom(vals[0]);
+        return reduction.atom(vals[0]);
     }
     let mid = vals.len() / 2;
-    let left  = build_tree(order, &vals[..mid])?;
-    let right = build_tree(order, &vals[mid..])?;
-    order.pair(left, right)
+    let left  = build_tree(reduction, &vals[..mid])?;
+    let right = build_tree(reduction, &vals[mid..])?;
+    reduction.pair(left, right)
 }
 
 #[cfg(test)]
@@ -176,16 +176,16 @@ mod tests {
     use crate::reduce::Outcome;
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::data::{Order};
+    use crate::data::{Reduction};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn make_tree<const N: usize>(ar: &mut Order<N>, vals: &[Goldilocks]) -> OrderId {
+    fn make_tree<const N: usize>(ar: &mut Reduction<N>, vals: &[Goldilocks]) -> Order {
         build_tree(ar, vals).unwrap()
     }
 
     fn run_ntt<const M: usize>(
-        ar: &mut Order<M>, vals: &[Goldilocks], omega: Goldilocks,
+        ar: &mut Reduction<M>, vals: &[Goldilocks], omega: Goldilocks,
     ) -> Outcome {
         let n_val = vals.len().trailing_zeros() as u64;
         let n_id  = ar.atom(g(n_val)).unwrap();
@@ -202,7 +202,7 @@ mod tests {
 
     #[test]
     fn ntt_size_one_is_identity() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         match run_ntt(&mut ar, &[g(42)], g(1)) {
             Outcome::Ok(r, _) => {
                 // Single element: the tree is the element itself.
@@ -215,7 +215,7 @@ mod tests {
     #[test]
     fn ntt_size_two_butterfly() {
         // 2-point NTT with omega=1: [a,b] → [a+b, a-b] (no twiddle)
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let a = g(3);
         let b = g(5);
         let omega = g(1); // omega^1 = 1
@@ -239,7 +239,7 @@ mod tests {
 
     #[test]
     fn budget_exhaustion_halts() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         // n=2, size=4, cost=2*4=8; budget=5 → Halt
         match run_ntt(&mut ar, &[g(1), g(2), g(3), g(4)], g(1)) {
             // budget=1_000_000 → should be Ok (sufficient)

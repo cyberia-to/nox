@@ -1,25 +1,25 @@
 //! pattern 2: compose — evaluate two sub-formulas, apply second to first
 //! reduce(s, [2 [x y]], b) = reduce(reduce(s,x), reduce(s,y), b')
 
-use crate::data::{Order, OrderId};
+use crate::data::{Reduction, Order};
 use crate::reduce::{reduce_inner, Outcome, ErrorKind, pair_children, evaluate_binary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::jets::registry::JetRegistry;
 
 pub fn compose<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (a, b) = match pair_children(order, body) {
+    let (a, b) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
     // Initial phase: evaluate the two sub-formulas under the partition rule.
     // Both arms are statically bounded (their bounds may themselves contain
     // DYNAMIC markers, in which case evaluate_binary falls back to sequential).
-    let (obj, frm, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth, registry) {
+    let (obj, frm, budget) = match evaluate_binary(reduction, object, a, b, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     row.r[4] = obj as u64;
@@ -28,7 +28,7 @@ pub fn compose<const N: usize, T: Tracer>(
     row.r[7] = b as u64;
     // Continuation phase: reduce(obj, frm) is the dynamic-cost frontier.
     // Sequential semantics — frm is only known now (runtime value).
-    reduce_inner(order, obj, frm, budget, hints, tracer, depth + 1, registry)
+    reduce_inner(reduction, obj, frm, budget, hints, tracer, depth + 1, registry)
 }
 
 #[cfg(test)]
@@ -36,7 +36,7 @@ mod tests {
     use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
     use crate::trace::NoTrace;
-    use crate::data::{Order};
+    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
@@ -54,7 +54,7 @@ mod tests {
     /// step3: reduce(5, [0 1], budget) → 5 (axis identity)
     #[test]
     fn compose_chains_reductions() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(5)).unwrap();
 
         // [0 1] — axis identity formula

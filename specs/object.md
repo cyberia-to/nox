@@ -68,12 +68,12 @@ computation input).
 ## construction
 
 ```rust
-// pseudo-code: build an object in an Order
-fn make_object(order, l0, l1, l2, l3, rest) -> OrderId {
-    let inner     = order.pair(l2, l3);      // [l2 | l3]
-    let mid       = order.pair(l1, inner);   // [l1 | [l2 | l3]]
-    let root_pair = order.pair(l0, mid);     // [l0 | [l1 | [l2 | l3]]]
-    order.pair(root_pair, rest)              // [[l0 | [l1 | [l2 | l3]]] | rest]
+// pseudo-code: build an object in a Reduction
+fn make_object(reduction, l0, l1, l2, l3, rest) -> Order {
+    let inner     = reduction.pair(l2, l3);      // [l2 | l3]
+    let mid       = reduction.pair(l1, inner);   // [l1 | [l2 | l3]]
+    let root_pair = reduction.pair(l0, mid);     // [l0 | [l1 | [l2 | l3]]]
+    reduction.pair(root_pair, rest)              // [[l0 | [l1 | [l2 | l3]]] | rest]
 }
 ```
 

@@ -1,26 +1,26 @@
 //! pattern 3: cons — evaluate two sub-formulas, construct pair from results
 
-use crate::data::{Order, OrderId};
+use crate::data::{Reduction, Order};
 use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::jets::registry::JetRegistry;
 
 pub fn cons<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (a, b) = match pair_children(order, body) {
+    let (a, b) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (left, right, budget) = match evaluate_binary(order, object, a, b, budget, hints, tracer, depth, registry) {
+    let (left, right, budget) = match evaluate_binary(reduction, object, a, b, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     row.r[4] = left as u64;
     row.r[5] = right as u64;
-    match order.pair(left, right) {
+    match reduction.pair(left, right) {
         Some(c) => Outcome::Ok(c, budget),
         None => Outcome::Error(ErrorKind::Unavailable),
     }
@@ -31,7 +31,7 @@ mod tests {
     use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
     use crate::trace::NoTrace;
-    use crate::data::{Order};
+    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
@@ -40,7 +40,7 @@ mod tests {
     /// formula = [3 [[1 10] [1 20]]]
     #[test]
     fn cons_builds_pair() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
 
         let t1 = ar.atom(g(1)).unwrap();

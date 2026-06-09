@@ -7,7 +7,7 @@
 //!
 //! Every formula `t` has a structural upper bound `bound(t) ≥ actual_cost(t)`.
 //! The bound is computed once at data-construction time (see
-//! `Order::compute_pair_bound`) and cached on the `DataEntry`. Reduce-time
+//! `Reduction::compute_pair_bound`) and cached on the `DataEntry`. Reduce-time
 //! parallel-scheduling decisions look it up in O(1) — there is no recursive
 //! tree walk at reduce time.
 //!
@@ -25,7 +25,7 @@
 //! for the continuation phase (see `specs/reduction.md §parallel reduction`).
 
 pub use crate::data::Cost;
-use crate::data::{Order, OrderId};
+use crate::data::{Reduction, Order};
 
 /// Return the cached cost bound for a formula rooted at `root`.
 ///
@@ -33,28 +33,28 @@ use crate::data::{Order, OrderId};
 /// always return `Cost::Exact(0)`. Out-of-range order ids return
 /// `Cost::Exact(0)` (the reducer will charge `Malformed` later).
 #[inline]
-pub fn bound<const N: usize>(order: &Order<N>, root: OrderId) -> Cost {
-    order.get(root).map_or(Cost::Exact(0), |e| e.bound)
+pub fn bound<const N: usize>(reduction: &Reduction<N>, root: Order) -> Cost {
+    reduction.get(root).map_or(Cost::Exact(0), |e| e.bound)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::data::{Order};
+    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
     #[test]
     fn atom_has_zero_bound() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let a = ar.atom(g(42)).unwrap();
         assert_eq!(bound(&ar, a), Cost::Exact(0));
     }
 
     #[test]
     fn quote_has_bound_one() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let t1 = ar.atom(g(1)).unwrap();
         let v = ar.atom(g(42)).unwrap();
         let f = ar.pair(t1, v).unwrap();
@@ -63,7 +63,7 @@ mod tests {
 
     #[test]
     fn axis_has_bound_one() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let t0 = ar.atom(g(0)).unwrap();
         let addr = ar.atom(g(7)).unwrap();
         let f = ar.pair(t0, addr).unwrap();
@@ -73,7 +73,7 @@ mod tests {
     #[test]
     fn add_sums_subbounds() {
         // [5 [[1 3] [1 5]]] → 1 + 1 + 1 = 3
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let t5 = ar.atom(g(5)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let v3 = ar.atom(g(3)).unwrap();
@@ -87,7 +87,7 @@ mod tests {
 
     #[test]
     fn inv_costs_64_plus_inner() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let t8 = ar.atom(g(8)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let v = ar.atom(g(42)).unwrap();
@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn hash_costs_25_plus_inner() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let t15 = ar.atom(g(15)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let v = ar.atom(g(7)).unwrap();
@@ -109,7 +109,7 @@ mod tests {
 
     #[test]
     fn lt_costs_64_plus_subbounds() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let t10 = ar.atom(g(10)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let v3 = ar.atom(g(3)).unwrap();
@@ -123,7 +123,7 @@ mod tests {
 
     #[test]
     fn branch_takes_max_of_arms() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let t4 = ar.atom(g(4)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let t8 = ar.atom(g(8)).unwrap();
@@ -143,7 +143,7 @@ mod tests {
 
     #[test]
     fn compose_is_dynamic() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let t2 = ar.atom(g(2)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let a = ar.atom(g(10)).unwrap();
@@ -159,7 +159,7 @@ mod tests {
 
     #[test]
     fn call_is_dynamic() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let t16 = ar.atom(g(16)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let tag_v = ar.atom(g(0)).unwrap();
@@ -175,7 +175,7 @@ mod tests {
 
     #[test]
     fn dynamic_propagates_through_parents() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let t5 = ar.atom(g(5)).unwrap();
         let t2 = ar.atom(g(2)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
@@ -198,7 +198,7 @@ mod tests {
         // each pair construction is O(1) and the final bound lookup is O(1).
         // Without caching, this would be O(N²) at construction time and
         // O(N) per lookup.
-        let mut ar = Order::<8192>::new();
+        let mut ar = Reduction::<8192>::new();
         let t2 = ar.atom(g(2)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let zero = ar.atom(g(0)).unwrap();

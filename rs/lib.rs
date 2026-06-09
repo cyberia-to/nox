@@ -30,11 +30,11 @@ pub mod jets;
 #[cfg(feature = "brakedown")]
 pub mod brakedown_look;
 
-pub use data::{Order, OrderId, Digest, NIL};
+pub use data::{Reduction, Order, Digest, NIL};
 // Data and DataEntry are intentionally NOT re-exported. External callers that
 // need pattern-matching access can import them through `nox::data::{Data, DataEntry}`,
 // signaling reliance on internal representation. The default surface is the
-// safe accessors on Order (head/tail/atom_value/digest).
+// safe accessors on Reduction (head/tail/atom_value/digest).
 pub use reduce::{reduce, reduce_with_registry, Outcome, ErrorKind};
 pub use jets::registry::{JetRegistry, DigestKey, digest_key};
 pub use call::{CallProvider, NullCalls, LookProvider, NullLooks};

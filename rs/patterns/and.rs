@@ -3,7 +3,7 @@
 //! cost 32. emits 32 rows, one per bit. zheng constraint per row:
 //! c_k = a_k * b_k, with row-linking sum(2^k * a_k) = a etc.
 
-use crate::data::{Order, OrderId};
+use crate::data::{Reduction, Order};
 use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary_word, emit_bit_row, WORD_MASK};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
@@ -11,19 +11,19 @@ use crate::jets::registry::JetRegistry;
 use nebu::Goldilocks;
 
 pub fn and<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow, registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (af, bf) = match pair_children(order, body) {
+    let (af, bf) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (a, b, budget) = match evaluate_binary_word(order, object, af, bf, budget, hints, tracer, depth, registry) {
+    let (a, b, budget) = match evaluate_binary_word(reduction, object, af, bf, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     let c = (a & b) & WORD_MASK;
-    let result = match order.atom(Goldilocks::new(c)) {
+    let result = match reduction.atom(Goldilocks::new(c)) {
         Some(r) => r,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
@@ -43,12 +43,12 @@ mod tests {
     use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, VecTrace};
-    use crate::data::{Order};
+    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn make_and<const N: usize>(ar: &mut Order<N>, a: u64, b: u64) -> crate::data::OrderId {
+    fn make_and<const N: usize>(ar: &mut Reduction<N>, a: u64, b: u64) -> crate::data::Order {
         let t = ar.atom(g(12)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let va = ar.atom(g(a)).unwrap();
@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn and_basic() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let formula = make_and(&mut ar, 0b1100, 0b1010);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
@@ -72,7 +72,7 @@ mod tests {
 
     #[test]
     fn and_with_zero() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let formula = make_and(&mut ar, 0xFF, 0);
         match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
@@ -83,7 +83,7 @@ mod tests {
 
     #[test]
     fn and_emits_32_rows() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let formula = make_and(&mut ar, 0xDEADBEEF, 0xCAFEBABE);
         let mut tr = VecTrace::default();
@@ -94,7 +94,7 @@ mod tests {
 
     #[test]
     fn and_bit_witnesses_match_packed() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let a = 0xA5A5_A5A5u64;
         let b = 0xF0F0_F0F0u64;

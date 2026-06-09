@@ -24,7 +24,7 @@
 //! The formula hash uniquely identifies this jet; see jets/formulas.rs.
 
 use nebu::Goldilocks;
-use crate::data::{Order, OrderId};
+use crate::data::{Reduction, Order};
 use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
@@ -36,12 +36,12 @@ const DECIDER_COST: u64 = 825;
 const DECIDER_CALL_TAG: u64 = 0xDEC1_DEC1;
 
 pub fn decider_jet<const N: usize>(
-    order: &mut Order<N>, object: OrderId, _body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
     hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [proof | instance]
-    let (proof_id, instance_id) = match pair_children(order, object) {
+    let (proof_id, instance_id) = match pair_children(reduction, object) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
@@ -55,9 +55,9 @@ pub fn decider_jet<const N: usize>(
     row.r[5] = instance_id as u64;
 
     let tag = Goldilocks::new(DECIDER_CALL_TAG);
-    let result = match hints.provide(order, tag, object) {
+    let result = match hints.provide(reduction, tag, object) {
         Some(r) => r,
-        None => match order.atom(Goldilocks::ZERO) {
+        None => match reduction.atom(Goldilocks::ZERO) {
             Some(r) => r,
             None => return Outcome::Error(ErrorKind::Unavailable),
         },
@@ -70,13 +70,13 @@ mod tests {
     use super::*;
     use crate::call::NullCalls;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::data::{Order};
+    use crate::data::{Reduction};
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
     #[test]
     fn decider_with_null_calls_returns_zero() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let proof    = ar.atom(g(1)).unwrap();
         let instance = ar.atom(g(2)).unwrap();
         let obj      = ar.pair(proof, instance).unwrap();
@@ -93,7 +93,7 @@ mod tests {
 
     #[test]
     fn decider_exhausted_budget_halts() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let proof    = ar.atom(g(1)).unwrap();
         let instance = ar.atom(g(2)).unwrap();
         let obj      = ar.pair(proof, instance).unwrap();

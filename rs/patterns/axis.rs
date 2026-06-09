@@ -5,23 +5,23 @@
 //! axis(s, 2n+1) = tail(axis(s, n))
 
 use crate::call::CallProvider;
-use crate::data::{Order, OrderId, Data};
+use crate::data::{Reduction, Order, Data};
 use crate::reduce::{Outcome, ErrorKind};
 use crate::trace::TraceRow;
 
 pub fn axis<const N: usize>(
-    order: &mut Order<N>, object: OrderId, addr_ref: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, addr_ref: Order, budget: u64,
     hints: &dyn CallProvider<N>,
     row: &mut TraceRow,
 ) -> Outcome {
-    let addr = match order.atom_value(addr_ref) {
+    let addr = match reduction.atom_value(addr_ref) {
         Some(v) => v.as_u64(),
         None => return Outcome::Error(ErrorKind::Malformed),
     };
     // r4     = first field element of Lens commitment (0 when prover not active)
     // r5     = axis address (raw u64)
     // r6     = levels descended (depth of navigation)
-    // r7     = result OrderId
+    // r7     = result Order
     // r11-r14 = full 32-byte Lens commitment split into 4 u64s (little-endian)
     //
     // When hints.axis_commitment() is provided, r4 = r11 = commitment[0..8].
@@ -39,11 +39,11 @@ pub fn axis<const N: usize>(
     }
     match addr {
         0 => {
-            let digest = match order.digest(object) {
+            let digest = match reduction.digest(object) {
                 Some(d) => *d,
                 None => return Outcome::Error(ErrorKind::Unavailable),
             };
-            match order.hash_data(&digest) {
+            match reduction.hash_data(&digest) {
                 Some(r) => {
                     row.r[6] = 0;
                     row.r[7] = r as u64;
@@ -62,7 +62,7 @@ pub fn axis<const N: usize>(
             let mut node = object;
             let mut levels = 0u64;
             for i in (0..bits).rev() {
-                match order.get(node) {
+                match reduction.get(node) {
                     Some(e) => match e.inner {
                         Data::Pair { left, right } => {
                             node = if (addr >> i) & 1 == 1 { right } else { left };
@@ -86,20 +86,20 @@ mod tests {
     use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::NullCalls;
     use crate::trace::NoTrace;
-    use crate::data::{Order};
+    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
     fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
 
-    fn make_axis<const N: usize>(order: &mut Order<N>, n: u64) -> OrderId {
-        let tag = order.atom(g(0)).unwrap();
-        let addr = order.atom(g(n)).unwrap();
-        order.pair(tag, addr).unwrap()
+    fn make_axis<const N: usize>(reduction: &mut Reduction<N>, n: u64) -> Order {
+        let tag = reduction.atom(g(0)).unwrap();
+        let addr = reduction.atom(g(n)).unwrap();
+        reduction.pair(tag, addr).unwrap()
     }
 
     #[test]
     fn axis_head() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let a = ar.atom(g(10)).unwrap();
         let b = ar.atom(g(20)).unwrap();
         let s = ar.pair(a, b).unwrap();
@@ -112,7 +112,7 @@ mod tests {
 
     #[test]
     fn axis_tail() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let a = ar.atom(g(10)).unwrap();
         let b = ar.atom(g(20)).unwrap();
         let s = ar.pair(a, b).unwrap();
@@ -125,7 +125,7 @@ mod tests {
 
     #[test]
     fn axis_identity() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let s = ar.atom(g(42)).unwrap();
         let f = make_axis(&mut ar, 1);
         match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
@@ -136,7 +136,7 @@ mod tests {
 
     #[test]
     fn axis_zero_hash_introspection() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let s = ar.atom(g(42)).unwrap();
         let f = make_axis(&mut ar, 0);
         match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
@@ -152,7 +152,7 @@ mod tests {
     /// axis(s, 0) on a pair object also returns the pair's digest hashed.
     #[test]
     fn axis_zero_hash_on_pair() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let a = ar.atom(g(10)).unwrap();
         let b = ar.atom(g(20)).unwrap();
         let s = ar.pair(a, b).unwrap();
@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn axis_on_atom_errors() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let s = ar.atom(g(42)).unwrap();
         let f = make_axis(&mut ar, 2); // head of atom → error
         match reduce(&mut ar, s, f, 100, &NullCalls, &mut NoTrace) {
@@ -181,7 +181,7 @@ mod tests {
 
     #[test]
     fn axis_deep_navigation() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         // s = [[1, 2], [3, 4]]
         let a = ar.atom(g(1)).unwrap();
         let b = ar.atom(g(2)).unwrap();
@@ -200,7 +200,7 @@ mod tests {
 
     #[test]
     fn budget_zero_halts_immediately() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let s = ar.atom(g(42)).unwrap();
         let f = make_axis(&mut ar, 1);
         match reduce(&mut ar, s, f, 0, &NullCalls, &mut NoTrace) {

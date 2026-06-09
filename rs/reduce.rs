@@ -8,7 +8,7 @@
 //! every reduce() call emits one TraceRow via the Tracer
 
 use nebu::Goldilocks;
-use crate::data::{Order, OrderId, Data, NIL};
+use crate::data::{Reduction, Order, Data, NIL};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 use crate::patterns;
@@ -65,7 +65,7 @@ const MAX_DEPTH: u64 = 1000;
 
 #[derive(Debug)]
 pub enum Outcome {
-    Ok(OrderId, u64),
+    Ok(Order, u64),
     Halt(u64),
     Error(ErrorKind),
 }
@@ -88,23 +88,23 @@ fn cost(tag: u64) -> u64 {
 /// Public entry point — depth starts at 0, no jet registry (pure L1).
 /// Existing callers and all tests use this. Jets never fire on this path.
 pub fn reduce<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, formula: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, formula: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T,
 ) -> Outcome {
-    reduce_inner(order, object, formula, budget, hints, tracer, 0, &JetRegistry::empty())
+    reduce_inner(reduction, object, formula, budget, hints, tracer, 0, &JetRegistry::empty())
 }
 
 /// Entry point with jet registry. Use this in production to enable jet dispatch.
 pub fn reduce_with_registry<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, formula: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, formula: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T,
     registry: &JetRegistry<N>,
 ) -> Outcome {
-    reduce_inner(order, object, formula, budget, hints, tracer, 0, registry)
+    reduce_inner(reduction, object, formula, budget, hints, tracer, 0, registry)
 }
 
 pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, formula: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, formula: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     registry: &JetRegistry<N>,
 ) -> Outcome {
@@ -113,7 +113,7 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
         return Outcome::Error(ErrorKind::Malformed);
     }
 
-    let (tag_ref, body) = match order.get(formula) {
+    let (tag_ref, body) = match reduction.get(formula) {
         Some(e) => match e.inner {
             Data::Pair { left, right } => (left, right),
             Data::Atom { .. } => {
@@ -126,7 +126,7 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
             return Outcome::Error(ErrorKind::Malformed);
         }
     };
-    let tag = match order.atom_value(tag_ref) {
+    let tag = match reduction.atom_value(tag_ref) {
         Some(v) => v.as_u64(),
         None => {
             emit_error_row(tracer, object, formula, 0, budget, ErrorKind::Malformed);
@@ -143,11 +143,11 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
 
     // ── jet registry check ───────────────────────────────────────────────────
     // Fires before tag cost and before tag dispatch. Jets own all budget.
-    if let Some(fkey) = order.digest(formula).map(digest_key) {
+    if let Some(fkey) = reduction.digest(formula).map(digest_key) {
         let jet = registry.lookup_exact(&fkey)
-            .or_else(|| registry.lookup_template(order, formula));
+            .or_else(|| registry.lookup_template(reduction, formula));
         if let Some(jet_fn) = jet {
-            let outcome = jet_fn(order, object, body, budget_in, hints,
+            let outcome = jet_fn(reduction, object, body, budget_in, hints,
                 tracer as &mut dyn Tracer, depth, &mut row);
             row.r[3] = match &outcome { Outcome::Ok(r, _) => *r as u64, _ => NIL as u64 };
             row.r[9] = match &outcome {
@@ -176,24 +176,24 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
     );
 
     let outcome = match tag {
-        0  => patterns::axis::axis(order, object, body, budget, hints, &mut row),
+        0  => patterns::axis::axis(reduction, object, body, budget, hints, &mut row),
         1  => patterns::quote::quote(body, budget, &mut row),
-        2  => patterns::compose::compose(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        3  => patterns::cons::cons(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        4  => patterns::branch::branch(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        5  => patterns::add::add(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        6  => patterns::sub::sub(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        7  => patterns::mul::mul(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        8  => patterns::inv::inv(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        9  => patterns::eq::eq(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        10 => patterns::lt::lt(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        11 => patterns::xor::xor(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        12 => patterns::and::and(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        13 => patterns::not::not(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        14 => patterns::shl::shl(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        15 => patterns::hash::hash(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        16 => patterns::call::call_witness(order, object, body, budget, hints, tracer, depth, &mut row, registry),
-        17 => patterns::look::look(order, object, body, budget, hints, tracer, depth, &mut row, registry),
+        2  => patterns::compose::compose(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        3  => patterns::cons::cons(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        4  => patterns::branch::branch(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        5  => patterns::add::add(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        6  => patterns::sub::sub(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        7  => patterns::mul::mul(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        8  => patterns::inv::inv(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        9  => patterns::eq::eq(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        10 => patterns::lt::lt(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        11 => patterns::xor::xor(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        12 => patterns::and::and(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        13 => patterns::not::not(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        14 => patterns::shl::shl(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        15 => patterns::hash::hash(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        16 => patterns::call::call_witness(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
+        17 => patterns::look::look(reduction, object, body, budget, hints, tracer, depth, &mut row, registry),
         _  => Outcome::Error(ErrorKind::Malformed),
     };
 
@@ -213,7 +213,7 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
 /// dispatch). Preserves the "every reduce() call emits at least one row"
 /// invariant so the verifier can bind the halted step to a budget state.
 fn emit_error_row<T: Tracer>(
-    tracer: &mut T, object: OrderId, formula: OrderId,
+    tracer: &mut T, object: Order, formula: Order,
     tag: u64, budget_in: u64, kind: ErrorKind,
 ) {
     let mut row = TraceRow::default();
@@ -229,7 +229,7 @@ fn emit_error_row<T: Tracer>(
 
 /// Emit a halt row for budget exhaustion. Status: budget_in == budget_out.
 fn emit_halt_row<T: Tracer>(
-    tracer: &mut T, object: OrderId, formula: OrderId, tag: u64, budget_in: u64,
+    tracer: &mut T, object: Order, formula: Order, tag: u64, budget_in: u64,
 ) {
     let mut row = TraceRow::default();
     row.r[0] = tag;
@@ -241,26 +241,26 @@ fn emit_halt_row<T: Tracer>(
     tracer.record(row);
 }
 
-pub(crate) fn pair_children<const N: usize>(order: &Order<N>, r: OrderId) -> Option<(OrderId, OrderId)> {
-    match order.get(r)?.inner {
+pub(crate) fn pair_children<const N: usize>(reduction: &Reduction<N>, r: Order) -> Option<(Order, Order)> {
+    match reduction.get(r)?.inner {
         Data::Pair { left, right } => Some((left, right)),
         _ => None,
     }
 }
 
 pub(crate) fn evaluate<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, formula: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, formula: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     registry: &JetRegistry<N>,
-) -> core::result::Result<(OrderId, u64), Outcome> {
-    match reduce_inner(order, object, formula, budget, hints, tracer, depth + 1, registry) {
+) -> core::result::Result<(Order, u64), Outcome> {
+    match reduce_inner(reduction, object, formula, budget, hints, tracer, depth + 1, registry) {
         Outcome::Ok(r, b) => Ok((r, b)),
         other => Err(other),
     }
 }
 
-pub(crate) fn make_field<const N: usize>(order: &mut Order<N>, v: Goldilocks, budget: u64) -> Outcome {
-    match order.atom(v) {
+pub(crate) fn make_field<const N: usize>(reduction: &mut Reduction<N>, v: Goldilocks, budget: u64) -> Outcome {
+    match reduction.atom(v) {
         Some(r) => Outcome::Ok(r, budget),
         None => Outcome::Error(ErrorKind::Unavailable),
     }
@@ -285,13 +285,13 @@ pub(crate) fn make_field<const N: usize>(order: &mut Order<N>, v: Goldilocks, bu
 /// Evaluate two sub-formulas under the parallel-canonical partition rule.
 /// Returns (val_a, val_b, remaining_budget_for_parent).
 pub(crate) fn evaluate_binary<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId,
-    a: OrderId, b: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order,
+    a: Order, b: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     registry: &JetRegistry<N>,
-) -> core::result::Result<(OrderId, OrderId, u64), Outcome> {
-    let ba_cost = crate::bound::bound(order, a);
-    let bb_cost = crate::bound::bound(order, b);
+) -> core::result::Result<(Order, Order, u64), Outcome> {
+    let ba_cost = crate::bound::bound(reduction, a);
+    let bb_cost = crate::bound::bound(reduction, b);
     let ba = ba_cost.value();
     let bb = bb_cost.value();
     // Partition only when both sub-formulas have static bounds AND the sum
@@ -307,19 +307,19 @@ pub(crate) fn evaluate_binary<const N: usize, T: Tracer>(
             // par_binary uses an empty registry in sub-orders (correct: jets
             // fire at the top-level reduce_inner; sub-evaluations use L1).
             return crate::parallel::par_binary(
-                order, object, a, b, ba, bb, budget, hints, tracer, depth,
+                reduction, object, a, b, ba, bb, budget, hints, tracer, depth,
             );
         }
         #[allow(unreachable_code)]
         {
-            let (va, ra) = evaluate(order, object, a, ba, hints, tracer, depth, registry)?;
-            let (vb, rb) = evaluate(order, object, b, bb, hints, tracer, depth, registry)?;
+            let (va, ra) = evaluate(reduction, object, a, ba, hints, tracer, depth, registry)?;
+            let (vb, rb) = evaluate(reduction, object, b, bb, hints, tracer, depth, registry)?;
             let used = (ba - ra).saturating_add(bb - rb);
             Ok((va, vb, budget - used))
         }
     } else {
-        let (va, b1) = evaluate(order, object, a, budget, hints, tracer, depth, registry)?;
-        let (vb, b2) = evaluate(order, object, b, b1, hints, tracer, depth, registry)?;
+        let (va, b1) = evaluate(reduction, object, a, budget, hints, tracer, depth, registry)?;
+        let (vb, b2) = evaluate(reduction, object, b, b1, hints, tracer, depth, registry)?;
         Ok((va, vb, b2))
     }
 }
@@ -327,35 +327,35 @@ pub(crate) fn evaluate_binary<const N: usize, T: Tracer>(
 /// Evaluate a single sub-formula under the partition rule.
 /// Returns (val, remaining_budget_for_parent).
 pub(crate) fn evaluate_unary<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, a: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, a: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     registry: &JetRegistry<N>,
-) -> core::result::Result<(OrderId, u64), Outcome> {
-    let ba_cost = crate::bound::bound(order, a);
+) -> core::result::Result<(Order, u64), Outcome> {
+    let ba_cost = crate::bound::bound(reduction, a);
     let ba = ba_cost.value();
     let can_partition = !ba_cost.is_dynamic() && ba <= budget;
 
     if can_partition {
-        let (va, ra) = evaluate(order, object, a, ba, hints, tracer, depth, registry)?;
+        let (va, ra) = evaluate(reduction, object, a, ba, hints, tracer, depth, registry)?;
         Ok((va, budget - (ba - ra)))
     } else {
-        evaluate(order, object, a, budget, hints, tracer, depth, registry)
+        evaluate(reduction, object, a, budget, hints, tracer, depth, registry)
     }
 }
 
 /// Evaluate two field-typed sub-formulas with partitioning.
 pub(crate) fn evaluate_binary_field<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId,
-    a: OrderId, b: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order,
+    a: Order, b: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     registry: &JetRegistry<N>,
 ) -> core::result::Result<(Goldilocks, Goldilocks, u64), Outcome> {
-    let (ra, rb, remaining) = evaluate_binary(order, object, a, b, budget, hints, tracer, depth, registry)?;
-    let va = match order.atom_value(ra) {
+    let (ra, rb, remaining) = evaluate_binary(reduction, object, a, b, budget, hints, tracer, depth, registry)?;
+    let va = match reduction.atom_value(ra) {
         Some(v) => v,
         None => return Err(Outcome::Error(ErrorKind::TypeError)),
     };
-    let vb = match order.atom_value(rb) {
+    let vb = match reduction.atom_value(rb) {
         Some(v) => v,
         None => return Err(Outcome::Error(ErrorKind::TypeError)),
     };
@@ -364,17 +364,17 @@ pub(crate) fn evaluate_binary_field<const N: usize, T: Tracer>(
 
 /// Evaluate two word-typed sub-formulas with partitioning.
 pub(crate) fn evaluate_binary_word<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId,
-    a: OrderId, b: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order,
+    a: Order, b: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     registry: &JetRegistry<N>,
 ) -> core::result::Result<(u64, u64, u64), Outcome> {
-    let (ra, rb, remaining) = evaluate_binary(order, object, a, b, budget, hints, tracer, depth, registry)?;
-    let va = match order.atom_value(ra) {
+    let (ra, rb, remaining) = evaluate_binary(reduction, object, a, b, budget, hints, tracer, depth, registry)?;
+    let va = match reduction.atom_value(ra) {
         Some(v) if v.as_u64() < (1u64 << 32) => v.as_u64(),
         _ => return Err(Outcome::Error(ErrorKind::TypeError)),
     };
-    let vb = match order.atom_value(rb) {
+    let vb = match reduction.atom_value(rb) {
         Some(v) if v.as_u64() < (1u64 << 32) => v.as_u64(),
         _ => return Err(Outcome::Error(ErrorKind::TypeError)),
     };
@@ -383,12 +383,12 @@ pub(crate) fn evaluate_binary_word<const N: usize, T: Tracer>(
 
 /// Evaluate a single field-typed sub-formula with partitioning.
 pub(crate) fn evaluate_unary_field<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, a: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, a: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     registry: &JetRegistry<N>,
 ) -> core::result::Result<(Goldilocks, u64), Outcome> {
-    let (ra, remaining) = evaluate_unary(order, object, a, budget, hints, tracer, depth, registry)?;
-    match order.atom_value(ra) {
+    let (ra, remaining) = evaluate_unary(reduction, object, a, budget, hints, tracer, depth, registry)?;
+    match reduction.atom_value(ra) {
         Some(v) => Ok((v, remaining)),
         None => Err(Outcome::Error(ErrorKind::TypeError)),
     }
@@ -396,36 +396,36 @@ pub(crate) fn evaluate_unary_field<const N: usize, T: Tracer>(
 
 /// Evaluate a single word-typed sub-formula with partitioning.
 pub(crate) fn evaluate_unary_word<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, a: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, a: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     registry: &JetRegistry<N>,
 ) -> core::result::Result<(u64, u64), Outcome> {
-    let (ra, remaining) = evaluate_unary(order, object, a, budget, hints, tracer, depth, registry)?;
-    match order.atom_value(ra) {
+    let (ra, remaining) = evaluate_unary(reduction, object, a, budget, hints, tracer, depth, registry)?;
+    match reduction.atom_value(ra) {
         Some(v) if v.as_u64() < (1u64 << 32) => Ok((v.as_u64(), remaining)),
         _ => Err(Outcome::Error(ErrorKind::TypeError)),
     }
 }
 
 pub(crate) fn field_binary_op<const N: usize, T: Tracer>(
-    order: &mut Order<N>, object: OrderId, body: OrderId, budget: u64,
+    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
     hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
     row: &mut TraceRow,
     registry: &JetRegistry<N>,
     op: fn(Goldilocks, Goldilocks) -> Goldilocks,
 ) -> Outcome {
-    let (a, b) = match pair_children(order, body) {
+    let (a, b) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (va, vb, budget) = match evaluate_binary_field(order, object, a, b, budget, hints, tracer, depth, registry) {
+    let (va, vb, budget) = match evaluate_binary_field(reduction, object, a, b, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
     let vc = op(va, vb);
     row.r[4] = va.as_u64();
     row.r[5] = vb.as_u64();
     row.r[6] = vc.as_u64();
-    make_field(order, vc, budget)
+    make_field(reduction, vc, budget)
 }
 
 /// Emit one row at bit position k for a multi-row bit-decomp pattern.
@@ -439,7 +439,7 @@ pub(crate) fn emit_bit_row<T: Tracer>(
     template: &TraceRow, tracer: &mut T,
     a: u64, b: u64, c: u64,
     k: u32, a_k: u64, b_k: u64, c_k: u64,
-    is_last: bool, result_id: OrderId, budget_out: u64,
+    is_last: bool, result_id: Order, budget_out: u64,
 ) {
     let mut r = TraceRow::default();
     r.r[0] = template.r[0];
@@ -475,7 +475,7 @@ mod tests {
     /// and the error path emits a synthetic trace row.
     #[test]
     fn atom_formula_is_malformed_and_records_row() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let formula = ar.atom(g(1)).unwrap(); // atom formula
         let mut tr = VecTrace::default();
@@ -491,7 +491,7 @@ mod tests {
     /// and emits a synthetic halt row.
     #[test]
     fn budget_below_cost_halts_and_records_row() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let t15 = ar.atom(g(15)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
@@ -516,7 +516,7 @@ mod tests {
     /// reducer actually walks into the malformed continuation.
     #[test]
     fn malformed_compose_continuation_returns_malformed() {
-        let mut ar = Order::<256>::new();
+        let mut ar = Reduction::<256>::new();
         let obj = ar.atom(g(0)).unwrap();
         let t2 = ar.atom(g(2)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
@@ -535,7 +535,7 @@ mod tests {
     /// Public reduce() returns Outcome::Ok for a trivial formula.
     #[test]
     fn ok_variant_returns_result() {
-        let mut ar = Order::<1024>::new();
+        let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let v = ar.atom(g(42)).unwrap();

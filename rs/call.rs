@@ -11,7 +11,7 @@
 //! look reads committed polynomial state — same inputs always produce same output.
 
 use nebu::Goldilocks;
-use crate::data::{Order, OrderId};
+use crate::data::{Reduction, Order};
 
 /// look provider trait — deterministic BBG state reads
 ///
@@ -40,7 +40,7 @@ pub trait CallProvider<const N: usize>: LookProvider + Sync {
     /// object: the data the formula operates on
     ///
     /// returns Some(witness_data) or None (= halt, prover doesn't know)
-    fn provide(&self, order: &mut Order<N>, tag: Goldilocks, object: OrderId) -> Option<OrderId>;
+    fn provide(&self, reduction: &mut Reduction<N>, tag: Goldilocks, object: Order) -> Option<Order>;
 
     /// Return the 32-byte Lens commitment for the data polynomial of `object_id`.
     ///
@@ -66,7 +66,7 @@ impl LookProvider for NullCalls {
 }
 
 impl<const N: usize> CallProvider<N> for NullCalls {
-    fn provide(&self, _order: &mut Order<N>, _tag: Goldilocks, _object: OrderId) -> Option<OrderId> {
+    fn provide(&self, _order: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
         None
     }
 }
