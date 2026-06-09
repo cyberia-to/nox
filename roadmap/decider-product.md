@@ -4,68 +4,33 @@ date: 2026-06-09
 author: jet taxonomy review session
 ---
 
-# genesis jets as products
+# decider — fold recursion in
 
 ## Abstract
 
-A jet exists to deliver a capability. The genesis registry should be
-organized and documented by that capability — the *product* each jet
-delivers: a tangible output, powerful, complete. Under this principle the
-decider is the verification product, and the field-computation primitives
-currently grouped as `recursion` are its ingredients, not a peer group.
-`poly_eval` folds in as the decider's core ingredient; `ntt`, `fri_fold`,
-and `merkle_verify` are primitives serving other products or none. Circuit
-ownership follows the domain: the verifier circuit is zheng's; nox holds the
-formula-hash anchor.
+The decider verifies all accumulated chain history in one step. The four
+jets grouped as `recursion` (`poly_eval`, `ntt`, `fri_fold`,
+`merkle_verify`) are not a peer capability — they are field-computation
+ingredients, and the decider is what `poly_eval` builds into. This proposal
+dissolves the `recursion` group: `poly_eval` folds into the decider as its
+core ingredient, `ntt` moves to the FHE product, and `fri_fold` /
+`merkle_verify` are flagged for a deliberate genesis-inclusion decision.
+Circuit ownership follows the domain — the verifier is zheng's; nox holds
+the formula-hash anchor.
 
-## 1. A jet is a product
+## 1. The decider
 
-A jet replaces a pure Layer 1 formula with a fast implementation that
-produces identical output. The jet earns its place in genesis only because
-some capability is worth accelerating. That capability is the jet's product.
+The decider checks the HyperNova accumulator (~200 bytes folding every block
+from genesis) and returns accept / reject. 89 constraints, ~100 ns — a light
+client joins by downloading a 240-byte checkpoint and verifying it, less
+work than one hemera permutation (736 constraints). It verifies all history,
+not a window. It is a complete, standalone capability.
 
-Three marks of a product:
+## 2. recursion is the decider's ingredients
 
-- **tangible** — you can name the output and hand it to a caller.
-- **powerful** — large leverage: a big speedup, or a capability that does
-  not otherwise exist.
-- **complete** — a whole capability, not a fragment of one.
-
-Decision procedure: name the product. If you can name a complete capability
-a caller wants as an *end*, it is a product and earns a top-level registry
-entry. If you can only name a tool used *inside* something else, it is an
-ingredient and belongs under the product it serves.
-
-Record this in the spec. Each entry in `specs/jets/` carries a `product:`
-line stating the capability it delivers; ingredients state the product they
-compose into. The registry is grouped by product, and a group's jets are
-its product plus the ingredients that build it.
-
-## 2. The decider is the verification product
-
-```
-product: verify all chain history in one step
-```
-
-- **tangible** — accept / reject against the HyperNova accumulator
-  (~200 bytes folding every block from genesis).
-- **powerful** — 89 constraints, ~100 ns. A light client joins by
-  downloading a 240-byte checkpoint and verifying it — less work than one
-  hemera permutation (736 constraints).
-- **complete** — all history from genesis, not a window.
-
-This is the most tangible, powerful, complete output in the registry. It is
-a product by every mark.
-
-## 3. recursion is ingredients
-
-The four jets grouped as `recursion` — `poly_eval`, `ntt`, `fri_fold`,
-`merkle_verify` — name techniques, not capabilities. A caller does not want
-`poly_eval` as an end; it wants a verified proof, a polynomial product, a
-settled commitment. Each is an ingredient.
-
-`poly_eval` is the decider's core ingredient. The decider's 89-constraint
-breakdown (`specs/jets/decider.md`):
+A caller does not want `poly_eval` as an end — it wants a verified proof.
+`poly_eval` is the decider's core ingredient. Its 89-constraint breakdown
+(`specs/jets/decider.md`):
 
 ```
 sumcheck replay:         20 constraints
@@ -77,60 +42,68 @@ total:                   89 constraints
 ```
 
 The 35-constraint Brakedown step is `poly_eval`'s operation — multilinear
-opening — fused and specialized into the verifier. The decider *is*
-`poly_eval` + sumcheck + CCS evaluation, frozen as one exact-match circuit.
-So `poly_eval` belongs under the decider product, not in a separate group.
+opening — fused into the verifier. The decider *is* `poly_eval` + sumcheck +
+CCS evaluation, frozen as one exact-match circuit. `poly_eval` belongs under
+the decider, not in a separate `recursion` group.
 
-## 4. The other primitives
+## 3. The other three recursion jets
 
 - **`ntt`** — serves the FHE product (`polynomial-ring`: `ntt_batch`,
-  `blind_rotate`) and ring multiplication generally. File it under FHE, or
-  as a named shared primitive — like `hash`, it is cross-cutting.
+  `blind_rotate`) and ring multiplication generally. File it there, or as a
+  shared primitive alongside `hash` — it is cross-cutting.
 - **`fri_fold`, `merkle_verify`** — no genesis product consumes them.
   Brakedown is Merkle-free and FRI-free. They were retained for cross-system
   interoperability. Freezing a primitive at genesis (A3, append-only) that
   no product uses is permanent cost with nothing shipped behind it. Their
   inclusion is a deliberate decision, not a default — see open questions.
 
-## 5. Ownership follows the domain
+## 4. Ownership
 
-Recognition is the VM's job: nox holds each jet's formula-hash anchor and
+Recognition is the VM's job: nox holds the decider's formula-hash anchor and
 dispatches on it at reduction time. The implementation belongs to the repo
-that owns the domain:
+that owns the domain — and the verifier is the proof system's. The decider's
+CCS circuit, its three optimizations, and its soundness proofs live in
+zheng; nox keeps the anchor. This is the boundary already applied across the
+jet set:
 
-- verifier circuit → zheng (the proof system)
+- verifier circuit → zheng
 - field arithmetic (`poly_eval`, `ntt`) → strata-compute / honeycrisp
 - hash → hemera
 - state → bbg ([[state-jets-redesign]])
 
-The decider's CCS circuit, its three optimizations, and its soundness proofs
-live in zheng. nox keeps the anchor so the jet is recognized; zheng
-implements the product. Grouping is by product; ownership is by domain repo
-— two independent axes.
-
-## 6. Proposed structure
+## 5. Proposed structure
 
 ```
-decider (verification product)     zheng implements the circuit; nox anchors
+decider                            zheng implements the circuit; nox anchors
   ingredient:  poly_eval           strata-compute / honeycrisp implement; nox anchors
-  product:     decider circuit     = poly_eval + sumcheck + CCS, fused
+  circuit:     decider             = poly_eval + sumcheck + CCS, fused
 
 ntt              → file under the FHE product, or as a shared primitive
 fri_fold         → interop primitive; genesis inclusion under review
 merkle_verify    → interop primitive; genesis inclusion under review
 ```
 
-1. Add a `product:` line to every `specs/jets/` entry.
-2. Dissolve `recursion` as a top-level group in `specs/jets/README.md`. The
-   `decider` group is the verification product: `poly_eval` (ingredient) +
-   the decider circuit (product).
-3. `specs/jets/decider.md` states the formula, its hash, the contract, and
-   the `product:` line; the constraint breakdown, the optimizations, and the
-   soundness proofs migrate to `zheng/specs/`.
-4. Reassign `ntt` to the FHE product or a shared-primitive entry; park
+1. Dissolve `recursion` as a top-level group in `specs/jets/README.md`. The
+   decider becomes the group: `poly_eval` (ingredient) + the decider circuit.
+2. `specs/jets/decider.md` keeps the formula, its hash, and the contract; the
+   constraint breakdown, the optimizations, and the soundness proofs migrate
+   to `zheng/specs/`.
+3. Reassign `ntt` to the FHE product or a shared-primitive entry; park
    `fri_fold` and `merkle_verify` pending the inclusion decision.
-5. `rs/jets/poly_eval.rs` and `rs/jets/decider.rs` keep their wrappers; wire
+4. `rs/jets/poly_eval.rs` and `rs/jets/decider.rs` keep their wrappers; wire
    the decider wrapper to zheng's verifier when exposed.
+
+## 6. Note: jets as products
+
+The lens behind this proposal generalizes and is worth recording in
+`specs/jets/`: a jet earns its genesis slot because it delivers a *product*
+— a capability a caller wants as an end (tangible, powerful, complete). What
+a caller only uses *inside* something else is an ingredient and belongs under
+the product it serves. `recursion` named a technique, which is why it
+bundled one verification ingredient (`poly_eval`) with three unrelated
+primitives. Adding a `product:` line to each `specs/jets/` entry makes this
+explicit and keeps the registry honest about what each entry is for. This is
+a documentation convention, separable from the decider change above.
 
 ## 7. Open questions
 
@@ -141,6 +114,6 @@ merkle_verify    → interop primitive; genesis inclusion under review
    genesis as interop primitives, or defer them post-genesis? Freezing has a
    permanent A3 cost; deferring risks an interop gap. A concrete interop
    requirement decides it.
-3. Is `ntt` better filed under the FHE product (its primary consumer) or as
-   a standalone shared primitive alongside `hash`? The registry has no
-   "shared primitive" category today.
+3. Is `ntt` better filed under the FHE product or as a standalone shared
+   primitive alongside `hash`? The registry has no "shared primitive"
+   category today.
