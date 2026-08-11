@@ -542,7 +542,7 @@ all files that have it — it is not decoration.
 
 nox is the virtual machine of cyber. 18 reduction patterns over the Goldilocks
 field: 16 deterministic compute patterns + call (non-deterministic hint) + look
-(state access). every computation produces a stark proof of correct execution as
+(state access). every computation produces a zheng proof of correct execution as
 a byproduct. running a program and proving it ran correctly are the same act.
 
 ## architecture

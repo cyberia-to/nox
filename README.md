@@ -1,6 +1,6 @@
 # nox
 
-proof-native virtual machine for [[cyber]]. every execution produces a STARK proof as a byproduct — running a program and proving it ran correctly are the same act. there is no separate arithmetization step. the execution trace IS the algebraic constraint system.
+proof-native virtual machine for [[cyber]]. every execution produces a [[zheng]] proof as a byproduct — running a program and proving it ran correctly are the same act. there is no separate arithmetization step. the execution trace IS the algebraic constraint system.
 
 ## lineage
 
@@ -17,9 +17,9 @@ nox replaces Nock's natural numbers with [[Goldilocks field]] elements and decre
 
 computation IS linking. `ask(ν, object, formula, τ, a, v, t)` has seven arguments — the seven fields of a [[cyberlink]]. ordering a computation and asserting knowledge are the same act. the [[cybergraph]] is simultaneously a knowledge base and a universal memo cache. every computation anyone ever did is reusable by everyone. the more the graph grows, the fewer computations actually execute. nox does not just compute — it remembers.
 
-proof-native execution. most virtual machines bolt proofs onto execution after the fact — run the program, then arithmetize the trace, then prove. nox skips the middle step. the execution trace is already a valid STARK witness. `reduce(object, formula)` simultaneously computes the result and generates the proof artifact.
+proof-native execution. most virtual machines bolt proofs onto execution after the fact — run the program, then arithmetize the trace, then prove. nox skips the middle step. the execution trace is already a valid [[zheng]] witness. `reduce(object, formula)` simultaneously computes the result and generates the proof artifact.
 
-algebra polymorphism. the same 16 reduction patterns work over any field, any word width, any hash function. pattern semantics are universal — algebra is a parameter. a single nox program runs over Goldilocks (STARKs), F₂ (Binius), or F_{p³} (recursive composition) by selecting a different instantiation. one spec, many proof systems.
+algebra polymorphism. the same 16 reduction patterns work over any field, any word width, any hash function. pattern semantics are universal — algebra is a parameter. a single nox program runs over Goldilocks ([[zheng]]), F₂ (Binius), or F_{p³} (recursive composition) by selecting a different instantiation. one spec, many proof systems.
 
 merkle by construction. every `cons(a, b)` builds a Merkle tree — the hash is computed and stored at the parent node. `axis` traversal produces Merkle proofs as a side effect. content addressing is not a feature layered on top — it is the data model itself. and because every noun is content-addressed, every reduction result has a unique identity — the foundation of global memoization.
 
@@ -44,7 +44,7 @@ the seven arguments of `ask` are the seven fields of a [[cyberlink]]. computatio
 1. compute `order_axon = H(formula, object)`
 2. lookup: does `axon(formula, object)` have a verified result in the [[cybergraph]]?
    → yes: return cached result (zero computation — memoized)
-   → no: `reduce(object, formula, focus=(τ,a))`, prove via [[zheng|STARK]]
+   → no: `reduce(object, formula, focus=(τ,a))`, prove via [[zheng]]
 3. link `order_axon → result` (with proof)
 4. return result
 
