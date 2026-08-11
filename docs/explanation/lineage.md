@@ -56,9 +56,9 @@ Nock:  atom = natural number,   primitive = increment
 nox:   atom = F_p element,      primitive = field inverse
 ```
 
-this changes everything. increment over natural numbers is O(1) but leads to O(n) arithmetic — decrement alone costs O(n), addition costs O(a+b), multiplication costs O(a×b). field inverse over [[Goldilocks field|Goldilocks]] is O(64) multiplications (Fermat's little theorem) but leads to O(1) arithmetic for add, sub, mul — and O(1) [[stark]] constraint verification. the tradeoff: pay 64× for inversion, gain constant-time everything else.
+this changes everything. increment over natural numbers is O(1) but leads to O(n) arithmetic — decrement alone costs O(n), addition costs O(a+b), multiplication costs O(a×b). field inverse over [[Goldilocks field|Goldilocks]] is O(64) multiplications (Fermat's little theorem) but leads to O(1) arithmetic for add, sub, mul — and O(1) [[zheng]] constraint verification. the tradeoff: pay 64× for inversion, gain constant-time everything else.
 
-the consequence is proof-nativity. the [[Goldilocks field]] is the native field of the [[stark]] proof system. a nox execution trace — the sequence of field element operations — is directly the algebraic constraint system that the prover proves and the verifier checks. there is no compilation step from "program" to "circuit." the program IS the circuit. the execution IS the witness.
+the consequence is proof-nativity. the [[Goldilocks field]] is the native field of the [[zheng]] proof system. a nox execution trace — the sequence of field element operations — is directly the algebraic constraint system that the prover proves and the verifier checks. there is no compilation step from "program" to "circuit." the program IS the circuit. the execution IS the witness.
 
 ## the properties that emerge
 
@@ -76,11 +76,11 @@ S,K combinators are confluent. the lambda calculus is confluent (Church-Rosser t
 
 the cost of a computation depends only on its syntactic structure, never on runtime values, cache state, or execution environment. if two nodes compute the same function on the same input, they spend the same [[focus]]. this is unique in the lineage — even Nock's cost model depends on the magnitude of natural numbers (decrement costs O(n), making arithmetic on large numbers proportionally expensive).
 
-cost determinism means: the network can price computation before executing it. a [[neuron]] can estimate the focus cost of a formula by static analysis. the [[stark]] prover can predict the trace size. there are no cost surprises.
+cost determinism means: the network can price computation before executing it. a [[neuron]] can estimate the focus cost of a formula by static analysis. the [[zheng]] prover can predict the trace size. there are no cost surprises.
 
 ### field-first arithmetic
 
-every value is a field element. [[cryptography]] is a native instruction. a field multiplication is a single CPU operation. hashing is ~2800 field ops expressible in pure patterns. [[stark]] proofs verify computations using the same field arithmetic that performs them. there is no impedance mismatch between computation and verification.
+every value is a field element. [[cryptography]] is a native instruction. a field multiplication is a single CPU operation. hashing is ~2800 field ops expressible in pure patterns. [[zheng]] proofs verify computations using the same field arithmetic that performs them. there is no impedance mismatch between computation and verification.
 
 no previous system in the lineage has this property. S,K operates on untyped terms. lambda calculus operates on abstract functions. Nock operates on natural numbers. nox operates on elements of a field that is simultaneously the computation substrate and the proof substrate.
 
@@ -124,7 +124,7 @@ nox adds what Nock could not have:
 - bitwise operations (xor, and, not, shl) for binary protocol handling
 - cryptographic hash as a pattern: [[Hemera]]
 - non-deterministic witness injection (call, pattern 16) for zero-knowledge proofs
-- jets optimized for recursive [[stark]] verification and more
+- jets optimized for recursive [[zheng]] verification and more
 
 the result is sixteen patterns instead of twelve, but the six additional patterns (field arithmetic) are the entire reason the system can produce proofs natively. four more (bitwise) handle the binary world. one (hash) closes the identity loop. the increase in pattern count is the price of proof-nativity — and the return is that every computation in the network is automatically verifiable.
 

@@ -43,7 +43,7 @@ One mutation — BBG exposes `insert(signal)`, where:
 
 ```
 signal = (ν, links, Δφ*, σ, height)
-       = neuron + cyberlinks + proven focus shift + STARK proof + block height
+       = neuron + cyberlinks + proven focus shift + zheng proof + block height
 ```
 
 The model runs on:

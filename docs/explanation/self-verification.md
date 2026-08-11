@@ -4,12 +4,12 @@ the system that verifies itself — recursive proof composition to arbitrary dep
 
 ## the closure
 
-the [[stark]] verifier for nox is itself a nox program. every operation the verifier needs — field arithmetic, hashing, polynomial evaluation, Merkle path checking, FRI folding — is native to the sixteen patterns or their jet equivalents.
+the [[zheng]] verifier for nox is itself a nox program. every operation the verifier needs — field arithmetic, hashing, polynomial evaluation, sumcheck rounds, Brakedown openings — is native to the sixteen patterns or their jet equivalents.
 
 this closure is the deepest property of the design. the VM can verify proofs about its own executions. a proof-of-proof is a nox program that runs the verifier on a proof. the proof-of-proof is itself provable. recursion to arbitrary depth, constant proof size at every level.
 
 ```
-program → trace → stark proof → verifier (nox program) → trace → stark proof → ...
+program → trace → zheng proof → verifier (nox program) → trace → zheng proof → ...
 ```
 
 the system closes on itself.
@@ -18,13 +18,13 @@ the system closes on itself.
 
 in most blockchain architectures, verification is a separate, trusted layer. the consensus protocol runs on one system; transaction verification runs on another; proof verification runs on a third. each layer must trust the ones below it. the trust chain ends at hardware and compilers that cannot be audited within the system.
 
-nox collapses this chain. the verifier is a nox program. the proof that the verifier ran correctly is a [[stark]] proof. that proof can be verified by the same verifier. each level of verification reduces to the same mathematical framework — transition constraints over the [[Goldilocks field]], checked by [[sumcheck]], committed by [[Brakedown]].
+nox collapses this chain. the verifier is a nox program. the proof that the verifier ran correctly is a [[zheng]] proof. that proof can be verified by the same verifier. each level of verification reduces to the same mathematical framework — transition constraints over the [[Goldilocks field]], checked by [[sumcheck]], committed by [[Brakedown]].
 
 the trust chain does not end at an unauditable layer. it ends at the mathematics of finite field arithmetic and the security assumptions of the hash function ([[Hemera]]). these are public, analyzable, and falsifiable.
 
 ## the recursive structure
 
-level 0: a nox program runs. it produces an execution trace. the trace is proved by the [[stark]] prover. output: a proof P₀ of ~60-157 KiB.
+level 0: a nox program runs. it produces an execution trace. the trace is proved by the [[zheng]] prover. output: a proof P₀ of ~60-157 KiB.
 
 level 1: the verifier (a nox program) takes P₀ as its object and the verification formula as its formula. it runs (~825 constraints with CCS jet). it produces an execution trace. that trace is proved. output: a proof P₁ of ~2 KiB.
 

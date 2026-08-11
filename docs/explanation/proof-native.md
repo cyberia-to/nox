@@ -6,20 +6,20 @@ execution IS proof — why there is no circuit compilation step, and why this ma
 
 in every other proof system, there is a translation step. you write a program. then a compiler transforms it into an arithmetic circuit (R1CS, Plonkish, AIR). the circuit is a different representation — different structure, different optimization concerns, different debugging surface. the programmer thinks in one world; the prover proves in another.
 
-in nox, the program IS the circuit. the execution trace — the sequence of register states across all reduction steps — is directly the algebraic intermediate representation (AIR) that the [[stark]] prover proves and the verifier checks.
+in nox, the program IS the circuit. the execution trace — the sequence of register states across all reduction steps — is directly the constraint system (CCS) that the [[zheng]] prover proves and the verifier checks.
 
 ```
-nox execution trace          →    stark witness
+nox execution trace          →    zheng witness
 register state at each step  →    trace row
 pattern tag                  →    constraint selector
 pattern semantics            →    transition constraint polynomial
 ```
 
-there is no separate compilation. there is no intermediate representation that could diverge from the program's semantics. the program runs. the trace records what happened. the trace IS the proof witness. the [[stark]] verifies the trace.
+there is no separate compilation. there is no intermediate representation that could diverge from the program's semantics. the program runs. the trace records what happened. the trace IS the proof witness. the [[zheng]] verifier checks the trace.
 
 ## why the field choice is everything
 
-this identity is possible because of the field choice. nox arithmetic IS [[Goldilocks field]] arithmetic. the execution trace IS a table of Goldilocks elements. the [[stark]] proof IS over Goldilocks. there is no impedance mismatch at any layer.
+this identity is possible because of the field choice. nox arithmetic IS [[Goldilocks field]] arithmetic. the execution trace IS a table of Goldilocks elements. the [[zheng]] proof IS over Goldilocks. there is no impedance mismatch at any layer.
 
 ```
 program:  add(a, b)  →  (a + b) mod p
@@ -65,7 +65,7 @@ r11-r14: auxiliary                 pattern-specific data
 r15: status                       0=ok, 1=halt, 2=error
 ```
 
-each row is one reduction step. the trace is a complete record of what the program did — every operation, every intermediate value, every focus decrement. the [[stark]] prover commits to this trace as a multilinear polynomial, and the verifier checks the transition constraints via [[sumcheck]].
+each row is one reduction step. the trace is a complete record of what the program did — every operation, every intermediate value, every focus decrement. the [[zheng]] prover commits to this trace as a multilinear polynomial, and the verifier checks the transition constraints via [[sumcheck]].
 
 ## what this means for programmers
 

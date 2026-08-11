@@ -33,7 +33,7 @@ the ontological separation — truth, possibility, speed. nox is organized into 
 
 sixteen deterministic patterns define the irreducible semantics of computation. given the same object, formula, and focus, Layer 1 always produces the same result. the prover and verifier execute identically — there is no information asymmetry at this layer.
 
-five structural patterns (axis, quote, compose, cons, branch) make the system Turing-complete. six field arithmetic patterns (add, sub, mul, inv, eq, lt) give it algebraic power native to the [[stark]] proof system. four bitwise patterns (xor, and, not, shl) handle binary data. one hash pattern (hash) provides cryptographic identity.
+five structural patterns (axis, quote, compose, cons, branch) make the system Turing-complete. six field arithmetic patterns (add, sub, mul, inv, eq, lt) give it algebraic power native to the [[zheng]] proof system. four bitwise patterns (xor, and, not, shl) handle binary data. one hash pattern (hash) provides cryptographic identity.
 
 the patterns form an orthogonal rewrite system: unique tags, linear left-hand sides, no overlap. by the Huet-Levy theorem (1980), this guarantees confluence — the result is the same regardless of evaluation order. this is the mathematical foundation of content-addressed computation: if the result is independent of how you compute it, then `(H(object), H(formula))` is a canonical, permanent, universal identifier for that computation's result.
 
@@ -41,7 +41,7 @@ Layer 1 is the ground truth. if you stripped away Layers 2 and 3, you would stil
 
 ## Layer 2: what might be and what is known
 
-two patterns. call (pattern 16): the prover injects a value from outside the VM. Layer 1 constraints verify it. the verifier never executes call — it checks the [[stark]] proof instead. look (pattern 17): a deterministic read from BBG (the authenticated state graph). the lookup result is a public, authenticated fact; the verifier checks it against the BBG state root.
+two patterns. call (pattern 16): the prover injects a value from outside the VM. Layer 1 constraints verify it. the verifier never executes call — it checks the [[zheng]] proof instead. look (pattern 17): a deterministic read from BBG (the authenticated state graph). the lookup result is a public, authenticated fact; the verifier checks it against the BBG state root.
 
 call is the entire mechanism of privacy, search, and oracle access. it is the boundary between the prover's knowledge and the verifier's knowledge. what the prover knows but the verifier does not crosses this boundary. look is the mechanism of state access — a program reads from BBG without re-deriving the state; the BBG Merkle root in the proof attests to the authenticity of the lookup.
 
@@ -55,7 +55,7 @@ without Layer 2, nox would be fully transparent and stateless. every computation
 
 five jets: hash, poly_eval, merkle_verify, fri_fold, ntt. each is observationally equivalent to a composition of Layer 1 patterns — same input, same output, different speed.
 
-the selection criterion is specific: recursive [[stark]] verification and general-purpose computation. with Brakedown (Merkle-free PCS), the zheng verifier costs ~8,000 constraints (generic) or ~825 (CCS jet + batch). see zheng/specs/verifier.md for canonical costs.
+the selection criterion is specific: recursive [[zheng]] verification and general-purpose computation. with Brakedown (Merkle-free PCS), the zheng verifier costs ~8,000 constraints (generic) or ~825 (CCS jet + batch). see zheng/specs/verifier.md for canonical costs.
 
 Layer 3 preserves confluence. a jet is a semantic no-op — replacing it with its Layer 1 expansion produces identical results on all inputs. the test is automated: a harness runs both versions on random inputs and checks equality. if any jet ever disagrees with its pure equivalent, the jet is buggy and must be fixed or removed.
 
@@ -79,7 +79,7 @@ in most VMs, optimization is entangled with semantics. a JIT compiler changes ho
 
 in nox, the boundary is clean. Layer 1 defines meaning. Layer 3 defines speed. they are connected by a testable contract: same input → same output. this contract can be verified by exhaustive testing, by proof, or both. if the contract holds, the jet is correct. if it fails, the jet is wrong. there is no middle ground.
 
-this cleanliness propagates to the [[stark]] proof system. the proof verifier checks Layer 1 constraints — the semantics. jets change the constraint layout (more efficient polynomials for the same computation) but the constraints are equivalent. the proof says "this computation was correct" regardless of whether jets were used. the prover can use jets; the verifier checks the same constraints either way.
+this cleanliness propagates to the [[zheng]] proof system. the proof verifier checks Layer 1 constraints — the semantics. jets change the constraint layout (more efficient polynomials for the same computation) but the constraints are equivalent. the proof says "this computation was correct" regardless of whether jets were used. the prover can use jets; the verifier checks the same constraints either way.
 
 ## the stack
 

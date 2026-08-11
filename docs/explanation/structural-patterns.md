@@ -83,7 +83,7 @@ branch(object, [4 test yes no]):
 
 branch is the only pattern that discards computation. one of its two branches is never evaluated — the formula for the path not taken is syntactically present but semantically absent. this is how nox avoids wasted [[focus]]: the branch not chosen costs nothing.
 
-the test is zero-vs-nonzero, matching the Nock tradition. in the [[stark]] trace, the condition is recorded as a binary selector (0 or 1), derived from whether the test result was zero. the constraint checks: selector × no_result + (1-selector) × yes_result = result. multi-way dispatch is built by nesting branches.
+the test is zero-vs-nonzero, matching the Nock tradition. in the [[zheng]] trace, the condition is recorded as a binary selector (0 or 1), derived from whether the test result was zero. the constraint checks: selector × no_result + (1-selector) × yes_result = result. multi-way dispatch is built by nesting branches.
 
 ## why five is enough
 
@@ -99,4 +99,4 @@ compose → depth          (recursion, loops, function calls)
 
 Church and Turing proved in 1936 that this is sufficient — any function computable by any mechanism whatsoever can be expressed as a combination of these primitives. the structural patterns are inherited from [[Nock]], which inherited them from the combinatory logic tradition. S and K combinators (1924) proved two operations suffice for universality. lambda calculus (1936) proved one operation (application with binding) suffices. Nock showed that tree navigation and construction suffice. nox preserves this core unchanged — because it is already minimal.
 
-the structural patterns produce one [[stark]] constraint each (or zero for quote, which is resolved at parse time). they are the cheapest patterns in the system — pure tree manipulation with no arithmetic overhead. this makes sense: structure is free, arithmetic costs.
+the structural patterns produce one [[zheng]] constraint each (or zero for quote, which is resolved at parse time). they are the cheapest patterns in the system — pure tree manipulation with no arithmetic overhead. this makes sense: structure is free, arithmetic costs.

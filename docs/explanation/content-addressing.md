@@ -31,7 +31,7 @@ node B computes: (H(s₂), H(f₂)) → H(r₂)
 node C looks up: (H(s₁), H(f₁)) → finds H(r₁) in cache
 ```
 
-node C never runs the computation. it retrieves the cached result and verifies it against the [[stark]] proof (or re-computes to check). the cache is:
+node C never runs the computation. it retrieves the cached result and verifies it against the [[zheng]] proof (or re-computes to check). the cache is:
 
 - universal: any node can contribute and consume, across network boundaries
 - permanent: entries never change (confluence guarantees determinism)
@@ -81,7 +81,7 @@ the planetary computation cache is the convergence point of several ideas:
 - confluence guarantees that results are evaluation-order-independent
 - nouns provide a universal data structure with canonical serialization
 - [[Hemera]] provides a collision-resistant hash
-- [[starks]] provide compact, verifiable proofs
+- [[zheng]] provides compact, verifiable proofs
 
 together they create a system where computing something and proving you computed it are nearly the same cost — and where the result, once computed, is a permanent, shared, universal fact.
 

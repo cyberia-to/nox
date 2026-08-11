@@ -21,7 +21,7 @@ examples:
 
 ## why one structure is enough
 
-a list is a right-nested cell chain: `(a . (b . (c . 0)))`. a record is a tree with named positions (axis 2 = first field, axis 6 = second field). a string is a list of character codes. a program is a cell where the head is a pattern tag and the tail is the operands. a [[stark]] proof is a tree of field elements and Merkle paths. a [[cyberlink]] is a cell of two [[particles]].
+a list is a right-nested cell chain: `(a . (b . (c . 0)))`. a record is a tree with named positions (axis 2 = first field, axis 6 = second field). a string is a list of character codes. a program is a cell where the head is a pattern tag and the tail is the operands. a [[zheng]] proof is a tree of field elements. a [[cyberlink]] is a cell of two [[particles]].
 
 one structure means one serialization format, one hash function, one content-addressing scheme, one proof encoding. the simplicity propagates through every layer of the system. there is no type dispatch at the serialization layer, no case analysis in the hasher, no format negotiation in the network protocol. a noun is a noun — serialize it, hash it, transmit it, prove it.
 
@@ -35,7 +35,7 @@ word  (0x01)    bitwise: a XOR b, a AND b, a << n      range [0, 2⁶⁴)
 hash  (0x02)    identity: 4 field elements = 32 bytes   Hemera output
 ```
 
-field and word share the same representation but different algebras. a field element wraps modulo p (the Goldilocks prime). a word wraps modulo 2^32 (32-bit integers, fitting cleanly in [0, p)). the distinction exists because the [[stark]] constraint system needs to know which algebra applies — addition modulo p uses one constraint, XOR uses ~32 constraints (bit decomposition). the type tag is a constraint selector, not runtime overhead.
+field and word share the same representation but different algebras. a field element wraps modulo p (the Goldilocks prime). a word wraps modulo 2^32 (32-bit integers, fitting cleanly in [0, p)). the distinction exists because the [[zheng]] constraint system needs to know which algebra applies — addition modulo p uses one constraint, XOR uses ~32 constraints (bit decomposition). the type tag is a constraint selector, not runtime overhead.
 
 the hash type uses four field elements (4 × 8 = 32 bytes). it is the identity primitive — every noun can be reduced to a hash, and the hash is how the network refers to the noun. `axis(s, 0)` returns `H(s)` — a noun can introspect its own cryptographic identity. this is unique to nox: self-referential identity is a first-class operation, not a library call.
 
@@ -45,13 +45,13 @@ in conventional architectures, memory is a flat array of bytes. addresses are in
 
 in nox, memory is a binary tree. addresses are axis paths — binary numbers that trace a route from root to leaf. access is O(depth). the model has different tradeoffs: no aliasing (trees are persistent), no mutation (new trees share structure with old trees), no garbage collection (reference counting on tree nodes, or structural sharing with copy-on-write).
 
-the O(depth) access cost is real. but depth grows logarithmically with the number of leaves — a tree with a million leaves has depth ~20. and the cost is explicit in the budget: axis costs 1 + depth. the programmer and the [[stark]] prover both see the same cost model. there are no hidden memory operations behind an O(1) abstraction.
+the O(depth) access cost is real. but depth grows logarithmically with the number of leaves — a tree with a million leaves has depth ~20. and the cost is explicit in the budget: axis costs 1 + depth. the programmer and the [[zheng]] prover both see the same cost model. there are no hidden memory operations behind an O(1) abstraction.
 
 ## homoiconicity
 
 a nox formula is a cell `(tag . body)` where tag is the pattern number (0-16) and body contains the operands. a formula is a noun. an object is a noun. the result is a noun. the distinction between code and data is purely contextual — the same noun can be an object in one reduction and a formula in another.
 
-this goes deeper than Lisp's homoiconicity. in Lisp, code is data within the runtime. in nox, code is data at the level of the proof system. the [[stark]] proves that a specific noun (the formula) was applied to a specific noun (the object) to produce a specific noun (the result). the proof refers to the same binary tree structure that the execution operated on. there is no separate representation for "the circuit" vs "the program" — they are the same noun.
+this goes deeper than Lisp's homoiconicity. in Lisp, code is data within the runtime. in nox, code is data at the level of the proof system. the [[zheng]] proof shows that a specific noun (the formula) was applied to a specific noun (the object) to produce a specific noun (the result). the proof refers to the same binary tree structure that the execution operated on. there is no separate representation for "the circuit" vs "the program" — they are the same noun.
 
 the consequence for metaprogramming: a nox program can construct other nox programs (they are just nouns), inspect their structure (axis addressing), and compose them (pattern 2). a compiler is a nox program that takes source code (a noun) and produces target code (a noun). a proof verifier is a nox program that takes a proof (a noun) and validates it. compilation and verification are computations over nouns — they get the same content-addressing, the same memoization, the same provability as any other computation.
 
@@ -100,7 +100,7 @@ the atom identity paradox. an atom identity (32 bytes) is larger than its conten
 
 every tradeoff above trades throughput for verifiability. in a proof-native system, this is the right trade:
 
-- storage amplification does not matter when the [[stark]] proof compresses everything to 60-157 KiB regardless of computation size
+- storage amplification does not matter when the [[zheng]] proof compresses everything to 60-157 KiB regardless of computation size
 - resolution latency does not matter when the hot path is the prover (which processes the noun in memory anyway) and the verifier (which only checks the proof, not the noun)
 - no streaming is fine because nouns enter the system through reduction, not through deserialization — the VM builds nouns, it does not parse them
 - the atom identity paradox is actually a feature: small values get strong identities, making the content-addressed cache effective even for trivial sub-expressions

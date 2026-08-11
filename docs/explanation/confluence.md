@@ -53,7 +53,7 @@ the exception is pattern 4 (branch): the test must be evaluated before choosing 
 
 any node in the [[cyber]] network that independently computes the same program on the same data will produce the same result. this is stronger than "eventually consistent" — it is "always identical." two nodes that never communicate, on different hardware, running different implementations, using different evaluation strategies, will compute the same hash for the same inputs.
 
-this makes verification trustless. a node publishes `(H(object), H(formula)) → H(result)`. any other node can verify this claim by re-running the computation, or by checking the [[stark]] proof. the result is either correct or it is not. there is no ambiguity, no "it depends on the implementation."
+this makes verification trustless. a node publishes `(H(object), H(formula)) → H(result)`. any other node can verify this claim by re-running the computation, or by checking the [[zheng]] proof. the result is either correct or it is not. there is no ambiguity, no "it depends on the implementation."
 
 ### the cybergraph is a function
 

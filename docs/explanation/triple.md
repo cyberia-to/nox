@@ -52,15 +52,15 @@ this is the resource theory of nox. a neuron that runs an expensive computation 
 
 the budget also determines [[cyberank]] influence. a neuron's links are weighted by the focus spent on them. a neuron that exhausts its focus on computation has less influence in the knowledge graph. a neuron that prioritizes linking has less computation available. the tradeoff is fundamental — it forces neurons to allocate attention between thinking and speaking, between private computation and public knowledge.
 
-## the triple and the stark
+## the triple and the zheng proof
 
-the [[stark]] proof covers the entire triple. the proof says: "this formula was applied to this object under this focus budget, and the result was this noun with this remaining focus." the verifier checks:
+the [[zheng]] proof covers the entire triple. the proof says: "this formula was applied to this object under this focus budget, and the result was this noun with this remaining focus." the verifier checks:
 
 ```
 (H(object), H(formula), focus_initial) → (H(result), focus_remaining)
 ```
 
-focus appears in the proof. a computation that halts (focus exhausted) has a different proof than one that completes. the prover cannot lie about the budget — the trace records every focus decrement, and the [[stark]] verifier checks them all.
+focus appears in the proof. a computation that halts (focus exhausted) has a different proof than one that completes. the prover cannot lie about the budget — the trace records every focus decrement, and the [[zheng]] verifier checks them all.
 
 this means focus is publicly auditable. when a [[neuron]] claims to have spent focus on a computation, the proof demonstrates exactly how much was consumed. the network can verify that the neuron's focus allocation matches its claims. no trust required — the math checks.
 

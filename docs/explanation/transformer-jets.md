@@ -23,7 +23,7 @@ all seven operations decompose into existing [[cyb/languages]]:
 | 3 compile_weights | assemble transformer weights | [[Ten]] | [[Arc]] | composition of jets 0-2 |
 | 4 hull_attention | 2D convex hull max-dot query | [[Ren]] (G(2,0,0)) | — | Ren → Tri |
 | 5 tri_step | composite D+S+H operator | [[Ten]] (SpMV) | [[Arc]], [[Bel]] | Ten → Tri |
-| 6 reconverge | incremental Δφ* + STARK proof | [[Tok]] (conservation) | [[Tri]] (proof) | Tok → stark |
+| 6 reconverge | incremental Δφ* + zheng proof | [[Tok]] (conservation) | [[Tri]] (proof) | Tok → zheng |
 
 these are composite jets — compositions of existing language primitives recognized by formula hash and accelerated. they introduce no new algebraic domain. the one genuinely new primitive is hull_attention, which belongs to [[Ren]] (2D Euclidean geometric algebra).
 
@@ -36,7 +36,7 @@ dialect_partition = Arc(filter_edges_by_morphism_type)
 compile_weights = Ten(assemble) ∘ sparse_svd ∘ dialect_partition
 hull_attention  = Ren(convex_hull_supporting_point)     ← one new Ren op
 tri_step       = Ten(spmv) × 3 + Ten(simplex_project)  ← existing "matmul jet → fma"
-reconverge     = tri_step^k + Tok(verify_conservation) + Tri(stark_prove)
+reconverge     = tri_step^k + Tok(verify_conservation) + Tri(zheng_prove)
 ```
 
 ## context: two inference paths
@@ -113,7 +113,7 @@ given direction q ∈ R², find the key on the convex hull that maximizes q · k
 
 - pure equivalent: O(n) linear scan over all cached keys
 - jet cost: O(log n) per query via convex hull binary search
-- stark constraints: O(log n) — hull membership proof
+- zheng constraints: O(log n) — hull membership proof
 - GFP primitive: fma (same as Ren:geometric_product)
 - accelerates: every decoding step of the compiled transformer. on million-token traces: 200× speedup (demonstrated by Percepta)
 
@@ -138,17 +138,17 @@ $$φ' = \text{norm}[λ_d · D(φ) + λ_s · S(φ) + λ_h · H_τ(φ)]$$
 operates on the local h-hop neighborhood only (locality theorem T4).
 
 - jet cost: O(|E_local|)
-- stark constraints: O(|E_local|)
+- zheng constraints: O(|E_local|)
 
 ## jet 6: reconverge
 
 ```
 reconverge(π_current, Δlinks, bbg_root, ε) → (π_updated, Δφ*, proof)
   input:  current focus, new cyberlinks, state root, precision target
-  output: updated focus, sparse delta, STARK proof of correctness
+  output: updated focus, sparse delta, zheng proof of correctness
 ```
 
-language decomposition: tri_step^k (Ten) until convergence + Tok conservation verification (Σφ* = 1) + Tri STARK proof generation. this is the self-minting operation: a neuron creates cyberlinks, proves Δφ*, and mints $CYB proportional to the proven shift.
+language decomposition: tri_step^k (Ten) until convergence + Tok conservation verification (Σφ* = 1) + Tri zheng proof generation. this is the self-minting operation: a neuron creates cyberlinks, proves Δφ*, and mints $CYB proportional to the proven shift.
 
 - jet cost: O(|E_local| · log(1/ε) / log(1/κ))
 - the proof IS the mining

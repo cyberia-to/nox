@@ -4,7 +4,7 @@ optimization without compromise — from sixteen patterns to silicon, preserving
 
 ## the problem
 
-the [[stark]] verifier for nox is itself a nox program. to achieve recursive proof composition — proving that a proof is valid — the network runs the verifier inside the VM and proves THAT execution.
+the [[zheng]] verifier for nox is itself a nox program. to achieve recursive proof composition — proving that a proof is valid — the network runs the verifier inside the VM and proves THAT execution.
 
 with Brakedown (Merkle-free PCS), the verifier is pure field arithmetic. canonical verifier cost: ~8,000 constraints (generic), ~825 (CCS jet + batch), ~89 (algebraic Fiat-Shamir). see zheng/specs/verifier.md for the canonical breakdown. the five nebu jets accelerate both verification and general-purpose computation.
 
@@ -82,7 +82,7 @@ this continuity is by design. the jet selection was guided by the hardware archi
 
 ## jets and proofs
 
-jets change the constraint layout but preserve the input-output behavior. the [[stark]] proof system sees different constraint polynomials (more efficient ones) but verifies the same logical properties.
+jets change the constraint layout but preserve the input-output behavior. the [[zheng]] proof system sees different constraint polynomials (more efficient ones) but verifies the same logical properties.
 
 the prover can use jets — producing a proof with the optimized constraint layout. the verifier checks the same constraints either way. whether the prover used jets or pure patterns is invisible to the verifier. the proof says "this computation was correct," and correctness is defined by Layer 1 semantics regardless of which layer produced the trace.
 
@@ -92,7 +92,7 @@ this means jet adoption is purely a prover-side optimization. provers who use je
 
 nox inherits the jet concept from [[Nock]]/[[Urbit]], where jets are called "arms" — optimized C implementations of computationally expensive Nock expressions. the principle is the same: semantic equivalence between the slow pure version and the fast optimized version.
 
-nox's innovation is the selection criterion. Nock jets are chosen by practical utility (what Urbit applications need to be fast). nox jets are chosen by proof-system necessity (what the stark verifier needs to be fast). the difference reflects the systems' purposes: Nock powers a personal computing environment, nox powers a planetary verification machine.
+nox's innovation is the selection criterion. Nock jets are chosen by practical utility (what Urbit applications need to be fast). nox jets are chosen by proof-system necessity (what the zheng verifier needs to be fast). the difference reflects the systems' purposes: Nock powers a personal computing environment, nox powers a planetary verification machine.
 
 ## beyond the verifier: 33 jets across five algebras
 

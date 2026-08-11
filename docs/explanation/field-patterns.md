@@ -17,7 +17,7 @@ without these six patterns, nox would be Turing-complete but proof-hostile. with
 
 the [[Goldilocks field]] is F_p where p = 2^64 - 2^32 + 1. every atom in nox is an element of this field — an integer from 0 to p-1. the choice of p is not arbitrary: Goldilocks admits fast reduction (the special form 2^64 - 2^32 + 1 allows modular reduction using only shifts and adds on 64-bit hardware), has multiplicative subgroups of size 2^32 (enabling efficient NTT for [[stark]] polynomial arithmetic), and fits in a single 64-bit machine word (every field operation maps to a handful of CPU instructions).
 
-this is the field that the [[stark]] proof system operates over. every constraint in a [[stark]] proof is a polynomial equation over F_p. the choice of field is the choice of proof system — they are inseparable.
+this is the field that the [[zheng]] proof system operates over. every constraint in a [[zheng]] proof is a polynomial equation over F_p. the choice of field is the choice of proof system — they are inseparable.
 
 ## the ring: add, sub, mul
 
@@ -31,7 +31,7 @@ mul(a, b) = (a × b) mod p
 
 subtraction is addition by the additive inverse. `sub(a, b)` produces `a + (p - b) mod p`, which is always a valid field element. there is no concept of "negative numbers" — subtraction wraps around the field. `sub(0, 1)` produces p-1, the largest element.
 
-these three operations build any polynomial. a polynomial over F_p is a sum of products of field elements — additions and multiplications composed. polynomials are the language of [[stark]] proofs: every constraint is a polynomial equation, every trace column is evaluated as a polynomial, every commitment is to a polynomial. the ring operations are the vocabulary of provable computation.
+these three operations build any polynomial. a polynomial over F_p is a sum of products of field elements — additions and multiplications composed. polynomials are the language of [[zheng]] proofs: every constraint is a polynomial equation, every trace column is evaluated as a polynomial, every commitment is to a polynomial. the ring operations are the vocabulary of provable computation.
 
 ## the field: inv
 
@@ -44,9 +44,9 @@ inv(0) = ⊥_error             division by zero
 
 this is Fermat's little theorem: in a prime field, a^(p-1) = 1 for all nonzero a, so a^(p-2) is the multiplicative inverse. the implementation uses square-and-multiply over the 64-bit exponent p-2, costing 64 field multiplications — making inv the most expensive field pattern.
 
-inv enables division: `div(a, b) = mul(a, inv(b))`. division enables solving equations: given `a × x = b`, the solution is `x = mul(b, inv(a))`. solving equations enables the full power of algebraic reasoning — linear systems, polynomial root finding, Lagrange interpolation, all the machinery that [[stark]] proofs require.
+inv enables division: `div(a, b) = mul(a, inv(b))`. division enables solving equations: given `a × x = b`, the solution is `x = mul(b, inv(a))`. solving equations enables the full power of algebraic reasoning — linear systems, polynomial root finding, Lagrange interpolation, all the machinery that [[zheng]] proofs require.
 
-inv is also the pattern that nox inherited instead of Nock's increment. where Nock builds all arithmetic from increment (a single +1 operation, making decrement O(n) and multiplication O(n²)), nox builds all arithmetic from field operations. the tradeoff: inv costs 64 multiplications, but add, sub, and mul cost 1 each. the total cost of arithmetic in nox is O(1) per operation. in Nock it is O(n) to O(n²). this is the price of proof-nativity — and the return is that every arithmetic operation generates a bounded number of [[stark]] constraints.
+inv is also the pattern that nox inherited instead of Nock's increment. where Nock builds all arithmetic from increment (a single +1 operation, making decrement O(n) and multiplication O(n²)), nox builds all arithmetic from field operations. the tradeoff: inv costs 64 multiplications, but add, sub, and mul cost 1 each. the total cost of arithmetic in nox is O(1) per operation. in Nock it is O(n) to O(n²). this is the price of proof-nativity — and the return is that every arithmetic operation generates a bounded number of [[zheng]] constraints.
 
 ## comparisons: eq, lt
 
@@ -73,15 +73,15 @@ together eq and lt provide the minimal comparison set. every predicate over fiel
 - less-or-equal: `branch(lt(a, b), yes, branch(eq(a, b), yes, no))`
 - range check: composition of lt comparisons
 
-lt is more expensive than arithmetic in the [[stark]] trace — ~64 constraints (bit decomposition to compare magnitudes). eq is cheap: 1 constraint (the verifier checks whether the difference is zero or has an inverse). lt requires reasoning about the integer representation of field elements, which means decomposing into bits.
+lt is more expensive than arithmetic in the [[zheng]] trace — ~64 constraints (bit decomposition to compare magnitudes). eq is cheap: 1 constraint (the verifier checks whether the difference is zero or has an inverse). lt requires reasoning about the integer representation of field elements, which means decomposing into bits.
 
 ## why field arithmetic matters
 
-the [[stark]] proof system operates over a finite field. every constraint in the proof is a polynomial equation over F_p. if the VM's arithmetic is field arithmetic, the execution trace IS the proof witness:
+the [[zheng]] proof system operates over a finite field. every constraint in the proof is a polynomial equation over F_p. if the VM's arithmetic is field arithmetic, the execution trace IS the proof witness:
 
 ```
 program computes:     a + b mod p = c
-STARK constraint:     a + b mod p = c
+zheng constraint:     a + b mod p = c
 ```
 
 same operation. same field. zero translation. the program runs and the proof writes itself — the sequence of field operations during execution is exactly the algebraic intermediate representation (AIR) that the prover proves and the verifier checks. there is no "circuit compilation" step. there is no "arithmetization" pass. the computation is already arithmetic.
@@ -91,7 +91,7 @@ this is the fundamental insight that separates nox from every other VM. conventi
 ## the cost model
 
 ```
-pattern    execution cost    STARK constraints    notes
+pattern    execution cost    zheng constraints    notes
 add        O(1)              1                    single field equation
 sub        O(1)              1                    single field equation
 mul        O(1)              1                    single field equation

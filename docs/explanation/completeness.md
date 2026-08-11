@@ -38,7 +38,7 @@ these five patterns make nox Turing-complete. axis reads data. quote creates con
 10 lt  — less-than comparison
 ```
 
-six patterns for native arithmetic over the [[Goldilocks field]]. add, sub, mul form a ring. inv completes it to a field. eq and lt provide comparison. the reason these exist: the [[stark]] proof system operates over F_p, so if the VM's arithmetic is field arithmetic, the execution trace IS the proof witness — zero translation. see [[field-patterns]] for the full algebra and cost model.
+six patterns for native arithmetic over the [[Goldilocks field]]. add, sub, mul form a ring. inv completes it to a field. eq and lt provide comparison. the reason these exist: the [[zheng]] proof system operates over F_p, so if the VM's arithmetic is field arithmetic, the execution trace IS the proof witness — zero translation. see [[field-patterns]] for the full algebra and cost model.
 
 ## group 3: bitwise (patterns 11-14) — Z/2^32 algebra
 
@@ -63,7 +63,7 @@ hash gives nox intrinsic content-addressing. every noun can compute its own cryp
 
 could hash be expressed as pure structural + field patterns? yes. [[Hemera]] (Poseidon2) is ~2800 field multiplications and additions. the hash pattern is simultaneously a Layer 1 pattern and a Layer 3 jet — the jet provides an optimized constraint layout (736 constraints instead of ~2800), but the semantics are identical.
 
-the reason hash is a dedicated pattern rather than a library function: it appears in every meaningful operation. identity verification is a hash. Merkle trees are hashes. [[stark]] Fiat-Shamir challenges are hashes. content addressing is a hash. making hash a pattern means the most common expensive operation has the most optimized constraint layout. 83% of the stark verifier's cost is hash operations — this single pattern, jetted, accounts for the largest share of the 8.5× recursive verification speedup.
+the reason hash is a dedicated pattern rather than a library function: it appears in every meaningful operation. identity verification is a hash. Merkle trees are hashes. [[zheng]] Fiat-Shamir challenges are hashes. content addressing is a hash. making hash a pattern means the most common expensive operation has the most optimized constraint layout. with Brakedown (Merkle-free PCS), Fiat-Shamir hashing is the [[zheng]] verifier's only non-field operation — this single pattern, jetted, is verifier-critical alongside poly_eval.
 
 ## group 5: call — non-deterministic witness
 
@@ -73,7 +73,7 @@ call — prover injects, constraints verify
 
 not an opcode. a prover/verifier protocol. the entire mechanism of privacy, search, and oracle access.
 
-call is what separates nox from a transparent calculator. without call, every computation is publicly reproducible — the verifier can re-run the program and learn everything the prover knows. call creates the information asymmetry that makes [[zero knowledge proofs]] possible: the prover injects private knowledge, Layer 1 constraints verify it, the verifier checks the [[stark]] proof without learning the secret.
+call is what separates nox from a transparent calculator. without call, every computation is publicly reproducible — the verifier can re-run the program and learn everything the prover knows. call creates the information asymmetry that makes [[zero knowledge proofs]] possible: the prover injects private knowledge, Layer 1 constraints verify it, the verifier checks the [[zheng]] proof without learning the secret.
 
 call is the only non-deterministic mechanism. the sixteen compute patterns always produce the same output from the same input. call produces a result that depends on what the prover injects. this breaks confluence intentionally, creating the gap between prover knowledge and verifier knowledge that ZK exploits.
 
@@ -85,7 +85,7 @@ the five groups cover five algebraic domains:
 
 ```
 trees     — universal computation (Turing complete)
-F_p       — proof-native arithmetic (stark-compatible)
+F_p       — proof-native arithmetic (zheng-compatible)
 Z/2^32    — binary world interface (flags, masking, branching logic)
 H(·)      — cryptographic identity (content addressing)
 oracle    — non-determinism (privacy, ZK)
@@ -97,7 +97,7 @@ any computation that [[cyber]] needs falls into one of these domains:
 - state transitions → structural + field + look (tree transformation with arithmetic, state reads)
 - network protocols → bitwise (packet encoding, flag testing)
 - ranking → field (focus flow is field arithmetic over the graph)
-- [[stark]] verification → field + hash (polynomial evaluation, Merkle paths)
+- [[zheng]] verification → field + hash (sumcheck rounds, Brakedown openings, polynomial evaluation)
 - private transactions → call + field + hash (witness injection, conservation checks)
 - AI inference → field + structural (matrix operations as noun transformations)
 
@@ -119,7 +119,7 @@ Ten      → field (tensor contraction as field multiplication)
 
 no sixth group is necessary because:
 
-- floating point: unnecessary. all quantities are field elements. where approximate arithmetic is needed (AI inference), fixed-point representation over F_p suffices. [[stark]] proofs cannot verify floating point anyway.
+- floating point: unnecessary. all quantities are field elements. where approximate arithmetic is needed (AI inference), fixed-point representation over F_p suffices. [[zheng]] proofs cannot verify floating point anyway.
 - string operations: unnecessary. strings are lists of atoms (character codes). string manipulation is tree manipulation (structural patterns).
 - I/O: unnecessary inside the VM. nox is a pure computation engine. I/O happens at the boundary — [[radio]] handles networking, [[bbg]] handles storage. the VM transforms nouns; the environment provides and consumes them.
 - exceptions: unnecessary. errors propagate as values (⊥_error, ⊥_unavailable). no stack unwinding, no try/catch. error handling is tree navigation.
@@ -130,14 +130,14 @@ no sixth group is necessary because:
 sixteen deterministic patterns fit in four bits. the pattern tag is a single nibble — the encoding is maximally dense. a nox formula is a binary tree where each node's tag occupies exactly 4 bits. compact encoding means:
 
 - shorter programs hash faster (less data through [[Hemera]])
-- smaller proofs (fewer bits to commit in the [[stark]] trace)
+- smaller proofs (fewer bits to commit in the [[zheng]] trace)
 - denser caching (more computation identities per unit of storage)
 - cheaper transmission (less bandwidth per program over [[radio]])
 
 everything beyond the sixteen patterns lives outside the encoding:
 
 ```
-4-bit tag     16 deterministic patterns     the encoding, the wire format, the STARK trace
+4-bit tag     16 deterministic patterns     the encoding, the wire format, the zheng trace
               frozen forever
 
 runtime       jets                          recognized by formula hash, transparent optimization
@@ -151,8 +151,8 @@ prover        call (16)                     prover/verifier protocol, not a 4-bi
               authenticated state access via BBG Merkle root
 ```
 
-jets do not need opcodes. a jet is a formula tree made of the sixteen core patterns — the runtime recognizes it by `H(formula) == KNOWN_HASH` and substitutes optimized native code. the encoding on the wire is still 4-bit tagged core patterns. as more jets are added over time (recursive [[stark]] verification, new cryptographic primitives, AI inference kernels), the encoding never grows. jets are a runtime layer, not an encoding layer.
+jets do not need opcodes. a jet is a formula tree made of the sixteen core patterns — the runtime recognizes it by `H(formula) == KNOWN_HASH` and substitutes optimized native code. the encoding on the wire is still 4-bit tagged core patterns. as more jets are added over time (recursive [[zheng]] verification, new cryptographic primitives, AI inference kernels), the encoding never grows. jets are a runtime layer, not an encoding layer.
 
-call and look do not need 4-bit opcodes either. call is a prover/verifier protocol — the prover signals "I will inject a witness here," the [[stark]] constraints verify the witness is valid, the verifier checks the proof without learning the secret. look is a state access protocol — the prover provides the BBG lookup result along with its Merkle proof against the state root. both live in the interaction between prover and verifier, not in the formula encoding.
+call and look do not need 4-bit opcodes either. call is a prover/verifier protocol — the prover signals "I will inject a witness here," the [[zheng]] constraints verify the witness is valid, the verifier checks the proof without learning the secret. look is a state access protocol — the prover provides the BBG lookup result along with its Merkle proof against the state root. both live in the interaction between prover and verifier, not in the formula encoding.
 
 the result: the wire format is 4 bits per node, forever. sixteen is the exact number — enough for algebraic completeness across five domains, few enough to fill a nibble with zero waste. adding a seventeenth deterministic pattern would require 5 bits, wasting half the encoding space on tags that will never be used. the four-bit boundary is both a mathematical optimum and a forcing function: it disciplines the design to include only what is algebraically necessary.

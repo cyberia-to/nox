@@ -14,11 +14,11 @@ reduce(s, [16 constraint], f) =
 
 call is one pattern among eighteen (pattern 16). but it is the entire mechanism through which private knowledge enters the system. every zero-knowledge proof, every private transaction, every oracle query, every search optimization — all flow through this single instruction.
 
-the prover knows something the verifier does not. the prover injects that knowledge via call. Layer 1 constraints verify it. the verifier checks the [[stark]] proof — which confirms the constraints were satisfied — without ever learning what was injected.
+the prover knows something the verifier does not. the prover injects that knowledge via call. Layer 1 constraints verify it. the verifier checks the [[zheng]] proof — which confirms the constraints were satisfied — without ever learning what was injected.
 
 ## the information asymmetry
 
-Layer 1 is symmetric: both prover and verifier execute the same patterns, see the same values, compute the same results. call breaks this symmetry. the prover has access to `PROVER_INJECT()` — an oracle that produces a value from outside the VM. the verifier never calls this oracle. the verifier sees only the [[stark]] proof that the constraint `check(w) = 0` was satisfied.
+Layer 1 is symmetric: both prover and verifier execute the same patterns, see the same values, compute the same results. call breaks this symmetry. the prover has access to `PROVER_INJECT()` — an oracle that produces a value from outside the VM. the verifier never calls this oracle. the verifier sees only the [[zheng]] proof that the constraint `check(w) = 0` was satisfied.
 
 this asymmetry is the foundation of zero-knowledge computation. what the prover knows but the verifier does not:
 
@@ -50,7 +50,7 @@ optimization:
 
 ## the constraint discipline
 
-call is not "inject anything." the constraint function `check` is a Layer 1 computation — fully deterministic, fully provable. the injected witness `w` must satisfy `check(w) = 0`. if it does not, the [[stark]] proof is invalid and the verifier rejects it.
+call is not "inject anything." the constraint function `check` is a Layer 1 computation — fully deterministic, fully provable. the injected witness `w` must satisfy `check(w) = 0`. if it does not, the [[zheng]] proof is invalid and the verifier rejects it.
 
 the prover has freedom in choosing WHICH valid witness to inject (this is the non-determinism). the prover has no freedom in injecting an INVALID witness (this is the soundness). the constraint is the discipline.
 

@@ -15,9 +15,9 @@ these exist because F_p and Z/2^32 are fundamentally different algebras that can
 
 nox lives in F_p — a prime field where arithmetic wraps at p = 2^64 - 2^32 + 1. binary logic lives in Z/2^32 — 32-bit words where operations are bitwise. XOR has no natural expression as field arithmetic — it operates on individual bits, and bits are not a native concept in a prime field. AND has no polynomial representation over a prime field. the algebras are algebraically incompatible.
 
-without bitwise patterns, every interaction with binary data would require bit decomposition: split a word into 32 individual bits (each 0 or 1), perform Boolean logic on the bits, then reassemble the result. this decomposition costs ~32 [[stark]] constraints per operation — the algebraic cost of proving that 32 individual values are each 0 or 1 and that they reconstruct the original number.
+without bitwise patterns, every interaction with binary data would require bit decomposition: split a word into 32 individual bits (each 0 or 1), perform Boolean logic on the bits, then reassemble the result. this decomposition costs ~32 [[zheng]] constraints per operation — the algebraic cost of proving that 32 individual values are each 0 or 1 and that they reconstruct the original number.
 
-the bitwise patterns absorb this cost into their constraint layout. each pattern includes the bit decomposition in its [[stark]] constraints (~32 constraints per operation) and exposes clean O(1) execution cost to the programmer. the programmer writes `xor(a, b)`. the proof system handles the decomposition internally. the cost model is honest: bitwise is ~32× more expensive than field arithmetic in proof size, because that is the real algebraic distance between F_p and Z/2^32.
+the bitwise patterns absorb this cost into their constraint layout. each pattern includes the bit decomposition in its [[zheng]] constraints (~32 constraints per operation) and exposes clean O(1) execution cost to the programmer. the programmer writes `xor(a, b)`. the proof system handles the decomposition internally. the cost model is honest: bitwise is ~32× more expensive than field arithmetic in proof size, because that is the real algebraic distance between F_p and Z/2^32.
 
 ## why 32-bit, not 64-bit
 
@@ -94,14 +94,14 @@ a dedicated right shift pattern would save one operation per right shift. but it
 ## the cost model
 
 ```
-pattern    execution cost    STARK constraints    notes
+pattern    execution cost    zheng constraints    notes
 xor        O(1)              ~32                  bit decomposition of both operands
 and        O(1)              ~32                  bit decomposition of both operands
 not        O(1)              ~32                  bit decomposition of operand
 shl        O(1)              ~32                  bit decomposition + shift verification
 ```
 
-every bitwise operation costs ~32 [[stark]] constraints — compared to 1 constraint for field arithmetic. this 32× ratio is the honest algebraic distance between F_p and Z/2^32. proving a bit operation in a prime field means proving that the operands decompose into valid bits (each is 0 or 1) and that the operation on those bits produces the claimed result. there are 32 bits per operand, hence ~32 constraints.
+every bitwise operation costs ~32 [[zheng]] constraints — compared to 1 constraint for field arithmetic. this 32× ratio is the honest algebraic distance between F_p and Z/2^32. proving a bit operation in a prime field means proving that the operands decompose into valid bits (each is 0 or 1) and that the operation on those bits produces the claimed result. there are 32 bits per operand, hence ~32 constraints.
 
 this cost is absorbed once in the pattern's constraint layout. the programmer sees O(1) execution cost. the prover pays the constraint cost. the verifier checks the constraints in O(log n) time regardless. the cost is predictable: count the bitwise operations, multiply by ~32, and you know the proof size contribution.
 
