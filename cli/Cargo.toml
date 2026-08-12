@@ -15,5 +15,5 @@ name = "nox"
 path = "main.rs"
 
 [dependencies]
-nox = { path = "../rs" }
-nebu = { package = "cyb-nebu", path = "../../strata/nebu/rs" }
+nox = { package = "cyber-nox", path = "../rs" }
+nebu = { package = "strata-nebu", path = "../../strata/nebu/rs" }

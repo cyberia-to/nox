@@ -1,37 +1,33 @@
-# ---
-# tags: nox, config
-# crystal-type: source
-# crystal-domain: comp
-# ---
 [package]
-name = "nox"
-version = "0.1.0"
+name = "cyber-nox"
+version = "0.1.1"
 edition = "2024"
 description = "proof-native virtual machine over the Goldilocks field"
-license = "Cyber"
+license-file = "LICENSE"
+repository = "https://github.com/cyberia-to/nox"
+keywords = ["vm", "zk", "goldilocks", "cyber"]
+categories = ["cryptography", "compilers"]
 
 [lib]
+name = "nox"
 path = "lib.rs"
 
 [features]
-# Enable std-only features: scoped-thread parallel evaluation (evaluate_binary_par),
-# Order::fork / Order::reinter, and reduce_parallel_threaded.
-# Without this flag the library is no_std / alloc-only.
+default = []
 std = []
 brakedown = ["std", "dep:cyb-lens-core", "dep:cyb-lens-brakedown"]
 wgpu = ["std"]
 honeycrisp = ["std", "dep:acpu"]
 
 [dependencies]
-nebu = { package = "cyb-nebu", path = "../../strata/nebu/rs" }
-hemera = { package = "cyber-hemera", path = "../../hemera/rs" }
-cyb-lens-core = { path = "../../lens/core", optional = true }
-cyb-lens-brakedown = { path = "../../lens/brakedown", optional = true }
-acpu = { package = "acpu", path = "../../honeycrisp/acpu", optional = true }
+nebu = { package = "strata-nebu", version = "0.1", path = "../../strata/nebu/rs" }
+hemera = { package = "cyber-hemera", version = "0.3", path = "../../hemera/rs" }
+cyb-lens-core = { version = "0.1", path = "../../lens/core", optional = true }
+cyb-lens-brakedown = { version = "0.1", path = "../../lens/brakedown", optional = true }
+acpu = { version = "0.2", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
-hemera = { package = "cyber-hemera", path = "../../hemera/rs" }
 
 [[bench]]
 name = "reduction"
