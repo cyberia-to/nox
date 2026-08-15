@@ -349,9 +349,9 @@ fn parse_id_list(bytes: &[u8]) -> Result<Vec<Particle>, DecodeError> {
 /// opening proof rather than the raw evaluation table bytes, enabling
 /// succinct polynomial data identity.
 #[cfg(feature = "brakedown")]
-pub fn poly_content_id(poly: &cyb_lens_core::MultilinearPoly<Goldilocks>) -> Particle {
-    use cyb_lens_brakedown::Brakedown;
-    use cyb_lens_core::Lens;
+pub fn poly_content_id(poly: &cyber_lens_core::MultilinearPoly<Goldilocks>) -> Particle {
+    use cyber_lens_brakedown::Brakedown;
+    use cyber_lens_core::Lens;
     let commitment = Brakedown::commit(poly);
     let mut id = [0u8; 32];
     id.copy_from_slice(commitment.as_bytes());
@@ -365,7 +365,7 @@ pub fn poly_content_id(poly: &cyb_lens_core::MultilinearPoly<Goldilocks>) -> Par
 #[cfg(feature = "brakedown")]
 pub fn encode_poly<const N: usize>(
     reduction: &mut Reduction<N>,
-    poly: &cyb_lens_core::MultilinearPoly<Goldilocks>,
+    poly: &cyber_lens_core::MultilinearPoly<Goldilocks>,
 ) -> Option<Order> {
     let evals = &poly.evals;
     if evals.is_empty() {

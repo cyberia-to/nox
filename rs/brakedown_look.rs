@@ -17,8 +17,8 @@ extern crate alloc;
 use std::sync::Mutex;
 use alloc::vec::Vec;
 
-use cyb_lens_brakedown::Brakedown;
-use cyb_lens_core::{Commitment, Lens, MultilinearPoly};
+use cyber_lens_brakedown::Brakedown;
+use cyber_lens_core::{Commitment, Lens, MultilinearPoly};
 use nebu::Goldilocks;
 
 use crate::data::{Reduction, Order};

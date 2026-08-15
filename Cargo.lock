@@ -185,16 +185,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
 
 [[package]]
-name = "cyb-lens-brakedown"
+name = "cyber-hemera"
+version = "0.3.0"
+
+[[package]]
+name = "cyber-lens-brakedown"
 version = "0.1.1"
 dependencies = [
- "cyb-lens-core",
  "cyber-hemera",
+ "cyber-lens-core",
  "strata-nebu",
 ]
 
 [[package]]
-name = "cyb-lens-core"
+name = "cyber-lens-core"
 version = "0.1.1"
 dependencies = [
  "cyber-hemera",
@@ -204,18 +208,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "cyber-hemera"
-version = "0.3.0"
-
-[[package]]
 name = "cyber-nox"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "acpu",
  "criterion",
- "cyb-lens-brakedown",
- "cyb-lens-core",
  "cyber-hemera",
+ "cyber-lens-brakedown",
+ "cyber-lens-core",
  "strata-nebu",
 ]
 

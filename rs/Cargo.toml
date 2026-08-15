@@ -1,6 +1,6 @@
 [package]
 name = "cyber-nox"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "proof-native virtual machine over the Goldilocks field"
 license-file = "LICENSE"
@@ -15,15 +15,15 @@ path = "lib.rs"
 [features]
 default = []
 std = []
-brakedown = ["std", "dep:cyb-lens-core", "dep:cyb-lens-brakedown"]
+brakedown = ["std", "dep:cyber-lens-core", "dep:cyber-lens-brakedown"]
 wgpu = ["std"]
 honeycrisp = ["std", "dep:acpu"]
 
 [dependencies]
 nebu = { package = "strata-nebu", version = "0.1", path = "../../strata/nebu/rs" }
 hemera = { package = "cyber-hemera", version = "0.3", path = "../../hemera/rs" }
-cyb-lens-core = { version = "0.1", path = "../../lens/core", optional = true }
-cyb-lens-brakedown = { version = "0.1", path = "../../lens/brakedown", optional = true }
+cyber-lens-core = { version = "0.1", path = "../../lens/core", optional = true }
+cyber-lens-brakedown = { version = "0.1", path = "../../lens/brakedown", optional = true }
 acpu = { version = "0.2", optional = true }
 
 [dev-dependencies]
