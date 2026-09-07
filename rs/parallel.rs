@@ -171,7 +171,7 @@ extern crate alloc;
 //      as sequential path for data in the base snapshot).
 //   3. Traces are merged in deterministic left-before-right order.
 
-#[cfg(feature = "std")]
+#[cfg(feature = "parallel")]
 pub(crate) fn par_binary<const N: usize, T: Tracer>(
     reduction: &mut Reduction<N>,
     object: Order,
@@ -249,7 +249,7 @@ pub(crate) fn par_binary<const N: usize, T: Tracer>(
 ///
 /// Requires `H: Sync` so the hints reference can cross thread boundaries.
 /// All current providers are unit structs and trivially satisfy this.
-#[cfg(feature = "std")]
+#[cfg(feature = "parallel")]
 pub fn reduce_parallel_threaded<const N: usize, T: Tracer>(
     reduction: &mut Reduction<N>,
     object: Order,
@@ -258,7 +258,7 @@ pub fn reduce_parallel_threaded<const N: usize, T: Tracer>(
     hints: &dyn CallProvider<N>,
     tracer: &mut T,
 ) -> Outcome {
-    // With par_binary wired into evaluate_binary (via cfg(feature="std")),
+    // With par_binary wired into evaluate_binary (via cfg(feature="parallel")),
     // reduce() already dispatches to the threaded path for every binary
     // pattern when can_partition is true. This entry point is the named
     // parallel API; the implementation is transparent.
@@ -346,7 +346,7 @@ mod tests {
     /// Formula: [5 [[1 7] [1 11]]] = add(quote(7), quote(11)) = 18.
     /// Both sub-formulas are Exact-bounded quotes → can_partition = true →
     /// par_binary spawns two threads when std feature is enabled.
-    #[cfg(feature = "std")]
+    #[cfg(feature = "parallel")]
     #[test]
     fn threaded_add_matches_sequential() {
         let make_add = |ar: &mut Reduction<256>| {
@@ -395,7 +395,7 @@ mod tests {
     }
 
     /// Minimal smoke test: std::thread::scope works in this binary.
-    #[cfg(feature = "std")]
+    #[cfg(feature = "parallel")]
     #[test]
     fn scope_smoke_test() {
         let x = 42u64;
@@ -407,7 +407,7 @@ mod tests {
     }
 
     /// Reduction::fork produces an independent order with identical initial entries.
-    #[cfg(feature = "std")]
+    #[cfg(feature = "parallel")]
     #[test]
     fn fork_is_independent() {
         let mut ar = Reduction::<256>::new();
