@@ -154,7 +154,11 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
                 Outcome::Ok(_, b) | Outcome::Halt(b) => *b,
                 Outcome::Error(_) => 0,
             };
-            row.r[10] = match &outcome { Outcome::Error(k) => *k as u64, _ => 0 };
+            // r10: error kind on error rows; success PRESERVES the pattern's
+            // witness (branch writes its selector there — specs/trace.md).
+            if let Outcome::Error(k) = &outcome {
+                row.r[10] = *k as u64;
+            }
             tracer.record(row);
             return outcome;
         }
@@ -200,7 +204,11 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
     if !is_multi_row {
         row.r[3] = match &outcome { Outcome::Ok(r, _) => *r as u64, _ => NIL as u64 };
         row.r[9] = match &outcome { Outcome::Ok(_, b) | Outcome::Halt(b) => *b, Outcome::Error(_) => budget };
-        row.r[10] = match &outcome { Outcome::Error(k) => *k as u64, _ => 0 };
+        // r10: error kind on error rows; success preserves the pattern's
+        // witness (branch selector — specs/trace.md fixed layout).
+        if let Outcome::Error(k) = &outcome {
+            row.r[10] = *k as u64;
+        }
         tracer.record(row);
     }
 
