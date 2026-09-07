@@ -302,7 +302,7 @@ pub(crate) fn evaluate_binary<const N: usize, T: Tracer>(
         && ba.saturating_add(bb) <= budget;
 
     if can_partition {
-        #[cfg(feature = "std")]
+        #[cfg(feature = "parallel")]
         {
             // par_binary uses an empty registry in sub-orders (correct: jets
             // fire at the top-level reduce_inner; sub-evaluations use L1).

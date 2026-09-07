@@ -15,6 +15,11 @@ path = "lib.rs"
 [features]
 default = []
 std = []
+# threaded par_binary executor — opt-in. T1 (sequential-equivalence)
+# makes the sequential path canonical; forking the arena per binary
+# pattern is expensive, so std alone must not switch execution mode
+# (zheng's brakedown pulls std transitively into every prover build).
+parallel = ["std"]
 brakedown = ["std", "dep:cyber-lens-core", "dep:cyber-lens-brakedown"]
 wgpu = ["std"]
 honeycrisp = ["std", "dep:acpu"]
