@@ -51,7 +51,13 @@ pub fn call_witness<const N: usize, T: Tracer>(
         Some(v) if v == Goldilocks::ZERO => {
             row.r[4] = tag_value.as_u64();
             row.r[5] = witness as u64;
-            row.r[6] = check_result as u64;
+            // specs/trace.md: "r6 = result — result of reduce([witness, o],
+            // check_f); constraint: result must be 0 (degree 1)". That is a
+            // field VALUE, not a particle: `check_result` is the arena Order
+            // of the zero atom (an arbitrary index, almost never literally
+            // 0), so writing it verbatim made every real call/divine trace
+            // fail zheng's `r6 = 0` constraint. Write the dereferenced value.
+            row.r[6] = v.as_u64();
             Outcome::Ok(witness, budget)
         }
         _ => {
@@ -189,5 +195,55 @@ mod tests {
             }
             o => panic!("expected Ok(witness=42), got {:?}", o),
         }
+    }
+
+    /// Regression: `row.r[6]` must carry the dereferenced check-formula
+    /// VALUE (0 on success), not `check_result` — the arena Order of the
+    /// zero atom, an arbitrary index almost never literally 0. zheng's
+    /// `pattern_call()` constrains `r6 = 0`; writing the Order instead of
+    /// the value made every real call/divine trace fail proof verification
+    /// even though execution was correct (found via joy prove/verify on a
+    /// `divine()`-using .tri program, trident soft3-release 0.2.0).
+    #[test]
+    fn call_success_row_carries_the_value_zero_not_the_order() {
+        use crate::trace::VecTrace;
+        use alloc::vec::Vec;
+
+        struct AlwaysWitness42;
+        impl LookProvider for AlwaysWitness42 {
+            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
+        }
+        impl<const N: usize> CallProvider<N> for AlwaysWitness42 {
+            fn provide(&self, reduction: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
+                Some(reduction.atom(g(42)).unwrap())
+            }
+        }
+
+        let mut ar = Reduction::<1024>::new();
+        let obj = ar.atom(g(0)).unwrap();
+        let t16 = ar.atom(g(16)).unwrap();
+        let t1 = ar.atom(g(1)).unwrap();
+        let zero = ar.atom(g(0)).unwrap();
+        let tag_f = ar.pair(t1, zero).unwrap();
+        let check_f = ar.pair(t1, zero).unwrap();
+        let body = ar.pair(tag_f, check_f).unwrap();
+        let formula = ar.pair(t16, body).unwrap();
+
+        let mut trace = VecTrace(Vec::new());
+        match reduce(&mut ar, obj, formula, 1000, &AlwaysWitness42, &mut trace) {
+            Outcome::Ok(..) => {}
+            o => panic!("expected Ok, got {:?}", o),
+        }
+        let call_row = trace
+            .0
+            .iter()
+            .find(|row| row.r[0] == 16)
+            .expect("a pattern-16 row must be traced");
+        assert_eq!(
+            call_row.r[6], 0,
+            "r6 must be the literal value 0 on a successful call row, per \
+             specs/trace.md and zheng's pattern_call() constraint — got the \
+             raw arena Order instead"
+        );
     }
 }
