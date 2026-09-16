@@ -6,7 +6,9 @@
 //! jet: ntt — Number Theoretic Transform over Goldilocks
 //!
 //! Cooley-Tukey decimation-in-time NTT. Input size must be 2^n.
-//! Computes the forward or inverse NTT in-place.
+//! Computes the forward or inverse NTT in-place after shared bounded preflight.
+//! The current exact registry anchor is only a butterfly; runtime admission
+//! restricts replacement to cases equivalent to that actual pure formula.
 //!
 //! Registry calling convention:
 //!   object = [[n | formula] | [values_tree | omega]]
@@ -19,11 +21,12 @@
 //! Budget: n × 2^n (one unit per butterfly operation).
 
 extern crate alloc;
-use alloc::vec::Vec;
+
 
 use nebu::Goldilocks;
-use crate::data::{Reduction, Order, Data};
-use crate::reduce::{Outcome, ErrorKind, pair_children};
+use crate::data::{Reduction, Order};
+#[cfg(test)] use crate::data::Data;
+use crate::reduce::{Outcome, ErrorKind};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
@@ -32,46 +35,14 @@ pub fn ntt_jet<const N: usize>(
     _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
-    // object = [[n | formula] | [values_tree | omega]]
-    let (lhs, rhs) = match pair_children(reduction, object) {
-        Some(p) => p,
-        None => return Outcome::Error(ErrorKind::Malformed),
+    let prepared = match super::admission::prepare_ntt(reduction, object, budget) {
+        Ok(input) => input, Err(outcome) => return outcome,
     };
-    let (n_id, _formula_id) = match pair_children(reduction, lhs) {
-        Some(p) => p,
-        None => return Outcome::Error(ErrorKind::Malformed),
-    };
-    let (tree_id, omega_id) = match pair_children(reduction, rhs) {
-        Some(p) => p,
-        None => return Outcome::Error(ErrorKind::Malformed),
-    };
-
-    let n = match reduction.atom_value(n_id) {
-        Some(v) => v.as_u64() as usize,
-        None => return Outcome::Error(ErrorKind::TypeError),
-    };
-    let omega = match reduction.atom_value(omega_id) {
-        Some(v) => v,
-        None => return Outcome::Error(ErrorKind::TypeError),
-    };
-
-    let size = 1usize << n;
-
-    // Budget: n × size butterfly operations
-    let cost = (n as u64).saturating_mul(size as u64);
-    if budget < cost {
-        return Outcome::Halt(budget);
-    }
-    let remaining = budget - cost;
-
-    // Flatten the balanced binary tree into a Vec.
-    let mut vals: Vec<Goldilocks> = Vec::with_capacity(size);
-    if !flatten_tree(reduction, tree_id, &mut vals) {
-        return Outcome::Error(ErrorKind::TypeError);
-    }
-    if vals.len() != size {
-        return Outcome::Error(ErrorKind::TypeError);
-    }
+    let tree_id = prepared.input.tree;
+    let omega_id = prepared.input.parameter;
+    let omega = prepared.omega;
+    let remaining = prepared.remaining;
+    let mut vals = prepared.values;
 
     // Cooley-Tukey DIT NTT (bit-reversal permutation first, then butterflies).
     bit_reverse_permute(&mut vals);
@@ -144,23 +115,7 @@ fn bit_reverse(mut x: usize, bits: usize) -> usize {
     result
 }
 
-fn flatten_tree<const N: usize>(reduction: &Reduction<N>, id: Order, out: &mut Vec<Goldilocks>) -> bool {
-    let inner = match reduction.get(id) {
-        Some(e) => e.inner,
-        None => return false,
-    };
-    match inner {
-        Data::Atom { .. } => match reduction.atom_value(id) {
-            Some(v) => { out.push(v); true }
-            None => false,
-        },
-        Data::Pair { left, right } => {
-            flatten_tree(reduction, left, out) && flatten_tree(reduction, right, out)
-        }
-    }
-}
-
-fn build_tree<const N: usize>(reduction: &mut Reduction<N>, vals: &[Goldilocks]) -> Option<Order> {
+pub(crate) fn build_tree<const N: usize>(reduction: &mut Reduction<N>, vals: &[Goldilocks]) -> Option<Order> {
     if vals.len() == 1 {
         return reduction.atom(vals[0]);
     }
