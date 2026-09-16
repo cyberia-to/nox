@@ -20,7 +20,7 @@ committed in genesis BBG state.
 
 | context | frequency | purpose |
 |---------|-----------|---------|
-| content addressing | every particle | identity = H(content) |
+| content addressing | every file | identity = H(content) |
 | Fiat-Shamir | ~3 per proof | verifier challenges |
 | domain separation | every commitment, nullifier, Merkle op | collision isolation |
 | structural hash | every data | H(pair) = H(H(left) ‖ H(right)) |

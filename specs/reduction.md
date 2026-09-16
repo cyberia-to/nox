@@ -523,7 +523,7 @@ at computation end, the accumulator IS the proof. run one decider to produce the
 
 with polynomial data, hemera drops to ~3 calls per execution: (1) domain separation wrap for the particle, (2) Fiat-Shamir seed for the proof, (3) Brakedown binding for the Lens commitment. the legacy model required hundreds of hemera calls for recursive tree hashing (one permutation per pair in the data). polynomial commitment replaces recursive hashing with O(N) field operations + 1 hemera call per identity.
 
-hemera hash operations (pattern 15) during execution also fold via the sponge construction: each absorption block folds into the accumulator (~30 field ops) instead of being proved independently. a 4 KiB particle hash: ~2,956 constraints folded (was ~54,464 with independent permutations, 18× savings).
+hemera hash operations (pattern 15) during execution also fold via the sponge construction: each absorption block folds into the accumulator (~30 field ops) instead of being proved independently. hashing 4 KiB of data into a particle: ~2,956 constraints folded (was ~54,464 with independent permutations, 18× savings).
 
 ### signal assembly
 

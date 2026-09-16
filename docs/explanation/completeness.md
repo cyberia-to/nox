@@ -59,7 +59,7 @@ four patterns for native operations over 32-bit words. xor, and, not form a func
 
 one pattern. but it closes the entire identity loop.
 
-hash gives nox intrinsic content-addressing. every noun can compute its own cryptographic fingerprint. `axis(s, 0)` returns `H(s)` — a noun can know its own identity. this is the primitive that makes the [[cybergraph]] possible: [[particles]] are identified by hash, [[cyberlinks]] connect hashes, the computation cache keys on hashes.
+hash gives nox intrinsic content-addressing. every noun can compute its own cryptographic fingerprint. `axis(s, 0)` returns `H(s)` — a noun can know its own identity. this is the primitive that makes the [[cybergraph]] possible: [[files]] are identified by hash, [[cyberlinks]] connect [[particles]], the computation cache keys on hashes.
 
 could hash be expressed as pure structural + field patterns? yes. [[Hemera]] (Poseidon2) is ~2800 field multiplications and additions. the hash pattern is simultaneously a Layer 1 pattern and a Layer 3 jet — the jet provides an optimized constraint layout (736 constraints instead of ~2800), but the semantics are identical.
 

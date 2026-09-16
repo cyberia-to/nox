@@ -86,7 +86,7 @@ no previous system in the lineage has this property. S,K operates on untyped ter
 
 ### hash-universal identity
 
-identity equals hash. two values are the same if and only if they hash to the same digest. this makes content-addressing intrinsic rather than bolted on. every [[particle]] in the [[cybergraph]] is identified by the hash of its content. every edge is authenticated by the hashes of its endpoints. deduplication is automatic. references are unforgeable.
+identity equals hash. two values are the same if and only if they hash to the same digest. this makes content-addressing intrinsic rather than bolted on. every [[file]] in the [[cybergraph]] is identified by the hash of its data — its [[particle]]. every edge is authenticated by the hashes of its endpoints. deduplication is automatic. references are unforgeable.
 
 combined with confluence, this produces content-addressed computation: `(H(object), H(formula)) → H(result)` is a permanent, universal, verifiable fact. the planetary computation cache falls out as a direct consequence.
 
