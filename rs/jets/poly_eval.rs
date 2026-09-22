@@ -47,6 +47,13 @@ pub fn poly_eval_jet<const N: usize>(
         Some(v) => v.as_u64() as usize,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
+    // k comes straight from the calling program: reject before it can shift
+    // out of range (panics in debug, silently wraps mod 64 in release) or
+    // drive `Vec::with_capacity(k)` below — the masked `expected` a crafted
+    // small evals tree can satisfy does not bound the unmasked k used there.
+    if k >= usize::BITS as usize {
+        return Outcome::Error(ErrorKind::TypeError);
+    }
 
     // Flatten the balanced binary tree of evaluations into a Vec.
     let mut evals: Vec<Goldilocks> = Vec::new();
@@ -227,6 +234,60 @@ mod tests {
         match poly_eval_jet(&mut ar, obj, body, 1, &NullCalls, &mut NoTrace, 0, &mut row) {
             Outcome::Halt(_) => {}
             o => panic!("expected Halt, got {:?}", o),
+        }
+    }
+
+    /// k=64: `1usize << k` panics in debug (attempt to shift left with
+    /// overflow) before anything validates k. Must be rejected, not crash
+    /// the reducer on an untrusted program.
+    #[test]
+    fn k_at_bit_width_is_rejected_not_a_shift_panic() {
+        let mut ar = Reduction::<256>::new();
+        let k_id  = ar.atom(g(64)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs   = ar.pair(k_id, dummy).unwrap();
+        let leaf  = ar.atom(g(0)).unwrap();
+        let term  = ar.atom(g(0)).unwrap();
+        let rhs   = ar.pair(leaf, term).unwrap();
+        let obj   = ar.pair(lhs, rhs).unwrap();
+        let body  = ar.atom(g(0)).unwrap();
+        let mut row = TraceRow::default();
+        match poly_eval_jet(&mut ar, obj, body, u64::MAX, &NullCalls, &mut NoTrace, 0, &mut row) {
+            Outcome::Error(ErrorKind::TypeError) => {}
+            o => panic!("expected TypeError, got {:?}", o),
+        }
+    }
+
+    /// Pre-fix, a k whose low 6 bits mask to match a small crafted evals
+    /// tree sailed past the `evals.len() != expected` guard (which only
+    /// checks the masked shift) and reached `Vec::with_capacity(k)` with
+    /// the full, unmasked k — an allocation-abort DoS reachable from any
+    /// nox program in a release build, not only a debug-build panic.
+    #[test]
+    fn k_with_small_residual_bits_is_still_rejected() {
+        let mut ar = Reduction::<256>::new();
+        // Largest field element ≡ 1 (mod 64): a masked shift still gives
+        // `expected = 2`, matching the 2-leaf evals tree below, but the raw
+        // k is 8 EiB — `k * size_of::<Goldilocks>()` exceeds `isize::MAX`,
+        // which `Vec::with_capacity` turns into an unconditional "capacity
+        // overflow" process abort, confirmed pre-fix on this exact input.
+        let huge_k = nebu::field::P - 64;
+        let k_id  = ar.atom(g(huge_k)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs   = ar.pair(k_id, dummy).unwrap();
+        let e0    = ar.atom(g(3)).unwrap();
+        let e1    = ar.atom(g(7)).unwrap();
+        let tree  = ar.pair(e0, e1).unwrap(); // length 2 — matches the masked `expected`
+        let term  = ar.atom(g(0)).unwrap();
+        let pt_h  = ar.atom(g(0)).unwrap();
+        let pt    = ar.pair(pt_h, term).unwrap();
+        let rhs   = ar.pair(tree, pt).unwrap();
+        let obj   = ar.pair(lhs, rhs).unwrap();
+        let body  = ar.atom(g(0)).unwrap();
+        let mut row = TraceRow::default();
+        match poly_eval_jet(&mut ar, obj, body, u64::MAX, &NullCalls, &mut NoTrace, 0, &mut row) {
+            Outcome::Error(ErrorKind::TypeError) => {}
+            o => panic!("expected TypeError, got {:?}", o),
         }
     }
 }

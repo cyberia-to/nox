@@ -50,6 +50,12 @@ pub fn ntt_jet<const N: usize>(
         Some(v) => v.as_u64() as usize,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
+    // n comes straight from the calling program: reject before it can shift
+    // out of range (panics in debug, silently wraps mod 64 in release) or
+    // drive an unbounded allocation below.
+    if n >= usize::BITS as usize {
+        return Outcome::Error(ErrorKind::TypeError);
+    }
     let omega = match reduction.atom_value(omega_id) {
         Some(v) => v,
         None => return Outcome::Error(ErrorKind::TypeError),
@@ -259,6 +265,46 @@ mod tests {
         match ntt_jet(&mut ar, obj, body, 5, &NullCalls, &mut NoTrace, 0, &mut row) {
             Outcome::Halt(_) => {}
             o => panic!("expected Halt, got {:?}", o),
+        }
+    }
+
+    /// n=64: `1usize << n` panics in debug (attempt to shift left with
+    /// overflow) before the budget check ever runs. Must be rejected, not
+    /// crash the reducer on an untrusted program.
+    #[test]
+    fn n_at_bit_width_is_rejected_not_a_shift_panic() {
+        let mut ar = Reduction::<256>::new();
+        let n_id  = ar.atom(g(64)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs   = ar.pair(n_id, dummy).unwrap();
+        let leaf  = ar.atom(g(0)).unwrap();
+        let om    = ar.atom(g(1)).unwrap();
+        let rhs   = ar.pair(leaf, om).unwrap();
+        let obj   = ar.pair(lhs, rhs).unwrap();
+        let body  = ar.atom(g(0)).unwrap();
+        let mut row = TraceRow::default();
+        match ntt_jet(&mut ar, obj, body, u64::MAX, &NullCalls, &mut NoTrace, 0, &mut row) {
+            Outcome::Error(ErrorKind::TypeError) => {}
+            o => panic!("expected TypeError, got {:?}", o),
+        }
+    }
+
+    /// n far past the bit width: same rejection, not a huge or wrapped size.
+    #[test]
+    fn n_far_past_bit_width_is_rejected() {
+        let mut ar = Reduction::<256>::new();
+        let n_id  = ar.atom(g(u64::MAX)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs   = ar.pair(n_id, dummy).unwrap();
+        let leaf  = ar.atom(g(0)).unwrap();
+        let om    = ar.atom(g(1)).unwrap();
+        let rhs   = ar.pair(leaf, om).unwrap();
+        let obj   = ar.pair(lhs, rhs).unwrap();
+        let body  = ar.atom(g(0)).unwrap();
+        let mut row = TraceRow::default();
+        match ntt_jet(&mut ar, obj, body, u64::MAX, &NullCalls, &mut NoTrace, 0, &mut row) {
+            Outcome::Error(ErrorKind::TypeError) => {}
+            o => panic!("expected TypeError, got {:?}", o),
         }
     }
 }

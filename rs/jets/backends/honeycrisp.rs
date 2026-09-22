@@ -56,6 +56,12 @@ mod hc_jets {
             Some(v) => v.as_u64() as usize,
             None => return Outcome::Error(ErrorKind::TypeError),
         };
+        // n comes straight from the calling program: reject before it can
+        // shift out of range (panics in debug, silently wraps mod 64 in
+        // release) or drive an unbounded allocation below.
+        if n >= usize::BITS as usize {
+            return Outcome::Error(ErrorKind::TypeError);
+        }
         let omega = match reduction.atom_value(omega_id) {
             Some(v) => v,
             None => return Outcome::Error(ErrorKind::TypeError),
@@ -123,6 +129,14 @@ mod hc_jets {
             Some(v) => v.as_u64() as usize,
             None => return Outcome::Error(ErrorKind::TypeError),
         };
+        // k comes straight from the calling program: reject before it can
+        // shift out of range (panics in debug, silently wraps mod 64 in
+        // release) or drive `Vec::with_capacity(k)` below — the masked
+        // `expected` a crafted small evals tree can satisfy does not bound
+        // the unmasked k used there.
+        if k >= usize::BITS as usize {
+            return Outcome::Error(ErrorKind::TypeError);
+        }
 
         // Flatten the balanced binary tree of evaluations into a Vec<Goldilocks>.
         let mut evals: Vec<Goldilocks> = Vec::new();
