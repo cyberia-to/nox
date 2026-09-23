@@ -14,6 +14,7 @@ canonical specification of the nox virtual machine. this is the source of truth 
 | jets/ | per-group genesis jet specs (hash, recursion, binary-tower, polynomial-ring, isogeny-curves, tropical-semiring, state, decider) | canonical |
 | trace.md | execution trace layout, AIR constraints, polynomial encoding | canonical |
 | encoding.md | canonical data serialization, wire format, content addressing | canonical |
+| [artifact.md](artifact.md) | bounded complete root/DAG artifacts with canonical order | v1, 0.4 integration |
 
 ## reading order
 
