@@ -42,6 +42,13 @@ pub fn hash<const N: usize, T: Tracer>(
     let (input, budget) = match evaluate_unary(reduction, object, body, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
+    finish(reduction, input, budget, row, tracer)
+}
+
+pub(crate) fn finish<const N: usize, T: Tracer>(
+    reduction: &mut Reduction<N>, input: Order, budget: u64,
+    row: &mut TraceRow, tracer: &mut T,
+) -> Outcome {
     let in_digest: Digest = match reduction.digest(input) {
         Some(d) => *d,
         None => return Outcome::Error(ErrorKind::Unavailable),
