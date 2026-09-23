@@ -67,3 +67,81 @@ fn extract_digest(h: &hemera::Hash) -> Digest {
     }
     digest
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
+
+    #[test]
+    fn hash_atom_is_deterministic() {
+        assert_eq!(hash_atom(g(42)), hash_atom(g(42)));
+    }
+
+    #[test]
+    fn hash_atom_distinguishes_values() {
+        assert_ne!(hash_atom(g(1)), hash_atom(g(2)));
+    }
+
+    #[test]
+    fn hash_pair_is_deterministic() {
+        let a = hash_atom(g(1));
+        let b = hash_atom(g(2));
+        assert_eq!(hash_pair(&a, &b), hash_pair(&a, &b));
+    }
+
+    #[test]
+    fn hash_pair_is_not_commutative() {
+        let a = hash_atom(g(1));
+        let b = hash_atom(g(2));
+        assert_ne!(hash_pair(&a, &b), hash_pair(&b, &a));
+    }
+
+    #[test]
+    fn hash_pair_distinguishes_children() {
+        let a = hash_atom(g(1));
+        let b = hash_atom(g(2));
+        let c = hash_atom(g(3));
+        assert_ne!(hash_pair(&a, &b), hash_pair(&a, &c));
+    }
+
+    #[test]
+    fn digest_bytes_round_trips_a_canonical_digest() {
+        let d = hash_atom(g(0xDEAD_BEEF));
+        assert_eq!(digest_from_bytes(&digest_bytes(&d)), d);
+    }
+
+    #[test]
+    fn digest_bytes_is_little_endian_per_limb() {
+        let d = [g(1), g(0x0102_0304_0506_0708), g(0), g(0)];
+        let bytes = digest_bytes(&d);
+        assert_eq!(&bytes[0..8], &[1, 0, 0, 0, 0, 0, 0, 0]);
+        assert_eq!(&bytes[8..16], &[0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01]);
+    }
+
+    // digest_from_bytes canonicalizes every limb (its own doc comment says so):
+    // a raw limb >= p and that limb minus p decode to the identical digest.
+    // This is intentional per the doc comment, but it means digest_from_bytes
+    // alone does not reject a non-canonical particle encoding — callers that
+    // need canonical-only input (e.g. neuron's Content::validate) must guard
+    // it themselves. Pinning the behavior here documents why that guard exists.
+    #[test]
+    fn digest_from_bytes_canonicalizes_an_out_of_range_limb() {
+        let p = nebu::field::P;
+        let mut raw = [0u8; 32];
+        raw[0..8].copy_from_slice(&(p + 5).to_le_bytes());
+        let mut reduced = [0u8; 32];
+        reduced[0..8].copy_from_slice(&5u64.to_le_bytes());
+        assert_eq!(digest_from_bytes(&raw), digest_from_bytes(&reduced));
+    }
+
+    #[test]
+    fn digest_from_bytes_leaves_a_canonical_limb_unchanged() {
+        let mut raw = [0u8; 32];
+        raw[0..8].copy_from_slice(&123u64.to_le_bytes());
+        assert_eq!(digest_from_bytes(&raw)[0], g(123));
+    }
+}
