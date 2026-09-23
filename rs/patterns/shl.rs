@@ -34,6 +34,13 @@ pub fn shl<const N: usize, T: Tracer>(
     let (a, n, budget) = match evaluate_binary_word(reduction, object, af, nf, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
+    finish(reduction, a, n, budget, row, tracer)
+}
+
+pub(crate) fn finish<const N: usize, T: Tracer>(
+    reduction: &mut Reduction<N>, a: u64, n: u64, budget: u64,
+    row: &mut TraceRow, tracer: &mut T,
+) -> Outcome {
     let c = if n >= 32 { 0 } else { (a << n) & WORD_MASK };
     let result = match reduction.atom(Goldilocks::new(c)) {
         Some(r) => r,

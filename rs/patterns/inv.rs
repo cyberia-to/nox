@@ -34,6 +34,13 @@ pub fn inv<const N: usize, T: Tracer>(
         }
     };
 
+    finish(reduction, v, budget, row, tracer)
+}
+
+pub(crate) fn finish<const N: usize, T: Tracer>(
+    reduction: &mut Reduction<N>, v: Goldilocks, budget: u64,
+    row: &mut TraceRow, tracer: &mut T,
+) -> Outcome {
     if v == Goldilocks::ZERO {
         row.r[4] = 0;
         row.r[3] = NIL as u64;

@@ -80,7 +80,7 @@ pub enum ErrorKind {
     CallRejected = 5,
 }
 
-fn cost(tag: u64) -> u64 {
+pub(crate) fn cost(tag: u64) -> u64 {
     // unknown tags get COST_DEFAULT; the dispatch later returns Malformed
     if (tag as usize) < COSTS.len() { COSTS[tag as usize] } else { 1 }
 }
@@ -220,7 +220,7 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
 /// Emit a synthetic error row for fast-fail paths (depth-exceeded, malformed
 /// dispatch). Preserves the "every reduce() call emits at least one row"
 /// invariant so the verifier can bind the halted step to a budget state.
-fn emit_error_row<T: Tracer>(
+pub(crate) fn emit_error_row<T: Tracer>(
     tracer: &mut T, object: Order, formula: Order,
     tag: u64, budget_in: u64, kind: ErrorKind,
 ) {
@@ -236,7 +236,7 @@ fn emit_error_row<T: Tracer>(
 }
 
 /// Emit a halt row for budget exhaustion. Status: budget_in == budget_out.
-fn emit_halt_row<T: Tracer>(
+pub(crate) fn emit_halt_row<T: Tracer>(
     tracer: &mut T, object: Order, formula: Order, tag: u64, budget_in: u64,
 ) {
     let mut row = TraceRow::default();

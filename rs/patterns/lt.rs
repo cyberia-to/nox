@@ -31,6 +31,13 @@ pub fn lt<const N: usize, T: Tracer>(
     let (va, vb, budget) = match evaluate_binary_field(reduction, object, af, bf, budget, hints, tracer, depth, registry) {
         Ok(v) => v, Err(o) => return o,
     };
+    finish(reduction, va, vb, budget, row, tracer)
+}
+
+pub(crate) fn finish<const N: usize, T: Tracer>(
+    reduction: &mut Reduction<N>, va: Goldilocks, vb: Goldilocks, budget: u64,
+    row: &mut TraceRow, tracer: &mut T,
+) -> Outcome {
     let a = va.as_u64();
     let b = vb.as_u64();
     let is_lt = a < b;

@@ -19,6 +19,7 @@ extern crate alloc;
 
 pub mod data;
 pub mod reduce;
+pub mod sequential;
 pub mod call;
 pub mod patterns;
 pub mod trace;
