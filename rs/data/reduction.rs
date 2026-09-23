@@ -27,6 +27,7 @@ pub struct Reduction<const N: usize> {
     // SAFETY: entries[0..count] are initialized
     entries: [core::mem::MaybeUninit<DataEntry>; N],
     count: u32,
+    allocation_limit: u32,
     index_keys: [Digest; N],
     index_vals: [Order; N],
     index_mask: u32,
@@ -41,12 +42,14 @@ impl<const N: usize> Default for Reduction<N> {
 impl<const N: usize> Reduction<N> {
     pub fn new() -> Self {
         assert!(N.is_power_of_two(), "order size must be power of 2");
+        assert!(N <= u32::MAX as usize, "order size must fit Order");
         Self {
             // `[const { … }; N]` initializes each slot uninitialized at compile
             // time. Replaces the deprecated `MaybeUninit::uninit().assume_init()`
             // pattern which was UB on older toolchains and Miri-flagged.
             entries: [const { core::mem::MaybeUninit::uninit() }; N],
             count: 0,
+            allocation_limit: ((N / 4) * 3) as u32,
             index_keys: [[Goldilocks::ZERO; 4]; N],
             index_vals: [NIL; N],
             index_mask: (N as u32) - 1,
@@ -58,7 +61,7 @@ impl<const N: usize> Reduction<N> {
         // bounded worst-case (~N/4 max probe). The hash-cons table lives in
         // the same Reduction; refusing past 3N/4 means index_insert always finds
         // an empty slot quickly.
-        if (self.count as usize) >= (N / 4) * 3 { return None; }
+        if self.count >= self.allocation_limit { return None; }
         let idx = self.count;
         self.entries[idx as usize] = core::mem::MaybeUninit::new(entry);
         self.count += 1;
@@ -217,6 +220,18 @@ impl<const N: usize> Reduction<N> {
 
     pub fn count(&self) -> u32 { self.count }
 
+    /// Maximum distinct nodes admitted by this arena, including loaded data.
+    pub fn allocation_limit(&self) -> u32 { self.allocation_limit }
+
+    /// Tighten the arena's lifetime node allowance. Existing nodes stay valid;
+    /// hash-cons hits still succeed at the limit. A rejected change is inert.
+    /// The limit cannot be raised, even after a failed allocation.
+    pub fn limit_allocations(&mut self, limit: u32) -> bool {
+        if limit < self.count || limit > self.allocation_limit { return false; }
+        self.allocation_limit = limit;
+        true
+    }
+
     // ── std-only: fork / reinter ───────────────────────────────────
     // Used by the parallel executor (parallel.rs) to give each thread
     // a private mutable Reduction derived from the shared parent state.
@@ -237,6 +252,7 @@ impl<const N: usize> Reduction<N> {
     pub fn fork(&self) -> Self {
         let mut new = Reduction::<N>::new();
         new.count = self.count;
+        new.allocation_limit = self.allocation_limit;
         new.index_mask = self.index_mask;
         // Copy initialized entries (SAFETY: entries[0..count] are initialized).
         for i in 0..self.count as usize {
@@ -293,3 +309,7 @@ impl<const N: usize> Reduction<N> {
         Some(&self.get(r)?.hash)
     }
 }
+
+#[cfg(test)]
+#[path = "allocation_tests.rs"]
+mod allocation_tests;
