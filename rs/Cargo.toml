@@ -1,6 +1,6 @@
 [package]
 name = "cyber-nox"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 description = "proof-native virtual machine over the Goldilocks field"
 license-file = "LICENSE"
@@ -28,8 +28,12 @@ honeycrisp = ["std", "dep:acpu"]
 nebu = { package = "strata-nebu", version = "0.1", path = "../../strata/nebu/rs" }
 hemera = { package = "cyber-hemera", version = "0.3", path = "../../hemera/rs" }
 cyber-lens-core = { version = "0.1", path = "../../lens/core", optional = true }
-cyber-lens-brakedown = { version = "0.1", path = "../../lens/brakedown", optional = true }
-acpu = { version = "0.2", optional = true }
+cyber-lens-brakedown = { version = "0.2.0", path = "../../lens/brakedown", optional = true }
+
+
+# acpu contains Apple AMX/SME code; all-features on other targets uses CPU jets.
+[target.'cfg(all(target_os = "macos", target_arch = "aarch64"))'.dependencies]
+acpu = { version = "0.2", path = "../../honeycrisp/acpu", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
