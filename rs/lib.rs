@@ -25,6 +25,7 @@ pub mod trace;
 pub mod bound;
 pub mod parallel;
 pub mod encode;
+pub mod artifact;
 pub mod jets;
 
 #[cfg(feature = "brakedown")]
