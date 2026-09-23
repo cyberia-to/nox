@@ -66,10 +66,13 @@ pub type JetFn<const N: usize> = fn(
 /// Predicate for template jets: returns true if `formula` matches the template.
 pub type TemplatePredicate<const N: usize> = fn(&Reduction<N>, Order) -> bool;
 
+/// Admission predicate for an exact optimization. False preserves pure dispatch.
+pub type InputPredicate<const N: usize> = fn(&Reduction<N>, Order, &DigestKey, u64) -> bool;
+
 /// Jet registry — maps formula digests to optimized implementations.
 pub struct JetRegistry<const N: usize> {
     /// Exact matches sorted by DigestKey for binary search.
-    exact: Vec<(DigestKey, JetFn<N>)>,
+    exact: Vec<(DigestKey, JetFn<N>, Option<InputPredicate<N>>)>,
     /// Template matches scanned linearly (few entries, so linear is fine).
     templates: Vec<(TemplatePredicate<N>, JetFn<N>)>,
 }
@@ -82,8 +85,27 @@ impl<const N: usize> JetRegistry<N> {
 
     /// Insert an exact-match jet. Maintains sorted order for binary search.
     pub fn insert_exact(&mut self, key: DigestKey, f: JetFn<N>) {
-        let pos = self.exact.partition_point(|(k, _)| k < &key);
-        self.exact.insert(pos, (key, f));
+        self.insert_exact_guarded_inner(key, f, None);
+    }
+
+    /// Register an exact optimization with allocation-free input admission.
+    pub fn insert_exact_guarded(&mut self, key: DigestKey, f: JetFn<N>, predicate: InputPredicate<N>) {
+        self.insert_exact_guarded_inner(key, f, Some(predicate));
+    }
+
+    fn insert_exact_guarded_inner(&mut self, key: DigestKey, f: JetFn<N>, predicate: Option<InputPredicate<N>>) {
+        let pos = self.exact.partition_point(|(k, _, _)| k < &key);
+        // One deterministic implementation per identity; replacement preserves sorting.
+        if self.exact.get(pos).is_some_and(|(k, _, _)| *k == key) {
+            self.exact[pos] = (key, f, predicate);
+        } else { self.exact.insert(pos, (key, f, predicate)); }
+    }
+
+    /// Runtime lookup. Decline without mutation, allocation or budget charge.
+    pub fn lookup_exact_for(&self, key: &DigestKey, reduction: &Reduction<N>, object: Order, budget: u64) -> Option<JetFn<N>> {
+        let i = self.exact.binary_search_by_key(key, |(k, _, _)| *k).ok()?;
+        let (_, f, predicate) = self.exact[i];
+        if predicate.is_none_or(|p| p(reduction, object, key, budget)) { Some(f) } else { None }
     }
 
     /// Insert a template-match jet. Appended; linear scan order.
@@ -94,7 +116,7 @@ impl<const N: usize> JetRegistry<N> {
     /// Look up an exact jet by formula digest key.
     #[inline]
     pub fn lookup_exact(&self, key: &DigestKey) -> Option<JetFn<N>> {
-        self.exact.binary_search_by_key(key, |(k, _)| *k)
+        self.exact.binary_search_by_key(key, |(k, _, _)| *k)
             .ok()
             .map(|i| self.exact[i].1)
     }
@@ -223,5 +245,20 @@ mod tests {
         let d2 = compute_genesis_digests();
         assert_eq!(d1.poly_eval, d2.poly_eval);
         assert_eq!(d1.merkle_verify, d2.merkle_verify);
+    }
+}
+
+#[cfg(test)]
+mod admission_registry_tests {
+    use super::*;
+    #[test]
+    fn replacing_an_identity_does_not_leave_an_unguarded_duplicate() {
+        fn jet<const N:usize>(_:&mut Reduction<N>,_:Order,_:Order,b:u64,_:&dyn CallProvider<N>,_:&mut dyn Tracer,_:u64,_:&mut TraceRow)->Outcome { Outcome::Halt(b) }
+        fn refuse<const N:usize>(_:&Reduction<N>,_:Order,_:&DigestKey,_:u64)->bool {false}
+        let mut registry=JetRegistry::<256>::empty();let key=[1,2,3,4];
+        registry.insert_exact(key,jet);registry.insert_exact_guarded(key,jet,refuse);
+        assert_eq!(registry.exact_count(),1);
+        assert!(registry.lookup_exact(&key).is_some());
+        assert!(registry.lookup_exact_for(&key,&Reduction::new(),0,100).is_none());
     }
 }
