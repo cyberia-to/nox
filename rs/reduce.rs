@@ -20,7 +20,7 @@ use crate::jets::registry::{JetRegistry, digest_key};
 // constrains one soundness witness slot per budget unit. Keep this table
 // in sync with specs/trace.md and specs/patterns/README.md cost column.
 
-const COSTS: [u64; 18] = [
+pub(crate) const COSTS: [u64; 18] = [
     1,   // 0  axis
     1,   // 1  quote
     1,   // 2  compose

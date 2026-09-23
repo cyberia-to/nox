@@ -84,3 +84,79 @@ pub(crate) const PATTERN_COSTS: [u64; 18] = [
     1,   // 16 call (DYNAMIC continuation)
     1,   // 17 look
 ];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // The doc comment above promises PATTERN_COSTS mirrors reduce::COSTS;
+    // nothing checked that until now, so the two tables could silently
+    // drift and the cached O(1) bound on DataEntry would stop matching
+    // what reduce() actually charges per pattern.
+    #[test]
+    fn pattern_costs_matches_reduce_costs() {
+        assert_eq!(PATTERN_COSTS, crate::reduce::COSTS);
+    }
+
+    #[test]
+    fn value_returns_inner_n_for_both_variants() {
+        assert_eq!(Cost::Exact(5).value(), 5);
+        assert_eq!(Cost::Dynamic(7).value(), 7);
+    }
+
+    #[test]
+    fn is_dynamic_only_true_for_dynamic() {
+        assert!(!Cost::Exact(0).is_dynamic());
+        assert!(Cost::Dynamic(0).is_dynamic());
+    }
+
+    #[test]
+    fn sum_of_two_exact_is_exact() {
+        assert_eq!(Cost::sum(3, Cost::Exact(2), Cost::Exact(4)), Cost::Exact(9));
+    }
+
+    #[test]
+    fn sum_dynamic_is_absorbing_from_either_side() {
+        assert!(Cost::sum(1, Cost::Dynamic(2), Cost::Exact(3)).is_dynamic());
+        assert!(Cost::sum(1, Cost::Exact(2), Cost::Dynamic(3)).is_dynamic());
+    }
+
+    #[test]
+    fn sum_saturates_instead_of_overflowing() {
+        let c = Cost::sum(u64::MAX, Cost::Exact(u64::MAX), Cost::Exact(1));
+        assert_eq!(c, Cost::Exact(u64::MAX));
+    }
+
+    #[test]
+    fn sum1_matches_sum_with_zero_second_child() {
+        assert_eq!(Cost::sum1(3, Cost::Exact(2)), Cost::Exact(5));
+        assert!(Cost::sum1(3, Cost::Dynamic(2)).is_dynamic());
+    }
+
+    #[test]
+    fn sum1_saturates_instead_of_overflowing() {
+        assert_eq!(Cost::sum1(u64::MAX, Cost::Exact(u64::MAX)), Cost::Exact(u64::MAX));
+    }
+
+    #[test]
+    fn branch_takes_max_of_the_two_arms() {
+        let c = Cost::branch(1, Cost::Exact(1), Cost::Exact(10), Cost::Exact(3));
+        assert_eq!(c, Cost::Exact(12)); // 1 (parent) + 1 (test) + max(10, 3)
+
+        let c2 = Cost::branch(1, Cost::Exact(1), Cost::Exact(3), Cost::Exact(10));
+        assert_eq!(c2, Cost::Exact(12)); // symmetric: still picks the larger arm
+    }
+
+    #[test]
+    fn branch_dynamic_propagates_from_test_or_either_arm() {
+        assert!(Cost::branch(0, Cost::Dynamic(0), Cost::Exact(0), Cost::Exact(0)).is_dynamic());
+        assert!(Cost::branch(0, Cost::Exact(0), Cost::Dynamic(0), Cost::Exact(0)).is_dynamic());
+        assert!(Cost::branch(0, Cost::Exact(0), Cost::Exact(0), Cost::Dynamic(0)).is_dynamic());
+    }
+
+    #[test]
+    fn branch_saturates_instead_of_overflowing() {
+        let c = Cost::branch(u64::MAX, Cost::Exact(1), Cost::Exact(1), Cost::Exact(0));
+        assert_eq!(c, Cost::Exact(u64::MAX));
+    }
+}
