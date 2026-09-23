@@ -17,10 +17,10 @@ pub fn genesis_cpu<const N: usize>() -> JetRegistry<N> {
     let mut reg = JetRegistry::empty();
 
     // ── exact-match jets ─────────────────────────────────────────────────────
-    reg.insert_exact(digests.poly_eval,     poly_eval::poly_eval_jet::<N>);
+    reg.insert_exact_guarded(digests.poly_eval, poly_eval::poly_eval_jet::<N>, crate::jets::admission::poly_admitted::<N>);
     reg.insert_exact(digests.merkle_verify, merkle_verify::merkle_verify_jet::<N>);
     reg.insert_exact(digests.fri_fold,      fri_fold::fri_fold_jet::<N>);
-    reg.insert_exact(digests.ntt,           ntt::ntt_jet::<N>);
+    reg.insert_exact_guarded(digests.ntt, ntt::ntt_jet::<N>, crate::jets::admission::ntt_admitted::<N>);
     reg.insert_exact(digests.cyberlink,     state::cyberlink_jet::<N>);
     reg.insert_exact(digests.decider,       decider::decider_jet::<N>);
 

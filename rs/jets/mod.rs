@@ -17,6 +17,8 @@
 //! results, orders of magnitude slower. See specs/jets.md.
 
 pub mod registry;
+mod admission;
+pub use admission::{MAX_ACCELERATED_DEPTH, MAX_ACCELERATED_WORDS};
 pub mod formulas;
 pub mod backends;
 
@@ -29,3 +31,6 @@ pub mod decider;
 
 #[cfg(feature = "brakedown")]
 pub mod poly_eval_brakedown;
+
+#[cfg(test)]
+mod admission_tests;

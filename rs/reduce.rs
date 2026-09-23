@@ -144,7 +144,7 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
     // ── jet registry check ───────────────────────────────────────────────────
     // Fires before tag cost and before tag dispatch. Jets own all budget.
     if let Some(fkey) = reduction.digest(formula).map(digest_key) {
-        let jet = registry.lookup_exact(&fkey)
+        let jet = registry.lookup_exact_for(&fkey, reduction, object, budget_in)
             .or_else(|| registry.lookup_template(reduction, formula));
         if let Some(jet_fn) = jet {
             let outcome = jet_fn(reduction, object, body, budget_in, hints,
