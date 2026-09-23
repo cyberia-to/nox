@@ -1,0 +1,34 @@
+{
+  "baseline": "0b84e803f16d7dc3feba0907c5f89ee9582c7131",
+  "files": {
+    "rs/data/reduction.rs": "34625c3c94e420079771faa870fe7b4743d3d05f977ce5ffcebb5e4d9b2ba020",
+    "rs/data/allocation_tests.rs": "3291b5bd2b4d2fb4decfbf347269ecd46c9e41b57ceb04e6c6c6833ae9986058",
+    "specs/reduction.md": "9d68fe80257702ea442177c56455236614ff6d7f95053375c4bf6f0e80eff16f"
+  },
+  "validation": [
+    {
+      "command": "cargo test --workspace --release --locked",
+      "passed": true,
+      "passed_tests": 182,
+      "log_sha256": "adc51a22962731ce38002fed523dec069c6b21795eb71f3efbe7eabe9ef594e5"
+    },
+    {
+      "command": "cargo test -p cyber-nox --release --features std --locked",
+      "passed": true,
+      "passed_tests": 183,
+      "log_sha256": "8104b0f563a7bcc2b1045237c8e73bcf06338ecd44b9beb1f51c856a5ab2314c"
+    },
+    {
+      "command": "cargo check --workspace --all-targets --locked",
+      "passed": true,
+      "passed_tests": null,
+      "log_sha256": "9be484527c0fc1dea6ecb35a7abe4977eb1648c548fc352f3785ed19cf0bfacf"
+    },
+    {
+      "command": "cargo check -p cyber-nox --no-default-features --locked",
+      "passed": true,
+      "passed_tests": null,
+      "log_sha256": "0863113a4c9bb5bd31e36048d1a214041e50d354496cd028367cbec195c41d76"
+    }
+  ]
+}

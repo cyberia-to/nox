@@ -49,6 +49,27 @@ in the canonical instantiation (nox<Goldilocks>), Budget is an F_p element with 
 
 ## budget metering
 
+### Local arena allowance
+
+`Reduction<N>` admits at most `3 * floor(N / 4)` distinct nodes by default.
+`limit_allocations(limit)` can only tighten that lifetime allowance; a value
+below the current node count or above the current allowance is rejected without
+changing the arena. Zero is valid only on an empty arena. Loading artifacts,
+raw allocation and evaluation share this counter. No reset or reclamation is
+implicit between loading and executing a job.
+
+At the limit, new allocations return `None` (evaluation maps this to
+`Unavailable`). Hash-cons hits still return existing nodes. A compound operation
+may allocate a prefix before failing: those nodes remain charged and valid;
+failure never yields a successful partial result. Forks inherit the limit,
+and re-interning obeys the destination's limit. Parallel forks have separate
+counters, so this is not a process-wide parallel memory bound.
+
+The allowance bounds logical nodes, not host bytes. The arena still reserves
+its fixed arrays for `N` slots. The caller must separately admit physical
+arena, evaluator stack, codec workspace and trace storage. Compiler execution
+uses a sequential worker with independent hard limits.
+
 every reduce() call costs 1, deducted before the pattern executes. if remaining budget is less than 1 (or less than the multi-step cost for axis/inv/hash), reduction halts.
 
 ```
