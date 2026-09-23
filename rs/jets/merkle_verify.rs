@@ -70,6 +70,14 @@ pub fn merkle_verify_jet<const N: usize>(
         None => return Outcome::Error(ErrorKind::TypeError),
     };
 
+    // The budget charged above is `depth * 25`; verify_path performs exactly
+    // one hash per path entry. A path longer than the declared depth would
+    // let a caller buy N hash steps for the price of a smaller declared
+    // depth — a metering bypass, not merely a wrong-shape input.
+    if path.len() as u64 != depth {
+        return Outcome::Error(ErrorKind::Malformed);
+    }
+
     let valid = verify_path(reduction, current_id, &path, root_id);
     let result_val = if valid { Goldilocks::ONE } else { Goldilocks::ZERO };
 
@@ -179,6 +187,56 @@ mod tests {
         (root, hn0, hn1)
     }
 
+    /// 4-leaf tree. Returns (root, leaf0_digest, path-to-root steps for leaf0:
+    /// [(sibling, dir), (sibling, dir)]).
+    fn four_leaf_tree<const N: usize>(
+        ar: &mut Reduction<N>,
+    ) -> (Order, Order, Vec<(Order, u64)>) {
+        let a0 = ar.atom(g(100)).unwrap();
+        let l0 = nox_hash(ar, a0);
+        let a1 = ar.atom(g(200)).unwrap();
+        let l1 = nox_hash(ar, a1);
+        let a2 = ar.atom(g(300)).unwrap();
+        let l2 = nox_hash(ar, a2);
+        let a3 = ar.atom(g(400)).unwrap();
+        let l3 = nox_hash(ar, a3);
+        let p01 = ar.pair(l0, l1).unwrap();
+        let h01 = nox_hash(ar, p01);
+        let p23 = ar.pair(l2, l3).unwrap();
+        let h23 = nox_hash(ar, p23);
+        let p_root = ar.pair(h01, h23).unwrap();
+        let root = nox_hash(ar, p_root);
+        // leaf0 is the left child at both levels -> siblings are on the right (dir=1).
+        (root, l0, Vec::from([(l1, 1u64), (h23, 1u64)]))
+    }
+
+    /// Build a calling object from an explicit path (every step encoded)
+    /// and a possibly mismatched declared `depth`.
+    fn run_with_path<const N: usize>(
+        ar: &mut Reduction<N>,
+        root: Order,
+        current: Order,
+        steps: &[(Order, u64)],
+        declared_depth: u64,
+        budget: u64,
+    ) -> Outcome {
+        let depth_id  = ar.atom(g(declared_depth)).unwrap();
+        let formula_p = ar.atom(g(0)).unwrap();
+        let root_f    = ar.pair(root, formula_p).unwrap();
+        let meta      = ar.pair(depth_id, root_f).unwrap();
+        let mut path  = ar.atom(g(0)).unwrap(); // terminator
+        for &(sibling, dir) in steps.iter().rev() {
+            let dir_atom = ar.atom(g(dir)).unwrap();
+            let step     = ar.pair(sibling, dir_atom).unwrap();
+            path = ar.pair(step, path).unwrap();
+        }
+        let data       = ar.pair(current, path).unwrap();
+        let object     = ar.pair(meta, data).unwrap();
+        let dummy_body = ar.atom(g(0)).unwrap();
+        let mut row    = TraceRow::default();
+        merkle_verify_jet(ar, object, dummy_body, budget, &NullCalls, &mut NoTrace, 0, &mut row)
+    }
+
     /// Build calling object and run merkle_verify_jet.
     fn run<const N: usize>(
         ar: &mut Reduction<N>,
@@ -253,6 +311,42 @@ mod tests {
         match merkle_verify_jet(&mut ar, object, dummy_body, 10, &NullCalls, &mut NoTrace, 0, &mut row) {
             Outcome::Halt(_) => {}
             o => panic!("expected Halt, got {:?}", o),
+        }
+    }
+
+    #[test]
+    fn valid_two_step_path_at_matching_depth_returns_one() {
+        let mut ar = Reduction::<512>::new();
+        let (root, l0, steps) = four_leaf_tree(&mut ar);
+        match run_with_path(&mut ar, root, l0, &steps, 2, 10_000) {
+            Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(1)),
+            o => panic!("{:?}", o),
+        }
+    }
+
+    /// A path longer than the declared depth would otherwise let a caller
+    /// buy N real hash steps for the price of a smaller depth's budget —
+    /// the exact metering bypass this jet must reject, not silently verify.
+    #[test]
+    fn path_longer_than_declared_depth_is_rejected_not_underpriced() {
+        let mut ar = Reduction::<512>::new();
+        let (root, l0, steps) = four_leaf_tree(&mut ar);
+        // Genuinely valid 2-step path, but declared depth=1 (budget=25,
+        // not the 50 two real hash steps cost).
+        match run_with_path(&mut ar, root, l0, &steps, 1, 10_000) {
+            Outcome::Error(ErrorKind::Malformed) => {}
+            o => panic!("expected Malformed, got {:?}", o),
+        }
+    }
+
+    #[test]
+    fn path_shorter_than_declared_depth_is_rejected() {
+        let mut ar = Reduction::<512>::new();
+        let (root, l0, steps) = four_leaf_tree(&mut ar);
+        // Only the first step supplied, but depth claims 2.
+        match run_with_path(&mut ar, root, l0, &steps[..1], 2, 10_000) {
+            Outcome::Error(ErrorKind::Malformed) => {}
+            o => panic!("expected Malformed, got {:?}", o),
         }
     }
 }
