@@ -50,6 +50,11 @@ pub fn fri_fold_jet<const N: usize>(
         Some(v) => v.as_u64() as usize,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
+    // k comes straight from the calling program: reject before it can shift
+    // out of range (panics in debug, silently wraps mod 64 in release).
+    if k >= usize::BITS as usize {
+        return Outcome::Error(ErrorKind::TypeError);
+    }
     let r = match reduction.atom_value(r_id) {
         Some(v) => v,
         None => return Outcome::Error(ErrorKind::TypeError),
@@ -191,4 +196,47 @@ mod tests {
             o => panic!("{:?}", o),
         }
     }
+
+    /// k=64: `1usize << k` panics in debug (attempt to shift left with
+    /// overflow) before the tree-length check ever runs. Must be rejected,
+    /// not crash the reducer on an untrusted program.
+    #[test]
+    fn k_at_bit_width_is_rejected_not_a_shift_panic() {
+        let mut ar = Reduction::<256>::new();
+        let k_id  = ar.atom(g(64)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs   = ar.pair(k_id, dummy).unwrap();
+        let leaf  = ar.atom(g(1)).unwrap();
+        let r_id  = ar.atom(g(1)).unwrap();
+        let rhs   = ar.pair(leaf, r_id).unwrap();
+        let obj   = ar.pair(lhs, rhs).unwrap();
+        let body  = ar.atom(g(0)).unwrap();
+        let mut row = TraceRow::default();
+        match fri_fold_jet(&mut ar, obj, body, 100_000, &NullCalls, &mut NoTrace, 0, &mut row) {
+            Outcome::Error(ErrorKind::TypeError) => {}
+            o => panic!("expected TypeError, got {:?}", o),
+        }
+    }
+
+    /// a large-but-valid k (larger than any real tree, smaller than the
+    /// bit-width bound) still rejects cleanly on the tree-length mismatch,
+    /// not on the shift itself.
+    #[test]
+    fn k_below_bit_width_falls_through_to_the_length_check() {
+        let mut ar = Reduction::<256>::new();
+        let k_id  = ar.atom(g(40)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs   = ar.pair(k_id, dummy).unwrap();
+        let leaf  = ar.atom(g(1)).unwrap();
+        let r_id  = ar.atom(g(1)).unwrap();
+        let rhs   = ar.pair(leaf, r_id).unwrap();
+        let obj   = ar.pair(lhs, rhs).unwrap();
+        let body  = ar.atom(g(0)).unwrap();
+        let mut row = TraceRow::default();
+        match fri_fold_jet(&mut ar, obj, body, 100_000, &NullCalls, &mut NoTrace, 0, &mut row) {
+            Outcome::Error(ErrorKind::TypeError) => {}
+            o => panic!("expected TypeError, got {:?}", o),
+        }
+    }
+
 }
