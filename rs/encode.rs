@@ -71,6 +71,18 @@ const MAX_WIRE_BYTES: usize = 1 << 24;
 /// p = 2^64 - 2^32 + 1; values >= p are out of range for field elements
 const GOLDILOCKS_P: u64 = 0xFFFF_FFFF_0000_0001;
 
+/// a particle's 32 bytes are 4 little-endian Goldilocks limbs (digest_bytes's
+/// own encoding). every limb must be < p, the same range check SIZE_ATOM
+/// already enforces — otherwise `digest_from_bytes`'s silent canonicalization
+/// lets two distinct 64-byte wire payloads decode to the same particle id.
+fn particle_limbs_canonical(p: &Particle) -> bool {
+    (0..4).all(|i| {
+        let mut buf = [0u8; 8];
+        buf.copy_from_slice(&p[i * 8..(i + 1) * 8]);
+        u64::from_le_bytes(buf) < GOLDILOCKS_P
+    })
+}
+
 // ── primitive encoders ───────────────────────────────────────────────────────
 
 /// encode an atom: the field value, 8 bytes little-endian. tag-free.
@@ -102,6 +114,9 @@ pub fn particle_of(encoded: &[u8]) -> Result<Particle, DecodeError> {
         SIZE_PAIR => {
             let left:  Particle = encoded[0..32].try_into().unwrap();
             let right: Particle = encoded[32..64].try_into().unwrap();
+            if !particle_limbs_canonical(&left) || !particle_limbs_canonical(&right) {
+                return Err(DecodeError::FieldOutOfRange);
+            }
             let ld = digest_from_bytes(&left);
             let rd = digest_from_bytes(&right);
             Ok(digest_bytes(&hash_pair(&ld, &rd)))
@@ -205,6 +220,9 @@ pub fn decode(bytes: &[u8]) -> Result<DecodedData, DecodeError> {
         SIZE_PAIR => {
             let left:  Particle = bytes[0..32].try_into().unwrap();
             let right: Particle = bytes[32..64].try_into().unwrap();
+            if !particle_limbs_canonical(&left) || !particle_limbs_canonical(&right) {
+                return Err(DecodeError::FieldOutOfRange);
+            }
             Ok(DecodedData::Pair { left, right })
         }
         _ => Err(DecodeError::InvalidLength),
@@ -421,6 +439,41 @@ mod tests {
         // value = p is invalid
         let bytes = GOLDILOCKS_P.to_le_bytes();
         assert_eq!(decode(&bytes), Err(DecodeError::FieldOutOfRange));
+    }
+
+    #[test]
+    fn pair_out_of_range_limb_rejected() {
+        // a pair whose left particle's first limb is >= p: neither decode()
+        // nor particle_of() may accept it — digest_from_bytes would otherwise
+        // canonicalize it silently.
+        let mut left = [0u8; 32];
+        left[0..8].copy_from_slice(&GOLDILOCKS_P.to_le_bytes());
+        let right = particle_of(&encode_atom(g(2))).unwrap();
+        let encoded = encode_pair(&left, &right);
+        assert_eq!(decode(&encoded), Err(DecodeError::FieldOutOfRange));
+        assert_eq!(particle_of(&encoded), Err(DecodeError::FieldOutOfRange));
+    }
+
+    #[test]
+    fn pair_non_canonical_limb_no_longer_collides() {
+        // two distinct 64-byte wire payloads that would otherwise decode to
+        // the identical particle id via digest_from_bytes's silent
+        // canonicalization (raw limb p+5 canonicalizes to the same field
+        // value as 5) must now both fail closed instead of colliding.
+        let canonical_right = particle_of(&encode_atom(g(9))).unwrap();
+
+        let mut left_canonical = [0u8; 32];
+        left_canonical[0..8].copy_from_slice(&5u64.to_le_bytes());
+        let pair_a = encode_pair(&left_canonical, &canonical_right);
+
+        let mut left_noncanonical = [0u8; 32];
+        left_noncanonical[0..8].copy_from_slice(&(GOLDILOCKS_P + 5).to_le_bytes());
+        let pair_b = encode_pair(&left_noncanonical, &canonical_right);
+
+        assert_ne!(pair_a.to_vec(), pair_b.to_vec());
+        assert!(particle_of(&pair_a).is_ok());
+        assert_eq!(particle_of(&pair_b), Err(DecodeError::FieldOutOfRange));
+        assert_eq!(decode(&pair_b), Err(DecodeError::FieldOutOfRange));
     }
 
     #[test]
