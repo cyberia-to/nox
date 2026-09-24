@@ -1,0 +1,152 @@
+{
+  "schema": "nox/heap-arena-validation/v1",
+  "kind": "local-development",
+  "source_revision": "568ac16f0ab2adbaceda29d1997691b2446e2f24",
+  "host": {
+    "uname -ms": "Darwin arm64",
+    "rustc -Vv": "rustc 1.95.0 (59807616e 2026-04-14) (Homebrew)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.3"
+  },
+  "environment": {
+    "CARGO_TARGET_DIR": "/Users/master/cyber/.worktrees/selfhost-0.4/trident/target"
+  },
+  "gates": [
+    {
+      "command": [
+        "cargo",
+        "check",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--offline"
+      ],
+      "exit_code": 0,
+      "rust_warnings": 0,
+      "log": "/tmp/nox-04-heap-check.log",
+      "sha256": "d760f23b54cd5a1e4ed445158ddaa9231b6663fc1ead25b7d09d6c30a6a37af4",
+      "revision": "568ac16f0ab2adbaceda29d1997691b2446e2f24"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--workspace",
+        "--locked",
+        "--offline"
+      ],
+      "exit_code": 0,
+      "rust_warnings": 0,
+      "log": "/tmp/nox-04-heap-tests.log",
+      "sha256": "cac69cd6ec0cc2937a3e641767ad7bb2ba4d420af962c553bdd7b96bdf143f77",
+      "tests": {
+        "passed": 196,
+        "failed": 0,
+        "ignored": 0
+      },
+      "revision": "568ac16f0ab2adbaceda29d1997691b2446e2f24"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox",
+        "--no-default-features",
+        "--lib"
+      ],
+      "exit_code": 0,
+      "rust_warnings": 0,
+      "log": "/tmp/nox-04-heap-no-std.log",
+      "sha256": "846f36099128cf106f773045bb72016712cb26e684414d2b3644afbc9fc10c07",
+      "tests": {
+        "passed": 196,
+        "failed": 0,
+        "ignored": 0
+      },
+      "revision": "568ac16f0ab2adbaceda29d1997691b2446e2f24"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox",
+        "--features",
+        "parallel",
+        "--lib"
+      ],
+      "exit_code": 0,
+      "rust_warnings": 0,
+      "log": "/tmp/nox-04-heap-parallel.log",
+      "sha256": "268fd80b284f4be2abf1ab2e7313d3c19e76454ccb554a19e07f95aa99f44472",
+      "tests": {
+        "passed": 195,
+        "failed": 0,
+        "ignored": 0
+      },
+      "revision": "568ac16f0ab2adbaceda29d1997691b2446e2f24"
+    },
+    {
+      "revision": "568ac16f0ab2adbaceda29d1997691b2446e2f24",
+      "command": [
+        "cargo",
+        "bench",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox",
+        "--bench",
+        "reduction",
+        "--",
+        "--test"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/nox-04-heap-bench-smoke.log",
+      "sha256": "40cff7bd284e2111e12b543bd51e62bba5a3693d43d5c743456a7668f0b55a68",
+      "rust_warnings": 0
+    },
+    {
+      "revision": "568ac16f0ab2adbaceda29d1997691b2446e2f24",
+      "command": [
+        "cargo",
+        "install",
+        "--path",
+        "cli",
+        "--locked",
+        "--offline",
+        "--force",
+        "--root",
+        "../install"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/nox-04-heap-install.log",
+      "sha256": "12fcf43cf4ecbebf6d9abe2bdd40bad48ea8bc41176c4004aa5e96fb499c4af8",
+      "rust_warnings": 0
+    }
+  ],
+  "review": [
+    "Heap allocation is initialized by raw field writes, with no reference to partially initialized Reduction.",
+    "All typed fields initialized before Box creation; entries are MaybeUninit and count zero.",
+    "Null allocation returns explicit error; invalid capacities rejected before allocation.",
+    "No fallible operation or panic path after successful allocation.",
+    "Global allocation Layout matches Box destruction.",
+    "Both constructors share logical allowance and canonical hash-cons behavior."
+  ],
+  "limits": [
+    "The benchmark invocation is a correctness smoke run, not a timing comparison.",
+    "Parallel fork still constructs a by-value arena.",
+    "No Miri, six-platform or compiler-scale proof acceptance claimed."
+  ],
+  "tests": [
+    "Invalid capacities 0/3 and injected null allocator result; N=1 retains zero logical capacity.",
+    "Heap/value parity for orders, particles, cached bounds, exact lifetime quota and hash-cons reuse.",
+    "Same sequential formula yields atom14, same cost/frames/node count and canonical codec bytes.",
+    "2^20 slots constructed, used and dropped on a 128KiB thread stack."
+  ]
+}
