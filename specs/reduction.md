@@ -66,7 +66,8 @@ and re-interning obeys the destination's limit. Parallel forks have separate
 counters, so this is not a process-wide parallel memory bound.
 
 The allowance bounds logical nodes, not host bytes. The arena still reserves
-its fixed arrays for `N` slots. The caller must separately admit physical
+its fixed arrays for `N` slots, either by value or through the fallible
+[in-place heap constructor](data/reduction.md#memory). The caller must separately admit physical
 arena, evaluator stack, codec workspace and trace storage. Compiler execution
 uses a sequential worker with independent hard limits.
 
