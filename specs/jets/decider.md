@@ -20,6 +20,20 @@ output:        accept / reject
 constraints:   89 (optimistic) or 825 (conservative)
 ```
 
+## implementation status
+
+`rs/jets/decider.rs` (0.1.0) does not run the constraint check this page
+describes. it charges the 825-constraint conservative cost, then delegates
+the accept/reject answer entirely to its `CallProvider` hint — no sumcheck
+replay, CCS evaluation or Brakedown check happens in the jet itself, and
+neither `proof_id` nor `instance_id` constrains the hint's answer. a hint
+that always answers "valid" is accepted for any input. the 0.2.0 work is a
+real CPU verifier, a call from this jet into zheng's `SpartanVerifier` over
+the actual HyperNova accumulator (`roadmap/decider-product.md` §4: "the
+verifier is zheng's; nox holds the formula-hash anchor") — not a change to
+this page's constraint accounting, which describes the target once that
+verifier exists. see `audit/decider-jet-trusts-hint.md`.
+
 ## three optimizations
 
 | # | optimization | what it does | before → after |
