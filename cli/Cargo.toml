@@ -5,7 +5,7 @@
 # ---
 [package]
 name = "nox-cli"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "nox command-line interface"
 license = "Cyber"
@@ -15,5 +15,5 @@ name = "nox"
 path = "main.rs"
 
 [dependencies]
-nox = { package = "cyber-nox", path = "../rs" }
-nebu = { package = "strata-nebu", path = "../../strata/nebu/rs" }
+nox = { version = "0.3.0", package = "cyber-nox", path = "../rs" }
+nebu = { version = "0.1.1", package = "strata-nebu", path = "../../strata/nebu/rs" }

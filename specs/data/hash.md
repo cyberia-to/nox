@@ -19,7 +19,7 @@ capacity layout for data hashing:
 
 atom encoding: 8 bytes, value as little-endian u64. domain = 0. no type tag byte.
 
-the hash output is 32 bytes (4 field elements). this is the `particle` — the content-derived identity of data.
+the hash output is 32 bytes (4 field elements). this is the `particle` — the content-derived identity of data — the identity of a file in the cybergraph: what a cyberlink holds.
 
 properties:
 - deterministic: same data always produces same particle
