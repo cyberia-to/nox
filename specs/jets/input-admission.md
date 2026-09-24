@@ -8,12 +8,12 @@ object, formula and budget. It does not return a synthetic semantic error.
 `lookup_exact_for`. Unguarded third-party entries preserve their prior API.
 
 CPU and Honeycrisp NTT/poly-eval kernels share the same preflight. The maximum
-accelerated expansion is65536 field words (depth16), independent of pointer
+accelerated expansion is 65536 field words (depth 16), independent of pointer
 width. Exponents are checked in their original u64 representation before any
 shift, cast, allocation or traversal. Balanced-tree validation visits precisely
 the requested depth: internal nodes must be pairs and every depth-zero leaf an
-atom. Traversal follows at most131071 expanded nodes, even for a compact shared
-DAG; recursion depth is at most16. Shared subtrees are legal and count once per
+atom. Traversal follows at most 131071 expanded nodes, even for a compact shared
+DAG; recursion depth is at most 16. Shared subtrees are legal and count once per
 logical position. Arbitrary unbalanced flattening is inadmissible.
 
 Poly-eval additionally requires k atom coordinates through k right-list pairs;
@@ -36,7 +36,7 @@ unsupported expansion returns `Unavailable`; malformed shapes return a typed
 error. Those direct-call statuses are not used to replace declined runtime
 formula evaluation. CPU and Honeycrisp use the same decoder and budget order.
 
-The existing admitted costs remain n*2^n for NTT and2^k for poly-eval. Pure
+The existing admitted costs remain n*2^n for NTT and 2^k for poly-eval. Pure
 fallback follows the ordinary pattern budget schedule. This repair does not
 claim equal remaining budgets between an admitted faster jet and its pure
 expansion; it requires exact unchanged budget behavior when a jet is declined.
