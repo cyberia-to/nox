@@ -30,16 +30,40 @@ is the same everywhere. (one global identity, one local — see soft3/specs/term
 
 ## memory
 
-data is stored in a flat array indexed by `Order`. no heap allocation, no
-pointer chasing — pure index arithmetic.
+Data is stored in flat arrays indexed by `Order`. `Reduction<N>` reserves
+`N` entries plus the hash-consing key/value arrays. Its physical size is
+`core::mem::size_of::<Reduction<N>>()`; the entry includes its cached particle
+and cost bound. The caller admits this storage separately from the logical
+node allowance, evaluator frames, codec workspace and trace storage.
+
+`Reduction::new()` returns the fixed-size arena by value. Callers of this path
+must provide stack space for the arena and constructor/move temporaries.
+`Reduction::try_new_boxed()` allocates and initializes the same representation
+directly in the heap and returns `Result<Box<Reduction<N>>, AllocationError>`.
+Its stack usage is independent of `N`; it constructs no whole-arena temporary.
+Both constructors begin with count zero, empty hash-consing slots and the same
+logical allowance. Allocation strategy changes no `Order`, particle, cost,
+codec bytes or reduction semantics.
+
+The heap constructor checks that `N` is a nonzero power of two fitting `u32`
+before allocation. Invalid capacity returns `AllocationError::InvalidCapacity`;
+a null global-allocation result returns `AllocationError::OutOfMemory`.
+Success owns one allocation released when its `Box` is dropped. Host allocator
+and operating-system policies still determine whether a memory request can be
+satisfied. Parallel `fork()` retains its existing by-value construction.
 
 ## bounds
 
 | parameter | value | rationale |
 |-----------|-------|-----------|
-| max depth | 64 | covers 2^64 leaves — more than particle count in cybergraph. axis path = 64 bits max |
-| max count | 2^24 (16M data nodes) | 16M × 16 bytes = 256 MB. configurable compile-time const. phone mode: 2^20 (16 MB). server: 2^28 (4 GB) |
-| max atom size | 4 field elements (32 bytes) | hash type = 4 × F_p. field and word = 1 × F_p |
+| slots | compile-time power-of-two `N` fitting `u32` | indexed storage and hash-cons table mask |
+| distinct nodes | `3 * floor(N / 4)` by default | hash-cons table load factor at most three quarters; callers may tighten the lifetime allowance |
+| atom | one Goldilocks field element | compound values, including a four-field particle, use structured pairs |
+| axis | field-encoded binary path | traversal consumes the path bits and fails if it reaches an atom early |
+
+The [local arena allowance](../reduction.md#local-arena-allowance) defines
+failure and accounting across loading and execution. A larger physical arena
+alone does not increase a caller's admitted lifetime allowance.
 
 ## structural sharing (DAG)
 

@@ -10,6 +10,10 @@ use super::hash::{Digest, hash_atom, hash_pair};
 use super::cost::{Cost, PATTERN_COSTS};
 use super::{Order, NIL};
 
+#[path = "reduction_heap.rs"]
+mod heap;
+pub use heap::AllocationError;
+
 /// order entry — data node + cached identity hash + cached cost bound.
 ///
 /// `bound` is computed at construction time so reduce-time partition decisions
