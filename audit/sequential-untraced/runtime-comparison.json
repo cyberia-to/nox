@@ -72,14 +72,27 @@
     }
   ],
   "matching_observations": {
-    "charged_reductions": 99999945,
-    "remaining_budget": 55,
     "allocated_nodes": 2069519,
     "peak_frames": 2087,
     "evaluator_checkpoints": 89547033,
     "outcome": "Halt(55)",
     "loaded_nodes": 166994,
-    "status": "budget_exhausted"
+    "status": "budget_exhausted",
+    "propagated_halt_budget": 55
   },
-  "speed_ratio": 3.569732753262896
+  "speed_ratio": 3.569732753262896,
+  "accounting_correction": {
+    "raw_receipts_preserved": true,
+    "invalid_raw_field": "charged_reductions",
+    "invalid_raw_value": 99999945,
+    "reason": "The original probe subtracts a propagated child Halt remainder from the root budget. Failure propagation does not refund reservations, so this is not an exact charged-reduction measurement.",
+    "valid_observations": [
+      "matching Outcome::Halt(55)",
+      "matching arena node count",
+      "matching peak frames",
+      "matching evaluator checkpoint count",
+      "paired evaluator elapsed times"
+    ],
+    "exact_charged_reductions": null
+  }
 }

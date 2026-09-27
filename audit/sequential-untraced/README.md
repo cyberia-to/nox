@@ -81,11 +81,27 @@ the parallel suite independently covers cached behavior, errors and limits.
 `runtime-comparison.json` records the probe commands, source revisions and
 binary/input hashes for `runtime-before.json` and `runtime-cached.json`.
 The exact same compiler artifact and job exhausted their budget in 57,437 ms
-uncached and 16,090 ms cached, a 3.57x improvement in this run. Both used
-99,999,945 charged reductions with 55 remaining, allocated 2,069,519 arena
-nodes, peaked at 2,087 active frames and invoked the cancellation predicate
-89,547,033 times. Loading is excluded from those evaluator times. This is one
-local paired observation, not a statistical throughput claim.
+uncached and 16,090 ms cached, a 3.57x improvement in this run. Both returned
+`Halt(55)`, allocated 2,069,519 arena nodes, peaked at 2,087 active frames and
+invoked the cancellation predicate 89,547,033 times. Loading is excluded from
+those evaluator times. This is one local paired observation, not a statistical
+throughput claim.
+
+The preserved raw probe receipts label root budget minus the propagated halt
+budget as `charged_reductions`. That label is incorrect for failed executions:
+the propagated remainder can belong to a reserved child rather than the root.
+The reported 99,999,945 is therefore an unvalidated subtraction, not an exact
+charged-work observation. `runtime-comparison.json` records this correction;
+the raw receipts and original probe snapshot are retained unchanged.
+
+The source-level counterexample is `cons(quote(7), [99 0])` with root budget
+100. The parent charges one reduction and reserves child budgets 1 and 0,
+because an unknown-tag formula has cached bound zero. The quote charges one
+reduction. Dispatch of tag 99 then returns `Halt(0)` before its default cost can
+be charged. The failed parent forwards that outcome without refunding the
+unused root allowance. Root-budget subtraction would report 100 instead of
+the two actual charges. Successful outcomes retain an exact root remainder;
+failed-cost reporting needs separate accounting.
 
 ## Limits
 
