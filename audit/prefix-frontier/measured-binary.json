@@ -1,0 +1,6 @@
+{
+  "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-nox-frontier/measured-prefix-frontier-1eaa8a4",
+  "sha256": "a4c080c89595b9e4971caa56ad7f23732f38fbe07d8669a5d2cf705db8b1597a",
+  "bytes": 1910528,
+  "scope": "exact measured stage120/stage4 binary retained before helper-only review fixes"
+}

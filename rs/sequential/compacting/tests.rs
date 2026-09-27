@@ -6,6 +6,7 @@ use crate::sequential::tests::{atom, axis, binary, loop_core, op, quote};
 
 mod collection;
 mod compiler;
+mod frontier;
 
 fn limits() -> CompactionLimits {
     CompactionLimits {

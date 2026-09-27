@@ -1,0 +1,200 @@
+{
+  "schema": "nox/prefix-frontier-evidence/v1",
+  "production_revision": "1eaa8a494f994e4da6b20509469c1e62624f3f2d",
+  "branch": "chore/0.4-prefix-frontier",
+  "scope": "No production runtime or existing discovery golden changes. Measured helper source and binary retained separately from final helper-only review changes.",
+  "measured_inputs_manifest_sha256": "afb6762fee00a50f2943792f8e3c4b70f0d7b8af8aff062c30bdf16e08c87aac",
+  "intentional_post_measure_identity_changes": [
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/rs/sequential/compacting/tests/frontier.rs",
+      "measured_sha256": "1fe80bb6404a674e54660e421bf0eb5208abe128ec7c41c7c205056eae23c170",
+      "final_sha256": "0a71a8ba6b15e11725ffd5a1a064c7957005726615836073ba3524f4c4ceb12a"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-nox-frontier/release/deps/nox-155be5d25f5b91d7",
+      "measured_sha256": "a4c080c89595b9e4971caa56ad7f23732f38fbe07d8669a5d2cf705db8b1597a",
+      "final_sha256": "388b86f731b47a9f0c62b6c7fbca4593f2cab57aeabdf255976edbd48d54af12"
+    }
+  ],
+  "measured_binary_copy": {
+    "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-nox-frontier/measured-prefix-frontier-1eaa8a4",
+    "sha256": "a4c080c89595b9e4971caa56ad7f23732f38fbe07d8669a5d2cf705db8b1597a",
+    "bytes": 1910528,
+    "scope": "exact measured stage120/stage4 binary retained before helper-only review fixes"
+  },
+  "source_files": [
+    {
+      "path": "rs/sequential/compacting/tests.rs",
+      "bytes": 15818,
+      "sha256": "947d7611a361cfc17963144c5213e6c3979d830bbb8737f83366ee3ffaf11455"
+    },
+    {
+      "path": "rs/sequential/compacting/tests/frontier.rs",
+      "bytes": 10611,
+      "sha256": "0a71a8ba6b15e11725ffd5a1a064c7957005726615836073ba3524f4c4ceb12a"
+    }
+  ],
+  "audit_files": [
+    {
+      "path": "audit/prefix-frontier/README.md",
+      "bytes": 8161,
+      "sha256": "a1219f09a4d4d7b4bb152965e75c1f92c26fe8c07b90fcc3259fe48fc11dc93c"
+    },
+    {
+      "path": "audit/prefix-frontier/archive-verification.json",
+      "bytes": 765,
+      "sha256": "48c4c768bdefa356a870b502115df7cc005df2be7e668d1cd6835885dc23c455"
+    },
+    {
+      "path": "audit/prefix-frontier/archived-evidence.json",
+      "bytes": 7133,
+      "sha256": "90013f428ec0c92e9153edd9cc444b8cc274880e614ea0f0a57d257cae421b35"
+    },
+    {
+      "path": "audit/prefix-frontier/checks-commands.json",
+      "bytes": 3403,
+      "sha256": "0c05b6b5e8f7c9cd654813a5181b466d43268935f657b337d26e5fab4d90634d"
+    },
+    {
+      "path": "audit/prefix-frontier/clippy-final.log.gz",
+      "bytes": 154,
+      "sha256": "97b674a667fbf315515b53a2a0a74ba93985837e5ebc8de48e6381b48af89c50"
+    },
+    {
+      "path": "audit/prefix-frontier/clippy-parallel-final.log.gz",
+      "bytes": 155,
+      "sha256": "0c4e9b47f2267ea15c9b66cd5eda1682b797382fe821cc1311ba670f40e38525"
+    },
+    {
+      "path": "audit/prefix-frontier/clippy-parallel.log.gz",
+      "bytes": 624,
+      "sha256": "b4019febd506aae88332f43cbec18cfa6db7195f7e808b7fdd78e63cb2391cc0"
+    },
+    {
+      "path": "audit/prefix-frontier/clippy.log.gz",
+      "bytes": 705,
+      "sha256": "d7ef73582dbe73975e0f11bf85ce0cc48fdc4db3d05e7607600bfb60ac8fcccd"
+    },
+    {
+      "path": "audit/prefix-frontier/design.md",
+      "bytes": 1472,
+      "sha256": "9c14f7ac69b5ba017f02048f8b19d3c15c85b4b0082375dac3751efd81d86efe"
+    },
+    {
+      "path": "audit/prefix-frontier/fmt-all.log.gz",
+      "bytes": 36274,
+      "sha256": "fb986c61a9da2dc33e2dfb889676d9b6c6aa5803cc9fb21a3777f578f888387d"
+    },
+    {
+      "path": "audit/prefix-frontier/fmt-helper-final.log.gz",
+      "bytes": 20,
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+    },
+    {
+      "path": "audit/prefix-frontier/fmt-helper.log.gz",
+      "bytes": 20,
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+    },
+    {
+      "path": "audit/prefix-frontier/full-run-baseline.json",
+      "bytes": 2222,
+      "sha256": "9091ddc5765346b5ba49822455ea610419f2bc6bb78851e33d7b9f6317c74a69"
+    },
+    {
+      "path": "audit/prefix-frontier/helper-test.log.gz",
+      "bytes": 878,
+      "sha256": "3c546bd147248a4ece45fe1e1803c716b74c89db2182e48771bb3173b6f5c1f4"
+    },
+    {
+      "path": "audit/prefix-frontier/measured-binary.json",
+      "bytes": 321,
+      "sha256": "05f8030136c8bd084e06592c20b5b6ae9b0d6d3fd5553717160b5fa7dd2c6a95"
+    },
+    {
+      "path": "audit/prefix-frontier/measured-frontier.rs",
+      "bytes": 8984,
+      "sha256": "1fe80bb6404a674e54660e421bf0eb5208abe128ec7c41c7c205056eae23c170"
+    },
+    {
+      "path": "audit/prefix-frontier/post-measure-helper.patch.gz",
+      "bytes": 1851,
+      "sha256": "f5d63d859cf5d064560298a84a2a4be9b348f2a3deea4c998db715566010b1b9"
+    },
+    {
+      "path": "audit/prefix-frontier/run-inputs.json",
+      "bytes": 2713,
+      "sha256": "afb6762fee00a50f2943792f8e3c4b70f0d7b8af8aff062c30bdf16e08c87aac"
+    },
+    {
+      "path": "audit/prefix-frontier/saved-native_selfhost_prefix.tri",
+      "bytes": 3971,
+      "sha256": "9da6fe44ddbc2b2a83151347d54a8c4baa2d6519778b8b5f8c979b2614725cf9"
+    },
+    {
+      "path": "audit/prefix-frontier/source-inferred-positions.json",
+      "bytes": 20026,
+      "sha256": "8aefd3d59becd3e8898010174e2bcec0a8d05c4933289773df1b0b73340bf3e6"
+    },
+    {
+      "path": "audit/prefix-frontier/stage120-command.json",
+      "bytes": 1061,
+      "sha256": "9db6948f7aecfc6b65eeb103a7788b265059b94dca90f1e071d94a2fabe050d2"
+    },
+    {
+      "path": "audit/prefix-frontier/stage120.dag",
+      "bytes": 555,
+      "sha256": "5b02b427df288b4d1fab8c6b9c3d267dc3233a7a6bad8132755806224f0377a0"
+    },
+    {
+      "path": "audit/prefix-frontier/stage120.json",
+      "bytes": 1819,
+      "sha256": "e35834411e04f97f3def83e02d293a75b6f7214f64513b4e6914bf08ecb6f2f6"
+    },
+    {
+      "path": "audit/prefix-frontier/stage120.log.gz",
+      "bytes": 447,
+      "sha256": "cd1d2a983f2cfa1b2ce68c9380b270a5105ea3d75a27a047d1565ded923b1261"
+    },
+    {
+      "path": "audit/prefix-frontier/stage4-command.json",
+      "bytes": 1053,
+      "sha256": "0e940cea752e01668cc62fee5338f2785b292d98e6bc479c3a0c494336d57e3f"
+    },
+    {
+      "path": "audit/prefix-frontier/stage4.json",
+      "bytes": 1787,
+      "sha256": "bb426966c5c5fc3c898926ada07ef450a46df91af99bf4b90765b49d22430e39"
+    },
+    {
+      "path": "audit/prefix-frontier/stage4.log.gz",
+      "bytes": 603,
+      "sha256": "bb036c5def8b4d47d988707d34c9437951f5731e98603c7dc06a4c47d2f1d4ef"
+    },
+    {
+      "path": "audit/prefix-frontier/test-helper.patch.gz",
+      "bytes": 3136,
+      "sha256": "cd62f131426748450866970d123355b5cc3ca7ae524150982dd5cf487b107246"
+    },
+    {
+      "path": "audit/prefix-frontier/tests-final.log.gz",
+      "bytes": 4085,
+      "sha256": "5de98b2080d5adf446e03df8fa9ffa7615e95c89d5513f277f80cfb199a0db2e"
+    },
+    {
+      "path": "audit/prefix-frontier/tests-parallel-final.log.gz",
+      "bytes": 4057,
+      "sha256": "27fe697de456c01d1926310931b8d6f8e4f060005f9edd5f0c17a55ae7b9fe8d"
+    },
+    {
+      "path": "audit/prefix-frontier/tests-parallel.log.gz",
+      "bytes": 3960,
+      "sha256": "fab4b8674d2a23db6a40265aac1bc8b9a39843c9173cde8013a985fbd9c06c7c"
+    },
+    {
+      "path": "audit/prefix-frontier/tests.log.gz",
+      "bytes": 4045,
+      "sha256": "2af740fd962b38ff68cfc2cc2473e649599e4f8be5e6849b4004e9005aaad6f7"
+    }
+  ],
+  "archive_identity_manifest": "audit/prefix-frontier/archived-evidence.json"
+}
