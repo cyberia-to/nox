@@ -210,7 +210,7 @@ mod tests {
             Outcome::Ok(r, _) => r,
             o => panic!("{:?}", o),
         };
-        let last = tracer.0.iter().filter(|r| r.r()[0] == 15).last().unwrap();
+        let last = tracer.0.iter().rfind(|r| r.r()[0] == 15).unwrap();
         assert_eq!(last.r()[3], result_id as u64);
         assert_eq!(last.r()[14], 24, "squeeze sentinel is 24");
     }

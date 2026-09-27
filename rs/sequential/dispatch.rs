@@ -44,16 +44,16 @@ pub(super) fn enter<const N: usize, T: Tracer>(
             return Ok(call(stack, frame, body, reservation.child));
         }
         4 => {
-            if let Some((test, rest)) = pair_children(ar, body) {
-                if let Some((yes, no)) = pair_children(ar, rest) {
-                    let reservation = Reservation::unary(ar, test, budget);
-                    frame.phase = Phase::BranchTest {
-                        yes,
-                        no,
-                        reservation,
-                    };
-                    return Ok(call(stack, frame, test, reservation.child));
-                }
+            if let Some((test, rest)) = pair_children(ar, body)
+                && let Some((yes, no)) = pair_children(ar, rest)
+            {
+                let reservation = Reservation::unary(ar, test, budget);
+                frame.phase = Phase::BranchTest {
+                    yes,
+                    no,
+                    reservation,
+                };
+                return Ok(call(stack, frame, test, reservation.child));
             }
             Outcome::Error(ErrorKind::Malformed)
         }
@@ -81,12 +81,13 @@ pub(super) fn enter<const N: usize, T: Tracer>(
     Ok(complete(frame, outcome, tracer))
 }
 
-pub(super) fn resume<const N: usize, T: Tracer>(
+pub(super) fn resume<const N: usize, T: Tracer, const CACHED: bool>(
     ar: &mut Reduction<N>,
     mut frame: Frame,
     outcome: Outcome,
     stack: &mut Vec<Frame>,
     tracer: &mut T,
+    cache: &mut finalizer_cache::Cache<CACHED>,
 ) -> Action {
     let (value, remaining) = match outcome {
         Outcome::Ok(value, remaining) => (value, remaining),
@@ -98,13 +99,12 @@ pub(super) fn resume<const N: usize, T: Tracer>(
         }
     };
     let outcome = match frame.phase {
-        Phase::Unary(reservation) => finish::unary(
-            ar,
-            value,
-            reservation.refund(remaining),
-            &mut frame.row,
-            tracer,
-        ),
+        Phase::Unary(reservation) => {
+            let budget = reservation.refund(remaining);
+            cache.finish(frame.row.r[0], value, crate::NIL, budget, || {
+                finish::unary(ar, value, budget, &mut frame.row, tracer)
+            })
+        }
         Phase::BinaryLeft {
             a,
             b,
@@ -142,7 +142,9 @@ pub(super) fn resume<const N: usize, T: Tracer>(
                     budget: joined,
                 };
             }
-            finish::binary(ar, left, value, joined, &mut frame.row, tracer)
+            cache.finish(frame.row.r[0], left, value, joined, || {
+                finish::binary(ar, left, value, joined, &mut frame.row, tracer)
+            })
         }
         Phase::BranchTest {
             yes,

@@ -8,11 +8,14 @@ fn compare(
     for &budget in budgets {
         let mut old = Reduction::<512>::new();
         let mut new = Reduction::<512>::new();
+        let mut cached = Reduction::<512>::new();
         let (obj, f) = build(&mut old);
         assert_eq!(build(&mut new), (obj, f));
+        assert_eq!(build(&mut cached), (obj, f));
         if let Some(extra) = extra_nodes {
             assert!(old.limit_allocations(old.count() + extra));
             assert!(new.limit_allocations(new.count() + extra));
+            assert!(cached.limit_allocations(cached.count() + extra));
         }
         let mut old_trace = VecTrace::default();
         let mut new_trace = VecTrace::default();
@@ -26,17 +29,30 @@ fn compare(
             &mut new_trace,
         )
         .unwrap();
+        let cached_result =
+            reduce_cached(&mut cached, obj, f, budget, Limits { max_frames: 256 }).unwrap();
+        assert_eq!(
+            std::format!("{:?}", expected),
+            std::format!("{:?}", cached_result.outcome),
+            "cached budget {budget}, formula {f}"
+        );
+        assert_eq!(actual.peak_frames, cached_result.peak_frames);
         assert_eq!(
             std::format!("{:?}", expected),
             std::format!("{:?}", actual.outcome),
             "budget {budget}, formula {f}"
         );
         assert_eq!(old.count(), new.count());
+        assert_eq!(old.count(), cached.count());
         for i in 0..old.count() {
             assert_eq!(old.atom_value(i), new.atom_value(i));
             assert_eq!(old.head(i), new.head(i));
             assert_eq!(old.tail(i), new.tail(i));
             assert_eq!(old.digest(i), new.digest(i));
+            assert_eq!(old.atom_value(i), cached.atom_value(i));
+            assert_eq!(old.head(i), cached.head(i));
+            assert_eq!(old.tail(i), cached.tail(i));
+            assert_eq!(old.digest(i), cached.digest(i));
         }
         assert_eq!(
             old_trace.0.len(),

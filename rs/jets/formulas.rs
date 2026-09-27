@@ -448,7 +448,7 @@ mod tests {
         //   result = 1 + 0*(5-1) = 1
         let mut ar = Reduction::<4096>::new();
         let p = 0xFFFF_FFFF_0000_0001u64; // Goldilocks prime
-        let half = (p + 1) / 2;           // multiplicative inverse of 2 mod p
+        let half = p.div_ceil(2);         // multiplicative inverse of 2 mod p
         // point = [x1=0, x0=1/2]  (big-endian: most-significant variable first)
         match run_poly_eval_formula(&mut ar, &[g(0), g(2), g(4), g(6)], &[g(0), g(half)]) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(1)),

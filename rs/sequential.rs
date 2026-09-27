@@ -3,7 +3,10 @@ use crate::{Order, Outcome, Reduction, TraceRow, Tracer};
 use alloc::vec::Vec;
 
 mod dispatch;
+mod finalizer_cache;
 mod finish;
+
+pub use finalizer_cache::finalizer_cache_storage_bytes;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Limits {
@@ -119,6 +122,51 @@ pub fn reduce_controlled<const N: usize, T: Tracer>(
     tracer: &mut T,
     cancelled: &mut impl FnMut() -> bool,
 ) -> Result<Execution, Error> {
+    execute::<N, T, false>(ar, object, formula, budget, limits, tracer, cancelled)
+}
+
+/// Trace-free execution with a fixed-size, execution-local finalizer cache.
+/// Guest reductions, arena admission and continuation limits are unchanged.
+pub fn reduce_cached<const N: usize>(
+    ar: &mut Reduction<N>,
+    object: Order,
+    formula: Order,
+    budget: u64,
+    limits: Limits,
+) -> Result<Execution, Error> {
+    reduce_cached_controlled(ar, object, formula, budget, limits, &mut || false)
+}
+
+/// Cached trace-free execution with the same cancellation checkpoints as
+/// `reduce_controlled`. Cache storage is reported separately from frame storage.
+pub fn reduce_cached_controlled<const N: usize>(
+    ar: &mut Reduction<N>,
+    object: Order,
+    formula: Order,
+    budget: u64,
+    limits: Limits,
+    cancelled: &mut impl FnMut() -> bool,
+) -> Result<Execution, Error> {
+    execute::<N, crate::NoTrace, true>(
+        ar,
+        object,
+        formula,
+        budget,
+        limits,
+        &mut crate::NoTrace,
+        cancelled,
+    )
+}
+
+fn execute<const N: usize, T: Tracer, const CACHED: bool>(
+    ar: &mut Reduction<N>,
+    object: Order,
+    formula: Order,
+    budget: u64,
+    limits: Limits,
+    tracer: &mut T,
+    cancelled: &mut impl FnMut() -> bool,
+) -> Result<Execution, Error> {
     if limits.max_frames == 0 {
         return Err(Error::Frames);
     }
@@ -129,6 +177,7 @@ pub fn reduce_controlled<const N: usize, T: Tracer>(
     stack
         .try_reserve_exact(limits.max_frames as usize)
         .map_err(|_| Error::Allocation)?;
+    let mut cache = finalizer_cache::Cache::<CACHED>::new()?;
     let mut action = Action::Enter {
         object,
         formula,
@@ -152,7 +201,7 @@ pub fn reduce_controlled<const N: usize, T: Tracer>(
                 dispatch::enter(ar, object, formula, budget, &mut stack, tracer)?
             }
             Action::Return(outcome) => match stack.pop() {
-                Some(frame) => dispatch::resume(ar, frame, outcome, &mut stack, tracer),
+                Some(frame) => dispatch::resume(ar, frame, outcome, &mut stack, tracer, &mut cache),
                 None => {
                     return Ok(Execution {
                         outcome,

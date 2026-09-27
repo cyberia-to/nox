@@ -1,0 +1,98 @@
+{
+  "schema": "nox/finalizer-cache-runtime-comparison/v1",
+  "kind": "local-development",
+  "build": {
+    "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/trident",
+    "env": {
+      "CARGO_TARGET_DIR": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-probe"
+    },
+    "command": [
+      "cargo",
+      "build",
+      "--release",
+      "--locked",
+      "--offline",
+      "--example",
+      "selfhost_runtime_probe"
+    ]
+  },
+  "sources": {
+    "nox": "c9f7486a74fe81bfc194b598da40f6343ecb2ef1",
+    "trident": "b453e3444bc5a8ac9c4e7f78910aeab6c59e0581",
+    "hemera": "a931a0a8e7ed369852ce0f8bc6451a59745ee692",
+    "strata": "d2eb1763b8caf04e6c7647ac6fe99761519c2ef9"
+  },
+  "nox_worktree_manifest": "validation.json",
+  "probe": {
+    "binary": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-probe/release/examples/selfhost_runtime_probe",
+    "binary_sha256": "eb6b26ce3606d50df779f04ae0aae5bb11da5a5feeca70aaa3846781c6320634",
+    "source": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/trident/examples/selfhost_runtime_probe.rs",
+    "source_sha256": "d796c355755c93b4b9757356760957d2fef33b07b58a0a310746b0114a56972c",
+    "snapshot": "runtime-probe.rs"
+  },
+  "inputs": {
+    "compiler": {
+      "path": "/Users/master/cyber/.worktrees/joy-soft3-reaudit/measurements/final-c1.dag",
+      "sha256": "4aed7fc83be96156fcb65c3bbb369c192ad27f894ab78a030e3588056a66d112"
+    },
+    "job": {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/baseline-closure-files-cdfin1zh/job.dag",
+      "sha256": "8378325b29710c5982281ac69b81df93b4b0325eea7a9654bd8341f06b13356c"
+    }
+  },
+  "runs": [
+    {
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-probe/release/examples/selfhost_runtime_probe",
+        "--artifact",
+        "/Users/master/cyber/.worktrees/joy-soft3-reaudit/measurements/final-c1.dag",
+        "--input",
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/baseline-closure-files-cdfin1zh/job.dag",
+        "--output",
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/runtime-before.json"
+      ],
+      "exit_code": 0,
+      "receipt": "runtime-before.json",
+      "receipt_sha256": "b94cbf9136ed6b22ee819aced8cb7e66fd93a27af69ed98ee74fee8904c4bc34"
+    },
+    {
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-probe/release/examples/selfhost_runtime_probe",
+        "--artifact",
+        "/Users/master/cyber/.worktrees/joy-soft3-reaudit/measurements/final-c1.dag",
+        "--input",
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/baseline-closure-files-cdfin1zh/job.dag",
+        "--output",
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/runtime-cached.json",
+        "--cached"
+      ],
+      "exit_code": 0,
+      "receipt": "runtime-cached.json",
+      "receipt_sha256": "9a16846bac8a8da29fc123382ef0ed3554a3a33f958051934b770088d5420297"
+    }
+  ],
+  "matching_observations": {
+    "allocated_nodes": 2069519,
+    "peak_frames": 2087,
+    "evaluator_checkpoints": 89547033,
+    "outcome": "Halt(55)",
+    "loaded_nodes": 166994,
+    "status": "budget_exhausted",
+    "propagated_halt_budget": 55
+  },
+  "speed_ratio": 3.569732753262896,
+  "accounting_correction": {
+    "raw_receipts_preserved": true,
+    "invalid_raw_field": "charged_reductions",
+    "invalid_raw_value": 99999945,
+    "reason": "The original probe subtracts a propagated child Halt remainder from the root budget. Failure propagation does not refund reservations, so this is not an exact charged-reduction measurement.",
+    "valid_observations": [
+      "matching Outcome::Halt(55)",
+      "matching arena node count",
+      "matching peak frames",
+      "matching evaluator checkpoint count",
+      "paired evaluator elapsed times"
+    ],
+    "exact_charged_reductions": null
+  }
+}
