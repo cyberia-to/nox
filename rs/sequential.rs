@@ -2,10 +2,16 @@
 use crate::{Order, Outcome, Reduction, TraceRow, Tracer};
 use alloc::vec::Vec;
 
+mod compacting;
 mod dispatch;
 mod finalizer_cache;
 mod finish;
 
+pub use compacting::{
+    CompactingExecution, CompactionFailure, CompactionFailureKind, CompactionLimits,
+    CompactionStats, compaction_storage_bytes, reduce_compacting_cached,
+    reduce_compacting_cached_controlled,
+};
 pub use finalizer_cache::finalizer_cache_storage_bytes;
 
 #[derive(Debug, Clone, Copy)]

@@ -1,0 +1,463 @@
+diff --git a/rs/sequential.rs b/rs/sequential.rs
+index 2332c4d..8d9382e 100644
+--- a/rs/sequential.rs
++++ b/rs/sequential.rs
+@@ -5,6 +5,8 @@ use alloc::vec::Vec;
+ mod dispatch;
+ mod finalizer_cache;
+ mod finish;
++#[cfg(test)]
++mod liveness;
+ 
+ pub use finalizer_cache::finalizer_cache_storage_bytes;
+ 
+@@ -184,10 +186,14 @@ fn execute<const N: usize, T: Tracer, const CACHED: bool>(
+         budget,
+     };
+     let mut peak_frames = 0;
++    #[cfg(test)]
++    let mut liveness = liveness::Probe::new(ar.count());
+     loop {
+         if cancelled() {
+             return Err(Error::Cancelled);
+         }
++        #[cfg(test)]
++        liveness.before_step(ar, &action, &stack);
+         action = match action {
+             Action::Enter {
+                 object,
+diff --git a/rs/sequential/liveness.rs b/rs/sequential/liveness.rs
+new file mode 100644
+index 0000000..cf8124b
+--- /dev/null
++++ b/rs/sequential/liveness.rs
+@@ -0,0 +1,202 @@
++//! Test-only, bounded reachability observation; never collects or changes data.
++extern crate std;
++use super::*;
++use crate::{ErrorKind, data::Data};
++use std::{
++    path::PathBuf,
++    time::{Duration, Instant},
++};
++
++#[derive(Clone, Copy)]
++struct Roots {
++    ids: [Order; 4],
++    len: usize,
++}
++
++impl Roots {
++    fn empty() -> Self {
++        Self {
++            ids: [crate::NIL; 4],
++            len: 0,
++        }
++    }
++    fn add(&mut self, id: Order) {
++        assert!(self.len < self.ids.len());
++        self.ids[self.len] = id;
++        self.len += 1;
++    }
++    fn each(self, mut visit: impl FnMut(Order)) {
++        for id in &self.ids[..self.len] {
++            visit(*id);
++        }
++    }
++}
++
++fn frame_roots(frame: &Frame) -> Roots {
++    let mut roots = Roots::empty();
++    match frame.phase {
++        Phase::BinaryLeft { b, .. } => {
++            roots.add(frame.row.r[1] as Order);
++            roots.add(b);
++        }
++        Phase::BinaryRight { left, .. } => roots.add(left),
++        Phase::BranchTest { yes, no, .. } => {
++            roots.add(frame.row.r[1] as Order);
++            roots.add(yes);
++            roots.add(no);
++        }
++        Phase::Unary(_) | Phase::BranchChosen(_) | Phase::Compose => {}
++    }
++    roots
++}
++
++fn step_roots(action: &Action, stack: &[Frame]) -> Roots {
++    let mut roots = Roots::empty();
++    match action {
++        Action::Enter {
++            object, formula, ..
++        } => {
++            roots.add(*object);
++            roots.add(*formula);
++        }
++        Action::Return(Outcome::Ok(result, _)) => {
++            roots.add(*result);
++            if let Some(frame) = stack.last() {
++                frame_roots(frame).each(|id| roots.add(id));
++            }
++        }
++        Action::Return(_) => {}
++    }
++    roots
++}
++
++struct Census {
++    live: u32,
++    bitset_bytes: usize,
++    polls: u64,
++    elapsed_micros: u128,
++}
++
++fn census<const N: usize>(
++    ar: &Reduction<N>,
++    pinned: u32,
++    stack: &[Frame],
++    active: Roots,
++    deadline: Instant,
++) -> Result<Census, &'static str> {
++    let started = Instant::now();
++    let count = ar.count();
++    if pinned > count {
++        return Err("pinned range exceeds arena");
++    }
++    let words = (count as usize).div_ceil(64);
++    let mut marks = Vec::new();
++    marks
++        .try_reserve_exact(words)
++        .map_err(|_| "mark allocation failed")?;
++    marks.resize(words, 0u64);
++    let mut invalid = false;
++    let mut mark = |id: Order| {
++        if id >= count {
++            invalid = true;
++            return;
++        }
++        marks[id as usize / 64] |= 1u64 << (id % 64);
++    };
++    for id in 0..pinned {
++        mark(id);
++    }
++    for frame in stack {
++        frame_roots(frame).each(&mut mark);
++    }
++    active.each(&mut mark);
++    if invalid {
++        return Err("invalid continuation root");
++    }
++    let mut polls = 0;
++    for id in (0..count).rev() {
++        if id % 4096 == 0 {
++            polls += 1;
++            if Instant::now() >= deadline {
++                return Err("liveness deadline exceeded");
++            }
++        }
++        if let Data::Pair { left, right } = ar.get(id).ok_or("missing allocated node")?.inner {
++            if left >= id || right >= id {
++                return Err("non-topological allocated pair");
++            }
++            if marks[id as usize / 64] & (1u64 << (id % 64)) == 0 {
++                continue;
++            }
++            for child in [left, right] {
++                marks[child as usize / 64] |= 1u64 << (child % 64);
++            }
++        }
++    }
++    let live = marks.iter().map(|word| word.count_ones()).sum();
++    Ok(Census {
++        live,
++        bitset_bytes: words * 8,
++        polls,
++        elapsed_micros: started.elapsed().as_micros(),
++    })
++}
++
++pub(super) struct Probe {
++    output: Option<PathBuf>,
++    pinned: u32,
++    prior: Roots,
++    deadline: Instant,
++    sampled: bool,
++}
++
++impl Probe {
++    pub(super) fn new(pinned: u32) -> Self {
++        Self {
++            output: std::env::var_os("NOX_LIVENESS_OUTPUT").map(PathBuf::from),
++            pinned,
++            prior: Roots::empty(),
++            deadline: Instant::now() + Duration::from_secs(1200),
++            sampled: false,
++        }
++    }
++
++    pub(super) fn before_step<const N: usize>(
++        &mut self,
++        ar: &Reduction<N>,
++        action: &Action,
++        stack: &[Frame],
++    ) {
++        if self.output.is_none() || self.sampled {
++            return;
++        }
++        if matches!(
++            action,
++            Action::Return(Outcome::Error(ErrorKind::Unavailable))
++        ) {
++            let c =
++                census(ar, self.pinned, stack, self.prior, self.deadline).expect("bounded census");
++            let report = std::format!(
++                "{{\n  \"schema\": \"nox/liveness-census/v1\",\n  \"total_nodes\": {},\n  \"live_nodes\": {},\n  \"unreachable_nodes\": {},\n  \"pinned_nodes\": {},\n  \"pending_frames\": {},\n  \"pending_frame_bytes\": {},\n  \"retry_root_slots\": {},\n  \"retry_root_orders\": {:?},\n  \"mark_buffer_bytes\": {},\n  \"traversal_stack_bytes\": 0,\n  \"root_snapshot_bytes\": {},\n  \"marker_deadline_polls\": {},\n  \"marker_elapsed_micros\": {},\n  \"cache_excluded_from_roots\": true\n}}\n",
++                ar.count(),
++                c.live,
++                ar.count() - c.live,
++                self.pinned,
++                stack.len(),
++                stack.len() * core::mem::size_of::<Frame>(),
++                self.prior.len,
++                &self.prior.ids[..self.prior.len],
++                c.bitset_bytes,
++                core::mem::size_of::<Roots>(),
++                c.polls,
++                c.elapsed_micros,
++            );
++            std::fs::write(self.output.as_ref().unwrap(), report).expect("write census receipt");
++            self.sampled = true;
++        }
++        self.prior = step_roots(action, stack);
++    }
++}
++
++#[cfg(test)]
++mod tests;
+diff --git a/rs/sequential/liveness/tests.rs b/rs/sequential/liveness/tests.rs
+new file mode 100644
+index 0000000..90ecdf6
+--- /dev/null
++++ b/rs/sequential/liveness/tests.rs
+@@ -0,0 +1,221 @@
++use super::*;
++use crate::data::{Cost, reduction::DataEntry};
++use nebu::Goldilocks;
++use std::{collections::BTreeSet, io::Read};
++
++fn frame(phase: Phase, object: Order) -> Frame {
++    let mut row = TraceRow::default();
++    row.r[1] = u64::from(object);
++    row.r[2] = 999_999; // dead trace-only reference must never become a root
++    Frame {
++        row,
++        budget: 100,
++        phase,
++    }
++}
++
++#[test]
++fn phases_retain_only_values_read_after_the_child_returns() {
++    let reservation = Reservation {
++        parent: 100,
++        child: 10,
++    };
++    let phases = [
++        (Phase::Unary(reservation), std::vec![]),
++        (Phase::Compose, std::vec![]),
++        (Phase::BranchChosen(reservation), std::vec![]),
++        (
++            Phase::BinaryLeft {
++                a: 21,
++                b: 22,
++                first: 10,
++                second: Some(10),
++            },
++            std::vec![20, 22],
++        ),
++        (
++            Phase::BinaryRight {
++                a: 21,
++                b: 22,
++                left: 23,
++                used: 4,
++                second: 10,
++            },
++            std::vec![23],
++        ),
++        (
++            Phase::BranchTest {
++                yes: 24,
++                no: 25,
++                reservation,
++            },
++            std::vec![20, 24, 25],
++        ),
++    ];
++    for (phase, expected) in phases {
++        let f = frame(phase, 20);
++        let mut roots = Vec::new();
++        frame_roots(&f).each(|id| roots.push(id));
++        assert_eq!(roots, expected);
++        let action = Action::Return(Outcome::Ok(26, 3));
++        let retained = step_roots(&action, &[f]);
++        let mut actual = Vec::new();
++        retained.each(|id| actual.push(id));
++        assert_eq!(actual[0], 26);
++        assert_eq!(&actual[1..], expected);
++    }
++}
++
++fn reference<const N: usize>(ar: &Reduction<N>, mut pending: Vec<Order>) -> usize {
++    let mut seen = BTreeSet::new();
++    while let Some(id) = pending.pop() {
++        if !seen.insert(id) {
++            continue;
++        }
++        if let Data::Pair { left, right } = ar.get(id).unwrap().inner {
++            pending.push(left);
++            pending.push(right);
++        }
++    }
++    seen.len()
++}
++
++#[test]
++fn descending_marks_match_independent_walk_with_pins_and_failed_operands() {
++    for seed in 1..64 {
++        let mut ar = Reduction::<256>::new();
++        for i in 0..16 {
++            ar.atom(Goldilocks::new(i)).unwrap();
++        }
++        let pinned = ar.count();
++        let mut state: u64 = seed;
++        for _ in 0..64 {
++            state = state.wrapping_mul(6364136223846793005u64).wrapping_add(1);
++            let a = (state >> 32) as u32 % ar.count();
++            state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
++            let b = (state >> 32) as u32 % ar.count();
++            ar.pair(a, b).unwrap();
++        }
++        let left = ar.count() - 7;
++        let result = ar.count() - 1;
++        let f = frame(
++            Phase::BinaryRight {
++                a: 999,
++                b: 999,
++                left,
++                used: 0,
++                second: 50,
++            },
++            999,
++        );
++        let active = step_roots(&Action::Return(Outcome::Ok(result, 40)), &[f]);
++        let ancestors = [
++            frame(Phase::Compose, 999),
++            frame(
++                Phase::Unary(Reservation {
++                    parent: 10,
++                    child: 9,
++                }),
++                999,
++            ),
++        ];
++        let actual = census(
++            &ar,
++            pinned,
++            &ancestors,
++            active,
++            Instant::now() + Duration::from_secs(5),
++        )
++        .unwrap();
++        let mut roots: Vec<_> = (0..pinned).collect();
++        active.each(|id| roots.push(id));
++        assert_eq!(actual.live as usize, reference(&ar, roots));
++        assert!(actual.live < ar.count());
++        assert_eq!(actual.bitset_bytes, (ar.count() as usize).div_ceil(64) * 8);
++    }
++}
++
++#[test]
++fn invalid_roots_non_topological_pairs_and_elapsed_deadline_reject_measurement() {
++    let mut ar = Reduction::<16>::new();
++    let a = ar.atom(Goldilocks::ZERO).unwrap();
++    let mut roots = Roots::empty();
++    roots.add(1);
++    let future = Instant::now() + Duration::from_secs(5);
++    assert!(census(&ar, 0, &[], roots, future).is_err());
++    let bad = ar
++        .alloc_raw(DataEntry {
++            inner: Data::Pair { left: 1, right: a },
++            hash: [Goldilocks::ZERO; 4],
++            bound: Cost::Exact(0),
++        })
++        .unwrap();
++    assert_eq!(bad, 1);
++    assert!(census(&ar, 0, &[], roots, future).is_err());
++    assert!(census(&ar, 0, &[], Roots::empty(), future).is_err());
++    let mut roots = Roots::empty();
++    roots.add(a);
++    let mut valid = Reduction::<16>::new();
++    valid.atom(Goldilocks::ZERO).unwrap();
++    assert!(census(&valid, 0, &[], roots, Instant::now()).is_err());
++}
++
++fn read(path: &PathBuf, max_bytes: usize) -> Vec<u8> {
++    let file = std::fs::File::open(path).unwrap();
++    let metadata = file.metadata().unwrap();
++    assert!(metadata.is_file() && metadata.len() <= max_bytes as u64);
++    let mut bytes = Vec::new();
++    file.take(max_bytes as u64 + 1)
++        .read_to_end(&mut bytes)
++        .unwrap();
++    assert!(bytes.len() <= max_bytes);
++    bytes
++}
++
++#[test]
++#[ignore = "explicit multi-gigabyte diagnostic; requires NOX_LIVENESS_* paths"]
++fn compiler_stage_four_liveness() {
++    std::thread::Builder::new().stack_size(256 << 20).spawn(|| {
++        let output = PathBuf::from(std::env::var_os("NOX_LIVENESS_OUTPUT").unwrap());
++        assert!(!output.exists());
++        let report = output.with_extension("execution.json");
++        assert!(!report.exists());
++        let program = PathBuf::from(std::env::var_os("NOX_LIVENESS_PROGRAM").unwrap());
++        let job = PathBuf::from(std::env::var_os("NOX_LIVENESS_JOB").unwrap());
++        let codec = crate::artifact::Limits { max_bytes: 16 << 20, max_nodes: 196_608, max_depth: 4096 };
++        let mut ar = Reduction::<{ 1 << 25 }>::try_new_boxed().unwrap();
++        assert!(ar.limit_allocations(25_165_824));
++        let program = crate::artifact::decode(&mut ar, &read(&program, codec.max_bytes), codec).unwrap();
++        let job = crate::artifact::decode(&mut ar, &read(&job, codec.max_bytes), codec).unwrap();
++        let stage = ar.atom(Goldilocks::new(4)).unwrap();
++        let input = ar.pair(job, stage).unwrap();
++        let mut body = ar.tail(program).unwrap();
++        for _ in 0..3 { body = ar.tail(body).unwrap(); }
++        let formula = ar.head(body).unwrap();
++        let pinned = ar.count();
++        assert_eq!(pinned, 159_037);
++        let start = Instant::now();
++        let mut checkpoints = 0u64;
++        let mut next_report = Duration::from_secs(60);
++        let run = reduce_cached_controlled(&mut ar, input, formula, 10_000_000_000, Limits { max_frames: 65_536 }, &mut || {
++            checkpoints += 1;
++            let elapsed = start.elapsed();
++            if elapsed >= next_report {
++                std::eprintln!("liveness probe: {}s, {checkpoints} evaluator checkpoints", elapsed.as_secs());
++                next_report += Duration::from_secs(60);
++            }
++            elapsed >= Duration::from_secs(1200)
++        }).unwrap();
++        let elapsed_micros = start.elapsed().as_micros();
++        assert!(matches!(run.outcome, Outcome::Error(ErrorKind::Unavailable)));
++        assert_eq!(ar.count(), 25_165_824);
++        assert_eq!(run.peak_frames, 3591);
++        assert_eq!(checkpoints, 1_091_810_645);
++        assert!(output.exists());
++        std::fs::write(report, std::format!(
++            "{{\n  \"outcome\": \"Error(Unavailable)\",\n  \"total_nodes\": {},\n  \"preloaded_nodes\": {},\n  \"evaluator_checkpoints\": {},\n  \"peak_frames\": {},\n  \"frame_buffer_bytes\": {},\n  \"arena_reserved_bytes\": {},\n  \"cache_bytes\": {},\n  \"elapsed_micros\": {},\n  \"charged_reductions\": null\n}}\n",
++            ar.count(), pinned, checkpoints, run.peak_frames, frame_storage_bytes(Limits { max_frames: 65_536 }).unwrap(),
++            core::mem::size_of::<Reduction<{ 1 << 25 }>>(), finalizer_cache_storage_bytes(), elapsed_micros,
++        )).unwrap();
++    }).unwrap().join().unwrap();
++}

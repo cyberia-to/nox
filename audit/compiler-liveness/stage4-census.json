@@ -1,0 +1,17 @@
+{
+  "schema": "nox/liveness-census/v1",
+  "total_nodes": 25165824,
+  "live_nodes": 177780,
+  "unreachable_nodes": 24988044,
+  "pinned_nodes": 159037,
+  "pending_frames": 832,
+  "pending_frame_bytes": 146432,
+  "retry_root_slots": 2,
+  "retry_root_orders": [25165823, 84767],
+  "mark_buffer_bytes": 3145728,
+  "traversal_stack_bytes": 0,
+  "root_snapshot_bytes": 24,
+  "marker_deadline_polls": 6144,
+  "marker_elapsed_micros": 47667,
+  "cache_excluded_from_roots": true
+}

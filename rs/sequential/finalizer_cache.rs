@@ -22,6 +22,14 @@ pub(super) struct Cache<const ENABLED: bool> {
 }
 
 impl<const ENABLED: bool> Cache<ENABLED> {
+    pub(super) fn clear(&mut self) {
+        self.entries.fill(Entry::default());
+    }
+
+    pub(super) fn slots(&self) -> usize {
+        self.entries.len()
+    }
+
     pub(super) fn new() -> Result<Self, Error> {
         let mut entries = Vec::new();
         if ENABLED {

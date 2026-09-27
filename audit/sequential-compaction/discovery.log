@@ -1,0 +1,11 @@
+   Compiling cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/rs)
+    Finished `release` profile [optimized] target(s) in 1.37s
+     Running unittests lib.rs (../target-nox-compaction/release/deps/nox-155be5d25f5b91d7)
+
+running 1 test
+test sequential::compacting::tests::compiler::saved_full_discovery_preserves_result_gas_frames_and_guest_checkpoints has been running for over 60 seconds
+compacting discovery: 60s, 273652307 total checkpoints
+test sequential::compacting::tests::compiler::saved_full_discovery_preserves_result_gas_frames_and_guest_checkpoints ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 218 filtered out; finished in 119.22s
+
