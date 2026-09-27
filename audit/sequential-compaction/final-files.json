@@ -1,0 +1,172 @@
+[
+  {
+    "path": "rs/data/reduction.rs",
+    "bytes": 12711,
+    "sha256": "08010c42fe275775ea1e846cd0635d5ee8846f7ea13ede87ab0a7404ab0d4a37"
+  },
+  {
+    "path": "rs/data/reduction_compaction.rs",
+    "bytes": 5640,
+    "sha256": "b33150464afd6ab1355e462b3f11b8b963f77dc599e976eb4ae81dd627b8ecf8"
+  },
+  {
+    "path": "rs/sequential.rs",
+    "bytes": 6691,
+    "sha256": "8a698d2f5d716ea1e0b5c4bf0b2e08964a48d588a6148157f276baf39131dcb8"
+  },
+  {
+    "path": "rs/sequential/finalizer_cache.rs",
+    "bytes": 2163,
+    "sha256": "677b79efb2476196d7b43228d2f6edb3021de69ce04cd2200701652d0929451a"
+  },
+  {
+    "path": "rs/sequential/tests.rs",
+    "bytes": 7984,
+    "sha256": "de0a28215fbe9d31b00db77d91e170dcf6d88040cfe6ccb4d2bc8b15a65d3d0e"
+  },
+  {
+    "path": "rs/sequential/compacting.rs",
+    "bytes": 7752,
+    "sha256": "72f138e3c390d1aa98f079fa568b386a8e86d6be4bf82024d209046f8ea722f4"
+  },
+  {
+    "path": "specs/sequential-compaction.md",
+    "bytes": 5933,
+    "sha256": "567906e01efab26954d91646bc507639c5d90c0696596802cefbe3caec9321a5"
+  },
+  {
+    "path": "specs/compiler-liveness-census.md",
+    "bytes": 2054,
+    "sha256": "f22765225cd777921b73c824fb617604683cac4911db678e49ac4bfb36f33da0"
+  },
+  {
+    "path": "rs/sequential/compacting/collection.rs",
+    "bytes": 2531,
+    "sha256": "19275e81dc6b0116a3122656a60644b90fd3b8f66d1a2974cc5bdcdf79ef8d2b"
+  },
+  {
+    "path": "rs/sequential/compacting/roots.rs",
+    "bytes": 2433,
+    "sha256": "c3de74495da48142a6053135303bf3f862ba518a0f3e880e296a5dd32c0bfbd6"
+  },
+  {
+    "path": "rs/sequential/compacting/tests/collection.rs",
+    "bytes": 10341,
+    "sha256": "99a7451610f5388adadee0a654f40ce4803040a83ff7d425b5b0ed694714528e"
+  },
+  {
+    "path": "rs/sequential/compacting/tests/compiler.rs",
+    "bytes": 4802,
+    "sha256": "055d5b8d82d13d142874dc1fd95e5392282d9f800856d22bd5afa65ae3e96dd3"
+  },
+  {
+    "path": "rs/sequential/compacting/tests.rs",
+    "bytes": 15804,
+    "sha256": "067814f65d88235e7ece9c93845285756f053a3498e91cc4b750a7f659b6743a"
+  },
+  {
+    "path": "audit/sequential-compaction/README.md",
+    "bytes": 6033,
+    "sha256": "0d1201d55824eb4ce929315c52a6fe899deb9c37a846d2765b5eeff4d7a3948a"
+  },
+  {
+    "path": "audit/sequential-compaction/all-tests-final.log",
+    "bytes": 16054,
+    "sha256": "31cd4033364d108e09f4a9afa9561fecd904bf526f87dad7c027ee7f6f71dea7"
+  },
+  {
+    "path": "audit/sequential-compaction/all-tests.log",
+    "bytes": 15595,
+    "sha256": "6355dff46c893b31039c6d57c775dcca06a9b57b4d6cd2c9d5cf5e10545f32e8"
+  },
+  {
+    "path": "audit/sequential-compaction/baseline-discovery.json",
+    "bytes": 899,
+    "sha256": "5cbf7a2276aa5e8ca53964a48a0576df250eaf8bc7d42fe8cd853b2b30b87939"
+  },
+  {
+    "path": "audit/sequential-compaction/budget-frames.log",
+    "bytes": 484,
+    "sha256": "9670646346b15194bfdc08e6426c6c122f7150ecdfab537ecbd992cb4b072a4f"
+  },
+  {
+    "path": "audit/sequential-compaction/clippy-final.log",
+    "bytes": 170,
+    "sha256": "496f218acda10f56597227dd77d9353d78d616d91997892fc479c6fe9c5bdd28"
+  },
+  {
+    "path": "audit/sequential-compaction/clippy.log",
+    "bytes": 942,
+    "sha256": "d2791e935483b6800a15f9fd46e4ed7bdc0c8a91a157b8171f8ec8ea66e75523"
+  },
+  {
+    "path": "audit/sequential-compaction/commands.sh",
+    "bytes": 1491,
+    "sha256": "b50246a79ffd46f72e3b957e4ddfc911e92a5be09fdc33b036f345ee9387c90e"
+  },
+  {
+    "path": "audit/sequential-compaction/discovery.dag",
+    "bytes": 555,
+    "sha256": "2a4c546218675e02fa40aa5de1bd20a04c7d8bc3e7defe9345320bed7ab9041d"
+  },
+  {
+    "path": "audit/sequential-compaction/discovery.json",
+    "bytes": 516,
+    "sha256": "61c6b42aa79326e5ed47ffb5ccf8d1a62adc083b2d5eb7084468fb9c8b05b135"
+  },
+  {
+    "path": "audit/sequential-compaction/discovery.log",
+    "bytes": 700,
+    "sha256": "c9b12494108bbd7cc82e5d0d7849f2b95235348ecd40e5c13dad8bc4aa093d8c"
+  },
+  {
+    "path": "audit/sequential-compaction/implementation.patch",
+    "bytes": 58365,
+    "sha256": "9539ce616c81b26a63dcc1d72513fee58a8f91792f3ca2a2fc34ebd689d30aba"
+  },
+  {
+    "path": "audit/sequential-compaction/invalid-operands-before.log",
+    "bytes": 1446,
+    "sha256": "a5280e43edadf27bbc98db9892b80061cfe81452cd4bab5165f2e3f4d5aa8baa"
+  },
+  {
+    "path": "audit/sequential-compaction/parallel-tests-final.log",
+    "bytes": 15789,
+    "sha256": "6e214db9dcc6bcf87e3181b077ed672e5faed6b7fb3cea9dd501666ad51e1763"
+  },
+  {
+    "path": "audit/sequential-compaction/parallel-tests.log",
+    "bytes": 15330,
+    "sha256": "8f01e6094b8a42f07e9803a2d342bf6a54ebe6626545f3e64be94bd78110f5bc"
+  },
+  {
+    "path": "audit/sequential-compaction/post-measurement-runtime.patch",
+    "bytes": 2328,
+    "sha256": "de78df27f3e1cb6e0b8d7e51513320ae4c300a0f973edd76fc403d60aafa03ef"
+  },
+  {
+    "path": "audit/sequential-compaction/return-boundary.log",
+    "bytes": 483,
+    "sha256": "f4de48e8120e6a52de7bdb48d1e70dd92764c15a7cb506386264a08dc7fefc95"
+  },
+  {
+    "path": "audit/sequential-compaction/review.md",
+    "bytes": 4734,
+    "sha256": "a07b223e7c2f6431f550323a87d1c96978c4ff3565635dba25f19c05c70fdeb5"
+  },
+  {
+    "path": "audit/sequential-compaction/run-inputs.json",
+    "bytes": 3402,
+    "sha256": "d30a1eb51c4d863ab72079fa44b0d1f7cfb02f96fbb27a0b201f3c1a1ccaf456"
+  },
+  {
+    "path": "audit/sequential-compaction/unit-tests-final.log",
+    "bytes": 2537,
+    "sha256": "3c2e8ee2e5be790cda1cacb85a22acad6ac7ab49830b11ffa53d632a9fdb155e"
+  },
+  {
+    "path": "audit/sequential-compaction/unit-tests.log",
+    "bytes": 1752,
+    "sha256": "b654a1d1bcff65288900251b4db92be49e153f9addf998fe53921cd123759d50"
+  }
+]

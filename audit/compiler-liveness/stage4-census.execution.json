@@ -1,0 +1,12 @@
+{
+  "outcome": "Error(Unavailable)",
+  "total_nodes": 25165824,
+  "preloaded_nodes": 159037,
+  "evaluator_checkpoints": 1091810645,
+  "peak_frames": 3591,
+  "frame_buffer_bytes": 11534336,
+  "arena_reserved_bytes": 3355443216,
+  "cache_bytes": 1048576,
+  "elapsed_micros": 212046510,
+  "charged_reductions": null
+}

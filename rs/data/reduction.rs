@@ -14,6 +14,9 @@ use super::{Order, NIL};
 mod heap;
 pub use heap::AllocationError;
 
+#[path = "reduction_compaction.rs"]
+pub(crate) mod compaction;
+
 /// order entry — data node + cached identity hash + cached cost bound.
 ///
 /// `bound` is computed at construction time so reduce-time partition decisions

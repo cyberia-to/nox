@@ -1,0 +1,19 @@
+{
+  "stage": 2,
+  "remaining_budget": 315353719,
+  "charged_reductions": 684646281,
+  "peak_frames": 3259,
+  "prefix_words": [2, 94, 0, 0, 0],
+  "elapsed_micros": 117847288,
+  "pinned_nodes": 159037,
+  "resident_nodes": 1413834,
+  "peak_resident_nodes": 3145728,
+  "total_allocations": 16334747,
+  "reclaimed_nodes": 14920913,
+  "collections": 5,
+  "collection_work": 121748975,
+  "scratch_bytes": 29360128,
+  "evaluator_checkpoints": 566412397,
+  "collection_checkpoints": 20697,
+  "total_checkpoints": 566433094
+}

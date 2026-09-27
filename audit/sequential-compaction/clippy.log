@@ -1,0 +1,27 @@
+   Compiling proc-macro2 v1.0.107
+    Checking serde_core v1.0.229
+    Checking crossbeam-utils v0.8.22
+    Checking zmij v1.0.23
+    Checking num-traits v0.2.19
+    Checking libc v0.2.189
+    Checking cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/rs)
+    Checking crossbeam-epoch v0.9.20
+   Compiling quote v1.0.47
+    Checking is-terminal v0.4.17
+    Checking crossbeam-deque v0.8.7
+   Compiling syn v2.0.119
+   Compiling syn v3.0.3
+    Checking plotters v0.3.7
+    Checking rayon-core v1.13.0
+    Checking rayon v1.12.0
+    Checking serde_json v1.0.151
+   Compiling serde_derive v1.0.229
+   Compiling zerocopy-derive v0.8.56
+    Checking zerocopy v0.8.56
+    Checking serde v1.0.229
+    Checking tinytemplate v1.2.1
+    Checking half v2.7.1
+    Checking ciborium-ll v0.2.2
+    Checking ciborium v0.2.2
+    Checking criterion v0.5.1
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.64s

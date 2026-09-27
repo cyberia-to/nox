@@ -7,26 +7,26 @@ mod cache;
 #[cfg(not(feature = "parallel"))]
 mod differential;
 
-fn atom<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
+pub(super) fn atom<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
     ar.atom(Goldilocks::new(v)).unwrap()
 }
-fn op<const N: usize>(ar: &mut Reduction<N>, tag: u64, body: Order) -> Order {
+pub(super) fn op<const N: usize>(ar: &mut Reduction<N>, tag: u64, body: Order) -> Order {
     let t = atom(ar, tag);
     ar.pair(t, body).unwrap()
 }
-fn binary<const N: usize>(ar: &mut Reduction<N>, tag: u64, a: Order, b: Order) -> Order {
+pub(super) fn binary<const N: usize>(ar: &mut Reduction<N>, tag: u64, a: Order, b: Order) -> Order {
     let body = ar.pair(a, b).unwrap();
     op(ar, tag, body)
 }
-fn quote<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
+pub(super) fn quote<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
     let v = atom(ar, v);
     op(ar, 1, v)
 }
-fn axis<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
+pub(super) fn axis<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
     let v = atom(ar, v);
     op(ar, 0, v)
 }
-fn loop_core<const N: usize>(ar: &mut Reduction<N>, n: u64) -> (Order, Order) {
+pub(super) fn loop_core<const N: usize>(ar: &mut Reduction<N>, n: u64) -> (Order, Order) {
     let q0 = quote(ar, 0);
     let q1 = quote(ar, 1);
     let code = axis(ar, 2);
