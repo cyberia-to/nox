@@ -185,7 +185,7 @@ mod tests {
         // level-2: (2+10)/2 = 6
         let mut ar = Reduction::<512>::new();
         let p = 0xFFFF_FFFF_0000_0001u64;
-        let half = Goldilocks::new((p + 1) / 2);
+        let half = Goldilocks::new(p.div_ceil(2));
         match run(&mut ar, &[g(0), g(4), g(8), g(12)], half) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(6)),
             o => panic!("{:?}", o),
