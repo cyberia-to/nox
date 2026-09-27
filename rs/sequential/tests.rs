@@ -3,6 +3,7 @@ use super::*;
 use crate::{ErrorKind, NoTrace, VecTrace};
 use nebu::Goldilocks;
 
+mod cache;
 #[cfg(not(feature = "parallel"))]
 mod differential;
 

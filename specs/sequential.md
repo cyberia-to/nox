@@ -47,3 +47,42 @@ failures include malformed/type/word/inverse/budget/allocation cases. A compact
 runtime loop exceeds4097 iterations without formula expansion. Exact frame
 bounds and unsupported reached services fail explicitly. Optional parallel
 builds must pass the new entrypoint's deterministic fixtures independently.
+
+## Cached trace-free finalizers
+
+`reduce_cached` and `reduce_cached_controlled` provide pure L1 execution without
+a tracer argument. They share dispatch, budget partitioning, continuations and
+pattern finalizers with the existing entrypoints. Their execution-local cache
+keys successful finalizers by tag and evaluated operand Orders. Tags 3 and 5..15
+use this cache; quote, axis, branch and dynamic compose retain their ordinary
+steps. A hit returns the saved Order and the current post-charge budget.
+Every child is evaluated and every dispatch cost is charged normally.
+
+Each invocation reserves a fixed 65,536-entry direct-map cache, with 16 bytes per
+entry. `finalizer_cache_storage_bytes` reports this 1,048,576-byte buffer;
+allocator and Vec metadata are additional. Allocation is fallible and returns
+Allocation on failure. Deterministic collision replacement affects performance
+only. A cache exists solely during one exclusive Reduction borrow. It is
+discarded on success, failure or cancellation; no cached Order crosses arenas
+or separate executions. Only successful finalizers populate it.
+
+Pure finalizers depend on their tag and evaluated operands. Successful
+finalizers allocate only immutable hash-consed arena nodes. Repeating one in
+the same invocation therefore finds every node already present, even when the
+arena is at its allocation limit. Reusing that result preserves node allocation
+order and admission behavior. Failed finalizers always execute ordinarily,
+including their partial allocations. Service rejection and all child failures
+occur before the cache is consulted. The existing traced entrypoints retain
+their complete trace behavior and allocate no cache.
+
+Semantic results, exact charged reductions, reached-service rejection, frame
+storage and peak, arena allocation order, and cancellation predicate invocation
+order match `reduce` and `reduce_controlled` with `NoTrace`, except for the
+additional explicitly bounded fallible cache allocation. Cancellation is
+checked before allocations and every Enter/Return step, including steps with
+a cache hit. Finalizers contain no internal cancellation checkpoints.
+
+A subtree result cache keyed only by object and formula is outside this
+contract: replay would require accounting for budget, peak frames, allocation
+history and skipped cancellation checkpoints. Successful gas cost alone does
+not establish that equivalence.
