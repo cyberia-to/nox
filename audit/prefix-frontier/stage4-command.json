@@ -1,0 +1,26 @@
+{
+  "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox",
+  "command": [
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "--offline",
+    "-p",
+    "cyber-nox",
+    "sequential::compacting::tests::frontier::measure_prefix_frontier",
+    "--",
+    "--exact",
+    "--ignored",
+    "--nocapture"
+  ],
+  "environment": {
+    "NOX_FRONTIER_PROGRAM": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/scaled-prefix.dag",
+    "NOX_FRONTIER_JOB": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/compacting-closure-files-1ipul9q9/job.dag",
+    "NOX_FRONTIER_STAGE": "4",
+    "NOX_FRONTIER_OUTPUT": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/audit/prefix-frontier/stage4.json",
+    "CARGO_TARGET_DIR": "../target-nox-frontier"
+  },
+  "log": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/audit/prefix-frontier/stage4.log",
+  "archived_log": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/audit/prefix-frontier/stage4.log.gz"
+}
