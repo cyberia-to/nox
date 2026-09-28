@@ -6,6 +6,7 @@ mod compacting;
 mod dispatch;
 mod finalizer_cache;
 mod finish;
+pub mod observe;
 
 pub use compacting::{
     CompactingExecution, CompactionFailure, CompactionFailureKind, CompactionLimits,
