@@ -1,4 +1,5 @@
 //! Opt-in resident-bounded execution. Legacy evaluation never enters this path.
+use super::observe::hook::{Hook, RunError, RunFailure};
 use super::*;
 use crate::data::reduction::compaction::{Fault, Scratch};
 
@@ -92,6 +93,34 @@ pub fn reduce_compacting_cached_controlled<const N: usize>(
     limits: CompactionLimits,
     cancelled: &mut impl FnMut() -> bool,
 ) -> Result<CompactingExecution, CompactionFailure> {
+    run(
+        ar,
+        object,
+        formula,
+        budget,
+        limits,
+        cancelled,
+        &mut observe::NoObserver,
+    )
+    .map_err(|failure| CompactionFailure {
+        kind: match failure.kind {
+            RunError::Execution(kind) => kind,
+            RunError::Capture(never) => match never {},
+        },
+        stats: failure.stats,
+        peak_frames: failure.peak_frames,
+    })
+}
+
+pub(super) fn run<const N: usize, H: Hook>(
+    ar: &mut Reduction<N>,
+    object: Order,
+    formula: Order,
+    budget: u64,
+    limits: CompactionLimits,
+    cancelled: &mut impl FnMut() -> bool,
+    observer: &mut H,
+) -> Result<CompactingExecution, RunFailure<H::Error>> {
     let mut stats = CompactionStats {
         pinned_nodes: ar.count(),
         resident_nodes: ar.count(),
@@ -109,6 +138,7 @@ pub fn reduce_compacting_cached_controlled<const N: usize>(
         cancelled,
         &mut stats,
         &mut peak_frames,
+        observer,
     );
     stats.resident_nodes = ar.count();
     match result {
@@ -117,7 +147,7 @@ pub fn reduce_compacting_cached_controlled<const N: usize>(
             peak_frames,
             stats,
         }),
-        Err(kind) => Err(CompactionFailure {
+        Err(kind) => Err(RunFailure {
             kind,
             stats,
             peak_frames,
@@ -125,7 +155,7 @@ pub fn reduce_compacting_cached_controlled<const N: usize>(
     }
 }
 
-fn execute_compacting<const N: usize>(
+fn execute_compacting<const N: usize, H: Hook>(
     ar: &mut Reduction<N>,
     object: Order,
     formula: Order,
@@ -134,13 +164,14 @@ fn execute_compacting<const N: usize>(
     cancelled: &mut impl FnMut() -> bool,
     stats: &mut CompactionStats,
     peak_frames: &mut u32,
-) -> Result<Outcome, CompactionFailureKind> {
+    observer: &mut H,
+) -> Result<Outcome, RunError<H::Error>> {
     if limits.max_frames == 0 {
         return Err(Error::Frames.into());
     }
     checkpoint(stats, cancelled)?;
     if stats.total_allocations > limits.max_total_allocations {
-        return Err(CompactionFailureKind::TotalAllocations);
+        return Err(CompactionFailureKind::TotalAllocations.into());
     }
     let resident_limit = ar.allocation_limit();
     let mut stack = Vec::new();
@@ -155,6 +186,9 @@ fn execute_compacting<const N: usize>(
         formula,
         budget,
     };
+    observer
+        .begin(ar, &action, limits, cancelled)
+        .map_err(RunError::Capture)?;
     loop {
         checkpoint(stats, cancelled)?;
         let headroom = roots::allocation_headroom(ar, &action, &stack, limits.max_frames);
@@ -171,6 +205,9 @@ fn execute_compacting<const N: usize>(
             )?;
         }
         let before = ar.count();
+        let observation = observer
+            .before(ar, &action, &stack, cancelled)
+            .map_err(RunError::Capture)?;
         let allowance = (limits.max_total_allocations - stats.total_allocations)
             .min(u64::from(resident_limit - before)) as u32;
         ar.set_step_allocation_limit(before + allowance);
@@ -187,7 +224,11 @@ fn execute_compacting<const N: usize>(
         ar.set_step_allocation_limit(resident_limit);
         stats.total_allocations += u64::from(ar.count() - before);
         stats.peak_resident_nodes = stats.peak_resident_nodes.max(ar.count());
-        match next? {
+        let next = next?;
+        observer
+            .after(ar, observation, &next, &stack, cancelled)
+            .map_err(RunError::Capture)?;
+        match next {
             Step::Done(outcome) => return Ok(outcome),
             Step::Next(next) => action = next,
         }
@@ -197,7 +238,7 @@ fn execute_compacting<const N: usize>(
         ) && headroom > 0
             && stats.total_allocations == limits.max_total_allocations
         {
-            return Err(CompactionFailureKind::TotalAllocations);
+            return Err(CompactionFailureKind::TotalAllocations.into());
         }
     }
 }
@@ -214,7 +255,7 @@ fn checkpoint(
     }
 }
 
-enum Step {
+pub(super) enum Step {
     Next(Action),
     Done(Outcome),
 }

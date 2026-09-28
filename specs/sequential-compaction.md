@@ -14,7 +14,7 @@ digests and cached formula bounds remain unchanged, including data unrelated
 to the initial subject and formula. New internal entries may move. The returned
 result Order is valid in the caller's arena; a later call pins that result with
 all other entries present at its own entry. Compaction uses exclusive access
-to the arena. Only the NoTrace profile supports relocation.
+to the arena. Relocation supports NoTrace and the opt-in logical observer below.
 
 The arena's existing allocation limit bounds resident entries. The new total
 allocation allowance counts the preloaded entries plus every fresh allocation
@@ -92,3 +92,69 @@ outcomes carry no invented root remaining-budget or charged-reduction figure.
 Where both profiles finish, values are compared structurally/by digest rather
 than by relocated Order; successful remaining budget and peak frame depth must
 match. Observed performance and workload results belong in `audit/`.
+
+## Logical observation
+
+`sequential::observe::reduce_compacting_observed_controlled` runs the same
+compacting evaluator with an `Observer` sink and explicit `CaptureLimits`.
+Legacy wrappers use `NoObserver`; their frames, physical resource accounting,
+defaults and cancellation checkpoints stay unchanged. The observer receives
+owned values and cannot supply guest values or mutate the arena.
+
+The version-1 stream has four event kinds. `Begin` identifies the initial
+subject/formula, guest budget, physical limits and initial node count. It is
+followed by that many `Node` events in arena order, including unrelated pinned
+data. Each evaluator step exports its fresh nodes before its `Transition`.
+The transition includes its zero-based sequence, before/after logical action,
+before/after stack depth, popped/pushed live frame and fresh-node count.
+The final empty-stack Return step has its own transition. `Completed` follows
+only a successful result and records its particle, remaining budget and total
+steps. Halt and guest error preserve their ordinary outcome without Completed;
+host/capture failures return an error and leave only a partial stream.
+
+Particles contain all four canonical Hemera limbs. Node events contain atom
+value or ordered child particles, plus the cached Exact/Dynamic formula bound.
+The bound and cached particle are captured witness metadata. A future verifier
+must authenticate definitions and independently derive bounds; capture alone
+does not constrain them. Observed execution rejects missing references and
+non-topological pairs during export. It does not rehash the arena.
+
+Live frames contain only semantic state: Unary has opcode and reservation;
+BinaryLeft has opcode, subject, right formula, parent budget and child budgets;
+BinaryRight has opcode, left result, parent budget, used budget and second
+budget; BranchTest has subject, both arms and reservation; BranchChosen has
+reservation; Compose has no payload. Historical trace-only references are
+excluded. Stack changes contain at most one pop and one push. The stream uses
+particles throughout; collector relocation emits no semantic transition.
+Definitions exported earlier remain available after collection. Intern/cache
+hits reuse those definitions; every cache-hit evaluator step still emits a
+transition. The existing Frame representation and cache policy are unchanged.
+
+`Event::encode` defines canonical little-endian u64-word encoding with numeric
+variant tags, canonical zero/one option tags and no padding in its returned
+slice. The schema and variant ordering are specified by the public event types
+and encoder in `rs/sequential/observe/{mod,wire}.rs`. Encoding uses a fixed
+512-byte stack buffer. `CaptureLimits` independently bounds emitted events,
+their total logical encoded bytes, and capture work units. A unit is charged
+before each node export, each action/frame capture and each event delivery.
+Counters report admitted work/delivery attempts, including a sink failure.
+Encoding, fixed-size reference reads and cancellation polling are included in
+their unit. Each unit polls cancellation. Caps reject before its operation;
+initial-node work is incremental and never copies the arena into a buffer.
+These counters bound capture operations and logical encoding, not sink heap
+memory, RSS, callback duration or physical GC work. The sink owns any storage
+and publication policy and must return promptly with bounded work.
+
+Cancellation is polled before every delivery, including Completed. Returning
+an error from a sink aborts capture immediately. A sink must accept an event
+atomically: on Err it must not publish that event. A Completed event is only
+a capture record; publication requires the caller to observe successful return
+and enforce its final deadline. Host allocation/collection failures cannot
+publish successful observed execution. Capture counters are separate from
+CompactionStats and guest reductions.
+
+This interface captures a witness for later independent checking. It supplies
+no Zheng relation, cryptographic execution proof, compiler semantic-preservation
+claim or SH7 closure. Authenticated memory lookup, stack/control continuity,
+cost derivation, chunk binding and final completion remain obligations of a
+future constrained verifier. Physical GC telemetry remains a host report.
