@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "scope": "bounded observer snapshots; no proof acceptance",
+  "label": "focused-1",
+  "argv": [
+    "/Users/master/.cargo/bin/rustup",
+    "run",
+    "1.89.0",
+    "/Users/master/.rustup/toolchains/1.89.0-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "-p",
+    "cyber-nox",
+    "--lib",
+    "--release",
+    "--locked",
+    "--offline",
+    "sequential::observe",
+    "--",
+    "--nocapture",
+    "--test-threads=2"
+  ],
+  "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/nox",
+  "started_ns": 1790905390076195000,
+  "environment": {
+    "PATH": "/Users/master/.rustup/toolchains/1.89.0-aarch64-apple-darwin/bin:/Users/master/.grok/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/pkg/env/active/bin:/opt/pmk/env/global/bin:/opt/homebrew/bin:/Users/master/Library/Application Support/Zed/external_agents/registry/npx/codex-acp/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/Users/master/.codex/tmp/arg0/codex-arg00dVQaB:/Users/master/.cargo/bin:/Users/master/.foundry/bin",
+    "RUSTUP_TOOLCHAIN": "1.89.0",
+    "RUSTC": "/Users/master/.rustup/toolchains/1.89.0-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/master/.rustup/toolchains/1.89.0-aarch64-apple-darwin/bin/rustdoc",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_TARGET_DIR": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/target"
+  },
+  "toolchain": {
+    "cargo": {
+      "path": "/Users/master/.rustup/toolchains/1.89.0-aarch64-apple-darwin/bin/cargo",
+      "bytes": 28655992,
+      "sha256": "798a97c06e6fc3a63f1b7e3141f87e515e6bc8da1527bc32e19ba27d86bb89c5",
+      "version": "cargo 1.89.0 (c24e10642 2025-06-23)\nrelease: 1.89.0\ncommit-hash: c24e1064277fe51ab72011e2612e556ac56addf7\ncommit-date: 2025-06-23\nhost: aarch64-apple-darwin\nlibgit2: 1.9.0 (sys:0.20.2 vendored)\nlibcurl: 8.7.1 (sys:0.4.80+curl-8.12.1 system ssl:(SecureTransport) LibreSSL/3.3.6)\nssl: OpenSSL 3.5.0 8 Apr 2025\nos: Mac OS 26.4.1 [64-bit]\n"
+    },
+    "rustc": {
+      "path": "/Users/master/.rustup/toolchains/1.89.0-aarch64-apple-darwin/bin/rustc",
+      "bytes": 414776,
+      "sha256": "af4a9eb303553510e9d74220636dc4b21f8574ddeab73741bf6b892adc49c21c",
+      "version": "rustc 1.89.0 (29483883e 2025-08-04)\nbinary: rustc\ncommit-hash: 29483883eed69d5fb4db01964cdf2af4d86e9cb2\ncommit-date: 2025-08-04\nhost: aarch64-apple-darwin\nrelease: 1.89.0\nLLVM version: 20.1.7\n"
+    }
+  },
+  "sources_before": {
+    "revision": "172811b7746cdcd6ab198a3ed976dc6c19f55d5b",
+    "files": {
+      "specs/sequential-compaction.md": {
+        "bytes": 13357,
+        "sha256": "ba81952103b7e44a04ef16d3d6d5e0bf7906eadcda19c507742d3662e85c5fd9"
+      },
+      "rs/sequential/compacting.rs": {
+        "bytes": 9051,
+        "sha256": "9548eb023f10c8cb9ca4ab9b91e9dc18ae2993036174bcbbe3c187e5c6e3f3fb"
+      },
+      "rs/sequential/observe/mod.rs": {
+        "bytes": 6001,
+        "sha256": "97848d24492bceedd6a9d4b7033fbf15c0f841d16c3f867e63f6ec92e1b06fa3"
+      },
+      "rs/sequential/observe/hook.rs": {
+        "bytes": 2741,
+        "sha256": "6cecb7f08c84ce9d0131c722b64bbf88621cdae929ace524c043a4453c61fa19"
+      },
+      "rs/sequential/observe/capture.rs": {
+        "bytes": 10226,
+        "sha256": "f7fcde25606b16ed9ef48bdca6a50b8be380e45dd1b0610821b139b18287f688"
+      },
+      "rs/sequential/observe/stream.rs": {
+        "bytes": 1236,
+        "sha256": "a5181f23ad67281aef9a96d0bd16f05c08a4fdcc4d75f421d92331b49830fc37"
+      },
+      "rs/sequential/observe/v2.rs": {
+        "bytes": 1321,
+        "sha256": "2c5de680b20194891eb1c0b3f4d792a3813372b84aac609b4f698e2cc878ede3"
+      },
+      "rs/sequential/observe/wire.rs": {
+        "bytes": 6437,
+        "sha256": "257ce762cd5cd47991bfcbc66bd239b171ef5684bfc3ef8198a362ae7c50a2ae"
+      },
+      "rs/sequential/observe/tests.rs": {
+        "bytes": 13010,
+        "sha256": "19a77de778907445346b869795884c30ae6f10ba3701d60ded449f9c8230c6bc"
+      },
+      "rs/sequential/observe/tests/snapshots.rs": {
+        "bytes": 7715,
+        "sha256": "12639ed710e4066a64cd9bea37ec752bce9fe36b05434ff55476649f27aae7ac"
+      },
+      "rs/sequential/observe/tests/snapshots/failures.rs": {
+        "bytes": 6282,
+        "sha256": "f3f87d8a7a16621fdba20b2b41d05fbe680d0e4834552d595eb9a9a9f72701ea"
+      }
+    },
+    "siblings": {
+      "strata": {
+        "path": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/strata",
+        "revision": "d2eb1763b8caf04e6c7647ac6fe99761519c2ef9",
+        "status": ""
+      },
+      "hemera": {
+        "path": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/hemera",
+        "revision": "a931a0a8e7ed369852ce0f8bc6451a59745ee692",
+        "status": ""
+      },
+      "lens": {
+        "path": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/lens",
+        "revision": "17cafe91431977b738e5b72361187cd01ad93638",
+        "status": ""
+      },
+      "honeycrisp": {
+        "path": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/honeycrisp",
+        "revision": "ff735e6c262926bc9bab7534786a575020cbe442",
+        "status": ""
+      }
+    }
+  },
+  "runner": {
+    "bytes": 5391,
+    "sha256": "1752bbeeb9231a068bbd2f388bfca55754a03df6296584bf6f0c11c3ae6e73ef"
+  },
+  "rss_limit_kib": 2097152,
+  "rss_sampling_ms": 250,
+  "log_limit_bytes": 134217728,
+  "sampled_peak_tree_rss_kib": 513536,
+  "status": "passed",
+  "exit_code": 0,
+  "ended_ns": 1790905416385462000,
+  "sources_after": {
+    "revision": "172811b7746cdcd6ab198a3ed976dc6c19f55d5b",
+    "files": {
+      "specs/sequential-compaction.md": {
+        "bytes": 13357,
+        "sha256": "ba81952103b7e44a04ef16d3d6d5e0bf7906eadcda19c507742d3662e85c5fd9"
+      },
+      "rs/sequential/compacting.rs": {
+        "bytes": 9051,
+        "sha256": "9548eb023f10c8cb9ca4ab9b91e9dc18ae2993036174bcbbe3c187e5c6e3f3fb"
+      },
+      "rs/sequential/observe/mod.rs": {
+        "bytes": 6001,
+        "sha256": "97848d24492bceedd6a9d4b7033fbf15c0f841d16c3f867e63f6ec92e1b06fa3"
+      },
+      "rs/sequential/observe/hook.rs": {
+        "bytes": 2741,
+        "sha256": "6cecb7f08c84ce9d0131c722b64bbf88621cdae929ace524c043a4453c61fa19"
+      },
+      "rs/sequential/observe/capture.rs": {
+        "bytes": 10226,
+        "sha256": "f7fcde25606b16ed9ef48bdca6a50b8be380e45dd1b0610821b139b18287f688"
+      },
+      "rs/sequential/observe/stream.rs": {
+        "bytes": 1236,
+        "sha256": "a5181f23ad67281aef9a96d0bd16f05c08a4fdcc4d75f421d92331b49830fc37"
+      },
+      "rs/sequential/observe/v2.rs": {
+        "bytes": 1321,
+        "sha256": "2c5de680b20194891eb1c0b3f4d792a3813372b84aac609b4f698e2cc878ede3"
+      },
+      "rs/sequential/observe/wire.rs": {
+        "bytes": 6437,
+        "sha256": "257ce762cd5cd47991bfcbc66bd239b171ef5684bfc3ef8198a362ae7c50a2ae"
+      },
+      "rs/sequential/observe/tests.rs": {
+        "bytes": 13010,
+        "sha256": "19a77de778907445346b869795884c30ae6f10ba3701d60ded449f9c8230c6bc"
+      },
+      "rs/sequential/observe/tests/snapshots.rs": {
+        "bytes": 7715,
+        "sha256": "12639ed710e4066a64cd9bea37ec752bce9fe36b05434ff55476649f27aae7ac"
+      },
+      "rs/sequential/observe/tests/snapshots/failures.rs": {
+        "bytes": 6282,
+        "sha256": "f3f87d8a7a16621fdba20b2b41d05fbe680d0e4834552d595eb9a9a9f72701ea"
+      }
+    },
+    "siblings": {
+      "strata": {
+        "path": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/strata",
+        "revision": "d2eb1763b8caf04e6c7647ac6fe99761519c2ef9",
+        "status": ""
+      },
+      "hemera": {
+        "path": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/hemera",
+        "revision": "a931a0a8e7ed369852ce0f8bc6451a59745ee692",
+        "status": ""
+      },
+      "lens": {
+        "path": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/lens",
+        "revision": "17cafe91431977b738e5b72361187cd01ad93638",
+        "status": ""
+      },
+      "honeycrisp": {
+        "path": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/honeycrisp",
+        "revision": "ff735e6c262926bc9bab7534786a575020cbe442",
+        "status": ""
+      }
+    }
+  },
+  "stdout": {
+    "bytes": 2211,
+    "sha256": "e477fc206d1ad9b06b8928f45b6712a96efc3a88ef51a4a08be6974006bd259c"
+  },
+  "stderr": {
+    "bytes": 2544,
+    "sha256": "09577959f785196d910a5c83e53082544595d84d550fc4f7c2cf5be652405982"
+  },
+  "warning_lines": []
+}

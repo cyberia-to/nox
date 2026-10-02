@@ -12,6 +12,7 @@ use std::{collections::BTreeMap, vec::Vec};
 
 mod differential;
 mod failures;
+mod snapshots;
 mod wire;
 
 #[derive(Default)]

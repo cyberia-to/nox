@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "scope": "pre-extension version-1 byte-stream golden; no proof acceptance",
+  "command": [
+    "/Users/master/.cargo/bin/rustup",
+    "run",
+    "1.89.0",
+    "/Users/master/.rustup/toolchains/1.89.0-aarch64-apple-darwin/bin/cargo",
+    "run",
+    "--release",
+    "--offline",
+    "--manifest-path",
+    "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/golden-probe/Cargo.toml"
+  ],
+  "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/nox",
+  "explicit_environment": {
+    "CARGO_TARGET_DIR": "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/golden-target",
+    "CARGO_BUILD_JOBS": "2",
+    "RUSTC": "/Users/master/.rustup/toolchains/1.89.0-aarch64-apple-darwin/bin/rustc"
+  },
+  "source_revision": "172811b7746cdcd6ab198a3ed976dc6c19f55d5b",
+  "source_status": "",
+  "toolchain": {
+    "cargo": {
+      "path": "/Users/master/.rustup/toolchains/1.89.0-aarch64-apple-darwin/bin/cargo",
+      "bytes": 28655992,
+      "sha256": "798a97c06e6fc3a63f1b7e3141f87e515e6bc8da1527bc32e19ba27d86bb89c5",
+      "version": "cargo 1.89.0 (c24e10642 2025-06-23)\nrelease: 1.89.0\ncommit-hash: c24e1064277fe51ab72011e2612e556ac56addf7\ncommit-date: 2025-06-23\nhost: aarch64-apple-darwin\nlibgit2: 1.9.0 (sys:0.20.2 vendored)\nlibcurl: 8.7.1 (sys:0.4.80+curl-8.12.1 system ssl:(SecureTransport) LibreSSL/3.3.6)\nssl: OpenSSL 3.5.0 8 Apr 2025\nos: Mac OS 26.4.1 [64-bit]\n"
+    },
+    "rustc": {
+      "path": "/Users/master/.rustup/toolchains/1.89.0-aarch64-apple-darwin/bin/rustc",
+      "bytes": 414776,
+      "sha256": "af4a9eb303553510e9d74220636dc4b21f8574ddeab73741bf6b892adc49c21c",
+      "version": "rustc 1.89.0 (29483883e 2025-08-04)\nbinary: rustc\ncommit-hash: 29483883eed69d5fb4db01964cdf2af4d86e9cb2\ncommit-date: 2025-08-04\nhost: aarch64-apple-darwin\nrelease: 1.89.0\nLLVM version: 20.1.7\n"
+    }
+  },
+  "files": {
+    "golden-probe.rs": {
+      "bytes": 2398,
+      "sha256": "6eeae128d9f649555d646653c393a5ff4a5ca2b6d16fc124712ce3066373c9b7"
+    },
+    "golden-probe.toml": {
+      "bytes": 551,
+      "sha256": "b0c34dafe02d0f994d9d782149b028756790e75e39d7788f9776fef6dbbd430f"
+    },
+    "golden-probe.lock": {
+      "bytes": 837,
+      "sha256": "f9a135de653be336a63a531fcbd380af98dca95ad8740ae2742315de5512cee5"
+    },
+    "golden-v1.stdout": {
+      "bytes": 463,
+      "sha256": "e8ba1d87d48ca86501f705e0197984e5949e32595a6c6d768ad8a661df5e7189"
+    },
+    "golden-v1.stderr": {
+      "bytes": 1262,
+      "sha256": "5e9a408a971a4659270327b8346e852f425abe1f166ccc90795824734122b6ac"
+    }
+  },
+  "exit_code": 0
+}

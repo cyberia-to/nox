@@ -1,0 +1,11 @@
+     Locking 7 packages to latest Rust 1.89.0 compatible versions
+   Compiling strata-core v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/strata/core)
+   Compiling cyber-hemera v0.3.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/hemera/rs)
+   Compiling strata-proof v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/strata/proof)
+   Compiling strata-ext v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/strata/ext)
+   Compiling strata-compute v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/strata/compute)
+   Compiling strata-nebu v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/strata/nebu/rs)
+   Compiling cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/nox/rs)
+   Compiling snapshot-v1-golden v0.0.0 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/golden-probe)
+    Finished `release` profile [optimized] target(s) in 1.32s
+     Running `/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/golden-target/release/snapshot-v1-golden`

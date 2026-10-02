@@ -4,7 +4,10 @@ use crate::{ErrorKind, Order, Reduction};
 
 mod capture;
 pub(super) mod hook;
+mod stream;
+mod v2;
 mod wire;
+pub use v2::{EventV2, ObserverV2, reduce_compacting_observed_v2_controlled};
 pub use wire::EncodedEvent;
 
 /// Four canonical Hemera limbs; independent of physical arena indices.
@@ -172,6 +175,29 @@ pub enum Event {
 /// Success of the evaluator alone is insufficient if capture fails.
 #[allow(clippy::too_many_arguments)]
 pub fn reduce_compacting_observed_controlled<const N: usize, O: Observer>(
+    ar: &mut Reduction<N>,
+    object: Order,
+    formula: Order,
+    budget: u64,
+    limits: CompactionLimits,
+    capture_limits: CaptureLimits,
+    observer: &mut O,
+    cancelled: &mut impl FnMut() -> bool,
+) -> Result<ObservedExecution, ObservedFailure<O::Error>> {
+    run_observed(
+        ar,
+        object,
+        formula,
+        budget,
+        limits,
+        capture_limits,
+        &mut stream::V1(observer),
+        cancelled,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn run_observed<const N: usize, O: stream::Stream>(
     ar: &mut Reduction<N>,
     object: Order,
     formula: Order,

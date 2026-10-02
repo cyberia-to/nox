@@ -1,0 +1,58 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling crossbeam-utils v0.8.22
+   Compiling serde_core v1.0.229
+   Compiling syn v2.0.119
+   Compiling crossbeam-epoch v0.9.20
+   Compiling zerocopy v0.8.56
+   Compiling zerocopy-derive v0.8.56
+   Compiling syn v3.0.3
+   Compiling serde v1.0.229
+   Compiling zmij v1.0.23
+   Compiling crossbeam-deque v0.8.7
+   Compiling autocfg v1.5.1
+   Compiling num-traits v0.2.19
+   Compiling serde_derive v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling rayon-core v1.13.0
+   Compiling either v1.17.0
+   Compiling strata-core v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/strata/core)
+   Compiling cfg-if v1.0.4
+   Compiling libc v0.2.189
+   Compiling half v2.7.1
+   Compiling memchr v2.8.3
+   Compiling regex-syntax v0.8.11
+   Compiling ciborium-io v0.2.2
+   Compiling anstyle v1.0.14
+   Compiling plotters-backend v0.3.7
+   Compiling clap_lex v1.1.0
+   Compiling itoa v1.0.18
+   Compiling clap_builder v4.6.6
+   Compiling regex-automata v0.4.18
+   Compiling plotters-svg v0.3.7
+   Compiling ciborium-ll v0.2.2
+   Compiling itertools v0.10.5
+   Compiling same-file v1.0.6
+   Compiling cast v0.3.0
+   Compiling walkdir v2.5.0
+   Compiling criterion-plot v0.5.0
+   Compiling is-terminal v0.4.17
+   Compiling rayon v1.12.0
+   Compiling plotters v0.3.7
+   Compiling ciborium v0.2.2
+   Compiling regex v1.13.1
+   Compiling clap v4.6.6
+   Compiling tinytemplate v1.2.1
+   Compiling strata-ext v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/strata/ext)
+   Compiling strata-compute v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/strata/compute)
+   Compiling strata-proof v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/strata/proof)
+   Compiling once_cell v1.21.4
+   Compiling oorandom v11.1.5
+   Compiling anes v0.1.6
+   Compiling strata-nebu v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/strata/nebu/rs)
+   Compiling criterion v0.5.1
+   Compiling cyber-hemera v0.3.1 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/hemera/rs)
+   Compiling cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/nox/rs)
+    Finished `release` profile [optimized] target(s) in 25.48s
+     Running unittests lib.rs (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/target/release/deps/nox-0a5f63b27b57cab9)
