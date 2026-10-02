@@ -190,3 +190,25 @@ impl Event {
         out
     }
 }
+
+impl EventV2 {
+    /// Ordinary events keep their bytes; reset uses tag4 and two payload words.
+    pub fn encode(&self) -> EncodedEvent {
+        match *self {
+            Self::Event(event) => event.encode(),
+            Self::ArenaReset {
+                next_sequence,
+                live_nodes,
+            } => {
+                let mut out = EncodedEvent {
+                    bytes: [0; 512],
+                    len: 0,
+                };
+                out.word(4);
+                out.word(next_sequence);
+                out.word(u64::from(live_nodes));
+                out
+            }
+        }
+    }
+}

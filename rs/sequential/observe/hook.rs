@@ -39,6 +39,11 @@ pub(in crate::sequential) trait Hook {
         limits: CompactionLimits,
         cancelled: &mut impl FnMut() -> bool,
     ) -> Result<(), Self::Error>;
+    fn collected<const N: usize>(
+        &mut self,
+        ar: &Reduction<N>,
+        cancelled: &mut impl FnMut() -> bool,
+    ) -> Result<(), Self::Error>;
     fn before<const N: usize>(
         &mut self,
         ar: &Reduction<N>,
@@ -65,6 +70,14 @@ impl Hook for super::NoObserver {
         _: &Reduction<N>,
         _: &Action,
         _: CompactionLimits,
+        _: &mut impl FnMut() -> bool,
+    ) -> Result<(), Infallible> {
+        Ok(())
+    }
+    #[inline(always)]
+    fn collected<const N: usize>(
+        &mut self,
+        _: &Reduction<N>,
         _: &mut impl FnMut() -> bool,
     ) -> Result<(), Infallible> {
         Ok(())

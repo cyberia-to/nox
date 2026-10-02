@@ -158,3 +158,50 @@ no Zheng relation, cryptographic execution proof, compiler semantic-preservation
 claim or SH7 closure. Authenticated memory lookup, stack/control continuity,
 cost derivation, chunk binding and final completion remain obligations of a
 future constrained verifier. Physical GC telemetry remains a host report.
+
+## Version-2 arena snapshots
+
+`sequential::observe::reduce_compacting_observed_v2_controlled` accepts an
+`ObserverV2` whose atomic `record` callback receives `EventV2`. Its execution
+arguments, capture limits, statistics and failure types match the version-1
+entry point. The existing `Event`, `Observer`, version-1 entry point and their
+encoding remain unchanged.
+
+`EventV2::Event(Event)` wraps ordinary events. The initial Begin has version2;
+all other ordinary fields and ordering retain their version-1 meaning.
+`EventV2::ArenaReset { next_sequence, live_nodes }` announces a complete
+snapshot of the current resident arena after a successful collection, before
+the next evaluator step. `next_sequence` equals that next transition's sequence.
+Exactly `live_nodes` wrapped Node events follow, in compacted arena order,
+including the pinned prefix. Each pair's children precede it within this
+snapshot. Collection preserves survivor order; export reads existing cached
+particles and bounds without recomputing them or mutating the arena.
+
+A reset starts a new noun-definition epoch for sinks which choose to reclaim
+their dictionaries. After the declared snapshot, subsequent fresh Node events
+again precede their associated Transition. Snapshot nodes are counted separately
+from `Transition::fresh_nodes`; reset and snapshot delivery advance no logical
+transition sequence, guest charge, evaluator checkpoint or collection checkpoint.
+The callback runs only after collection returns successfully, outside its atomic
+commit. If the collector commits and then reports cancellation, execution returns
+its ordinary failure and emits no reset for that collection.
+
+The canonical encoding of wrapped events is the existing Event encoding, with
+no additional wrapper word. The reset encoding is three little-endian u64 words:
+tag4, next_sequence and live_nodes. Capture byte counts use those exact bytes.
+A reset delivery consumes one capture work unit and event; every snapshot Node
+consumes the existing node-export work and event-delivery work. Existing event,
+byte and work caps apply across the complete stream, including all snapshots.
+Each capture work unit polls cancellation. Export is incremental with fixed
+per-event storage; sink storage and callback work remain the sink's responsibility.
+
+An interrupted snapshot leaves an unsuccessful partial stream. A consumer must
+receive exactly the declared snapshot nodes before accepting a transition or
+completion, and must check successful evaluator return before publication. It
+must not reuse old dense indices as identities in a new epoch. Reset markers
+expose host collection boundaries; authentication of definitions, epoch handles,
+activation facts, cached evaluation summaries and chunk continuity belongs to
+the independent verifier. Pending semantic activations can outlive original
+nouns discarded by GC, so a bounded verifier must retain already-checked facts
+needed by their later phases rather than relying on old noun-table references.
+This observation profile establishes no execution proof or SH7/SH8 closure.

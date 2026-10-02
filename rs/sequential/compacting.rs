@@ -203,6 +203,9 @@ fn execute_compacting<const N: usize, H: Hook>(
                 stats,
                 cancelled,
             )?;
+            observer
+                .collected(ar, cancelled)
+                .map_err(RunError::Capture)?;
         }
         let before = ar.count();
         let observation = observer

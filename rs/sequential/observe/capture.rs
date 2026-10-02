@@ -16,7 +16,7 @@ pub(super) struct Before {
     count: u32,
 }
 
-impl<'a, O: Observer> Capture<'a, O> {
+impl<'a, O: stream::Stream> Capture<'a, O> {
     pub fn new(sink: &'a mut O, limits: CaptureLimits) -> Self {
         Self {
             sink,
@@ -38,21 +38,29 @@ impl<'a, O: Observer> Capture<'a, O> {
         }
         Ok(())
     }
-    fn emit(
+    fn delivery(
         &mut self,
-        event: Event,
+        encoded_bytes: impl FnOnce() -> u64,
         cancelled: &mut impl FnMut() -> bool,
     ) -> Result<(), CaptureFailure<O::Error>> {
         self.work(cancelled)?;
         if self.stats.events == self.limits.max_events {
             return Err(CaptureFailure::Events);
         }
-        let bytes = event.encode().as_bytes().len() as u64;
+        let bytes = encoded_bytes();
         if bytes > self.limits.max_bytes - self.stats.bytes {
             return Err(CaptureFailure::Bytes);
         }
         self.stats.events += 1;
         self.stats.bytes += bytes;
+        Ok(())
+    }
+    fn emit(
+        &mut self,
+        event: Event,
+        cancelled: &mut impl FnMut() -> bool,
+    ) -> Result<(), CaptureFailure<O::Error>> {
+        self.delivery(|| event.encode().as_bytes().len() as u64, cancelled)?;
         self.sink.record(event).map_err(CaptureFailure::Sink)
     }
     fn particle<const N: usize>(
@@ -171,7 +179,7 @@ impl<'a, O: Observer> Capture<'a, O> {
     }
 }
 
-impl<O: Observer> Hook for Capture<'_, O> {
+impl<O: stream::Stream> Hook for Capture<'_, O> {
     type Error = CaptureFailure<O::Error>;
     type Before = Before;
     fn begin<const N: usize>(
@@ -184,7 +192,7 @@ impl<O: Observer> Hook for Capture<'_, O> {
         let initial = self.action(ar, action, cancelled)?;
         self.emit(
             Event::Begin {
-                version: 1,
+                version: O::VERSION,
                 initial,
                 initial_nodes: ar.count(),
                 max_frames: limits.max_frames,
@@ -194,6 +202,27 @@ impl<O: Observer> Hook for Capture<'_, O> {
             },
             cancelled,
         )?;
+        for id in 0..ar.count() {
+            self.node(ar, id, cancelled)?;
+        }
+        Ok(())
+    }
+    fn collected<const N: usize>(
+        &mut self,
+        ar: &Reduction<N>,
+        cancelled: &mut impl FnMut() -> bool,
+    ) -> Result<(), Self::Error> {
+        if O::VERSION == 1 {
+            return Ok(());
+        }
+        let reset = EventV2::ArenaReset {
+            next_sequence: self.sequence,
+            live_nodes: ar.count(),
+        };
+        self.delivery(|| reset.encode().as_bytes().len() as u64, cancelled)?;
+        self.sink
+            .reset(self.sequence, ar.count())
+            .map_err(CaptureFailure::Sink)?;
         for id in 0..ar.count() {
             self.node(ar, id, cancelled)?;
         }
