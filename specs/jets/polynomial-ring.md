@@ -30,7 +30,7 @@ savings:     ~log(n) factor on commitment, ~n factor on NTT correctness
 
 ## cross-algebra
 
-gadget_decomp (jet 2) crosses to F₂ (Binius boundary). the digit sequence is binary — proved via Binius. HyperNova folds the F₂ sub-trace back into the F_p accumulator (~766 constraints per crossing).
+gadget_decomp (jet 2) crosses to F₂ (Binius boundary). the digit sequence is binary — proved via Binius. the F₂ sub-trace joins the F_p accumulator through zheng's accumulation; the crossing cost of the retired fold does not hold (see [[soft3/proposals/proof-system-repair|the proof-system repair]]).
 
 FHE bootstrapping crosses three algebras:
 ```

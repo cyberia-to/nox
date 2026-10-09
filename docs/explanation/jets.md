@@ -6,7 +6,7 @@ optimization without compromise — from sixteen patterns to silicon, preserving
 
 the [[zheng]] verifier for nox is itself a nox program. to achieve recursive proof composition — proving that a proof is valid — the network runs the verifier inside the VM and proves THAT execution.
 
-with Brakedown (Merkle-free PCS), the verifier is pure field arithmetic. canonical verifier cost: ~8,000 constraints (generic), ~825 (CCS jet + batch), ~89 (algebraic Fiat-Shamir). see zheng/specs/verifier.md for the canonical breakdown. the five nebu jets accelerate both verification and general-purpose computation.
+the verifier is field arithmetic for the sumcheck plus hemera for Fiat-Shamir and the Merkle paths of every opening; its cost is set by [[soft3/proposals/proof-system-repair|the proof-system repair]] (the constraint tiers of the retired design do not hold). the five nebu jets accelerate both verification and general-purpose computation.
 
 the sixteen patterns can express these operations. the patterns are Turing-complete. but expressing a Poseidon2 permutation as ~2,800 individual add/mul patterns produces ~2,800 rows in the trace, each requiring separate constraint verification. the proof is correct but enormous.
 
@@ -102,10 +102,10 @@ the five verifier jets described above cover nebu (F_p). four more algebras cont
 - **jali** (R_q): 5 ring jets — ntt_batch, key_switch, gadget_decomp, noise_track, blind_rotate. 3072× gap motivates ring-aware proving for FHE.
 - **trop** (min,+): 5 tropical jets — trop_matmul, trop_shortest, trop_hungarian, trop_viterbi, trop_transport. optimization witnesses verified in F_p.
 - **genies** (F_q): 4 isogeny jets — group_action, isogeny_walk, vrf_eval, vdf_step. privacy primitives over a foreign field.
-- **decider**: 1 jet — all-history verification in 89 constraints, less than one hemera hash.
+- **decider**: 1 jet — all-history verification: one decider over the accumulator.
 
 5 boundary jets handle algebra crossings (quantize, dequantize, gadget_decomp, secret_hash, witness_commit).
 
 33 jets total. the same principle at every level: semantic equivalence, optimization without compromise.
 
-see [[five-algebras]] for why five algebras are irreducible, [[decider]] for the 89-constraint all-history verification.
+see [[five-algebras]] for why five algebras are irreducible.

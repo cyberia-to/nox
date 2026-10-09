@@ -38,7 +38,7 @@ trop is a semiring, not a field. R_q is a ring, not F_p. how do they work in a f
 
 **jali**: R_q = F_p[x]/(x^n+1) decomposes via NTT into n copies of F_p. nox runs F_p operations. ring jets (ntt_batch, key_switch, blind_rotate) recognize structured compositions of F_p operations and commit them as ring-aware batches in zheng.
 
-**genies**: F_q is a different prime field. nox<F_q> is a separate instantiation with its own jet registry. cross-algebra composition via HyperNova folds F_q sub-traces into the F_p accumulator.
+**genies**: F_q is a different prime field. nox<F_q> is a separate instantiation with its own jet registry. cross-algebra composition accumulates F_q sub-traces into the F_p accumulator.
 
 ## jets per algebra
 
@@ -65,11 +65,11 @@ step 3: key switching           → nebu (F_p)
 step 4: modulus switching       → nebu (F_p)
 ```
 
-each step proves via its native lens in zheng. HyperNova folds all sub-traces into one F_p accumulator. one decider, one proof. boundary cost: ~766 F_p constraints per algebra crossing.
+each step proves via its native lens in zheng. zheng accumulates all sub-traces into one F_p accumulator. one decider, one proof.
 
-## the decider: 89 constraints
+## the decider
 
-the universal accumulator (~200 bytes) folds all history from genesis. the decider jet verifies it in 89 constraints — less than one hemera permutation (736). three optimizations stack: CCS jet encoding (4×), batched spot-checks via sumcheck (36×), algebraic Fiat-Shamir (zero hemera). verifying all chain history costs less than hashing 56 bytes.
+the universal accumulator folds all history from genesis, and one decider settles it. the accumulator size and decider cost of the retired design do not hold; the repaired accumulation and its measured numbers live in [[soft3/proposals/proof-system-repair|the proof-system repair]].
 
 ## the correspondence
 

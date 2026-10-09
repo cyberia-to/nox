@@ -86,7 +86,7 @@ isogeny group action has no construction over F_p at all
 substrate.
 
 nox already models this: genies is "a separate instantiation `nox<F_q>` with
-its own jet registry; cross-algebra composition via HyperNova folds F_q
+its own jet registry; cross-algebra composition accumulates F_q
 sub-traces into the F_p accumulator." This proposal does not introduce that —
 it confirms F_q as the *single* irreducible second floor. After the collapse,
 nox is exactly two prime substrates:

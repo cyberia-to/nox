@@ -55,7 +55,7 @@ without Layer 2, nox would be fully transparent and stateless. every computation
 
 five jets: hash, poly_eval, merkle_verify, fri_fold, ntt. each is observationally equivalent to a composition of Layer 1 patterns — same input, same output, different speed.
 
-the selection criterion is specific: recursive [[zheng]] verification and general-purpose computation. with Brakedown (Merkle-free PCS), the zheng verifier costs ~8,000 constraints (generic) or ~825 (CCS jet + batch). see zheng/specs/verifier.md for canonical costs.
+the selection criterion is specific: recursive [[zheng]] verification and general-purpose computation. the zheng verifier is field arithmetic plus hemera Merkle-path checks; its cost is set by [[soft3/proposals/proof-system-repair|the proof-system repair]] (the constraint counts of the retired design do not hold).
 
 Layer 3 preserves confluence. a jet is a semantic no-op — replacing it with its Layer 1 expansion produces identical results on all inputs. the test is automated: a harness runs both versions on random inputs and checks equality. if any jet ever disagrees with its pure equivalent, the jet is buggy and must be fixed or removed.
 

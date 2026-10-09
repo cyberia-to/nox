@@ -24,11 +24,11 @@ the trust chain does not end at an unauditable layer. it ends at the mathematics
 
 ## the recursive structure
 
-level 0: a nox program runs. it produces an execution trace. the trace is proved by the [[zheng]] prover. output: a proof P₀ of ~60-157 KiB.
+level 0: a nox program runs. it produces an execution trace. the trace is proved by the [[zheng]] prover. output: a proof P₀.
 
-level 1: the verifier (a nox program) takes P₀ as its object and the verification formula as its formula. it runs (~825 constraints with CCS jet). it produces an execution trace. that trace is proved. output: a proof P₁ of ~2 KiB.
+level 1: the verifier (a nox program) takes P₀ as its object and the verification formula as its formula. it runs. it produces an execution trace. that trace is proved. output: a proof P₁.
 
-level 2: the verifier takes P₁ as its object. it runs. it produces P₂ of ~60-157 KiB.
+level 2: the verifier takes P₁ as its object. it runs. it produces P₂.
 
 at every level, the proof is the same size. the original computation could have been 10 patterns or 10 billion patterns — P₀ is the same size. P₁ is the same size. the proof compresses computation: O(N) execution → O(1) verification.
 
@@ -50,15 +50,7 @@ this is the scalability mechanism of [[cyber]]. the chain does not re-execute tr
 
 ## the verifier's cost
 
-with Brakedown (Merkle-free PCS), the zheng verifier is pure field arithmetic. canonical costs from zheng/specs/verifier.md:
-
-```
-generic (no jets):           ~8,000 constraints
-CCS jet + batch Brakedown:      ~825 constraints
-+ algebraic Fiat-Shamir:          ~89 constraints
-```
-
-per-fold cost: ~30 field ops + 1 hemera hash. the cost scales linearly with recursion depth, and each level produces a constant-size proof (~2 KiB).
+the zheng verifier is field arithmetic for the sumcheck plus hemera for Fiat-Shamir and the Merkle paths of every opening. the constraint tiers, per-fold cost and per-level proof size of the retired design do not hold. in a hash-only system recursion composes proofs and leaves their size where it was; the measured verifier cost and the place of recursion are in [[soft3/proposals/proof-system-repair|the proof-system repair]] §4.
 
 ## the verifier as a program
 
