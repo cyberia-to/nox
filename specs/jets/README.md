@@ -14,13 +14,13 @@ see [[jets|jets spec]] for principles, semantic contract, recognition mechanism,
 | group | algebra | jets | PCS | spec |
 |-------|---------|------|-----|------|
 | hash | all (Hemera anchor) | 1 | — | [[hash]] |
-| recursion | F_p (Goldilocks) | 4 | Brakedown | [[recursion]] |
+| recursion | F_p (Goldilocks) | 4 | WHIR | [[recursion]] |
 | binary-tower | F₂ (binary tower) | 8 | Binius | [[binary-tower]] |
 | polynomial-ring | R_q (polynomial ring) | 5 | Ikat | [[polynomial-ring]] |
 | isogeny-curves | F_q (isogeny curves) | 5 (incl. secret_hash boundary) | Porphyry | [[isogeny-curves]] |
 | tropical-semiring | (min,+) (tropical) | 6 (incl. witness_commit boundary) | Assayer | [[tropical-semiring]] |
-| state | F_p (polynomial data) | 6 (1 exact + 5 templates) | Brakedown | [[state]] |
-| decider | F_p (accumulator) | 1 | Brakedown | [[jets/decider]] |
+| state | F_p (polynomial data) | 6 (1 exact + 5 templates) | WHIR | [[state]] |
+| decider | F_p (accumulator) | 1 | WHIR (zheng; jet retired) | [[jets/decider]] |
 
 boundary jets (quantize, dequantize, gadget_decompose, secret_hash, witness_commit) live within their parent algebra.
 

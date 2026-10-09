@@ -45,15 +45,15 @@ remove all jets → identical results, slower. this is the test of the contract:
 
 the selection serves two purposes: verifier acceleration and general-purpose computation.
 
-with Brakedown, the verifier bottleneck shifted from Merkle paths (eliminated) to Fiat-Shamir hashing and polynomial evaluation. hash and poly_eval are verifier-critical. merkle_verify, fri_fold, and ntt are retained for general-purpose acceleration and cross-system interoperability.
+the zheng verifier spends its time on hemera (Fiat-Shamir challenges and the Merkle paths of WHIR openings) and on polynomial evaluation. hash, poly_eval and merkle_verify are verifier-critical. fri_fold and ntt serve general-purpose acceleration and cross-system interoperability.
 
 | jet | verifier role | general role |
 |-----|--------------|--------------|
-| hash | Fiat-Shamir challenges | content addressing, commitments |
-| poly_eval | Brakedown opening verification | any polynomial evaluation |
-| merkle_verify | not used by Brakedown | cross-system interop, legacy proofs |
-| fri_fold | not used by Brakedown | FRI-based protocols, cross-system |
-| ntt | not used by Brakedown | polynomial multiplication, ring ops |
+| hash | Fiat-Shamir challenges, Merkle nodes | content addressing, commitments |
+| poly_eval | evaluation checks in sumcheck and WHIR | any polynomial evaluation |
+| merkle_verify | WHIR opening authentication paths | cross-system interop |
+| fri_fold | WHIR-style folding of RS codewords | FRI-based protocols, cross-system |
+| ntt | prover-side RS encoding | polynomial multiplication, ring ops |
 
 ## from patterns to silicon
 

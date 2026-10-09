@@ -1,12 +1,12 @@
 # self-verification
 
-the system that verifies itself — recursive proof composition to arbitrary depth, constant proof size at every level.
+the system that verifies itself — the zheng verifier is a nox program, so proofs about nox can be composed inside nox.
 
 ## the closure
 
-the [[zheng]] verifier for nox is itself a nox program. every operation the verifier needs — field arithmetic, hashing, polynomial evaluation, sumcheck rounds, Brakedown openings — is native to the sixteen patterns or their jet equivalents.
+the [[zheng]] verifier for nox is itself a nox program. every operation the verifier needs — field arithmetic, hashing, polynomial evaluation, sumcheck rounds, WHIR openings with their hemera Merkle paths — is native to the sixteen patterns or their jet equivalents.
 
-this closure is the deepest property of the design. the VM can verify proofs about its own executions. a proof-of-proof is a nox program that runs the verifier on a proof. the proof-of-proof is itself provable. recursion to arbitrary depth, constant proof size at every level.
+this closure is the deepest property of the design. the VM can verify proofs about its own executions. a proof-of-proof is a nox program that runs the verifier on a proof. the proof-of-proof is itself provable. this recursion is for composition — it lets one proof speak about another — and never for size: in a hash-only system a proof-of-proof is no smaller than the proof it checks.
 
 ```
 program → trace → zheng proof → verifier (nox program) → trace → zheng proof → ...
@@ -18,7 +18,7 @@ the system closes on itself.
 
 in most blockchain architectures, verification is a separate, trusted layer. the consensus protocol runs on one system; transaction verification runs on another; proof verification runs on a third. each layer must trust the ones below it. the trust chain ends at hardware and compilers that cannot be audited within the system.
 
-nox collapses this chain. the verifier is a nox program. the proof that the verifier ran correctly is a [[zheng]] proof. that proof can be verified by the same verifier. each level of verification reduces to the same mathematical framework — transition constraints over the [[Goldilocks field]], checked by [[sumcheck]], committed by [[Brakedown]].
+nox collapses this chain. the verifier is a nox program. the proof that the verifier ran correctly is a [[zheng]] proof. that proof can be verified by the same verifier. each level of verification reduces to the same mathematical framework — transition constraints over the [[Goldilocks field]], checked by [[sumcheck]], committed by Reed–Solomon codes under hemera Merkle trees (WHIR).
 
 the trust chain does not end at an unauditable layer. it ends at the mathematics of finite field arithmetic and the security assumptions of the hash function ([[Hemera]]). these are public, analyzable, and falsifiable.
 
@@ -30,18 +30,18 @@ level 1: the verifier (a nox program) takes P₀ as its object and the verificat
 
 level 2: the verifier takes P₁ as its object. it runs. it produces P₂.
 
-at every level, the proof is the same size. the original computation could have been 10 patterns or 10 billion patterns — P₀ is the same size. P₁ is the same size. the proof compresses computation: O(N) execution → O(1) verification.
+each level is a composition, not a compression: P₁ is not smaller than P₀. constant size in the number of steps comes from accumulation (phase 3 of [[soft3/proposals/proof-system-repair|the proof-system repair]]): the nox machine is one uniform step relation, each step's evaluation claims enter an accumulator of one root plus a fixed number of claims, and one WHIR opening decides it. goal: ≤ 64 KB, verify ≤ 1 ms, constant in the number of steps; measured size and time TODO(F-numbers).
 
 ## aggregation
 
-recursive verification enables proof aggregation. a block producer collects N transaction proofs and produces one proof that "all N transactions are valid."
+accumulation enables proof aggregation. a block producer collects N transaction proofs and produces one proof that "all N transactions are valid."
 
 ```
 step 1: verify P_tx1 → valid
 step 2: verify P_tx2 → valid
 ...
 step N: verify P_txN → valid
-aggregate: prove that steps 1..N all succeeded → P_block
+aggregate: accumulate the claims of steps 1..N, decide once → P_block
 ```
 
 P_block is one proof. it covers all N transactions. the on-chain verifier checks one proof per block, regardless of how many transactions the block contains. O(N) transactions → O(1) on-chain verification.

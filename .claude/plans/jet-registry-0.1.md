@@ -25,7 +25,7 @@ rs/jets/
   fri_fold.rs       — new CPU impl
   ntt.rs            — new CPU impl
   state.rs          — new: CYBERLINK exact + 5 template jets
-  decider.rs        — new: HyperNova 89/825-constraint verifier
+  decider.rs        — legacy: fixed charge, verifies nothing (retired in phase 3)
   backends/
     mod.rs
     cpu.rs          — genesis_cpu(): function pointers wrapping all CPU impls
@@ -129,7 +129,7 @@ Jets charge their own budget (no separate tag-cost is deducted before calling a 
 | ntt | N × log2(N) (butterfly count) |
 | CYBERLINK | 3200 (CCS encoding cost) |
 | TRANSFER/INSERT/UPDATE/AGGREGATE/CONSERVE | 1–5 (per spec constraints column) |
-| decider | 825 (conservative, pending algebraic FS verification) |
+| decider | fixed legacy charge; measures no verification (retired in phase 3) |
 
 ## jets: status and work needed
 
@@ -170,10 +170,10 @@ CYBERLINK (exact match, formula = fixed nox cyberlink validation circuit):
 - CPU impls: direct field arithmetic, no pattern-level reduction
 
 **decider.rs**:
-- formula: nox program that reads HyperNova accumulator noun + Lens commitments, runs
-  sumcheck replay (20 constraints), CCS evaluation (34), Brakedown spot-checks (35).
-  Conservative: adds one Poseidon2 call (hemera pattern 15) for Fiat-Shamir = 825.
-- CPU impl: direct Rust using hemera + lens crates.
+- as shipped: the formula hash is recognised and a fixed cost charged; the result comes from
+  the call provider unchecked. the jet verifies nothing (launch #40).
+- the planned in-nox verifier of the retired design is dropped: phase 3 of the proof-system
+  repair makes the decider one WHIR opening of the accumulation accumulator, run in zheng.
 
 ### formulas.rs additions needed
 
@@ -259,7 +259,7 @@ wgpu = { version = "22", optional = true }
 4. fri_fold: formula + CPU impl + tests
 5. ntt: formula + CPU impl + tests
 6. state.rs: CYBERLINK formula + CPU; template predicates + CPU impls
-7. decider.rs: formula + CPU (825-constraint conservative tier)
+7. decider.rs: formula + fixed-charge stub (legacy; retired in phase 3)
 8. backends/wgpu.rs: GPU kernels for hash/poly_eval/ntt/fri_fold
 9. backends/honeycrisp.rs: AMX/Metal kernels
 

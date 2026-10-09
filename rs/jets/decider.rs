@@ -3,24 +3,28 @@
 // crystal-type: source
 // crystal-domain: comp
 // ---
-//! jet: decider — HyperNova/SuperSpartan proof verifier
+//! jet: decider — legacy, retired in phase 3
 //!
-//! The decider verifies succinct proofs of nox execution. It is the
-//! on-chain verification gate for cyber's proof-native state machine.
+//! Legacy decider jet of the retired zheng design. It charges a fixed cost
+//! and verifies nothing itself: the accept/reject bit is whatever the call
+//! provider (hints) returns, and no sumcheck, CCS evaluation or commitment
+//! opening is checked here (launch #40, nox PR #20 audit). Never treat its
+//! result as evidence.
 //!
-//! Architecture: 89 primary constraints + 825 cross-term constraints
-//! (HyperNova multi-folding scheme, SuperSpartan relaxed R1CS).
+//! Phase 3 of the proof-system repair (soft3 proposals/proof-system-repair)
+//! retires it: the nox machine becomes one uniform step relation accumulated
+//! in zheng, and the decider is one WHIR opening of the final accumulator,
+//! run by zheng, not by a nox jet.
 //!
 //! Registry calling convention:
 //!   object = [proof_data | instance_data]
-//!   proof_data    = the folded proof (compressed witness)
-//!   instance_data = the public instance to verify against
+//!   proof_data    = opaque proof bytes handed to the call provider
+//!   instance_data = the public instance handed to the call provider
 //!
-//! Returns: Field atom 1 (valid proof) or 0 (invalid).
-//! Budget: 825 (one unit per cross-term constraint verified).
+//! Returns: whatever the call provider returns, unchecked (expected atom 1 or
+//! 0); atom 0 when no provider answers.
+//! Budget: a fixed legacy charge (DECIDER_COST); it measures no verification.
 //!
-//! Implementation note: For 0.1.0, verification logic is delegated to the
-//! call provider (hints). A full CPU verifier will be added in 0.2.0.
 //! The formula hash uniquely identifies this jet; see jets/formulas.rs.
 
 use nebu::Goldilocks;
@@ -29,7 +33,8 @@ use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
 use crate::trace::{Tracer, TraceRow};
 
-/// Cost matching 825 cross-term constraints of HyperNova.
+/// Fixed legacy charge of the retired decider jet; it corresponds to no
+/// verification work (the jet verifies nothing).
 const DECIDER_COST: u64 = 825;
 
 /// Call-provider tag for the decider operation.
