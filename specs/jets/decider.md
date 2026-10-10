@@ -4,6 +4,8 @@ crystal-type: entity
 crystal-domain: comp
 alias: decider jet, 89-constraint verifier, all-history verification
 ---
+> superseded: this page describes the retired zheng design (Merkle-free Brakedown, unchecked HyperNova fold, ~2 KiB / ~5 μs figures). It is unsound and its numbers do not hold. The repair and the measured numbers live in [[soft3/proposals/proof-system-repair|soft3 proposals/proof-system-repair]].
+
 # decider jet — 89 constraints
 
 verifies ALL accumulated chain history in one step. the HyperNova decider checks the universal accumulator (~200 bytes) that folds every block from genesis.

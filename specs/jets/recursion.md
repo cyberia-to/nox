@@ -21,7 +21,7 @@ hash is a separate genesis jet — see [[hash]].
 
 ## role in current architecture
 
-with Brakedown (Merkle-free PCS), the zheng verifier is pure field arithmetic. canonical verifier cost is ~825 constraints (CCS jet + batch) — see zheng/specs/verifier.md.
+the zheng verifier is field arithmetic plus hemera Merkle-path checks; its cost is set by [[soft3/proposals/proof-system-repair|the proof-system repair]] (the constraint count of the retired design does not hold).
 
 | jet | verifier role | general role |
 |-----|--------------|--------------|
@@ -41,4 +41,4 @@ poly_eval is verifier-critical. merkle_verify, fri_fold, and ntt are general-pur
 
 ## PCS
 
-Brakedown (expander-graph linear codes, Merkle-free) via Lens trait
+polynomial commitment via the Lens trait, openings authenticated by hemera Merkle paths; the scheme is chosen by the bake-off in [[soft3/proposals/proof-system-repair|the proof-system repair]]

@@ -20,7 +20,7 @@ see [[jets|jets spec]] for principles, semantic contract, recognition mechanism,
 | isogeny-curves | F_q (isogeny curves) | 5 (incl. secret_hash boundary) | Porphyry | [[isogeny-curves]] |
 | tropical-semiring | (min,+) (tropical) | 6 (incl. witness_commit boundary) | Assayer | [[tropical-semiring]] |
 | state | F_p (polynomial data) | 6 (1 exact + 5 templates) | Brakedown | [[state]] |
-| decider | F_p (accumulator) | 1 | Brakedown | [[decider]] |
+| decider | F_p (accumulator) | 1 | Brakedown | [[jets/decider]] |
 
 boundary jets (quantize, dequantize, gadget_decompose, secret_hash, witness_commit) live within their parent algebra.
 
@@ -35,7 +35,7 @@ boundary jets (quantize, dequantize, gadget_decompose, secret_hash, witness_comm
 | isogeny-curves | 5 | native F_q privacy (incl. secret_hash boundary) |
 | tropical-semiring | 6 | O(|problem|) → O(|witness|) proof cost (incl. witness_commit boundary) |
 | state | 6 | 500× state transition proving (1 exact circuit + 5 templates) |
-| decider | 1 | 89 constraints — all-history verification |
+| decider | 1 | all-history verification — cost set by the proof-system repair |
 
 ## hardware mapping
 
