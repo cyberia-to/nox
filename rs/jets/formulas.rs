@@ -349,11 +349,12 @@ pub fn build_cyberlink_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<
 
 // ── decider formula ───────────────────────────────────────────────────────────
 
-/// Build the pure Layer 1 nox formula for the HyperNova decider.
+/// Build the pure Layer 1 nox formula for the legacy decider jet.
 ///
 /// Formula = [DECIDER_TAG | [axis(2) | axis(3)]]
-/// The formula's hash uniquely identifies the HyperNova verifier jet.
-/// Full 89/825-constraint verification is implemented in the jet and hints.
+/// The formula's hash identifies the legacy decider jet, which charges a
+/// fixed cost and verifies nothing (retired in phase 3; the decider becomes
+/// one WHIR opening of the accumulation accumulator in zheng).
 pub fn build_decider_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<Order> {
     const DECIDER_TAG: u64 = 1099;
     let tag  = atom(ar, DECIDER_TAG)?;
