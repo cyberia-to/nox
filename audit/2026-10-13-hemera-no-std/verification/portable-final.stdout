@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "logical_payloads": 921,
+  "new_objects": 213,
+  "borrowed_objects": 303,
+  "review_bytes": 220069,
+  "review_sha256": "aebaed2fa934763ec3f401c0cb1414b8e6aeae7a93ef9d4c73d3d6d315377e46",
+  "sections": 50,
+  "support_files": 904,
+  "execution_files": 505,
+  "records": 103,
+  "raw_streams": 206,
+  "source_entries": 536,
+  "production_files": 2,
+  "owning_rust": 48,
+  "normalized_package_entries": 52,
+  "api_checks": 229,
+  "api_skips": 31,
+  "api_actual_targets": [
+    "/tmp/nox-no-std-api-candidate-target",
+    "/tmp/nox-no-std-api-parent-baseline-target"
+  ],
+  "initial_threshold_cases": 5,
+  "repeat_threshold_cases": 6,
+  "performance_gate": "red/unverified",
+  "required_exact_tag_gate": "unmet",
+  "base_plan": {
+    "status": "PASS",
+    "logical_payloads": 386,
+    "unique_objects": 303,
+    "review_bytes": 227176,
+    "review_sha256": "1f2028db98726cea04732856de00b2b058501b930112df0811f09c83c1ac60d3",
+    "sections": 62,
+    "support_files": 378,
+    "source_entries": 1287,
+    "records": 67,
+    "raw_streams": 134,
+    "packaged_rust": 48,
+    "production_changes_applied": false,
+    "cfg_sites": 18,
+    "reverse_manifest_bodies": 9,
+    "benchmark_cases": 9,
+    "independent_parent_json_roots": [
+      "/tmp/nox-no-std-api-parent-current-target",
+      "/tmp/nox-no-std-api-parent-baseline-target"
+    ]
+  }
+}

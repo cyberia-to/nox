@@ -1,0 +1,219 @@
+def payload [lookup: record, root: path, name: string] {
+    open --raw ($root | path join objects ($lookup | get $name)) | into binary
+}
+def json [lookup: record, root: path, name: string] {
+    payload $lookup $root $name | decode utf-8 | from json
+}
+def checked-tar [archive: path, dest: path, compressed: bool] {
+    let names = if $compressed { ^tar -tzf $archive | complete } else { ^tar -tf $archive | complete }
+    let types = if $compressed { ^tar -tvzf $archive | complete } else { ^tar -tvf $archive | complete }
+    if $names.exit_code != 0 or $types.exit_code != 0 or ($names.stdout | lines | any {|p| $p =~ '(^/|(^|/)\.\.(/|$))'}) or ($types.stdout | lines | any {|p| not ($p =~ '^[-d]')}) { error make {msg: 'unsafe or unreadable tar'} }
+    mkdir $dest
+    let result = if $compressed { ^tar -xzf $archive -C $dest | complete } else { ^tar -xf $archive -C $dest | complete }
+    if $result.exit_code != 0 { error make {msg: $result.stderr} }
+    $names.stdout | lines | where {|p| not ($p | str ends-with '/')}
+}
+def command-record [records: record, n: int] { $records | get ($n | into string) }
+def stream [lookup: record, dest: path, records: record, n: int, which: string] {
+    let r = (command-record $records $n)
+    payload $lookup $dest $'code/support/execution/records/($r.record)/($which)' | decode utf-8
+}
+def main [audit: path = '.'] {
+    let audit = ($audit | path expand)
+    let c = (open ($audit | path join capsule.json))
+    let index = (open ($audit | path join index.json))
+    let base = ($audit | path join $c.base.relative_path | path expand)
+    for pair in [[evidence.tar.gz $c.archive_sha256] [index.json $c.index_sha256]] {
+        if (open --raw ($audit | path join $pair.0) | hash sha256) != $pair.1 { error make {msg: 'local capsule identity'} }
+    }
+    for pair in [[evidence.tar.gz $c.base.archive_sha256] [index.json $c.base.index_sha256] [verify.nu $c.base.verifier_sha256]] {
+        if (open --raw ($base | path join $pair.0) | hash sha256) != $pair.1 { error make {msg: 'immutable PLAN base identity'} }
+    }
+    let base_run = (^nu ($base | path join verify.nu) $base | complete)
+    if $base_run.exit_code != 0 { error make {msg: $'base PLAN replay: ($base_run.stderr)'} }
+    let base_result = ($base_run.stdout | from json)
+    if $base_result.status != PASS or $base_result.review_sha256 != '1f2028db98726cea04732856de00b2b058501b930112df0811f09c83c1ac60d3' { error make {msg: 'base PLAN result'} }
+    let base_index = (open ($base | path join index.json))
+    let base_objects = ($base_index.sha256 | uniq | sort)
+    let local_objects = ($index | where storage == local | get sha256 | uniq | sort)
+    let borrowed = ($index | where storage == base | get sha256 | uniq | sort)
+    let objects = ($index.sha256 | uniq | sort)
+    if ($index | length) != $c.logical_payloads or ($index.path | uniq | length) != $c.logical_payloads or ($objects | length) != $c.unique_objects or ($local_objects | length) != $c.new_objects or ($borrowed | length) != $c.borrowed_objects or ($borrowed | any {|h| not ($h in $base_objects)}) or ($local_objects | any {|h| $h in $base_objects}) or ($index.storage | any {|s| not ($s in [local base])}) or ($objects | any {|h| not ($h =~ '^[0-9a-f]{64}$')}) { error make {msg: 'deduplicated object inventory'} }
+    let lookup = ($index | select path sha256 | transpose --ignore-titles --header-row --as-record)
+    let sizes = ($index | select path bytes | transpose --ignore-titles --header-row --as-record)
+    let groups = ($index | group-by sha256)
+    let made = (^mktemp -d /tmp/nox-no-std-execution-verify.XXXXXX | complete)
+    if $made.exit_code != 0 { error make {msg: $made.stderr} }
+    let dest = ($made.stdout | str trim)
+    try {
+        let bnames = (checked-tar ($base | path join evidence.tar.gz) $dest true)
+        if ($bnames | sort) != ($base_objects | each {|h| $'objects/($h)'}) { error make {msg: 'base archive object set'} }
+        let lnames = (checked-tar ($audit | path join evidence.tar.gz) $dest true)
+        if ($lnames | sort) != ($local_objects | each {|h| $'objects/($h)'}) { error make {msg: 'local archive object set'} }
+        for h in $objects {
+            let p = ($dest | path join objects $h)
+            let b = (open --raw $p | into binary)
+            if ($p | path type) != file or ($b | hash sha256) != $h or ($groups | get $h | any {|r| $r.bytes != ($b | bytes length)}) { error make {msg: 'exact object bytes'} }
+        }
+        let m = (json $lookup $dest code/manifest.json)
+        let support = (json $lookup $dest code/support-index.json)
+        if ($support | length) != $m.support_files or ($support.file | uniq | length) != $m.support_files { error make {msg: 'support count'} }
+        for r in $support {
+            if ($lookup | get $'code/($r.file)') != $r.sha256 or ($sizes | get $'code/($r.file)') != $r.bytes { error make {msg: 'support identity'} }
+        }
+        let sections = (json $lookup $dest code/sections.json)
+        let parts = ($sections | enumerate | each {|v|
+            let s = $v.item
+            let b = (payload $lookup $dest $'code/($s.file)')
+            if $s.number != ($v.index + 1) or ($b | bytes length) != $s.bytes or ($b | hash sha256) != $s.sha256 { error make {msg: 'section identity'} }
+            let head = $"\n===== ($s.number): ($s.title) =====\nfile: ($s.file)\nbytes: ($s.bytes); sha256: ($s.sha256)\n"
+            let extra = if 'source' in ($s | columns) {
+                let full = (payload $lookup $dest $'code/($s.source)')
+                if ($full | hash sha256) != $s.source_sha256 or ($full | bytes at $s.byte_offset..($s.byte_offset + $s.byte_length - 1)) != $b { error make {msg: 'exact excerpt'} }
+                $"excerpt of ($s.source) byte offset ($s.byte_offset), length ($s.byte_length); full sha256: ($s.source_sha256)\n"
+            } else { '' }
+            [($head | into binary) ($extra | into binary) ("----- BEGIN -----\n" | into binary) $b ("\n----- END -----\n" | into binary)] | bytes collect
+        } | bytes collect)
+        let review = [("Nox Hemera no_std feature boundary — frozen CODE v1\n" | into binary) $parts] | bytes collect
+        if $review != (payload $lookup $dest code/review.txt) or ($review | hash sha256) != $c.review_sha256 or ($review | bytes length) != $c.review_bytes or ($sections | length) != $c.sections { error make {msg: 'full CODE reconstruction'} }
+        if (json $lookup $dest code/omissions.json | get files) != ($support | where {|r| not ($r.file in $sections.file)}) { error make {msg: 'exact reviewer omissions'} }
+        let plan_support = (json $lookup $dest code/support/plan/support-index.json)
+        let base_map = ($base_index | select path sha256 | transpose --ignore-titles --header-row --as-record)
+        for r in $plan_support {
+            if ($lookup | get $'code/support/plan/($r.file)') != ($base_map | get $'plan/($r.file)') { error make {msg: 'PLAN versus immutable base'} }
+        }
+        let input = (json $lookup $dest code/support/execution/inputs.json)
+        for r in $input.files {
+            if ($lookup | get $'code/support/execution/($r.file)') != $r.sha256 or ($sizes | get $'code/support/execution/($r.file)') != $r.bytes { error make {msg: 'frozen execution input'} }
+        }
+        let records = (json $lookup $dest code/support/execution/record-index.json)
+        if ($records | length) != 103 or $input.records != 103 or $input.raw_streams != 206 { error make {msg: 'record inventory'} }
+        for r in $records {
+            let p = $'code/support/execution/records/($r.record)'
+            if (json $lookup $dest $'($p)/receipt.json') != ($r | reject record) { error make {msg: 'receipt index equality'} }
+            if ($lookup | get $'code/support/execution/runners/($r.runner_sha256).rb') != $r.runner_sha256 { error make {msg: 'record capture runner'} }
+            for name in [stdout stderr] {
+                let b = (payload $lookup $dest $'($p)/($name)')
+                let e = ($r | get $name)
+                if ($b | hash sha256) != $e.sha256 or ($b | bytes length) != $e.bytes { error make {msg: 'exact raw streams'} }
+            }
+        }
+        let record_map = ($records | each {|r| {name: ($r.record | split row '-' | first), value: $r}} | transpose --ignore-titles --header-row --as-record)
+        let parent = (json $lookup $dest code/support/plan/support/committed-inputs.json)
+        let freeze = (json $lookup $dest code/support/execution/source-freeze.json)
+        if $freeze.parent != $c.parent or $freeze.parent != $input.parent or $freeze.changed != ['nox/CLAUDE.md' 'nox/rs/Cargo.toml'] { error make {msg: 'source epochs'} }
+        mut source_count = 0
+        for item in ($freeze.source_roots | transpose name rows) {
+            let original = ($parent | get $item.name)
+            if $item.rows.path != $original.entries.path { error make {msg: 'source set unchanged'} }
+            let tar = ($dest | path join objects ($lookup | get $'code/support/plan/support/($item.name)-source.tar'))
+            if (open --raw $tar | hash sha256) != $original.source_archive_sha256 { error make {msg: 'parent archive identity'} }
+            let dir = ($dest | path join sources $item.name)
+            let paths = (checked-tar $tar $dir false)
+            if ($paths | sort) != ($original.entries.path | sort) { error make {msg: 'exact parent source entries'} }
+            for pair in ($item.rows | zip $original.entries) {
+                let row = $pair.0
+                let old = $pair.1
+                let path = ($dir | path join $row.path)
+                let b = (open --raw $path | into binary)
+                let stat = (ls --long $path | get 0)
+                let blob = ($b | ^git hash-object --stdin | complete)
+                if $stat.type != file or ($stat.mode | str contains 'x') != ($old.mode == '100755') or ($b | hash sha256) != $old.sha256 or ($b | bytes length) != $old.bytes or $blob.exit_code != 0 or ($blob.stdout | str trim) != $old.blob or $row.parent_sha256 != $old.sha256 or $row.mode != $old.mode { error make {msg: 'exact parent source body and mode'} }
+                let changed = $item.name == nox and $row.path in [CLAUDE.md rs/Cargo.toml]
+                let candidate = if $changed {
+                    let suffix = if $row.path == 'rs/Cargo.toml' { '.txt' } else { '' }
+                    payload $lookup $dest $'code/support/execution/final-source/($row.path)($suffix)'
+                } else { $b }
+                if ($candidate | hash sha256) != $row.sha256 or ($candidate | bytes length) != $row.bytes or ($row.sha256 == $row.parent_sha256) != $row.equal_parent or $row.equal_parent == $changed { error make {msg: 'candidate source bridge'} }
+                $source_count = $source_count + 1
+            }
+        }
+        if $source_count != 536 { error make {msg: 'owning source closure'} }
+        for pair in [['rs/Cargo.toml.txt' proposed-Cargo.toml.txt] [CLAUDE.md proposed-CLAUDE.md.txt]] {
+            if (payload $lookup $dest $'code/support/execution/final-source/($pair.0)') != (payload $lookup $dest $'code/support/plan/support/($pair.1)') { error make {msg: 'exact approved production bytes'} }
+        }
+        if (payload $lookup $dest code/support/execution/source.patch | hash sha256) != $freeze.patch_sha256 or $freeze.patch_sha256 != $c.source_patch_sha256 { error make {msg: 'reviewed patch identity'} }
+        let after = (json $lookup $dest code/support/execution/source-after.json)
+        if not $after.all_source_before_after_equal or not $after.current_worktree_diff_equals_freeze or $after.patch_sha256 != $freeze.patch_sha256 { error make {msg: 'recorded gate-source drift check'} }
+        let pi = (json $lookup $dest code/support/execution/candidate-package-inputs.json)
+        let archive = ($dest | path join objects ($lookup | get code/support/execution/candidate-package.crate))
+        if (open --raw $archive | hash sha256) != $pi.archive_sha256 { error make {msg: 'normalized archive identity'} }
+        let package_dir = ($dest | path join package)
+        let package_paths = (checked-tar $archive $package_dir true)
+        if ($package_paths | sort) != ($pi.entries | each {|r| $'cyber-nox-0.2.0/($r.file)'} | sort) { error make {msg: 'normalized package file set'} }
+        for r in $pi.entries {
+            let b = (open --raw ($package_dir | path join cyber-nox-0.2.0 $r.file) | into binary)
+            if ($b | hash sha256) != $r.sha256 or ($b | bytes length) != $r.bytes { error make {msg: 'normalized package member'} }
+        }
+        let rust = ($pi.entries | where {|r| $r.file | str ends-with '.rs'})
+        if ($rust | length) != 48 { error make {msg: 'unchanged Rust count'} }
+        for r in $rust {
+            let row = ($freeze.source_roots.nox | where path == $'rs/($r.file)' | first)
+            if $r.sha256 != $row.parent_sha256 or not $row.equal_parent { error make {msg: 'package retains exact parent Rust'} }
+        }
+        let orig = (open --raw ($package_dir | path join cyber-nox-0.2.0 Cargo.toml.orig) | into binary)
+        if $orig != (payload $lookup $dest code/support/execution/final-source/rs/Cargo.toml.txt) or (open --raw ($package_dir | path join cyber-nox-0.2.0 Cargo.lock) | into binary) != (payload $lookup $dest code/support/plan/support/package/Cargo.lock.txt) { error make {msg: 'original manifest and package lock'} }
+        let parsed = {
+            parent: (payload $lookup $dest code/support/plan/support/package/Cargo.toml.txt | decode utf-8 | from toml)
+            candidate: (open --raw ($package_dir | path join cyber-nox-0.2.0 Cargo.toml) | from toml)
+        }
+        let expected = ($parsed.parent | update features.std ['hemera/std'] | upsert dependencies.hemera.default-features false)
+        if $parsed != (json $lookup $dest code/support/execution/normalized-manifests.json) or $expected != $parsed.candidate { error make {msg: 'only normalized feature changes'} }
+        for n in [72 73 74 75 76 77 78 82 83 84 85 86 87 88 90 91 92 93 94 95 96 97 98 99 100 101 102 103] {
+            if (command-record $record_map $n).exit_code != 0 { error make {msg: $'expected green ($n)'} }
+        }
+        for pair in [[79 1] [80 101] [81 101] [89 101] [64 101] [68 101]] {
+            if (command-record $record_map $pair.0).exit_code != $pair.1 { error make {msg: $'retained red ($pair.0)'} }
+        }
+        for pair in [[74 161] [75 161] [76 161] [77 164] [78 164] [84 4] [85 4] [97 161] [98 4] [99 4] [82 0] [87 0]] {
+            if not (stream $lookup $dest $record_map $pair.0 stdout | str contains $'test result: ok. ($pair.1) passed; 0 failed; 0 ignored;') { error make {msg: 'measured test count'} }
+        }
+        for pair in [[68 "error[E0463]: can't find crate for `std`"] [80 'error: this expression creates a reference which is immediately dereferenced by the compiler'] [81 'error: unresolved link to `11`'] [89 'error[E0425]: cannot find function `ntt_forward` in module `acpu::field`'] [64 'error: cannot update the lock file']] {
+            if not (stream $lookup $dest $record_map $pair.0 stderr | str contains $pair.1) { error make {msg: 'actual first-error boundary'} }
+        }
+        if (stream $lookup $dest $record_map 90 stdout | str contains 'cyber-hemera feature "std"') { error make {msg: 'default std leakage'} }
+        for n in 91..94 {
+            if not (stream $lookup $dest $record_map $n stdout | str contains 'cyber-hemera feature "std"') { error make {msg: 'explicit std forwarding'} }
+        }
+        let api = (json $lookup $dest code/support/execution/api-json/inputs.json)
+        if ($api | length) != 2 or ($api.compiler_target | uniq | length) != 2 { error make {msg: 'distinct actual compiler roots'} }
+        for r in $api {
+            let b = (payload $lookup $dest $'code/support/execution/api-json/($r.role).json')
+            let n = ($r.record | split row '-' | first | into int)
+            if ($b | hash sha256) != $r.sha256 or ($b | bytes length) != $r.bytes or (command-record $record_map $n).env.CARGO_TARGET_DIR != $r.compiler_target { error make {msg: 'emitted API JSON identity and compiler target'} }
+        }
+        if (payload $lookup $dest code/support/execution/api-json/baseline.json) != (payload $lookup $dest code/support/plan/support/api-json/baseline.json) or not (stream $lookup $dest $record_map 101 stderr | str contains '229 checks: 229 pass, 31 skip') { error make {msg: 'actual current-parent API result'} }
+        for epoch in [initial repeat] {
+            let comparison = (json $lookup $dest $'code/support/execution/benchmark/($epoch)-comparison.json')
+            if ($comparison.rows | length) != 9 { error make {msg: 'nine benchmark cases'} }
+            mut red = 0
+            for r in $comparison.rows {
+                let suffix = if $epoch == initial { '/estimates.json' } else { '/new/estimates.json' }
+                let prefix = if $epoch == initial { '' } else { 'repeat-' }
+                let a = (json $lookup $dest $'code/support/execution/benchmark/($prefix)parent/($r.case)($suffix)' | get median)
+                let b = (json $lookup $dest $'code/support/execution/benchmark/($prefix)candidate/($r.case)($suffix)' | get median)
+                let ratio = $b.point_estimate / $a.point_estimate
+                let disjoint = $b.confidence_interval.lower_bound > $a.confidence_interval.upper_bound
+                let required = $ratio > 1.05 or $disjoint
+                let field = if $epoch == initial { paired_repeat_required } else { threshold_red }
+                if $r.parent_median_ns != $a.point_estimate or $r.candidate_median_ns != $b.point_estimate or (($r.median_change_percent - (($ratio - 1) * 100)) | math abs) > 0.000000001 or ($r | get $field) != $required { error make {msg: 'benchmark estimates and predeclared threshold'} }
+                if $required { $red = $red + 1 }
+            }
+            if $red != (if $epoch == initial { 5 } else { 6 }) { error make {msg: 'retained performance red'} }
+        }
+        if not ($input.performance_gate | str contains 'red/unverified') or $c.required_exact_tag_gate != unmet { error make {msg: 'non-green boundaries'} }
+        let verdict = (json $lookup $dest code/support/execution/plan-v2-review/stdout.json)
+        let completion = (json $lookup $dest code/support/execution/plan-v2-review/completion.json)
+        let invocation = (json $lookup $dest code/support/execution/plan-v2-review/invocation.json)
+        if not ($verdict.result | str contains 'Verdict: APPROVE') or (payload $lookup $dest code/support/execution/plan-v2-review/stdout.json | hash sha256) != $completion.stdout_sha256 or $invocation.input_sha256 != $input.plan_input_sha256 { error make {msg: 'approved exact PLAN input'} }
+        for name in [nox-hemera-no-std-code-v1-verification.json nox-hemera-no-std-root-code-v1.json] {
+            let r = (json $lookup $dest $'verification/($name)')
+            if $r.status != PASS or $r.review_sha256 != $c.review_sha256 { error make {msg: 'historical independent CODE reconstruction'} }
+        }
+        print ({status: PASS, logical_payloads: ($index | length), new_objects: ($local_objects | length), borrowed_objects: ($borrowed | length), review_bytes: ($review | bytes length), review_sha256: $c.review_sha256, sections: ($sections | length), support_files: ($support | length), execution_files: ($input.files | length), records: ($records | length), raw_streams: 206, source_entries: $source_count, production_files: 2, owning_rust: ($rust | length), normalized_package_entries: ($pi.entries | length), api_checks: 229, api_skips: 31, api_actual_targets: $api.compiler_target, initial_threshold_cases: 5, repeat_threshold_cases: 6, performance_gate: 'red/unverified', required_exact_tag_gate: unmet, base_plan: $base_result} | to json)
+    } catch {|e|
+        rm --recursive --force $dest
+        error make {msg: $e.msg}
+    }
+    rm --recursive --force $dest
+}

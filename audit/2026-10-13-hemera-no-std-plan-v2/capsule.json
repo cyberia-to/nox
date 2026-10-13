@@ -1,0 +1,20 @@
+{
+  "parent": "0b1407a4b855e4961ede07e1b7ea199cb8018c30",
+  "kadek": "b939c75e553bc7d8c645216555e8d80d20f3d950",
+  "review_bytes": 227176,
+  "review_sha256": "1f2028db98726cea04732856de00b2b058501b930112df0811f09c83c1ac60d3",
+  "sections": 62,
+  "support_files": 378,
+  "records": 67,
+  "production_changes_applied": false,
+  "prior_review": "REQUEST CHANGES; v1 preserved",
+  "proposed_files": [
+    "rs/Cargo.toml",
+    "CLAUDE.md"
+  ],
+  "archive_sha256": "02a61c325f3c72834dbe3c92674ebc20828fd17b4d35f3a7b7ae1ddc41f6ffca",
+  "index_sha256": "506c29bf7af4b15d55155d86e95e86b63b7a23c9b8789f726305f4fb47fadfa2",
+  "logical_payloads": 386,
+  "unique_objects": 303,
+  "state_at_freeze": "V1 REQUEST CHANGES retained; fresh revised Opus PLAN v2 pending; production unchanged; root independently replayed this input."
+}
