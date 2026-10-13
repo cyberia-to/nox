@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "nu",
+    "/Users/master/cyber/nox-no-std-dependencies/audit/2026-10-13-hemera-no-std-plan/verify.nu",
+    "/Users/master/cyber/nox-no-std-dependencies/audit/2026-10-13-hemera-no-std-plan"
+  ],
+  "started": "2026-10-13T02:09:13.386005Z",
+  "finished": "2026-10-13T02:09:26.143261Z",
+  "exit_code": 0,
+  "runner_sha256": "ff9f9331a3488814025b0d2c5213ee951950fcb47fc65b3106e55b3f2cd64ed5",
+  "verifier_sha256": "fa01d892849279c440f7c8f9d2fe7de0eac6a06060abb5cf36567dbb7a78e72d",
+  "stdout_sha256": "f8ad81e4066156e31811dfb1695c28a84dc8df9f2836370ef25884fdaeb1569c",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

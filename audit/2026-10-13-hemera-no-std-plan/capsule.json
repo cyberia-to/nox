@@ -1,0 +1,15 @@
+{
+  "parent": "0b1407a4b855e4961ede07e1b7ea199cb8018c30",
+  "kadek": "b939c75e553bc7d8c645216555e8d80d20f3d950",
+  "review_bytes": 130675,
+  "review_sha256": "3b17ac27ecf44c2e211f1e87a14f0f914825b53aabac6f488862f9cc701e9ea4",
+  "sections": 50,
+  "support_files": 199,
+  "records": 18,
+  "production_changes_applied": false,
+  "archive_sha256": "d10b313032a0b11c7976c873e11abdc17b259dc4738780cbf105c1608f54cac1",
+  "index_sha256": "20fdcbf6db077f0b4753018e31935dc4881e19b95673e0aabfb4dcfcb383f577",
+  "logical_payloads": 207,
+  "unique_objects": 122,
+  "state_at_freeze": "Fresh Opus PLAN pending; production unchanged; root independently replayed this input."
+}

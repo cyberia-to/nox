@@ -1,0 +1,3 @@
+# Portable verifier preparation
+
+Initial `nu-check` returned false; actual `nu verify.nu` reported `Unexpected end of code` at line 157: a single-quoted apostrophe used a shell-style escape. After that fix, Nu reported `filesize value must be a number` at line 102 for an unquoted record name beginning with digits. Quoting those four record names fixed parsing. The original verifier is preserved as verify-first.nu.txt; these were verifier preparation errors, not source or review-pack changes. The raw tool outputs remain in the task transcript; this note is a transcription, not a claimed raw stream. The final portable-v1 receipt records the actual full replay. Frozen archive and review input remain unchanged.

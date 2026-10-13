@@ -1,0 +1,23 @@
+{
+  "started": "2026-10-13T02:56:02.748523Z",
+  "finished": "2026-10-13T02:56:14.447905Z",
+  "cwd": "/Users/master/cyber/nox-no-std-dependencies",
+  "revision": "0b1407a4b855e4961ede07e1b7ea199cb8018c30",
+  "argv": [
+    "nu",
+    "audit/2026-10-13-hemera-no-std/verify.nu",
+    "audit/2026-10-13-hemera-no-std"
+  ],
+  "runner_sha256": "10fc0f8210a06cd42e2cc85d0f2b328da05a5e09e01c8feb75651b31fdb0d5d6",
+  "exit_code": 1,
+  "stdout": {
+    "path": "/tmp/nox-hemera-no-std-portable-v2.stdout",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "/tmp/nox-hemera-no-std-portable-v2.stderr",
+    "bytes": 793,
+    "sha256": "548656c99158a1639fd41008f2b8b4d70482b039afa0c3390f43f9dd3e7454f4"
+  }
+}

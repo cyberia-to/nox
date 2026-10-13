@@ -1,0 +1,21 @@
+require 'json';require 'digest';require 'fileutils';require 'open3';require 'time'
+root='/Users/master/cyber/nox-no-std-dependencies';audit=root+'/audit/2026-10-13-hemera-no-std'
+%w[json stdout stderr].each{|ext|FileUtils.cp('/tmp/nox-hemera-no-std-portable-final.'+ext,audit+'/verification/portable-final.'+ext)}
+File.write(audit+'/verification/portable-final-inputs.json',JSON.pretty_generate({at:Time.now.utc.iso8601(6),note:'Recorded after successful final replay; verifier and historical source/review inputs unchanged throughout that run.',files:%w[verify.nu capsule.json index.json evidence.tar.gz].map{|f|{file:f,bytes:File.size(audit+'/'+f),sha256:Digest::SHA256.file(audit+'/'+f).hexdigest}}})+"\n")
+paths=Dir.glob(root+'/.claude/tasks/hemera-no-std/*.md')+Dir.glob(root+'/.claude/tasks/exact-tag-api-baseline/*.md')+Dir.glob(audit+'/**/*.md')
+links=[];bad=[]
+paths.each do |p|
+ File.read(p).scan(/\[[^\]]*\]\(([^\s\)]+)\)/).flatten.each do |href|
+  next if href.match?(/\A(?:https?:|mailto:|#)/)
+  target=href.split('#',2).first;target=target.sub(/:\d+$/,'');absolute=File.expand_path(target,File.dirname(p));entry={file:p.delete_prefix(root+'/'),target:href,exists:File.exist?(absolute)};links<<entry;bad<<entry unless entry[:exists]
+ end
+end
+loose=Dir.glob(root+'/audit/**/Cargo.toml')
+diff,err,s=Open3.capture3('git','-C',root,'diff','--binary','HEAD','--','CLAUDE.md','rs/Cargo.toml',binmode:true);raise err unless s.success?;h=Digest::SHA256.hexdigest(diff);raise 'source moved' unless h=='387f9ccee4480bbfeb957ee9a2cbb7d959ac808db5635a3f296ee51b001f3899'
+checks={at:Time.now.utc.iso8601(6),parent:'0b1407a4b855e4961ede07e1b7ea199cb8018c30',source_patch_sha256:h,source_matches_review:true,markdown_scope:paths.map{|p|p.delete_prefix(root+'/')}.sort,relative_links:links,missing_links:bad,loose_audit_cargo_manifests:loose,status:bad.empty?&&loose.empty? ? 'PASS' : 'FAIL'}
+File.write(audit+'/verification/final-checks.json',JSON.pretty_generate(checks)+"\n")
+FileUtils.cp(__FILE__,audit+'/verification/final-checks.rb.txt')
+files=Dir.glob(audit+'/**/*',File::FNM_DOTMATCH).select{|p|File.file?(p)&&p!=audit+'/files.json'}.sort.map{|p|{file:p.delete_prefix(audit+'/'),bytes:File.size(p),sha256:Digest::SHA256.file(p).hexdigest}}
+File.write(audit+'/files.json',JSON.pretty_generate(files)+"\n")
+puts JSON.pretty_generate({status:checks[:status],markdown_files:paths.length,relative_links:links.length,missing:bad,loose_manifests:loose,outer_files:files.length,files_sha256:Digest::SHA256.file(audit+'/files.json').hexdigest,verifier_sha256:Digest::SHA256.file(audit+'/verify.nu').hexdigest,archive_sha256:Digest::SHA256.file(audit+'/evidence.tar.gz').hexdigest,index_sha256:Digest::SHA256.file(audit+'/index.json').hexdigest,source_patch_sha256:h})
+raise 'final checks' unless checks[:status]=='PASS'

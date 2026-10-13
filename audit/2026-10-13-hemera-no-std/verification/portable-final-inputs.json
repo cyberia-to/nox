@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-13T03:01:23.482654Z",
+  "note": "Recorded after successful final replay; verifier and historical source/review inputs unchanged throughout that run.",
+  "files": [
+    {
+      "file": "verify.nu",
+      "bytes": 21538,
+      "sha256": "95e2b0ca65a253cb9332def60bcc4bdd21489db6367b4e9a756748e8a187c1cc"
+    },
+    {
+      "file": "capsule.json",
+      "bytes": 1377,
+      "sha256": "9a83cac4b65a60d7151975a37171e0b21c90b5a6a8652e1e20068615b86abfc3"
+    },
+    {
+      "file": "index.json",
+      "bytes": 192396,
+      "sha256": "b83bc1ca01d1c0ac1d7f7af2b5b7c9a120c11c01584dd08f562c74852b14de4d"
+    },
+    {
+      "file": "evidence.tar.gz",
+      "bytes": 526494,
+      "sha256": "b3ce8ef34ef80b59d0dd4a5c979490faffe009fbcdf4795805aabfcbd9219ed9"
+    }
+  ]
+}

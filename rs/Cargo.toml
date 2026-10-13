@@ -14,7 +14,7 @@ path = "lib.rs"
 
 [features]
 default = []
-std = []
+std = ["hemera/std"]
 # threaded par_binary executor — opt-in. T1 (sequential-equivalence)
 # makes the sequential path canonical; forking the arena per binary
 # pattern is expensive, so std alone must not switch execution mode
@@ -26,7 +26,7 @@ honeycrisp = ["std", "dep:acpu"]
 
 [dependencies]
 nebu = { package = "strata-nebu", version = "0.1", path = "../../strata/nebu/rs" }
-hemera = { package = "cyber-hemera", version = "0.3", path = "../../hemera/rs" }
+hemera = { package = "cyber-hemera", version = "0.3", path = "../../hemera/rs", default-features = false }
 cyber-lens-core = { version = "0.1", path = "../../lens/core", optional = true }
 cyber-lens-brakedown = { version = "0.1", path = "../../lens/brakedown", optional = true }
 acpu = { version = "0.2", optional = true }

@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "logical_payloads": 207,
+  "unique_objects": 122,
+  "review_bytes": 130675,
+  "review_sha256": "3b17ac27ecf44c2e211f1e87a14f0f914825b53aabac6f488862f9cc701e9ea4",
+  "sections": 50,
+  "support_files": 199,
+  "source_entries": 536,
+  "records": 18,
+  "raw_streams": 36,
+  "packaged_rust": 48,
+  "production_changes_applied": false
+}
