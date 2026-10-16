@@ -15,7 +15,7 @@ hash is a separate genesis jet — see [[hash]].
 | # | name | signature | exec cost | constraints | pure cost |
 |---|------|-----------|-----------|-------------|-----------|
 | 0 | poly_eval | poly_eval(coeffs, point) → F_p | N | ~N | ~2N |
-| 1 | merkle_verify | merkle_verify(root, leaf, path, index) → {0,1} | d×200 | ~d×736 | d×~210 |
+| 1 | merkle_verify | merkle_verify(root, leaf, path, index) → {0,1} | d×200 | ~d×1,440 | d×~210 |
 | 2 | fri_fold | fri_fold(poly_layer, challenge) → poly_layer_next | N/2 | ~N/2 | ~N |
 | 3 | ntt | ntt(values, direction) → transformed values | N×log(N) | ~N×log(N) | ~2N×log(N) |
 

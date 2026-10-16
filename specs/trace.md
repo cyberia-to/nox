@@ -457,6 +457,8 @@ note: r7, r10, r11, r13 (bit decomposition witnesses): populated by zheng witnes
 
 ### pattern 15: hash (multi-row, cost 25)
 
+the row map below is the hemera 0.3 layout (24 rounds: 8 full x^7, 16 partial x^{-1}). hemera 0.4, frozen 2026-10-16, has 60 rounds with x^7 in every round and no inverse S-box — 61 rows, ~1,440 zheng constraints; the cost 25 → 61 budget decision is pending (hemera `audit/profile-0.4-2026-10.md` §5).
+
 25 consecutive rows, all with r0 = 15. Driven by [`hemera::StepSponge`]:
 24 Poseidon2 round rows (k = 0..23) plus a final squeeze row (k = 24).
 

@@ -23,7 +23,7 @@ the formula-hash anchor.
 The decider checks the HyperNova accumulator (~200 bytes folding every block
 from genesis) and returns accept / reject. 89 constraints, ~100 ns — a light
 client joins by downloading a 240-byte checkpoint and verifying it, less
-work than one hemera permutation (736 constraints). It verifies all history,
+work than one hemera permutation (~1,440 constraints). It verifies all history,
 not a window. It is a complete, standalone capability.
 
 ## 2. recursion is the decider's ingredients

@@ -8,7 +8,7 @@ alias: decider jet, 89-constraint verifier, all-history verification
 
 verifies ALL accumulated chain history in one step. the HyperNova decider checks the universal accumulator (~200 bytes) that folds every block from genesis.
 
-generic cost: ~8K constraints. with three stacked optimizations: 89 constraints — less than one hemera permutation (736).
+generic cost: ~8K constraints. with three stacked optimizations: 89 constraints — less than one hemera permutation (~1,440).
 
 ## specification
 
@@ -26,7 +26,7 @@ constraints:   89 (optimistic) or 825 (conservative)
 |---|---|---|---|
 | 1 | CCS jet encoding | direct CCS matrix instead of nox trace | ~8K → ~2,070 (4×) |
 | 2 | batched spot-checks | 640 Brakedown checks → 1 batched sumcheck | ~1,280 → ~35 (36×) |
-| 3 | algebraic Fiat-Shamir | derive challenges from Lens commitments, zero hemera | ~736 → 0 |
+| 3 | algebraic Fiat-Shamir | derive challenges from Lens commitments, zero hemera | ~1,440 → 0 |
 
 ## constraint breakdown
 
@@ -44,7 +44,7 @@ total:                   89 constraints
 algebraic Fiat-Shamir (optimization 3) reuses hemera hash already inside Brakedown commitments for challenge derivation. if independent randomness is required, one hemera call remains:
 
 ```
-conservative: 89 + 736 = 825 constraints
+conservative: 89 + 1,440 = 1,529 constraints
 ```
 
 825 is still 10× better than generic 8K. the system ships with 825 and transitions to 89 when algebraic FS soundness is formally verified.
@@ -53,7 +53,7 @@ conservative: 89 + 736 = 825 constraints
 
 ```
 verify ALL chain history:       ~89 constraints ≈ ~100 nanoseconds
-89 constraints < 1 hemera call:  736 constraints
+89 constraints < 1 hemera call:  ~1,440 constraints
 verifying all history < hashing 56 bytes
 
 light client join:

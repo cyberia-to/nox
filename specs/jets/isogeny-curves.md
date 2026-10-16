@@ -16,7 +16,7 @@ four jets for commutative group action on supersingular curves over F_q. privacy
 | 1 | isogeny_walk | start_curve, path → end_curve | ~|path|×100 | ~|path|×50 | stealth address computation |
 | 2 | vrf_eval | sk, input → (output, proof) | ~500 F_q muls | ~250 | verifiable random function |
 | 3 | vdf_step | prev, T → (result, proof) | T sequential | T sequential | verifiable delay (inherently sequential) |
-| 4 | secret_hash | F_q shared secret → F_p hemera digest | ~736 | ~736 | isogeny-curves → recursion boundary |
+| 4 | secret_hash | F_q shared secret → F_p hemera digest | ~1,440 | ~1,440 | isogeny-curves → recursion boundary |
 
 ## vdf_step is unique
 

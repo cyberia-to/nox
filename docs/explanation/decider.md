@@ -23,7 +23,7 @@ the generic decider runs SuperSpartan + sumcheck + Brakedown as a nox program: ~
 
 **optimization 2: batched spot-checks.** Brakedown verification requires 640 independent multiplication checks. batch them into one sumcheck: ~1,280 → ~35. 36× reduction.
 
-**optimization 3: algebraic Fiat-Shamir.** the Brakedown commitment already contains a hemera binding hash. derive verification challenges from this existing hash instead of calling hemera again. ~736 → 0. the hemera that's already inside Brakedown is the trust anchor.
+**optimization 3: algebraic Fiat-Shamir.** the Brakedown commitment already contains a hemera binding hash. derive verification challenges from this existing hash instead of calling hemera again. ~1,440 → 0. the hemera that's already inside Brakedown is the trust anchor.
 
 ```
 sumcheck replay:         20 constraints
@@ -36,7 +36,7 @@ total:                   89 constraints
 
 ## what it means
 
-89 constraints < 1 hemera permutation (736 constraints).
+89 constraints < 1 hemera permutation (~1,440 constraints).
 
 verifying all chain history — every transaction, every proof, every state transition from genesis — costs less computation than hashing 56 bytes.
 
@@ -53,7 +53,7 @@ a phone joins the network. downloads 240 bytes. verifies in 100 nanoseconds. has
 
 the algebraic Fiat-Shamir optimization (zero hemera) requires that deriving challenges from Lens commitments satisfies the Fiat-Shamir security model. this is believed sound but not yet formally proven for this specific construction.
 
-if independent randomness is required, one hemera call remains: 89 + 736 = 825 constraints. still 10× better than the generic 8K. still cheaper than hashing a kilobyte.
+if independent randomness is required, one hemera call remains: 89 + 1,440 = 1,529 constraints. still 5× better than the generic 8K. still cheaper than hashing a kilobyte.
 
 both tiers are specified. the system ships with 825 (conservative). transitions to 89 when algebraic Fiat-Shamir soundness is formally verified.
 
