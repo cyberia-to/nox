@@ -1,0 +1,75 @@
+{
+  "platform": "macOS-26.4.1-arm64-arm-64bit-Mach-O",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14) (Homebrew)",
+  "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21) (Homebrew)",
+  "worktree": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-live-probe",
+  "repositories": {
+    "nox-live-probe": {
+      "head": "13b4c2ee71b3f3e205ddc9ad30d1476b86a7ccc5",
+      "branch": "chore/0.4-compiler-liveness-probe",
+      "status": "M rs/sequential.rs\n?? audit/compiler-liveness/\n?? rs/sequential/liveness.rs\n?? rs/sequential/liveness/"
+    },
+    "nox": {
+      "head": "13b4c2ee71b3f3e205ddc9ad30d1476b86a7ccc5",
+      "branch": "feat/0.4-bounded-pure-memo",
+      "status": ""
+    },
+    "trident": {
+      "head": "ca9d926b65701be4f9fe0eadac0ac05283b95bb6",
+      "branch": "feat/0.4-full-native-bootstrap",
+      "status": "M .claude/plans/native-compiler-aggregate-types.md\n M .claude/plans/native-compiler-arena.md\n M audit/self-hosting/probe-native-closure.py\n M lib/std/compiler/nox/function_order.tri\n M lib/std/compiler/nox/job.tri\n M lib/std/compiler/nox/module_function_order.tri\n M lib/std/compiler/nox/package_compile.tri\n M lib/std/nox/bytes.tri\n M tests/native_compiler/support.rs\n?? audit/self-hosting/byte-discard-before.json\n?? audit/self-hosting/byte-discard-c1-regression.log\n?? audit/self-hosting/byte-discard-c1.log\n?? audit/self-hosting/byte-discard-check.log\n?? audit/self-hosting/byte-discard-collections.log\n?? audit/self-hosting/byte-discard-constants.log\n?? audit/self-hosting/byte-discard-corruption.log\n?? audit/self-hosting/byte-discard-guest-traps.log\n?? audit/self-hosting/byte-discard-locals.log\n?? audit/self-hosting/byte-discard.json\n?? audit/self-hosting/byte-discard.md\n?? audit/self-hosting/function-sort-scale.md\n?? audit/self-hosting/function-sort-scale/\n?? audit/self-hosting/job-word-after.log\n?? audit/self-hosting/job-word-audit.json\n?? audit/self-hosting/job-word-before.log\n?? audit/self-hosting/job-word-check.log\n?? audit/self-hosting/job-word-measurements.log\n?? audit/self-hosting/job-word-package.log\n?? audit/self-hosting/job-word.json\n?? audit/self-hosting/job-word.md\n?? examples/selfhost_runtime_probe.rs\n?? examples/selfhost_seed_snapshot.rs\n?? tests/fixtures/native_module_function_ranked_sort.tri\n?? tests/fixtures/native_module_function_sort.tri\n?? tests/fixtures/native_selfhost_prefix.tri\n?? tests/native_byte_discard.rs\n?? tests/native_function_sort.rs\n?? tests/native_job_word_compare.rs"
+    },
+    "hemera": {
+      "head": "a931a0a8e7ed369852ce0f8bc6451a59745ee692",
+      "branch": "",
+      "status": ""
+    },
+    "strata": {
+      "head": "d2eb1763b8caf04e6c7647ac6fe99761519c2ef9",
+      "branch": "",
+      "status": ""
+    }
+  },
+  "files": [
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-live-probe/rs/sequential.rs",
+      "bytes": 6624,
+      "sha256": "94ee16ea4d4cde53212005feedaf667eaad07f9d1a8a6f8dfedf738a495a8022"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-live-probe/rs/sequential/liveness.rs",
+      "bytes": 5829,
+      "sha256": "47ba87e807730cab0b21752340867563014e8eb6f54ae0d770c551961d6650f2"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-live-probe/rs/sequential/liveness/tests.rs",
+      "bytes": 8193,
+      "sha256": "9400464f6cb146224e1091489d9f733e28db49550b07f5404d7088b88223cbf5"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-live-probe/Cargo.lock",
+      "bytes": 17372,
+      "sha256": "b2e792a2512df027bef6513e36c1eeb08aa724782ef5619eee12cda1b5604e79"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-nox-live/release/deps/nox-155be5d25f5b91d7",
+      "bytes": 1790144,
+      "sha256": "4ca4fbcb7c166845d391f0870a90ad26d312a052ba36b352f03ca0c36ea00181"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/packed-prefix.dag",
+      "bytes": 8166949,
+      "sha256": "dc8dcb7e72c4e9a4c8999071f023215f8e593bbf6c69ee55a7d24de7e2d3acef"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/packed-closure-files-k_n8ecq7/job-visits.dag",
+      "bytes": 6561053,
+      "sha256": "9e87af7367f3aaafbebe990b92573c234c1a71bf14ad14bd0477b43b17ab75af"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/prefix-bodies.json",
+      "bytes": 1743,
+      "sha256": "140b4c8c42c08def0b87c9758ab8caf5051a2d903fa40cabdf2d4334a751a2bb"
+    }
+  ]
+}

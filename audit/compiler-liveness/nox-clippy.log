@@ -1,0 +1,20 @@
+    Checking serde_json v1.0.151
+    Checking regex v1.13.1
+    Checking serde v1.0.229
+    Checking half v2.7.1
+    Checking ciborium-ll v0.2.2
+    Checking ciborium v0.2.2
+    Checking tinytemplate v1.2.1
+    Checking criterion v0.5.1
+    Checking cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-live-probe/rs)
+error: manual slice size calculation
+   --> rs/sequential/liveness.rs:186:17
+    |
+186 |                 stack.len() * core::mem::size_of::<Frame>(),
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `core::mem::size_of_val(stack)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#manual_slice_size_calculation
+    = note: `-D clippy::manual-slice-size-calculation` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_slice_size_calculation)]`
+
+error: could not compile `cyber-nox` (lib test) due to 1 previous error

@@ -5,6 +5,8 @@ use alloc::vec::Vec;
 mod dispatch;
 mod finalizer_cache;
 mod finish;
+#[cfg(test)]
+mod liveness;
 
 pub use finalizer_cache::finalizer_cache_storage_bytes;
 
@@ -184,10 +186,14 @@ fn execute<const N: usize, T: Tracer, const CACHED: bool>(
         budget,
     };
     let mut peak_frames = 0;
+    #[cfg(test)]
+    let mut liveness = liveness::Probe::new(ar.count());
     loop {
         if cancelled() {
             return Err(Error::Cancelled);
         }
+        #[cfg(test)]
+        liveness.before_step(ar, &action, &stack);
         action = match action {
             Action::Enter {
                 object,

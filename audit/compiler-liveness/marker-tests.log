@@ -1,0 +1,11 @@
+   Compiling cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-live-probe/rs)
+    Finished `release` profile [optimized] target(s) in 1.22s
+     Running unittests lib.rs (../target-nox-live/release/deps/nox-155be5d25f5b91d7)
+
+running 3 tests
+test sequential::liveness::tests::phases_retain_only_values_read_after_the_child_returns ... ok
+test sequential::liveness::tests::invalid_roots_non_topological_pairs_and_elapsed_deadline_reject_measurement ... ok
+test sequential::liveness::tests::descending_marks_match_independent_walk_with_pins_and_failed_operands ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 204 filtered out; finished in 0.02s
+

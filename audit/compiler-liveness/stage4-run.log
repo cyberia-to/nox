@@ -1,0 +1,12 @@
+    Finished `release` profile [optimized] target(s) in 0.02s
+     Running unittests lib.rs (../target-nox-live/release/deps/nox-155be5d25f5b91d7)
+
+running 1 test
+test sequential::liveness::tests::compiler_stage_four_liveness has been running for over 60 seconds
+liveness probe: 60s, 272448502 evaluator checkpoints
+liveness probe: 120s, 570220104 evaluator checkpoints
+liveness probe: 180s, 905771722 evaluator checkpoints
+test sequential::liveness::tests::compiler_stage_four_liveness ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 206 filtered out; finished in 213.51s
+
