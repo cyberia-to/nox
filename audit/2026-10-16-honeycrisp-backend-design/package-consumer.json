@@ -1,0 +1,26 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--manifest-path",
+    "/tmp/nox-honeycrisp-package-diagnostic/Cargo.toml",
+    "--locked",
+    "--offline"
+  ],
+  "cwd": "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox",
+  "source_sha256": "9a2b844ef573266a50d0119a345c74ba53698a8b96dc68f32a2af7412c6bb171",
+  "source_before_after": "equal",
+  "started": "2026-10-16T22:16:11.803164+00:00",
+  "finished": "2026-10-16T22:16:13.977659+00:00",
+  "exit_code": 0,
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)",
+  "rustc_path": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc",
+  "rustdoc_path": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustdoc",
+  "target": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design",
+  "rustflags": "-Dwarnings",
+  "rustdocflags": "-Dwarnings",
+  "jobs": "2",
+  "stdout_sha256": "a09eb0a9227aeb958ed7f228161cd2e878642e7a8b0c6ab287921e3a9129d9c4",
+  "stderr_sha256": "05a6d6009ebea1d008de8f55bde4b958f511e8b94b066c9ff87592732a9c012d"
+}

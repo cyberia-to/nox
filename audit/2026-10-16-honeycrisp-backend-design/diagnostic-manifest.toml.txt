@@ -1,0 +1,19 @@
+[package]
+name = "nox-honeycrisp-source-diagnostic"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+nox = { package = "cyber-nox", path = "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs", features = ["honeycrisp"] }
+acpu = "=0.2.0"
+nebu = { package = "strata-nebu", path = "/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/nebu/rs" }
+
+[patch.crates-io]
+acpu = { path = "/Users/master/cyber/honeycrisp/acpu" }
+
+[[test]]
+name = "source_contract"
+path = "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/audit/2026-10-16-honeycrisp-backend-design/probe.rs"
