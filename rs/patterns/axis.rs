@@ -5,12 +5,15 @@
 //! axis(s, 2n+1) = tail(axis(s, n))
 
 use crate::call::CallProvider;
-use crate::data::{Reduction, Order, Data};
-use crate::reduce::{Outcome, ErrorKind};
+use crate::data::{Data, Order, Reduction};
+use crate::reduce::{ErrorKind, Outcome};
 use crate::trace::TraceRow;
 
 pub fn axis<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, addr_ref: Order, budget: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    addr_ref: Order,
+    budget: u64,
     hints: &dyn CallProvider<N>,
     row: &mut TraceRow,
 ) -> Outcome {
@@ -31,7 +34,7 @@ pub fn axis<const N: usize>(
     row.r[5] = addr;
     if let Some(bytes) = hints.axis_commitment(object as u64) {
         let w0 = u64::from_le_bytes(bytes[0..8].try_into().unwrap());
-        row.r[4]  = w0;
+        row.r[4] = w0;
         row.r[11] = w0;
         row.r[12] = u64::from_le_bytes(bytes[8..16].try_into().unwrap());
         row.r[13] = u64::from_le_bytes(bytes[16..24].try_into().unwrap());
@@ -83,13 +86,15 @@ pub fn axis<const N: usize>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{ErrorKind, Outcome, reduce};
     use crate::trace::NoTrace;
-    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     fn make_axis<const N: usize>(reduction: &mut Reduction<N>, n: u64) -> Order {
         let tag = reduction.atom(g(0)).unwrap();
@@ -162,7 +167,10 @@ mod tests {
             Outcome::Ok(r, _) => {
                 assert!(ar.is_pair(r));
                 let d = ar.read_hash_data(r).unwrap();
-                assert_eq!(d, s_digest, "axis(pair, 0) returns hash data of pair digest");
+                assert_eq!(
+                    d, s_digest,
+                    "axis(pair, 0) returns hash data of pair digest"
+                );
             }
             o => panic!("{:?}", o),
         }

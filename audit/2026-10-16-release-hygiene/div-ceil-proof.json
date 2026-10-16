@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc",
+    "--edition=2024",
+    "/tmp/nox-hygiene-div-ceil.rs",
+    "-o",
+    "/tmp/nox-hygiene-div-ceil"
+  ],
+  "source_sha256": "6e873343f78c6d3ff71157a720a0f1dceea9fa98239e51f711fff1d17e90b21a",
+  "run": "/tmp/nox-hygiene-div-ceil",
+  "output": "p=18446744069414584321; old_half=9223372034707292161; div_ceil_half=9223372034707292161",
+  "scope": "Fixed odd Goldilocks modulus only; runtime algorithms and frozen literals unchanged."
+}

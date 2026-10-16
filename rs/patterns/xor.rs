@@ -5,24 +5,35 @@
 //! c_k = a_k + b_k - 2 * a_k * b_k per row and bind sum(2^k * a_k) = a
 //! across the 32-row block.
 
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary_word, emit_bit_row, WORD_MASK};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Order, Reduction};
 use crate::jets::registry::JetRegistry;
+use crate::reduce::{
+    ErrorKind, Outcome, WORD_MASK, emit_bit_row, evaluate_binary_word, pair_children,
+};
+use crate::trace::{TraceRow, Tracer};
 use nebu::Goldilocks;
 
 pub fn xor<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
     let (af, bf) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (a, b, budget) = match evaluate_binary_word(reduction, object, af, bf, budget, hints, tracer, depth, registry) {
-        Ok(v) => v, Err(o) => return o,
+    let (a, b, budget) = match evaluate_binary_word(
+        reduction, object, af, bf, budget, hints, tracer, depth, registry,
+    ) {
+        Ok(v) => v,
+        Err(o) => return o,
     };
     let c = (a ^ b) & WORD_MASK;
     let result = match reduction.atom(Goldilocks::new(c)) {
@@ -33,7 +44,20 @@ pub fn xor<const N: usize, T: Tracer>(
         let a_k = (a >> k) & 1;
         let b_k = (b >> k) & 1;
         let c_k = (c >> k) & 1;
-        emit_bit_row(row, tracer, a, b, c, k, a_k, b_k, c_k, k == 31, result, budget);
+        emit_bit_row(
+            row,
+            tracer,
+            a,
+            b,
+            c,
+            k,
+            a_k,
+            b_k,
+            c_k,
+            k == 31,
+            result,
+            budget,
+        );
     }
     Outcome::Ok(result, budget)
 }
@@ -41,14 +65,16 @@ pub fn xor<const N: usize, T: Tracer>(
 #[cfg(test)]
 mod tests {
     extern crate alloc;
-    use alloc::vec::Vec;
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::{NoTrace, VecTrace};
-    use crate::data::{Reduction};
+    use alloc::vec::Vec;
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     fn make_xor<const N: usize>(ar: &mut Reduction<N>, a: u64, b: u64) -> crate::data::Order {
         let t = ar.atom(g(11)).unwrap();

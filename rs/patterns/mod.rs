@@ -15,31 +15,31 @@
 //!   look (17):        deterministic external lookup
 
 // structural — tree operations, algebra-independent
-pub mod axis;       // 0: navigate
-pub mod quote;      // 1: literal
-pub mod compose;    // 2: apply
-pub mod cons;       // 3: construct
-pub mod branch;     // 4: choose
+pub mod axis; // 0: navigate
+pub mod branch;
+pub mod compose; // 2: apply
+pub mod cons; // 3: construct
+pub mod quote; // 1: literal // 4: choose
 
 // field — arithmetic over F (dispatched by algebra)
-pub mod add;        // 5: a + b
-pub mod sub;        // 6: a - b
-pub mod mul;        // 7: a * b
-pub mod inv;        // 8: a^-1
-pub mod eq;         // 9: a = b ? 0 : 1
-pub mod lt;         // 10: a < b ? 0 : 1
+pub mod add; // 5: a + b
+pub mod eq; // 9: a = b ? 0 : 1
+pub mod inv; // 8: a^-1
+pub mod lt;
+pub mod mul; // 7: a * b
+pub mod sub; // 6: a - b // 10: a < b ? 0 : 1
 
 // bitwise — boolean over W (dispatched by word width)
-pub mod xor;        // 11: a ^ b
-pub mod and;        // 12: a & b
-pub mod not;        // 13: !a
-pub mod shl;        // 14: a << n
+pub mod and; // 12: a & b
+pub mod not; // 13: !a
+pub mod shl;
+pub mod xor; // 11: a ^ b // 14: a << n
 
 // hash — identity via H (dispatched by hash function)
-pub mod hash;       // 15: H(x)
+pub mod hash; // 15: H(x)
 
 // call — non-deterministic witness (Layer 2)
-pub mod call;       // 16: prover injects, Layer 1 validates
+pub mod call; // 16: prover injects, Layer 1 validates
 
 // look — deterministic external lookup
-pub mod look;       // 17: deterministic lookup from external source
+pub mod look; // 17: deterministic lookup from external source

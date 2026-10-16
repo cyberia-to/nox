@@ -1,0 +1,9 @@
+fn main() {
+    let p = 0xffff_ffff_0000_0001_u64;
+    assert_eq!(p & 1, 1);
+    let old = p.checked_add(1).unwrap() / 2;
+    let new = p.div_ceil(2);
+    assert_eq!(old, 9_223_372_034_707_292_161);
+    assert_eq!(old, new);
+    println!("p={p}; old_half={old}; div_ceil_half={new}");
+}

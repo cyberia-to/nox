@@ -5,6 +5,7 @@
 // ---
 //! execution trace — 16-column register table, one row per reduce() call
 //!
+//! ```text
 //! r[0]  = pattern tag (0-17)
 //! r[1]  = object particle
 //! r[2]  = formula particle
@@ -14,6 +15,7 @@
 //! r[9]  = budget after step
 //! r[10] = error kind on error rows; pattern-specific witness on success rows
 //! r[11..16] = pattern-specific (bit decomp, step counter, etc.)
+//! ```
 
 extern crate alloc;
 use alloc::vec::Vec;

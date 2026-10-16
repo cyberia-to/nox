@@ -3,20 +3,29 @@
 //! cost 32. emits 32 rows. unary: r5 / r11 (b register) are zero on every row.
 //! per-row constraint: c_k = 1 - a_k (with a_k boolean).
 
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, ErrorKind, evaluate_unary_word, emit_bit_row, WORD_MASK};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Order, Reduction};
 use crate::jets::registry::JetRegistry;
+use crate::reduce::{ErrorKind, Outcome, WORD_MASK, emit_bit_row, evaluate_unary_word};
+use crate::trace::{TraceRow, Tracer};
 use nebu::Goldilocks;
 
 pub fn not<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (a, budget) = match evaluate_unary_word(reduction, object, body, budget, hints, tracer, depth, registry) {
-        Ok(v) => v, Err(o) => return o,
+    let (a, budget) = match evaluate_unary_word(
+        reduction, object, body, budget, hints, tracer, depth, registry,
+    ) {
+        Ok(v) => v,
+        Err(o) => return o,
     };
     let c = (!a) & WORD_MASK;
     let result = match reduction.atom(Goldilocks::new(c)) {
@@ -26,7 +35,20 @@ pub fn not<const N: usize, T: Tracer>(
     for k in 0..32u32 {
         let a_k = (a >> k) & 1;
         let c_k = (c >> k) & 1;
-        emit_bit_row(row, tracer, a, 0, c, k, a_k, 0, c_k, k == 31, result, budget);
+        emit_bit_row(
+            row,
+            tracer,
+            a,
+            0,
+            c,
+            k,
+            a_k,
+            0,
+            c_k,
+            k == 31,
+            result,
+            budget,
+        );
     }
     Outcome::Ok(result, budget)
 }
@@ -34,14 +56,16 @@ pub fn not<const N: usize, T: Tracer>(
 #[cfg(test)]
 mod tests {
     extern crate alloc;
-    use alloc::vec::Vec;
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::{NoTrace, VecTrace};
-    use crate::data::{Reduction};
+    use alloc::vec::Vec;
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     fn make_not<const N: usize>(ar: &mut Reduction<N>, v: u64) -> crate::data::Order {
         let t = ar.atom(g(13)).unwrap();

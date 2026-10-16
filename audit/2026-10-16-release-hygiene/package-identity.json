@@ -1,0 +1,236 @@
+{
+  "head": "7fe9ad368dc93ef136c196c2366b39f1c67e1cd7",
+  "source_sha256": "f61c0ba0b475a463db1bc627a592b4f3c16c8dc88d8d3a723aba3766409fd1df",
+  "command": [
+    "nu",
+    "audit/2026-10-16-release-hygiene/package-proof.nu",
+    "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox",
+    "/Users/master/.cache/cyber/kadek/nox-release-hygiene/package/cyber-nox-0.2.0"
+  ],
+  "package_root": "/Users/master/.cache/cyber/kadek/nox-release-hygiene/package/cyber-nox-0.2.0",
+  "crate_sha256": "53485d0256180839cec29fae34d49b18b8e59c4d93f66c706ac8d1602e5f658d",
+  "normalized_manifest_sha256": "6c2b42c8ecae6d6aff2f12af9e6c73cbaca1ddcfae2874b44a0907568c0c0258",
+  "lock_sha256": "eba3aa7ecbbe18adae454bac79d08cc84f2c20567ad1e89feffc343f03be6e47",
+  "vcs": {
+    "git": {
+      "sha1": "7fe9ad368dc93ef136c196c2366b39f1c67e1cd7",
+      "dirty": true
+    },
+    "path_in_vcs": "rs"
+  },
+  "registry_core": [
+    {
+      "name": "cyber-hemera",
+      "version": "0.3.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "ebcf7ffcd69170adde7e792826d7cececda962ea220b9834c6535bbc71e5a6df"
+    },
+    {
+      "name": "strata-nebu",
+      "version": "0.1.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "f4a881cdb3622cd6b38333246f516c70e3e5c63d2bc0c0e48344d8e7b0392766",
+      "dependencies": [
+        "strata-compute",
+        "strata-core",
+        "strata-ext",
+        "strata-proof"
+      ]
+    }
+  ],
+  "rust_sources": [
+    {
+      "path": "benches/reduction.rs",
+      "owning_and_package_sha256": "4e70a210cb805fc643ecd89c6a7ade473e897e736e4cbbec0d0274a9f03f4897"
+    },
+    {
+      "path": "bound.rs",
+      "owning_and_package_sha256": "f453bfb52cdba6173bc0dbe71db7227bb6a1bb6bae03d7cbe1da1266c399062a"
+    },
+    {
+      "path": "brakedown_look.rs",
+      "owning_and_package_sha256": "dc02ca8112f067a8a3ff94539ecbafd0a4b5b3616893bb7dfc4af869766a46ae"
+    },
+    {
+      "path": "call.rs",
+      "owning_and_package_sha256": "62e16f101d461edc11465078fe0c1a5c74dac78a1f3de35cb6423d83cb330f1b"
+    },
+    {
+      "path": "data/cost.rs",
+      "owning_and_package_sha256": "746b16cff3747b2f8824b5f9163d73810adbbebda330ddd3674208385455e1b9"
+    },
+    {
+      "path": "data/hash.rs",
+      "owning_and_package_sha256": "a1cbf7c94e4f02789d3b61f5a73eddd066652e55a4a04f1414d752d513281967"
+    },
+    {
+      "path": "data/inner.rs",
+      "owning_and_package_sha256": "6fd946f5874707af0f9db665bbfe0e8b6939f990b3505a3b62891d4ae56fb084"
+    },
+    {
+      "path": "data/mod.rs",
+      "owning_and_package_sha256": "4062376bc001094c481b813fbd6572a5c35be702662fa8859289a2ac57767d7f"
+    },
+    {
+      "path": "data/reduction.rs",
+      "owning_and_package_sha256": "e9babd1a16b19ad62f4844a2e6e0876205b93349ad21ee5df479bed79b47cb27"
+    },
+    {
+      "path": "encode.rs",
+      "owning_and_package_sha256": "a8cf9b0ae042a37e87aa3fd02bf7e85b62f18b751a15a03809a82a2494fab0ff"
+    },
+    {
+      "path": "examples/dump_formulas.rs",
+      "owning_and_package_sha256": "7d97d1d33986a1b2945b5fad9ea4d28184bcd66a7edfb49a60f9bb505bd77db8"
+    },
+    {
+      "path": "jets/backends/cpu.rs",
+      "owning_and_package_sha256": "6a06ea6a785fd3491ec8b1b2e9d292accaa76272eb348a10542b714dd2fb396e"
+    },
+    {
+      "path": "jets/backends/honeycrisp.rs",
+      "owning_and_package_sha256": "f11f2a6ab7f004bb0225d538ec35e50ce6983568280483e8c13d435890ed2048"
+    },
+    {
+      "path": "jets/backends/mod.rs",
+      "owning_and_package_sha256": "52ca41ff78235b8cf553c5418f0221bb57a6e82b5593f6828fd8dbdfda297099"
+    },
+    {
+      "path": "jets/backends/wgpu.rs",
+      "owning_and_package_sha256": "e9ea0c58aa41d09cf64797e5c38cc81d485c56b9b943147287a7ac8a998d0243"
+    },
+    {
+      "path": "jets/decider.rs",
+      "owning_and_package_sha256": "b513d25c69608cd695a49745b64bc96edaa8e3446bbba38b713b124076f52dea"
+    },
+    {
+      "path": "jets/formulas.rs",
+      "owning_and_package_sha256": "9a6e7676c400289718aee2a11a58eeadd422dbfff693aa4164ee6087847333c2"
+    },
+    {
+      "path": "jets/fri_fold.rs",
+      "owning_and_package_sha256": "c8fd03c41bf1daa4fe8d6c3c5c495cb9bf79ec60c8c6ef86dcade8b6e90e59eb"
+    },
+    {
+      "path": "jets/merkle_verify.rs",
+      "owning_and_package_sha256": "0aafdb8b2be902324e2ab2d9856bc088cab4bf9f54ba4930110a92aa44f2c0fa"
+    },
+    {
+      "path": "jets/mod.rs",
+      "owning_and_package_sha256": "b508c4f07c223cf50eb347721fa3f50d0d9fb0fc2a3f344cfe7dd31910b91551"
+    },
+    {
+      "path": "jets/ntt.rs",
+      "owning_and_package_sha256": "38f8f01827e4b7e72faa7914d1f18117942c7ebc158ca7c59844012b4ff72644"
+    },
+    {
+      "path": "jets/poly_eval.rs",
+      "owning_and_package_sha256": "983e9e76df7053cc1f62e61b5c8a8c9945dc2b4d468270517f92eafdfe3d07f4"
+    },
+    {
+      "path": "jets/poly_eval_brakedown.rs",
+      "owning_and_package_sha256": "6fe8de7a6b3fe4c79ce9de17ed6e40228c32bdc2d61c28f37a1fcac07faecf06"
+    },
+    {
+      "path": "jets/registry.rs",
+      "owning_and_package_sha256": "909d7be0df968f5312aac82bd1cf4b372041b4639e4d5bd4c8591bd91e4fafc2"
+    },
+    {
+      "path": "jets/state.rs",
+      "owning_and_package_sha256": "4afb68c5387062a102b0fc5e58053839c2e2b85a43ee8ebe9214b91683de1272"
+    },
+    {
+      "path": "lib.rs",
+      "owning_and_package_sha256": "c24be3c5e0a8eb88d2494feba34e514e6df0049345c188748423406fcbe418ec"
+    },
+    {
+      "path": "parallel.rs",
+      "owning_and_package_sha256": "6a10eb1eb2a29b565b973eadf01768aa534948537a474c51c9920f0696b7e7ab"
+    },
+    {
+      "path": "patterns/add.rs",
+      "owning_and_package_sha256": "d8168977d3290f5baa745c7f822a61c2b7770f64101b754417a9473abed67b5a"
+    },
+    {
+      "path": "patterns/and.rs",
+      "owning_and_package_sha256": "685551d917eba114e1cb8a02bf7878042a6e584c577d261c7f9a03cf9d235f01"
+    },
+    {
+      "path": "patterns/axis.rs",
+      "owning_and_package_sha256": "391e8d83008cfb35ab6b344236fb91250ba133e6b344e31445f5f018f2c81954"
+    },
+    {
+      "path": "patterns/branch.rs",
+      "owning_and_package_sha256": "75bdf722f3761e4915c957301641eff97339ee41bfee2fd4c5ae97a4a42c398c"
+    },
+    {
+      "path": "patterns/call.rs",
+      "owning_and_package_sha256": "d31b514af5ad416fba8d2b7f03dbebe6a0d599aa9971e1ac4a285909bd851dcc"
+    },
+    {
+      "path": "patterns/compose.rs",
+      "owning_and_package_sha256": "f8e66397e92113946ad14ac4f7583bf7491e02a35edef91424e4d1c2e801bcd4"
+    },
+    {
+      "path": "patterns/cons.rs",
+      "owning_and_package_sha256": "5f36798aecb0e342c21f40532293d9e063469df439d7ac4de54d0c6151b5b764"
+    },
+    {
+      "path": "patterns/eq.rs",
+      "owning_and_package_sha256": "b00d4d865f010f9f926cac109542c2a887893ad0697dd8deafdf3a67081330a0"
+    },
+    {
+      "path": "patterns/hash.rs",
+      "owning_and_package_sha256": "ed154905d9a46f986ad71fc816cc0a0934f7af65142f078410178022bba6e123"
+    },
+    {
+      "path": "patterns/inv.rs",
+      "owning_and_package_sha256": "dc66b58aaf37d670366a4d60e9c0757dba765af8fa35f4345670c244902a1a06"
+    },
+    {
+      "path": "patterns/look.rs",
+      "owning_and_package_sha256": "377ee771e36d8f1aef18057ceed2c889b2d5a6c2aa19d4004d00e4788377e562"
+    },
+    {
+      "path": "patterns/lt.rs",
+      "owning_and_package_sha256": "a8441cc3b94188312dc4325585ac7af66ee1cf1cbfda55f4adb7e0cb44953431"
+    },
+    {
+      "path": "patterns/mod.rs",
+      "owning_and_package_sha256": "cf63780f4bcdaa3ed91e07e0e149cd69091214cce3de3d0f4c14c60322dbd05c"
+    },
+    {
+      "path": "patterns/mul.rs",
+      "owning_and_package_sha256": "bf4c11307a93bf63062c17d2d5a14d054d7170095f30d72a47fb59f46a06d5f7"
+    },
+    {
+      "path": "patterns/not.rs",
+      "owning_and_package_sha256": "702fc9d49109895f1d52bffc4ae014371963049a32218e9ad1ca071e0e42042e"
+    },
+    {
+      "path": "patterns/quote.rs",
+      "owning_and_package_sha256": "4222583dbb99701eebb7bf48d14499f2f63a4a3cf74d10ee9bf8cc81ed266751"
+    },
+    {
+      "path": "patterns/shl.rs",
+      "owning_and_package_sha256": "79eae92998df97d5293a7eb9f686098f27b1d185bf81ca47bf2434fc4c7cf3c3"
+    },
+    {
+      "path": "patterns/sub.rs",
+      "owning_and_package_sha256": "40ea5fd59fa4c91d3107e152d4839f88e801acdd13d300262a33da3c9a888e2c"
+    },
+    {
+      "path": "patterns/xor.rs",
+      "owning_and_package_sha256": "6bff1109a4c1136d3ed7756b9890e5ba2c489edb5bb12e3f06d3e2e8c79bc05b"
+    },
+    {
+      "path": "reduce.rs",
+      "owning_and_package_sha256": "101fe7a38d814006b666cc609c6bea3f2ae13d6feebeca191a8b8b33628e3e8a"
+    },
+    {
+      "path": "trace.rs",
+      "owning_and_package_sha256": "3d0b1616b9f61544c5bbebbe9916f7cfae9b29d5b1b8bae8f01e9edc64e5568b"
+    }
+  ],
+  "limitation": "Dirty local package at occupied 0.2.0; verified packaging is not a release or publication. Package identities captured after the gates; owning source closure is bracketed by each receipt."
+}

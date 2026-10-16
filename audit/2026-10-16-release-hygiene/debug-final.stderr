@@ -1,0 +1,6 @@
+   Compiling cyber-nox v0.2.0 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs)
+   Compiling nox-cli v0.1.0 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.49s
+     Running unittests lib.rs (/Users/master/.cache/cyber/kadek/nox-release-hygiene/debug/deps/nox-10b8566283331e61)
+     Running unittests main.rs (/Users/master/.cache/cyber/kadek/nox-release-hygiene/debug/deps/nox-eeac8c58d0696207)
+   Doc-tests nox

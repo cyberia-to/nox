@@ -19,6 +19,7 @@
 //! than one specific data.
 //!
 //! Register layout convention for jets (single-row):
+//! ```text
 //!   r[0] = tag of formula's outer pattern (from reduce_inner)
 //!   r[1] = object Order
 //!   r[2] = formula Order
@@ -27,14 +28,15 @@
 //!   r[8] = budget before jet (from reduce_inner)
 //!   r[9] = budget after jet (filled by reduce_inner from Outcome)
 //!   r[10] = error kind if any (filled by reduce_inner from Outcome)
+//! ```
 
 extern crate alloc;
 use alloc::vec::Vec;
 
-use crate::data::{Digest, Reduction, Order};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Digest, Order, Reduction};
 use crate::reduce::Outcome;
+use crate::trace::{TraceRow, Tracer};
 
 /// Structural digest packed as four raw u64s for Ord + comparison.
 /// Matches [Goldilocks; 4] but uses as_u64() so sorting is natural.
@@ -54,12 +56,12 @@ pub fn digest_key(d: &Digest) -> DigestKey {
 /// calling convention encoded in their pure L1 formula.
 pub type JetFn<const N: usize> = fn(
     &mut Reduction<N>,
-    Order,                      // object (contains data per formula convention)
-    Order,                      // body (formula right half — jet may ignore)
-    u64,                         // budget (full, before any jet charge)
+    Order, // object (contains data per formula convention)
+    Order, // body (formula right half — jet may ignore)
+    u64,   // budget (full, before any jet charge)
     &dyn CallProvider<N>,
     &mut dyn Tracer,
-    u64,                         // depth
+    u64, // depth
     &mut TraceRow,
 ) -> Outcome;
 
@@ -77,7 +79,10 @@ pub struct JetRegistry<const N: usize> {
 impl<const N: usize> JetRegistry<N> {
     /// Empty registry — no jets registered. Zero allocation.
     pub fn empty() -> Self {
-        Self { exact: Vec::new(), templates: Vec::new() }
+        Self {
+            exact: Vec::new(),
+            templates: Vec::new(),
+        }
     }
 
     /// Insert an exact-match jet. Maintains sorted order for binary search.
@@ -94,14 +99,16 @@ impl<const N: usize> JetRegistry<N> {
     /// Look up an exact jet by formula digest key.
     #[inline]
     pub fn lookup_exact(&self, key: &DigestKey) -> Option<JetFn<N>> {
-        self.exact.binary_search_by_key(key, |(k, _)| *k)
+        self.exact
+            .binary_search_by_key(key, |(k, _)| *k)
             .ok()
             .map(|i| self.exact[i].1)
     }
 
     /// Look up a template jet by inspecting the formula data.
     pub fn lookup_template(&self, reduction: &Reduction<N>, formula: Order) -> Option<JetFn<N>> {
-        self.templates.iter()
+        self.templates
+            .iter()
             .find(|(pred, _)| pred(reduction, formula))
             .map(|(_, f)| *f)
     }
@@ -113,22 +120,26 @@ impl<const N: usize> JetRegistry<N> {
     }
 
     /// Number of exact-match jets registered.
-    pub fn exact_count(&self) -> usize { self.exact.len() }
+    pub fn exact_count(&self) -> usize {
+        self.exact.len()
+    }
 
     /// Number of template jets registered.
-    pub fn template_count(&self) -> usize { self.templates.len() }
+    pub fn template_count(&self) -> usize {
+        self.templates.len()
+    }
 }
 
 // ── genesis digest computation ────────────────────────────────────────────────
 
 /// Structural digests for all genesis jets, computed from their pure L1 formulas.
 pub struct GenesisDigests {
-    pub poly_eval:      DigestKey,
-    pub merkle_verify:  DigestKey,
-    pub fri_fold:       DigestKey,
-    pub ntt:            DigestKey,
-    pub cyberlink:      DigestKey,
-    pub decider:        DigestKey,
+    pub poly_eval: DigestKey,
+    pub merkle_verify: DigestKey,
+    pub fri_fold: DigestKey,
+    pub ntt: DigestKey,
+    pub cyberlink: DigestKey,
+    pub decider: DigestKey,
 }
 
 /// Compute all genesis formula digests in a scratch Reduction.
@@ -155,7 +166,14 @@ pub fn compute_genesis_digests() -> GenesisDigests {
     let decider = formulas::build_decider_formula(&mut ar)
         .map(|id| digest_key(ar.digest(id).unwrap()))
         .unwrap_or([0; 4]);
-    GenesisDigests { poly_eval, merkle_verify, fri_fold, ntt, cyberlink, decider }
+    GenesisDigests {
+        poly_eval,
+        merkle_verify,
+        fri_fold,
+        ntt,
+        cyberlink,
+        decider,
+    }
 }
 
 #[cfg(test)]
@@ -173,8 +191,13 @@ mod tests {
     fn insert_and_lookup_exact() {
         let mut reg = JetRegistry::<1024>::empty();
         fn dummy_jet<const N: usize>(
-            _: &mut Reduction<N>, _: Order, _: Order, b: u64,
-            _: &dyn CallProvider<N>, _: &mut dyn Tracer, _: u64,
+            _: &mut Reduction<N>,
+            _: Order,
+            _: Order,
+            b: u64,
+            _: &dyn CallProvider<N>,
+            _: &mut dyn Tracer,
+            _: u64,
             _: &mut TraceRow,
         ) -> Outcome {
             Outcome::Halt(b)
@@ -189,13 +212,29 @@ mod tests {
     fn sorted_insert_maintains_binary_search() {
         let mut reg = JetRegistry::<1024>::empty();
         fn jet_a<const N: usize>(
-            _: &mut Reduction<N>, _: Order, _: Order, b: u64,
-            _: &dyn CallProvider<N>, _: &mut dyn Tracer, _: u64, _: &mut TraceRow,
-        ) -> Outcome { Outcome::Halt(b) }
+            _: &mut Reduction<N>,
+            _: Order,
+            _: Order,
+            b: u64,
+            _: &dyn CallProvider<N>,
+            _: &mut dyn Tracer,
+            _: u64,
+            _: &mut TraceRow,
+        ) -> Outcome {
+            Outcome::Halt(b)
+        }
         fn jet_b<const N: usize>(
-            _: &mut Reduction<N>, _: Order, _: Order, b: u64,
-            _: &dyn CallProvider<N>, _: &mut dyn Tracer, _: u64, _: &mut TraceRow,
-        ) -> Outcome { Outcome::Halt(b + 1) }
+            _: &mut Reduction<N>,
+            _: Order,
+            _: Order,
+            b: u64,
+            _: &dyn CallProvider<N>,
+            _: &mut dyn Tracer,
+            _: u64,
+            _: &mut TraceRow,
+        ) -> Outcome {
+            Outcome::Halt(b + 1)
+        }
         // Insert out of order
         reg.insert_exact([5, 0, 0, 0], jet_b);
         reg.insert_exact([2, 0, 0, 0], jet_a);
@@ -207,11 +246,21 @@ mod tests {
     #[test]
     fn template_predicate_matches() {
         let mut reg = JetRegistry::<1024>::empty();
-        fn always_match<const N: usize>(_: &Reduction<N>, _: Order) -> bool { true }
+        fn always_match<const N: usize>(_: &Reduction<N>, _: Order) -> bool {
+            true
+        }
         fn jet<const N: usize>(
-            _: &mut Reduction<N>, _: Order, _: Order, b: u64,
-            _: &dyn CallProvider<N>, _: &mut dyn Tracer, _: u64, _: &mut TraceRow,
-        ) -> Outcome { Outcome::Halt(b) }
+            _: &mut Reduction<N>,
+            _: Order,
+            _: Order,
+            b: u64,
+            _: &dyn CallProvider<N>,
+            _: &mut dyn Tracer,
+            _: u64,
+            _: &mut TraceRow,
+        ) -> Outcome {
+            Outcome::Halt(b)
+        }
         reg.insert_template(always_match, jet);
         let ar = Reduction::<1024>::new();
         assert!(reg.lookup_template(&ar, 0).is_some());

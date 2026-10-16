@@ -1,0 +1,24 @@
+    Checking cyber-nox v0.2.0 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs)
+    Checking nox-cli v0.1.0 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/cli)
+error: called `filter(..).next_back()` on an `DoubleEndedIterator`. This is more succinctly expressed by calling `.rfind(..)` instead
+   --> rs/patterns/hash.rs:241:20
+    |
+241 |           let last = tracer
+    |  ____________________^
+242 | |             .0
+243 | |             .iter()
+244 | |             .filter(|r| r.r()[0] == 15)
+245 | |             .next_back()
+    | |________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#filter_next
+    = note: `-D clippy::filter-next` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::filter_next)]`
+help: try
+    |
+241 ~         let last = tracer
+242 +             .0
+243 +             .iter().rfind(|r| r.r()[0] == 15)
+    |
+
+error: could not compile `cyber-nox` (lib test) due to 1 previous error
