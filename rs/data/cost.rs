@@ -80,7 +80,7 @@ pub(crate) const PATTERN_COSTS: [u64; 18] = [
     32,  // 12 and
     32,  // 13 not
     32,  // 14 shl
-    25,  // 15 hash
+    61,  // 15 hash (60 rounds + 1 squeeze)
     1,   // 16 call (DYNAMIC continuation)
     1,   // 17 look
 ];

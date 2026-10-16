@@ -71,7 +71,7 @@ lut (lookup table)               activation functions via Layer 1
 the stack is continuous:
 
 ```
-nox pattern    →  Layer 1         (semantics, ~2800 patterns for one hash)
+nox pattern    →  Layer 1         (semantics, ~4 400 patterns for one hash)
 software jet   →  Layer 3         (optimized constraint layout, 300 cost)
 GFP primitive  →  hardware        (single-cycle Poseidon2 round)
 ```

@@ -97,14 +97,14 @@ mod tests {
     }
 
     #[test]
-    fn hash_costs_25_plus_inner() {
+    fn hash_costs_61_plus_inner() {
         let mut ar = Reduction::<256>::new();
         let t15 = ar.atom(g(15)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();
         let v = ar.atom(g(7)).unwrap();
         let body = ar.pair(t1, v).unwrap();
         let f = ar.pair(t15, body).unwrap();
-        assert_eq!(bound(&ar, f), Cost::Exact(26));
+        assert_eq!(bound(&ar, f), Cost::Exact(62));
     }
 
     #[test]

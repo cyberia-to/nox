@@ -80,7 +80,7 @@ cost determinism means: the network can price computation before executing it. a
 
 ### field-first arithmetic
 
-every value is a field element. [[cryptography]] is a native instruction. a field multiplication is a single CPU operation. hashing is ~3,000 field ops (1,728 multiplications) expressible in pure patterns. [[zheng]] proofs verify computations using the same field arithmetic that performs them. there is no impedance mismatch between computation and verification.
+every value is a field element. [[cryptography]] is a native instruction. a field multiplication is a single CPU operation. hashing is ~4,400 field ops (1,728 multiplications, ~2,700 additions) expressible in pure patterns. [[zheng]] proofs verify computations using the same field arithmetic that performs them. there is no impedance mismatch between computation and verification.
 
 no previous system in the lineage has this property. S,K operates on untyped terms. lambda calculus operates on abstract functions. Nock operates on natural numbers. nox operates on elements of a field that is simultaneously the computation substrate and the proof substrate.
 
