@@ -69,7 +69,7 @@ each step proves via its native lens in zheng. HyperNova folds all sub-traces in
 
 ## the decider: 89 constraints
 
-the universal accumulator (~200 bytes) folds all history from genesis. the decider jet verifies it in 89 constraints — less than one hemera permutation (736). three optimizations stack: CCS jet encoding (4×), batched spot-checks via sumcheck (36×), algebraic Fiat-Shamir (zero hemera). verifying all chain history costs less than hashing 56 bytes.
+the universal accumulator (~200 bytes) folds all history from genesis. the decider jet verifies it in 89 constraints — less than one hemera permutation (~1,440). three optimizations stack: CCS jet encoding (4×), batched spot-checks via sumcheck (36×), algebraic Fiat-Shamir (zero hemera). verifying all chain history costs less than hashing 56 bytes.
 
 ## the correspondence
 

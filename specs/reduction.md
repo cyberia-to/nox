@@ -490,7 +490,7 @@ canonical (nox<Goldilocks, Z/2^32, Hemera>):
 - and:  32 (bit decomposition)
 - not:  32 (bit decomposition; unary)
 - shl:  32 (bit decomposition with cross-row shift binding)
-- hash: 25 (Poseidon2 permutation — 24 rounds + 1 squeeze; row count = cost)
+- hash: 25 (Poseidon2 permutation — 24 rounds + 1 squeeze under hemera 0.3; row count = cost; hemera 0.4 has 60 rounds, 61 rows — budget decision pending)
 
 all other patterns cost exactly 1 per reduce() call.
 

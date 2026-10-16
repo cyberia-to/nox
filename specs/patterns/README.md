@@ -76,7 +76,7 @@ Layer │ Pattern      │ Exec Cost      │ zheng Constraints │ Rationale
   1   │ 12 and       │ 32             │ ~32               │ bit decomposition (32 rows)
   1   │ 13 not       │ 32             │ ~32               │ bit decomposition (32 rows)
   1   │ 14 shl       │ 32             │ ~32               │ bit decomposition (32 rows)
-  1   │ 15 hash      │ 25             │ ~736              │ Hemera permutation (24 rounds + squeeze)
+  1   │ 15 hash      │ 25             │ ~1,440            │ Hemera permutation (24 rounds + squeeze under hemera 0.3; 60 + 1 under 0.4, budget pending)
   2   │ 16 call      │ 1              │ 1                 │ inject + dispatch
   2   │ 17 look      │ 1              │ 1                 │ BBG read + verify
 ```
