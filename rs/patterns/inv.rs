@@ -5,22 +5,30 @@
 //! P_MINUS_2 = 0xFFFFFFFEFFFFFFFF (Goldilocks prime - 2)
 //! Emits 64 rows: 1 init row + 63 step rows (one per exponent bit processed).
 
-use nebu::Goldilocks;
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, ErrorKind, evaluate_unary_field};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
-use crate::jets::registry::JetRegistry;
 use crate::data::NIL;
+use crate::data::{Order, Reduction};
+use crate::jets::registry::JetRegistry;
+use crate::reduce::{ErrorKind, Outcome, evaluate_unary_field};
+use crate::trace::{TraceRow, Tracer};
+use nebu::Goldilocks;
 
 const P_MINUS_2: u64 = 0xFFFFFFFEFFFFFFFF;
 
 pub fn inv<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (v, budget) = match evaluate_unary_field(reduction, object, body, budget, hints, tracer, depth, registry) {
+    let (v, budget) = match evaluate_unary_field(
+        reduction, object, body, budget, hints, tracer, depth, registry,
+    ) {
         Ok(v) => v,
         Err(o) => {
             row.r[3] = NIL as u64;
@@ -102,13 +110,15 @@ pub fn inv<const N: usize, T: Tracer>(
 
 #[cfg(test)]
 mod tests {
-    use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{ErrorKind, Outcome, reduce};
     use crate::trace::{NoTrace, VecTrace};
-    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     /// formula = [8 [1 v]]  (inv of a quoted field element)
     fn make_inv<const N: usize>(ar: &mut Reduction<N>, v: u64) -> crate::data::Order {
@@ -156,8 +166,8 @@ mod tests {
             3,
             42,
             0xDEAD_BEEF,
-            P - 2,           // largest interior value
-            P - 1,           // -1 in the field; inv is self
+            P - 2, // largest interior value
+            P - 1, // -1 in the field; inv is self
             (P - 1) / 2,
         ];
         for &k in &samples {

@@ -2,28 +2,37 @@
 //!
 //! works for ALL data types: atoms, pairs, hash data. returns 0 if equal,
 //! 1 if not equal. r4 = left operand field value (atom: canonical value,
-//! pair: digest[0]), r5 = right operand field value (same rule), r6 = result
+//! pair: `digest[0]`), r5 = right operand field value (same rule), r6 = result
 //! (0=equal, 1=unequal), r7 = inverse hint: (r4-r5)^-1 when unequal, 0 when
 //! equal. zheng constrains the gadget (r4 - r5) * r7 = r6 with r6 ∈ {0, 1}.
 
-use nebu::Goldilocks;
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary, make_field};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Order, Reduction};
 use crate::jets::registry::JetRegistry;
+use crate::reduce::{ErrorKind, Outcome, evaluate_binary, make_field, pair_children};
+use crate::trace::{TraceRow, Tracer};
+use nebu::Goldilocks;
 
 pub fn eq<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
     let (a, b) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (ra, rb, budget) = match evaluate_binary(reduction, object, a, b, budget, hints, tracer, depth, registry) {
-        Ok(v) => v, Err(o) => return o,
+    let (ra, rb, budget) = match evaluate_binary(
+        reduction, object, a, b, budget, hints, tracer, depth, registry,
+    ) {
+        Ok(v) => v,
+        Err(o) => return o,
     };
     let da = match reduction.digest(ra) {
         Some(d) => *d,
@@ -58,23 +67,31 @@ pub fn eq<const N: usize, T: Tracer>(
             row.r[7] = if equal {
                 0
             } else {
-                (nebu::Goldilocks::new(left_val) - nebu::Goldilocks::new(right_val)).inv().as_u64()
+                (nebu::Goldilocks::new(left_val) - nebu::Goldilocks::new(right_val))
+                    .inv()
+                    .as_u64()
             };
         }
     }
-    let result = if equal { Goldilocks::ZERO } else { Goldilocks::ONE };
+    let result = if equal {
+        Goldilocks::ZERO
+    } else {
+        Goldilocks::ONE
+    };
     make_field(reduction, result, budget)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::NoTrace;
-    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     /// formula = [9 [[1 a] [1 b]]]
     fn make_eq<const N: usize>(ar: &mut Reduction<N>, a: u64, b: u64) -> crate::data::Order {

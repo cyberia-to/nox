@@ -16,23 +16,28 @@
 //!   dir     = 0: sibling is left child; 1: sibling is right child
 //!
 //! Returns: Field atom 1 (valid path) or 0 (invalid).
-//! Budget: depth × 25 (one hash per step, matching COSTS[hash] = 25).
+//! Budget: depth × 25 (one hash per step, matching `COSTS[hash]` = 25).
 
 extern crate alloc;
 use alloc::vec::Vec;
 
+use crate::call::CallProvider;
+use crate::data::hash::hash_pair;
+use crate::data::{Data, Order, Reduction};
+use crate::reduce::{ErrorKind, Outcome, make_field, pair_children};
+use crate::trace::{TraceRow, Tracer};
 use hemera::StepSponge;
 use hemera::field::Goldilocks as HemeraGold;
 use nebu::Goldilocks;
-use crate::data::{Reduction, Order, Data};
-use crate::data::hash::hash_pair;
-use crate::reduce::{Outcome, ErrorKind, pair_children, make_field};
-use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
 
 pub fn merkle_verify_jet<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-    _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    _body: Order,
+    budget: u64,
+    _hints: &dyn CallProvider<N>,
+    _tracer: &mut dyn Tracer,
+    _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [[depth | [root | formula]] | [current | path]]
@@ -71,7 +76,11 @@ pub fn merkle_verify_jet<const N: usize>(
     };
 
     let valid = verify_path(reduction, current_id, &path, root_id);
-    let result_val = if valid { Goldilocks::ONE } else { Goldilocks::ZERO };
+    let result_val = if valid {
+        Goldilocks::ONE
+    } else {
+        Goldilocks::ZERO
+    };
 
     row.r[4] = root_id as u64;
     row.r[5] = current_id as u64;
@@ -81,7 +90,10 @@ pub fn merkle_verify_jet<const N: usize>(
     make_field(reduction, result_val, remaining)
 }
 
-fn decode_path<const N: usize>(reduction: &Reduction<N>, mut id: Order) -> Option<Vec<(Order, u64)>> {
+fn decode_path<const N: usize>(
+    reduction: &Reduction<N>,
+    mut id: Order,
+) -> Option<Vec<(Order, u64)>> {
     let mut steps = Vec::new();
     loop {
         let inner = reduction.get(id)?.inner;
@@ -129,8 +141,14 @@ fn verify_path<const N: usize>(
             None => return false,
         };
     }
-    let cur_dig  = match reduction.digest(current_id) { Some(d) => *d, None => return false };
-    let root_dig = match reduction.digest(root_id)    { Some(d) => *d, None => return false };
+    let cur_dig = match reduction.digest(current_id) {
+        Some(d) => *d,
+        None => return false,
+    };
+    let root_dig = match reduction.digest(root_id) {
+        Some(d) => *d,
+        None => return false,
+    };
     cur_dig == root_dig
 }
 
@@ -140,7 +158,7 @@ fn poseidon2_digest(input: &[Goldilocks; 4]) -> [Goldilocks; 4] {
         rate[i] = HemeraGold::new(input[i].as_u64());
     }
     let mut sponge = StepSponge::absorb(&rate);
-    let mut state  = [HemeraGold::ZERO; 16];
+    let mut state = [HemeraGold::ZERO; 16];
     while !sponge.done() {
         state = sponge.step();
     }
@@ -156,12 +174,14 @@ fn poseidon2_digest(input: &[Goldilocks; 4]) -> [Goldilocks; 4] {
 mod tests {
     extern crate alloc;
     use super::*;
-    use crate::reduce::Outcome;
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::Outcome;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::data::{Reduction};
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     fn nox_hash<const N: usize>(ar: &mut Reduction<N>, id: Order) -> Order {
         let dig = *ar.digest(id).unwrap();
@@ -172,31 +192,43 @@ mod tests {
     fn two_leaf_tree<const N: usize>(ar: &mut Reduction<N>) -> (Order, Order, Order) {
         let leaf0 = ar.atom(g(100)).unwrap();
         let leaf1 = ar.atom(g(200)).unwrap();
-        let hn0   = nox_hash(ar, leaf0);
-        let hn1   = nox_hash(ar, leaf1);
-        let cons  = ar.pair(hn0, hn1).unwrap();
-        let root  = nox_hash(ar, cons);
+        let hn0 = nox_hash(ar, leaf0);
+        let hn1 = nox_hash(ar, leaf1);
+        let cons = ar.pair(hn0, hn1).unwrap();
+        let root = nox_hash(ar, cons);
         (root, hn0, hn1)
     }
 
     /// Build calling object and run merkle_verify_jet.
     fn run<const N: usize>(
         ar: &mut Reduction<N>,
-        root: Order, current: Order, sibling: Order, dir: u64,
+        root: Order,
+        current: Order,
+        sibling: Order,
+        dir: u64,
     ) -> Outcome {
-        let depth_id  = ar.atom(g(1)).unwrap();
+        let depth_id = ar.atom(g(1)).unwrap();
         let formula_p = ar.atom(g(0)).unwrap(); // placeholder
-        let root_f    = ar.pair(root, formula_p).unwrap();
-        let meta      = ar.pair(depth_id, root_f).unwrap();
-        let dir_atom  = ar.atom(g(dir)).unwrap();
-        let step      = ar.pair(sibling, dir_atom).unwrap();
-        let term      = ar.atom(g(0)).unwrap();
-        let path      = ar.pair(step, term).unwrap();
-        let data      = ar.pair(current, path).unwrap();
-        let object    = ar.pair(meta, data).unwrap();
+        let root_f = ar.pair(root, formula_p).unwrap();
+        let meta = ar.pair(depth_id, root_f).unwrap();
+        let dir_atom = ar.atom(g(dir)).unwrap();
+        let step = ar.pair(sibling, dir_atom).unwrap();
+        let term = ar.atom(g(0)).unwrap();
+        let path = ar.pair(step, term).unwrap();
+        let data = ar.pair(current, path).unwrap();
+        let object = ar.pair(meta, data).unwrap();
         let dummy_body = ar.atom(g(0)).unwrap();
-        let mut row  = TraceRow::default();
-        merkle_verify_jet(ar, object, dummy_body, 10_000, &NullCalls, &mut NoTrace, 0, &mut row)
+        let mut row = TraceRow::default();
+        merkle_verify_jet(
+            ar,
+            object,
+            dummy_body,
+            10_000,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        )
     }
 
     #[test]
@@ -238,19 +270,28 @@ mod tests {
         let mut ar = Reduction::<512>::new();
         let (root, hn0, hn1) = two_leaf_tree(&mut ar);
         // depth=1, cost=25 — pass budget=10 → Halt
-        let depth_id  = ar.atom(g(1)).unwrap();
+        let depth_id = ar.atom(g(1)).unwrap();
         let formula_p = ar.atom(g(0)).unwrap();
-        let root_f    = ar.pair(root, formula_p).unwrap();
-        let meta      = ar.pair(depth_id, root_f).unwrap();
-        let dir_atom  = ar.atom(g(1)).unwrap();
-        let step      = ar.pair(hn1, dir_atom).unwrap();
-        let term      = ar.atom(g(0)).unwrap();
-        let path      = ar.pair(step, term).unwrap();
-        let data      = ar.pair(hn0, path).unwrap();
-        let object    = ar.pair(meta, data).unwrap();
+        let root_f = ar.pair(root, formula_p).unwrap();
+        let meta = ar.pair(depth_id, root_f).unwrap();
+        let dir_atom = ar.atom(g(1)).unwrap();
+        let step = ar.pair(hn1, dir_atom).unwrap();
+        let term = ar.atom(g(0)).unwrap();
+        let path = ar.pair(step, term).unwrap();
+        let data = ar.pair(hn0, path).unwrap();
+        let object = ar.pair(meta, data).unwrap();
         let dummy_body = ar.atom(g(0)).unwrap();
-        let mut row  = TraceRow::default();
-        match merkle_verify_jet(&mut ar, object, dummy_body, 10, &NullCalls, &mut NoTrace, 0, &mut row) {
+        let mut row = TraceRow::default();
+        match merkle_verify_jet(
+            &mut ar,
+            object,
+            dummy_body,
+            10,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        ) {
             Outcome::Halt(_) => {}
             o => panic!("expected Halt, got {:?}", o),
         }

@@ -25,17 +25,22 @@ mod hc_jets {
     extern crate alloc;
     use alloc::vec::Vec;
 
-    use nebu::Goldilocks;
-    use crate::data::{Reduction, Order, Data};
-    use crate::reduce::{Outcome, ErrorKind, pair_children};
     use crate::call::CallProvider;
-    use crate::trace::{Tracer, TraceRow};
+    use crate::data::{Data, Order, Reduction};
+    use crate::reduce::{ErrorKind, Outcome, pair_children};
+    use crate::trace::{TraceRow, Tracer};
+    use nebu::Goldilocks;
 
     // ── NTT jet ──────────────────────────────────────────────────────────────
 
     pub fn honeycrisp_ntt_jet<const N: usize>(
-        reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-        _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+        reduction: &mut Reduction<N>,
+        object: Order,
+        _body: Order,
+        budget: u64,
+        _hints: &dyn CallProvider<N>,
+        _tracer: &mut dyn Tracer,
+        _depth: u64,
         row: &mut TraceRow,
     ) -> Outcome {
         // object = [[n | formula] | [values_tree | omega]]
@@ -101,8 +106,13 @@ mod hc_jets {
     // ── poly_eval jet ─────────────────────────────────────────────────────────
 
     pub fn honeycrisp_poly_eval_jet<const N: usize>(
-        reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-        _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+        reduction: &mut Reduction<N>,
+        object: Order,
+        _body: Order,
+        budget: u64,
+        _hints: &dyn CallProvider<N>,
+        _tracer: &mut dyn Tracer,
+        _depth: u64,
         row: &mut TraceRow,
     ) -> Outcome {
         // object = [[k | formula] | [evals_tree | point]]
@@ -140,7 +150,10 @@ mod hc_jets {
         for _ in 0..k {
             match pair_children(reduction, cur) {
                 Some((head, tail)) => match reduction.atom_value(head) {
-                    Some(v) => { point.push(v); cur = tail; }
+                    Some(v) => {
+                        point.push(v);
+                        cur = tail;
+                    }
                     None => return Outcome::Error(ErrorKind::TypeError),
                 },
                 None => return Outcome::Error(ErrorKind::TypeError),
@@ -171,14 +184,21 @@ mod hc_jets {
 
     // ── shared tree helpers ───────────────────────────────────────────────────
 
-    fn flatten_tree<const N: usize>(reduction: &Reduction<N>, id: Order, out: &mut Vec<Goldilocks>) -> bool {
+    fn flatten_tree<const N: usize>(
+        reduction: &Reduction<N>,
+        id: Order,
+        out: &mut Vec<Goldilocks>,
+    ) -> bool {
         let inner = match reduction.get(id) {
             Some(e) => e.inner,
             None => return false,
         };
         match inner {
             Data::Atom { .. } => match reduction.atom_value(id) {
-                Some(v) => { out.push(v); true }
+                Some(v) => {
+                    out.push(v);
+                    true
+                }
                 None => false,
             },
             Data::Pair { left, right } => {
@@ -187,12 +207,15 @@ mod hc_jets {
         }
     }
 
-    fn build_tree<const N: usize>(reduction: &mut Reduction<N>, vals: &[Goldilocks]) -> Option<Order> {
+    fn build_tree<const N: usize>(
+        reduction: &mut Reduction<N>,
+        vals: &[Goldilocks],
+    ) -> Option<Order> {
         if vals.len() == 1 {
             return reduction.atom(vals[0]);
         }
         let mid = vals.len() / 2;
-        let left  = build_tree(reduction, &vals[..mid])?;
+        let left = build_tree(reduction, &vals[..mid])?;
         let right = build_tree(reduction, &vals[mid..])?;
         reduction.pair(left, right)
     }
@@ -204,27 +227,27 @@ pub fn genesis_honeycrisp<const N: usize>() -> JetRegistry<N> {
     #[cfg(feature = "honeycrisp")]
     {
         use crate::jets::registry::compute_genesis_digests;
-        use crate::jets::{merkle_verify, fri_fold, state, decider};
+        use crate::jets::{decider, fri_fold, merkle_verify, state};
 
         let digests = compute_genesis_digests();
         let mut reg = JetRegistry::empty();
 
         // acpu-accelerated jets
-        reg.insert_exact(digests.ntt,       hc_jets::honeycrisp_ntt_jet::<N>);
+        reg.insert_exact(digests.ntt, hc_jets::honeycrisp_ntt_jet::<N>);
         reg.insert_exact(digests.poly_eval, hc_jets::honeycrisp_poly_eval_jet::<N>);
 
         // CPU fallbacks for remaining exact-match jets
         reg.insert_exact(digests.merkle_verify, merkle_verify::merkle_verify_jet::<N>);
-        reg.insert_exact(digests.fri_fold,      fri_fold::fri_fold_jet::<N>);
-        reg.insert_exact(digests.cyberlink,     state::cyberlink_jet::<N>);
-        reg.insert_exact(digests.decider,       decider::decider_jet::<N>);
+        reg.insert_exact(digests.fri_fold, fri_fold::fri_fold_jet::<N>);
+        reg.insert_exact(digests.cyberlink, state::cyberlink_jet::<N>);
+        reg.insert_exact(digests.decider, decider::decider_jet::<N>);
 
         // Template jets — CPU implementations
-        reg.insert_template(state::is_transfer::<N>,  state::transfer_jet::<N>);
-        reg.insert_template(state::is_insert::<N>,    state::insert_jet::<N>);
-        reg.insert_template(state::is_update::<N>,    state::update_jet::<N>);
+        reg.insert_template(state::is_transfer::<N>, state::transfer_jet::<N>);
+        reg.insert_template(state::is_insert::<N>, state::insert_jet::<N>);
+        reg.insert_template(state::is_update::<N>, state::update_jet::<N>);
         reg.insert_template(state::is_aggregate::<N>, state::aggregate_jet::<N>);
-        reg.insert_template(state::is_conserve::<N>,  state::conserve_jet::<N>);
+        reg.insert_template(state::is_conserve::<N>, state::conserve_jet::<N>);
 
         reg
     }

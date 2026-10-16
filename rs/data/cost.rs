@@ -23,7 +23,9 @@ impl Cost {
     /// for `Dynamic(n)` it covers only the static phase.
     #[inline]
     pub fn value(self) -> u64 {
-        match self { Cost::Exact(n) | Cost::Dynamic(n) => n }
+        match self {
+            Cost::Exact(n) | Cost::Dynamic(n) => n,
+        }
     }
 
     /// True if any sub-formula crossed the dynamic-cost frontier.
@@ -48,7 +50,11 @@ impl Cost {
     #[inline]
     pub fn sum1(parent: u64, a: Cost) -> Cost {
         let total = parent.saturating_add(a.value());
-        if a.is_dynamic() { Cost::Dynamic(total) } else { Cost::Exact(total) }
+        if a.is_dynamic() {
+            Cost::Dynamic(total)
+        } else {
+            Cost::Exact(total)
+        }
     }
 
     /// For branch (pattern 4): bound = parent + bound(test) + max(bound(yes), bound(no)).
@@ -58,29 +64,33 @@ impl Cost {
         let arm = yes.value().max(no.value());
         let total = parent.saturating_add(test.value()).saturating_add(arm);
         let dyn_any = test.is_dynamic() || yes.is_dynamic() || no.is_dynamic();
-        if dyn_any { Cost::Dynamic(total) } else { Cost::Exact(total) }
+        if dyn_any {
+            Cost::Dynamic(total)
+        } else {
+            Cost::Exact(total)
+        }
     }
 }
 
 /// Per-pattern static dispatch cost — must mirror `reduce::COSTS`.
 /// Used by `Reduction::pair` to compute cached bounds at construction time.
 pub(crate) const PATTERN_COSTS: [u64; 18] = [
-    1,   // 0  axis
-    1,   // 1  quote
-    1,   // 2  compose (DYNAMIC continuation)
-    1,   // 3  cons
-    1,   // 4  branch (max-of-arms)
-    1,   // 5  add
-    1,   // 6  sub
-    1,   // 7  mul
-    64,  // 8  inv
-    1,   // 9  eq
-    64,  // 10 lt
-    32,  // 11 xor
-    32,  // 12 and
-    32,  // 13 not
-    32,  // 14 shl
-    25,  // 15 hash
-    1,   // 16 call (DYNAMIC continuation)
-    1,   // 17 look
+    1,  // 0  axis
+    1,  // 1  quote
+    1,  // 2  compose (DYNAMIC continuation)
+    1,  // 3  cons
+    1,  // 4  branch (max-of-arms)
+    1,  // 5  add
+    1,  // 6  sub
+    1,  // 7  mul
+    64, // 8  inv
+    1,  // 9  eq
+    64, // 10 lt
+    32, // 11 xor
+    32, // 12 and
+    32, // 13 not
+    32, // 14 shl
+    25, // 15 hash
+    1,  // 16 call (DYNAMIC continuation)
+    1,  // 17 look
 ];

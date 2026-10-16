@@ -1,31 +1,53 @@
 //! pattern 6: sub — field subtraction
 
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, field_binary_op};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Order, Reduction};
 use crate::jets::registry::JetRegistry;
+use crate::reduce::{Outcome, field_binary_op};
+use crate::trace::{TraceRow, Tracer};
 
 pub fn sub<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, b: Order, bg: u64,
-    h: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    b: Order,
+    bg: u64,
+    h: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
-    field_binary_op(reduction, object, b, bg, h, tracer, depth, row, registry, |a, b| a - b)
+    field_binary_op(
+        reduction,
+        object,
+        b,
+        bg,
+        h,
+        tracer,
+        depth,
+        row,
+        registry,
+        |a, b| a - b,
+    )
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::NoTrace;
-    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     fn make_field_binop<const N: usize>(
-        ar: &mut Reduction<N>, tag: u64, a: u64, b: u64,
+        ar: &mut Reduction<N>,
+        tag: u64,
+        a: u64,
+        b: u64,
     ) -> crate::data::Order {
         let t = ar.atom(g(tag)).unwrap();
         let t1 = ar.atom(g(1)).unwrap();

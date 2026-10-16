@@ -21,26 +21,35 @@
 //!
 //! Reduce.rs skips post-hoc recording for tag=15 (see is_multi_row).
 
+use crate::call::CallProvider;
+use crate::data::hash::Digest;
+use crate::data::{Order, Reduction};
+use crate::jets::registry::JetRegistry;
+use crate::reduce::{ErrorKind, Outcome, evaluate_unary};
+use crate::trace::{TraceRow, Tracer};
 use hemera::StepSponge;
 use hemera::field::Goldilocks as HemeraGold;
 use nebu::Goldilocks;
-use crate::data::{Reduction, Order};
-use crate::data::hash::Digest;
-use crate::reduce::{Outcome, ErrorKind, evaluate_unary};
-use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
-use crate::jets::registry::JetRegistry;
 
 const RATE: usize = 8;
 const ROUNDS_TOTAL: u64 = 24;
 
 pub fn hash<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
-    let (input, budget) = match evaluate_unary(reduction, object, body, budget, hints, tracer, depth, registry) {
-        Ok(v) => v, Err(o) => return o,
+    let (input, budget) = match evaluate_unary(
+        reduction, object, body, budget, hints, tracer, depth, registry,
+    ) {
+        Ok(v) => v,
+        Err(o) => return o,
     };
     let in_digest: Digest = match reduction.digest(input) {
         Some(d) => *d,
@@ -80,14 +89,27 @@ pub fn hash<const N: usize, T: Tracer>(
         Some(r) => r,
         None => return Outcome::Error(ErrorKind::Unavailable),
     };
-    emit_squeeze_row(tracer, &template, &last_state, &out_digest, result, input, budget_in, budget);
+    emit_squeeze_row(
+        tracer,
+        &template,
+        &last_state,
+        &out_digest,
+        result,
+        input,
+        budget_in,
+        budget,
+    );
 
     Outcome::Ok(result, budget)
 }
 
 fn emit_round_row<T: Tracer>(
-    tracer: &mut T, template: &TraceRow,
-    state: &[HemeraGold; 16], k: u64, input: Order, budget_in: u64,
+    tracer: &mut T,
+    template: &TraceRow,
+    state: &[HemeraGold; 16],
+    k: u64,
+    input: Order,
+    budget_in: u64,
 ) {
     let mut r = TraceRow::default();
     r.r[0] = template.r()[0];
@@ -108,9 +130,14 @@ fn emit_round_row<T: Tracer>(
 }
 
 fn emit_squeeze_row<T: Tracer>(
-    tracer: &mut T, template: &TraceRow,
-    final_state: &[HemeraGold; 16], out_digest: &Digest,
-    result: Order, input: Order, budget_in: u64, budget_out: u64,
+    tracer: &mut T,
+    template: &TraceRow,
+    final_state: &[HemeraGold; 16],
+    out_digest: &Digest,
+    result: Order,
+    input: Order,
+    budget_in: u64,
+    budget_out: u64,
 ) {
     let mut r = TraceRow::default();
     r.r[0] = template.r()[0];
@@ -135,14 +162,16 @@ fn emit_squeeze_row<T: Tracer>(
 #[cfg(test)]
 mod tests {
     extern crate alloc;
-    use alloc::vec::Vec;
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::{Data, Reduction};
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::{NoTrace, VecTrace};
-    use crate::data::{Reduction, Data};
+    use alloc::vec::Vec;
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     fn make_hash<const N: usize>(ar: &mut Reduction<N>, val: u64) -> crate::data::Order {
         let t15 = ar.atom(g(15)).unwrap();
@@ -189,7 +218,13 @@ mod tests {
         reduce(&mut ar, obj, formula, 10000, &NullCalls, &mut tracer);
         let hash_rows: Vec<_> = tracer.0.iter().filter(|r| r.r()[0] == 15).collect();
         for (i, row) in hash_rows.iter().enumerate() {
-            assert_eq!(row.r()[14], i as u64, "row {} has counter {}", i, row.r()[14]);
+            assert_eq!(
+                row.r()[14],
+                i as u64,
+                "row {} has counter {}",
+                i,
+                row.r()[14]
+            );
         }
     }
 
@@ -203,7 +238,7 @@ mod tests {
             Outcome::Ok(r, _) => r,
             o => panic!("{:?}", o),
         };
-        let last = tracer.0.iter().filter(|r| r.r()[0] == 15).last().unwrap();
+        let last = tracer.0.iter().rfind(|r| r.r()[0] == 15).unwrap();
         assert_eq!(last.r()[3], result_id as u64);
         assert_eq!(last.r()[14], 24, "squeeze sentinel is 24");
     }

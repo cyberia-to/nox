@@ -11,11 +11,11 @@
 //! `hash_pair` for a node). the in-order hash-cons key and the wire particle
 //! are the same bytes — one hash, by construction.
 
-use alloc::vec::Vec;
-use alloc::vec;
-use nebu::Goldilocks;
-use crate::data::{Reduction, Order, Data};
+use crate::data::{Data, Order, Reduction};
 use crate::data::{digest_bytes, digest_from_bytes, hash_atom, hash_pair};
+use alloc::vec;
+use alloc::vec::Vec;
+use nebu::Goldilocks;
 
 /// content-addressed identity: 32-byte view of the tree-hash digest
 pub type Particle = [u8; 32];
@@ -46,7 +46,7 @@ pub enum DecodedData {
 /// one verified entry from a wire message
 #[derive(Debug, Clone)]
 pub struct WireEntry {
-    pub id:   Particle,
+    pub id: Particle,
     pub data: DecodedData,
 }
 
@@ -100,7 +100,7 @@ pub fn particle_of(encoded: &[u8]) -> Result<Particle, DecodeError> {
             Ok(digest_bytes(&hash_atom(Goldilocks::new(v))))
         }
         SIZE_PAIR => {
-            let left:  Particle = encoded[0..32].try_into().unwrap();
+            let left: Particle = encoded[0..32].try_into().unwrap();
             let right: Particle = encoded[32..64].try_into().unwrap();
             let ld = digest_from_bytes(&left);
             let rd = digest_from_bytes(&right);
@@ -203,7 +203,7 @@ pub fn decode(bytes: &[u8]) -> Result<DecodedData, DecodeError> {
             Ok(DecodedData::Atom(Goldilocks::new(v)))
         }
         SIZE_PAIR => {
-            let left:  Particle = bytes[0..32].try_into().unwrap();
+            let left: Particle = bytes[0..32].try_into().unwrap();
             let right: Particle = bytes[32..64].try_into().unwrap();
             Ok(DecodedData::Pair { left, right })
         }
@@ -279,7 +279,7 @@ pub fn parse_message(bytes: &[u8]) -> Result<WireMessage, DecodeError> {
         0x10 => parse_entries(body).map(WireMessage::Push),
         0x11 => parse_id_list(body).map(WireMessage::Request),
         0x12 => parse_entries(body).map(WireMessage::Response),
-        _    => Err(DecodeError::InvalidMessageType),
+        _ => Err(DecodeError::InvalidMessageType),
     }
 }
 
@@ -386,7 +386,9 @@ mod tests {
     use super::*;
     use crate::data::Reduction;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     #[test]
     fn atom_encode_decode_roundtrip() {
@@ -403,7 +405,10 @@ mod tests {
     fn field_and_word_value_share_identity() {
         // a word-range value (42) encodes identically to the field 42
         assert_eq!(encode_atom(g(42)).to_vec(), encode_atom(g(42)).to_vec());
-        assert_eq!(particle_of(&encode_atom(g(42))), particle_of(&encode_atom(g(42))));
+        assert_eq!(
+            particle_of(&encode_atom(g(42))),
+            particle_of(&encode_atom(g(42)))
+        );
     }
 
     #[test]
@@ -453,7 +458,7 @@ mod tests {
         let b = reduction.atom(g(2)).unwrap();
         let c = reduction.pair(a, b).unwrap();
         let pid = particle_id(&reduction, c).unwrap();
-        let left_id  = particle_of(&encode_atom(g(1))).unwrap();
+        let left_id = particle_of(&encode_atom(g(1))).unwrap();
         let right_id = particle_of(&encode_atom(g(2))).unwrap();
         assert_eq!(pid, particle_of(&encode_pair(&left_id, &right_id)).unwrap());
     }
@@ -475,9 +480,9 @@ mod tests {
     fn encode_tree_shared_child_deduplication() {
         let mut reduction = Reduction::<1024>::new();
         let a = reduction.atom(g(99)).unwrap();
-        let c = reduction.pair(a, a).unwrap();  // shared child
+        let c = reduction.pair(a, a).unwrap(); // shared child
         let tree = encode_tree(&reduction, c).unwrap();
-        assert_eq!(tree.len(), 2);  // atom appears once, pair appears once
+        assert_eq!(tree.len(), 2); // atom appears once, pair appears once
     }
 
     #[test]
@@ -505,11 +510,17 @@ mod tests {
         let msg_bytes = write_push(&tree).unwrap();
         match parse_message(&msg_bytes).unwrap() {
             WireMessage::Push(entries) => {
-                assert_eq!(entries.len(), 3);  // a, b, pair
+                assert_eq!(entries.len(), 3); // a, b, pair
                 // last entry is the pair, referencing the two atom particles
                 let pa = particle_of(&encode_atom(g(3))).unwrap();
                 let pb = particle_of(&encode_atom(g(4))).unwrap();
-                assert_eq!(entries[2].data, DecodedData::Pair { left: pa, right: pb });
+                assert_eq!(
+                    entries[2].data,
+                    DecodedData::Pair {
+                        left: pa,
+                        right: pb
+                    }
+                );
             }
             _ => panic!("expected Push"),
         }
@@ -517,7 +528,9 @@ mod tests {
 
     #[test]
     fn wire_request_roundtrip() {
-        let ids: Vec<Particle> = (0..3).map(|i| particle_of(&encode_atom(g(i))).unwrap()).collect();
+        let ids: Vec<Particle> = (0..3)
+            .map(|i| particle_of(&encode_atom(g(i))).unwrap())
+            .collect();
         let msg = write_request(&ids).unwrap();
         match parse_message(&msg).unwrap() {
             WireMessage::Request(got) => assert_eq!(got, ids),
@@ -528,7 +541,7 @@ mod tests {
     #[test]
     fn wire_hash_mismatch_rejected() {
         let encoded = encode_atom(g(1));
-        let wrong_id = particle_of(&encode_atom(g(2))).unwrap();  // wrong id for this atom
+        let wrong_id = particle_of(&encode_atom(g(2))).unwrap(); // wrong id for this atom
         let entry = [(wrong_id, encoded.to_vec())];
         let msg = write_push(&entry).unwrap();
         match parse_message(&msg) {
