@@ -1,0 +1,15 @@
+   Compiling crossbeam-utils v0.8.23
+   Compiling strata-core v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/core)
+   Compiling mutants v0.0.3
+   Compiling strata-ext v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/ext)
+   Compiling strata-compute v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/compute)
+   Compiling strata-proof v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/proof)
+   Compiling strata-nebu v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/nebu/rs)
+   Compiling crossbeam-queue v0.3.14
+   Compiling cyber-hemera v0.3.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/hemera/rs)
+   Compiling unimem v0.2.0 (/Users/master/cyber/honeycrisp/unimem)
+   Compiling acpu v0.2.0 (/Users/master/cyber/honeycrisp/acpu)
+   Compiling cyber-nox v0.2.0 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs)
+   Compiling nox-honeycrisp-source-diagnostic v0.0.0 (/tmp/nox-honeycrisp-backend-diagnostic)
+    Finished `release` profile [optimized] target(s) in 4.25s
+     Running /Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/audit/2026-10-16-honeycrisp-backend-design/probe.rs (/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/release/deps/source_contract-80faf71e54a72fa3)
