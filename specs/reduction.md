@@ -155,7 +155,7 @@ bound([11 [a b]])       = 32 + bound(a) + bound(b)                   -- xor
 bound([12 [a b]])       = 32 + bound(a) + bound(b)                   -- and
 bound([13 a])           = 32 + bound(a)                              -- not
 bound([14 [a n]])       = 32 + bound(a) + bound(n)                   -- shl
-bound([15 a])           = 25 + bound(a)                              -- hash
+bound([15 a])           = 61 + bound(a)                              -- hash
 bound([16 [tag check]]) = 1 + bound(tag) + DYNAMIC                   -- call
 bound([17 [n k]])       = 1 + bound(n) + bound(k)                    -- look
 ```
@@ -337,7 +337,7 @@ one sub-expression evaluated unconditionally, then the primitive operation appli
 ```
 reduce(o, [8 a], f)  = let (v, f1) = reduce(o, a, f-64);  (v⁻¹, f1)
 reduce(o, [13 a], f) = let (v, f1) = reduce(o, a, f-32);  (¬v, f1)
-reduce(o, [15 a], f) = let (v, f1) = reduce(o, a, f-25); (H(v), f1)
+reduce(o, [15 a], f) = let (v, f1) = reduce(o, a, f-61); (H(v), f1)
 ```
 
 no parallelism question arises — single sub-expression.
@@ -490,7 +490,7 @@ canonical (nox<Goldilocks, Z/2^32, Hemera>):
 - and:  32 (bit decomposition)
 - not:  32 (bit decomposition; unary)
 - shl:  32 (bit decomposition with cross-row shift binding)
-- hash: 25 (Poseidon2 permutation — 24 rounds + 1 squeeze under hemera 0.3; row count = cost; hemera 0.4 has 60 rounds, 61 rows — budget decision pending)
+- hash: 61 (Poseidon2 permutation — 60 rounds + 1 squeeze, hemera 0.4; row count = cost)
 
 all other patterns cost exactly 1 per reduce() call.
 

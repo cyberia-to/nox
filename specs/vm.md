@@ -53,7 +53,7 @@ mul cost = base F_p multiplications per one regime-native multiply. constraints/
 | lt | 1 | — | — | — | 1 | — | 1 | — |
 | xor | 1 | — | — | — | 1 | — | — | — |
 | and | 1 | — | — | — | 1 | — | — | — |
-| hash | 25 | 25 | 25 | 25 | deferred | 25 | 25 | deferred |
+| hash | 61 | 61 | 61 | 61 | deferred | 61 | 61 | deferred |
 | zheng/mul | ~32 | 3 | 6 | 9 | 1 | ~N (batch) | O(w) | 1 F_q |
 
 "—" = operation not defined or not meaningful for this regime. n = ring degree (1024). deferred = hemera computed at settlement boundary (~766 constraints). all costs are execution budget; zheng constraint counts are per-instantiation (see [[patterns]]).
@@ -224,7 +224,7 @@ all algebras settle through Goldilocks via Hemera (Poseidon2 over Goldilocks). t
 
 - nox<F₂> programs must defer Hemera to settlement (~10 constraints deferred, ~1,440 at settlement)
 - nox<F_{p³}> programs compute Hemera natively (Hemera operates over base field F_p)
-- nox<F_p> programs compute Hemera natively (25 budget cost: 24 rounds + 1 squeeze under hemera 0.3; 61 rows under hemera 0.4 — budget decision pending, hemera `audit/profile-0.4-2026-10.md` §5)
+- nox<F_p> programs compute Hemera natively (61 budget cost: 60 rounds + 1 squeeze, one row each; hemera 0.4, hemera `audit/profile-0.4-2026-10.md` §5)
 
 the polymorphism is real for computation but asymmetric for commitment. Goldilocks is the anchor field. all algebras settle through it.
 

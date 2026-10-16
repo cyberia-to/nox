@@ -55,7 +55,7 @@ the algebraic Fiat-Shamir optimization (zero hemera) requires that deriving chal
 
 if independent randomness is required, one hemera call remains: 89 + 1,440 = 1,529 constraints. still 5× better than the generic 8K. still cheaper than hashing a kilobyte.
 
-both tiers are specified. the system ships with 825 (conservative). transitions to 89 when algebraic Fiat-Shamir soundness is formally verified.
+both tiers are specified. the system ships with 1,529 (conservative). transitions to 89 when algebraic Fiat-Shamir soundness is formally verified.
 
 ## how folding works
 

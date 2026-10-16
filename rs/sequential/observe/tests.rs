@@ -297,8 +297,9 @@ fn relocation_changes_physical_orders_without_changing_logical_transitions() {
 }
 
 #[test]
-fn cache_hits_still_emit_each_hash_finalizer_and_keep_107_reductions() {
-    for budget in [106, 107, 108] {
+fn cache_hits_still_emit_each_hash_finalizer_and_keep_251_reductions() {
+    // 4 × (hash 61 + quote 1) + 3 cons = 251.
+    for budget in [250, 251, 252] {
         fn build(ar: &mut Reduction<256>) -> (Order, Order) {
             let object = atom(ar, 0);
             let q = quote(ar, 42);
@@ -320,7 +321,7 @@ fn cache_hits_still_emit_each_hash_finalizer_and_keep_107_reductions() {
         );
         assert_eq!(observed.execution.stats, plain.stats);
         checked(&events);
-        if budget >= 107 {
+        if budget >= 251 {
             let finals: Vec<_> = events
                 .0
                 .iter()
@@ -339,7 +340,7 @@ fn cache_hits_still_emit_each_hash_finalizer_and_keep_107_reductions() {
             let Outcome::Ok(_, remaining) = observed.execution.outcome else {
                 panic!()
             };
-            assert_eq!(remaining, budget - 107);
+            assert_eq!(remaining, budget - 251);
         } else {
             assert!(matches!(observed.execution.outcome, Outcome::Halt(_)));
             assert!(

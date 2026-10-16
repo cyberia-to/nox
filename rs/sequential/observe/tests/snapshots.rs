@@ -256,8 +256,8 @@ fn version_one_gc_stream_matches_pre_extension_golden() {
     assert_eq!(
         *hash.finalize().as_bytes(),
         [
-            247, 224, 8, 81, 140, 212, 21, 213, 119, 4, 247, 94, 124, 162, 147, 214, 209, 213, 65,
-            23, 165, 192, 251, 229, 103, 82, 241, 203, 84, 99, 27, 97,
+            236, 168, 219, 144, 143, 73, 66, 118, 205, 246, 126, 105, 25, 97, 126, 10, 198, 197,
+            216, 179, 115, 54, 29, 192, 147, 167, 81, 224, 189, 36, 130, 164,
         ]
     );
     assert_eq!(
@@ -277,7 +277,7 @@ fn version_one_gc_stream_matches_pre_extension_golden() {
             total_allocations: 171,
             reclaimed_nodes: 128,
             collections: 2,
-            collection_work: 133415,
+            collection_work: 133417,
             scratch_bytes: 1424,
             evaluator_checkpoints: 1211,
             collection_checkpoints: 6,
