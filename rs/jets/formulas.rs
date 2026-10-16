@@ -39,13 +39,15 @@
 
 extern crate alloc;
 
-use nebu::Goldilocks;
-use crate::data::{Reduction, Order};
+use crate::data::{Order, Reduction};
 use crate::encode::{Particle, particle_id};
+use nebu::Goldilocks;
 
 // ── primitive builders ────────────────────────────────────────────────────────
 
-fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+fn g(v: u64) -> Goldilocks {
+    Goldilocks::new(v)
+}
 
 fn atom<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Option<Order> {
     ar.atom(g(v))
@@ -79,7 +81,12 @@ fn cons_f<const N: usize>(ar: &mut Reduction<N>, a: Order, b: Order) -> Option<O
 }
 
 /// [4 | [test | [yes | no]]] — branch pattern (test=0 → yes)
-fn branch_f<const N: usize>(ar: &mut Reduction<N>, test: Order, yes: Order, no: Order) -> Option<Order> {
+fn branch_f<const N: usize>(
+    ar: &mut Reduction<N>,
+    test: Order,
+    yes: Order,
+    no: Order,
+) -> Option<Order> {
     let t = atom(ar, 4)?;
     let arms = ar.pair(yes, no)?;
     let body = ar.pair(test, arms)?;
@@ -112,13 +119,13 @@ fn hash_f<const N: usize>(ar: &mut Reduction<N>, sub: Order) -> Option<Order> {
 /// at runtime (quining). No circular reference at build time.
 pub fn build_poly_eval_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<Order> {
     // ── axis references in the calling object ─────────────────────────────────
-    let ax4  = axis_f(ar, 4)?;   // k
-    let ax5  = axis_f(ar, 5)?;   // formula (self-ref)
-    let ax6  = axis_f(ar, 6)?;   // evals_tree
-    let ax12 = axis_f(ar, 12)?;  // left(evals_tree)
-    let ax13 = axis_f(ar, 13)?;  // right(evals_tree)
-    let ax14 = axis_f(ar, 14)?;  // x0
-    let ax15 = axis_f(ar, 15)?;  // rest_point
+    let ax4 = axis_f(ar, 4)?; // k
+    let ax5 = axis_f(ar, 5)?; // formula (self-ref)
+    let ax6 = axis_f(ar, 6)?; // evals_tree
+    let ax12 = axis_f(ar, 12)?; // left(evals_tree)
+    let ax13 = axis_f(ar, 13)?; // right(evals_tree)
+    let ax14 = axis_f(ar, 14)?; // x0
+    let ax15 = axis_f(ar, 15)?; // rest_point
 
     // k_minus_1 = sub(k, 1)
     let one = atom(ar, 1)?;
@@ -129,17 +136,17 @@ pub fn build_poly_eval_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<
     let build_lhs = cons_f(ar, k_minus_1, ax5)?;
 
     // left recursion: new object = [[k−1 | formula] | [left_evals | rest_point]]
-    let left_pair    = cons_f(ar, ax12, ax15)?;
+    let left_pair = cons_f(ar, ax12, ax15)?;
     let new_left_obj = cons_f(ar, build_lhs, left_pair)?;
-    let call_left    = compose_f(ar, new_left_obj, ax5)?;
+    let call_left = compose_f(ar, new_left_obj, ax5)?;
 
     // right recursion: new object = [[k−1 | formula] | [right_evals | rest_point]]
-    let right_pair    = cons_f(ar, ax13, ax15)?;
+    let right_pair = cons_f(ar, ax13, ax15)?;
     let new_right_obj = cons_f(ar, build_lhs, right_pair)?;
-    let call_right    = compose_f(ar, new_right_obj, ax5)?;
+    let call_right = compose_f(ar, new_right_obj, ax5)?;
 
     // result_cons = [vl | [vr | x0]]  (intermediate object for combiner)
-    let inner_cons  = cons_f(ar, call_right, ax14)?;
+    let inner_cons = cons_f(ar, call_right, ax14)?;
     let result_cons = cons_f(ar, call_left, inner_cons)?;
 
     // combiner formula — applied to intermediate object [vl | [vr | x0]]:
@@ -147,17 +154,17 @@ pub fn build_poly_eval_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<
     let ax2c = axis_f(ar, 2)?;
     let ax6c = axis_f(ar, 6)?;
     let ax7c = axis_f(ar, 7)?;
-    let diff     = binop_f(ar, 6, ax6c, ax2c)?;          // vr − vl
-    let prod     = binop_f(ar, 7, ax7c, diff)?;           // x0 * (vr − vl)
-    let combiner = binop_f(ar, 5, ax2c, prod)?;           // vl + x0*(vr−vl)
+    let diff = binop_f(ar, 6, ax6c, ax2c)?; // vr − vl
+    let prod = binop_f(ar, 7, ax7c, diff)?; // x0 * (vr − vl)
+    let combiner = binop_f(ar, 5, ax2c, prod)?; // vl + x0*(vr−vl)
 
     // recursive step: cons the two recursive results, then apply combiner
-    let q_combiner    = quote_f(ar, combiner)?;
+    let q_combiner = quote_f(ar, combiner)?;
     let recursive_step = compose_f(ar, result_cons, q_combiner)?;
 
     // test: eq(k, 0) → 0 if k=0 (→ yes branch = base case)
     let zero = atom(ar, 0)?;
-    let q0   = quote_f(ar, zero)?;
+    let q0 = quote_f(ar, zero)?;
     let test = binop_f(ar, 9, ax4, q0)?;
 
     // formula = branch(eq(k,0), base_case=axis(6), recursive_step)
@@ -181,21 +188,21 @@ pub fn poly_eval_formula_hash<const N: usize>(ar: &mut Reduction<N>) -> Option<P
 /// Returns field atom 1 if the path is valid, 0 if not.
 pub fn build_merkle_verify_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<Order> {
     // ── axis references in the calling object ─────────────────────────────────
-    let ax4  = axis_f(ar, 4)?;   // depth (steps remaining)
-    let ax5  = axis_f(ar, 5)?;   // [root | formula]
-    let ax6  = axis_f(ar, 6)?;   // current hash-data
-    let ax10 = axis_f(ar, 10)?;  // root hash-data
-    let ax11 = axis_f(ar, 11)?;  // formula (self-ref)
-    let ax15 = axis_f(ar, 15)?;  // rest_path
-    let ax28 = axis_f(ar, 28)?;  // sibling hash-data
-    let ax29 = axis_f(ar, 29)?;  // dir (0=sib left, 1=sib right)
+    let ax4 = axis_f(ar, 4)?; // depth (steps remaining)
+    let ax5 = axis_f(ar, 5)?; // [root | formula]
+    let ax6 = axis_f(ar, 6)?; // current hash-data
+    let ax10 = axis_f(ar, 10)?; // root hash-data
+    let ax11 = axis_f(ar, 11)?; // formula (self-ref)
+    let ax15 = axis_f(ar, 15)?; // rest_path
+    let ax28 = axis_f(ar, 28)?; // sibling hash-data
+    let ax29 = axis_f(ar, 29)?; // dir (0=sib left, 1=sib right)
 
     // ── base case: depth=0 → compare current with root ───────────────────────
     // eq(current, root): 0 if equal → yes = quote(1) [valid], no = quote(0)
     let zero_a = atom(ar, 0)?;
-    let one_a  = atom(ar, 1)?;
-    let q0   = quote_f(ar, zero_a)?;
-    let q1   = quote_f(ar, one_a)?;
+    let one_a = atom(ar, 1)?;
+    let q0 = quote_f(ar, zero_a)?;
+    let q1 = quote_f(ar, one_a)?;
     let eq_cr = binop_f(ar, 9, ax6, ax10)?;
     let base_case = branch_f(ar, eq_cr, q1, q0)?;
 
@@ -213,16 +220,16 @@ pub fn build_merkle_verify_formula<const N: usize>(ar: &mut Reduction<N>) -> Opt
 
     // ── recursive step: build new object and call formula ────────────────────
     // new_meta = [depth−1 | [root | formula]]
-    let one_b      = atom(ar, 1)?;
-    let q1b        = quote_f(ar, one_b)?;
-    let depth_m1   = binop_f(ar, 6, ax4, q1b)?;
-    let new_meta   = cons_f(ar, depth_m1, ax5)?;
+    let one_b = atom(ar, 1)?;
+    let q1b = quote_f(ar, one_b)?;
+    let depth_m1 = binop_f(ar, 6, ax4, q1b)?;
+    let new_meta = cons_f(ar, depth_m1, ax5)?;
 
     // new_data = [new_current | rest_path]
-    let new_data   = cons_f(ar, new_current, ax15)?;
+    let new_data = cons_f(ar, new_current, ax15)?;
 
     // new_obj formula = cons(new_meta, new_data)
-    let new_obj    = cons_f(ar, new_meta, new_data)?;
+    let new_obj = cons_f(ar, new_meta, new_data)?;
 
     // recursive_call = compose(new_obj, formula_ref)
     let recursive_step = compose_f(ar, new_obj, ax11)?;
@@ -254,43 +261,43 @@ pub fn merkle_verify_formula_hash<const N: usize>(ar: &mut Reduction<N>) -> Opti
 ///   axis 12 = left half of evals_tree
 ///   axis 13 = right half of evals_tree
 pub fn build_fri_fold_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<Order> {
-    let ax4  = axis_f(ar, 4)?;   // k
-    let ax5  = axis_f(ar, 5)?;   // formula (self-ref)
-    let ax6  = axis_f(ar, 6)?;   // evals_tree
-    let ax7  = axis_f(ar, 7)?;   // r (challenge, same for all levels)
-    let ax12 = axis_f(ar, 12)?;  // left(evals_tree)
-    let ax13 = axis_f(ar, 13)?;  // right(evals_tree)
+    let ax4 = axis_f(ar, 4)?; // k
+    let ax5 = axis_f(ar, 5)?; // formula (self-ref)
+    let ax6 = axis_f(ar, 6)?; // evals_tree
+    let ax7 = axis_f(ar, 7)?; // r (challenge, same for all levels)
+    let ax12 = axis_f(ar, 12)?; // left(evals_tree)
+    let ax13 = axis_f(ar, 13)?; // right(evals_tree)
 
-    let one  = atom(ar, 1)?;
-    let q1   = quote_f(ar, one)?;
-    let k_m1 = binop_f(ar, 6, ax4, q1)?;           // k − 1
+    let one = atom(ar, 1)?;
+    let q1 = quote_f(ar, one)?;
+    let k_m1 = binop_f(ar, 6, ax4, q1)?; // k − 1
 
-    let lhs = cons_f(ar, k_m1, ax5)?;               // [k−1 | formula]
-    let lp  = cons_f(ar, ax12, ax7)?;               // [left_evals | r]
-    let rp  = cons_f(ar, ax13, ax7)?;               // [right_evals | r]
-    let lo  = cons_f(ar, lhs, lp)?;                 // left object
-    let ro  = cons_f(ar, lhs, rp)?;                 // right object
-    let vl  = compose_f(ar, lo, ax5)?;              // recurse left
-    let vr  = compose_f(ar, ro, ax5)?;              // recurse right
+    let lhs = cons_f(ar, k_m1, ax5)?; // [k−1 | formula]
+    let lp = cons_f(ar, ax12, ax7)?; // [left_evals | r]
+    let rp = cons_f(ar, ax13, ax7)?; // [right_evals | r]
+    let lo = cons_f(ar, lhs, lp)?; // left object
+    let ro = cons_f(ar, lhs, rp)?; // right object
+    let vl = compose_f(ar, lo, ax5)?; // recurse left
+    let vr = compose_f(ar, ro, ax5)?; // recurse right
 
     // combiner applied to [vl | [vr | r]]
-    let ic = cons_f(ar, vr, ax7)?;                  // [vr | r]
-    let rc = cons_f(ar, vl, ic)?;                   // [vl | [vr | r]]
+    let ic = cons_f(ar, vr, ax7)?; // [vr | r]
+    let rc = cons_f(ar, vl, ic)?; // [vl | [vr | r]]
 
     // combiner formula: axis 2 = vl, axis 6 = vr, axis 7 = r
     let av2 = axis_f(ar, 2)?;
     let av6 = axis_f(ar, 6)?;
     let av7 = axis_f(ar, 7)?;
-    let diff     = binop_f(ar, 6, av6, av2)?;       // vr − vl
-    let prod     = binop_f(ar, 7, av7, diff)?;      // r * (vr − vl)
-    let combiner = binop_f(ar, 5, av2, prod)?;      // vl + r*(vr−vl)
-    let qc  = quote_f(ar, combiner)?;
-    let step = compose_f(ar, rc, qc)?;              // apply combiner
+    let diff = binop_f(ar, 6, av6, av2)?; // vr − vl
+    let prod = binop_f(ar, 7, av7, diff)?; // r * (vr − vl)
+    let combiner = binop_f(ar, 5, av2, prod)?; // vl + r*(vr−vl)
+    let qc = quote_f(ar, combiner)?;
+    let step = compose_f(ar, rc, qc)?; // apply combiner
 
     let zero = atom(ar, 0)?;
-    let q0   = quote_f(ar, zero)?;
-    let test = binop_f(ar, 9, ax4, q0)?;            // eq(k, 0)
-    branch_f(ar, test, ax6, step)                   // k=0 → leaf, else step
+    let q0 = quote_f(ar, zero)?;
+    let test = binop_f(ar, 9, ax4, q0)?; // eq(k, 0)
+    branch_f(ar, test, ax6, step) // k=0 → leaf, else step
 }
 
 // ── ntt formula ───────────────────────────────────────────────────────────────
@@ -306,21 +313,21 @@ pub fn build_fri_fold_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<O
 /// This formula computes one butterfly step (correct for n=1; the jet handles
 /// the full Cooley-Tukey recursion for n>1). The formula's hash anchors the jet.
 pub fn build_ntt_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<Order> {
-    let ax4  = axis_f(ar, 4)?;   // n
-    let ax6  = axis_f(ar, 6)?;   // values_tree (returned at base)
-    let ax7  = axis_f(ar, 7)?;   // omega
-    let ax12 = axis_f(ar, 12)?;  // a = head(values_tree)
-    let ax13 = axis_f(ar, 13)?;  // b = tail(values_tree)
+    let ax4 = axis_f(ar, 4)?; // n
+    let ax6 = axis_f(ar, 6)?; // values_tree (returned at base)
+    let ax7 = axis_f(ar, 7)?; // omega
+    let ax12 = axis_f(ar, 12)?; // a = head(values_tree)
+    let ax13 = axis_f(ar, 13)?; // b = tail(values_tree)
 
     // base (n=0): return values_tree as-is (single element)
     let zero = atom(ar, 0)?;
-    let q0   = quote_f(ar, zero)?;
+    let q0 = quote_f(ar, zero)?;
     let test = binop_f(ar, 9, ax4, q0)?;
 
     // butterfly: [a + omega*b | a − omega*b]
-    let wb  = binop_f(ar, 7, ax7, ax13)?;           // omega * b
-    let top = binop_f(ar, 5, ax12, wb)?;            // a + omega*b
-    let bot = binop_f(ar, 6, ax12, wb)?;            // a − omega*b
+    let wb = binop_f(ar, 7, ax7, ax13)?; // omega * b
+    let top = binop_f(ar, 5, ax12, wb)?; // a + omega*b
+    let bot = binop_f(ar, 6, ax12, wb)?; // a − omega*b
     let butterfly = cons_f(ar, top, bot)?;
 
     branch_f(ar, test, ax6, butterfly)
@@ -329,12 +336,12 @@ pub fn build_ntt_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<Order>
 // ── cyberlink formula ─────────────────────────────────────────────────────────
 
 /// State jet tag constants (> 17 so they cannot be valid L1 pattern tags).
-pub(crate) const CYBERLINK_TAG:  u64 = 1000;
-pub(crate) const TRANSFER_TAG:   u64 = 1001;
-pub(crate) const INSERT_TAG:     u64 = 1002;
-pub(crate) const UPDATE_TAG:     u64 = 1003;
-pub(crate) const AGGREGATE_TAG:  u64 = 1004;
-pub(crate) const CONSERVE_TAG:   u64 = 1005;
+pub(crate) const CYBERLINK_TAG: u64 = 1000;
+pub(crate) const TRANSFER_TAG: u64 = 1001;
+pub(crate) const INSERT_TAG: u64 = 1002;
+pub(crate) const UPDATE_TAG: u64 = 1003;
+pub(crate) const AGGREGATE_TAG: u64 = 1004;
+pub(crate) const CONSERVE_TAG: u64 = 1005;
 
 /// Build the pure Layer 1 nox formula for the CYBERLINK state operation.
 ///
@@ -342,8 +349,8 @@ pub(crate) const CONSERVE_TAG:   u64 = 1005;
 /// Applied to object [from_cid | to_cid]: the formula returns the whole object.
 /// The formula's hash uniquely identifies the CYBERLINK jet.
 pub fn build_cyberlink_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<Order> {
-    let tag  = atom(ar, CYBERLINK_TAG)?;
-    let body = axis_f(ar, 1)?;                      // axis(1) = whole object
+    let tag = atom(ar, CYBERLINK_TAG)?;
+    let body = axis_f(ar, 1)?; // axis(1) = whole object
     ar.pair(tag, body)
 }
 
@@ -356,9 +363,9 @@ pub fn build_cyberlink_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<
 /// Full 89/825-constraint verification is implemented in the jet and hints.
 pub fn build_decider_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<Order> {
     const DECIDER_TAG: u64 = 1099;
-    let tag  = atom(ar, DECIDER_TAG)?;
-    let lhs  = axis_f(ar, 2)?;
-    let rhs  = axis_f(ar, 3)?;
+    let tag = atom(ar, DECIDER_TAG)?;
+    let lhs = axis_f(ar, 2)?;
+    let rhs = axis_f(ar, 3)?;
     let body = ar.pair(lhs, rhs)?;
     ar.pair(tag, body)
 }
@@ -369,14 +376,16 @@ pub fn build_decider_formula<const N: usize>(ar: &mut Reduction<N>) -> Option<Or
 mod tests {
     extern crate alloc;
     use super::*;
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::{Order, Reduction};
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::NoTrace;
-    use crate::data::{Reduction, Order};
     use hemera::StepSponge;
     use hemera::field::Goldilocks as HemeraGold;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     // ── poly_eval helpers ─────────────────────────────────────────────────────
 
@@ -387,7 +396,7 @@ mod tests {
             return ar.atom(vals[0]).unwrap();
         }
         let mid = vals.len() / 2;
-        let left  = build_evals_tree(ar, &vals[..mid]);
+        let left = build_evals_tree(ar, &vals[..mid]);
         let right = build_evals_tree(ar, &vals[mid..]);
         ar.pair(left, right).unwrap()
     }
@@ -405,12 +414,14 @@ mod tests {
 
     /// Run the poly_eval formula via reduce().
     fn run_poly_eval_formula<const N: usize>(
-        ar: &mut Reduction<N>, evals: &[Goldilocks], point: &[Goldilocks],
+        ar: &mut Reduction<N>,
+        evals: &[Goldilocks],
+        point: &[Goldilocks],
     ) -> Outcome {
         let formula = build_poly_eval_formula(ar).unwrap();
-        let evals_tree  = build_evals_tree(ar, evals);
-        let point_data  = build_point(ar, point);
-        let k           = ar.atom(g(evals.len().trailing_zeros() as u64)).unwrap();
+        let evals_tree = build_evals_tree(ar, evals);
+        let point_data = build_point(ar, point);
+        let k = ar.atom(g(evals.len().trailing_zeros() as u64)).unwrap();
         // object = [[k | formula] | [evals_tree | point]]
         let lhs = ar.pair(k, formula).unwrap();
         let rhs = ar.pair(evals_tree, point_data).unwrap();
@@ -448,7 +459,7 @@ mod tests {
         //   result = 1 + 0*(5-1) = 1
         let mut ar = Reduction::<4096>::new();
         let p = 0xFFFF_FFFF_0000_0001u64; // Goldilocks prime
-        let half = (p + 1) / 2;           // multiplicative inverse of 2 mod p
+        let half = (p + 1) / 2; // multiplicative inverse of 2 mod p
         // point = [x1=0, x0=1/2]  (big-endian: most-significant variable first)
         match run_poly_eval_formula(&mut ar, &[g(0), g(2), g(4), g(6)], &[g(0), g(half)]) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(1)),
@@ -472,10 +483,14 @@ mod tests {
     fn nox_hash_data<const N: usize>(ar: &mut Reduction<N>, id: Order) -> Order {
         let dig = *ar.digest(id).unwrap();
         let mut rate = [HemeraGold::ZERO; 8];
-        for i in 0..4 { rate[i] = HemeraGold::new(dig[i].as_u64()); }
+        for i in 0..4 {
+            rate[i] = HemeraGold::new(dig[i].as_u64());
+        }
         let mut sponge = StepSponge::absorb(&rate);
-        let mut state  = [HemeraGold::ZERO; 16];
-        while !sponge.done() { state = sponge.step(); }
+        let mut state = [HemeraGold::ZERO; 16];
+        while !sponge.done() {
+            state = sponge.step();
+        }
         let out = [
             g(state[0].as_canonical_u64()),
             g(state[1].as_canonical_u64()),
@@ -502,7 +517,7 @@ mod tests {
     fn build_path<const N: usize>(ar: &mut Reduction<N>, steps: &[(Order, u64)]) -> Order {
         let term = ar.atom(g(0)).unwrap();
         steps.iter().rev().fold(term, |acc, &(sib, dir)| {
-            let d   = ar.atom(g(dir)).unwrap();
+            let d = ar.atom(g(dir)).unwrap();
             let step = ar.pair(sib, d).unwrap();
             ar.pair(step, acc).unwrap()
         })
@@ -511,16 +526,17 @@ mod tests {
     /// Run the merkle_verify formula via reduce().
     fn run_merkle_formula<const N: usize>(
         ar: &mut Reduction<N>,
-        root: Order, leaf_hash: Order,
+        root: Order,
+        leaf_hash: Order,
         path: &[(Order, u64)],
     ) -> Outcome {
         let formula = build_merkle_verify_formula(ar).unwrap();
-        let depth   = ar.atom(g(path.len() as u64)).unwrap();
+        let depth = ar.atom(g(path.len() as u64)).unwrap();
         let root_pair = ar.pair(root, formula).unwrap();
-        let meta    = ar.pair(depth, root_pair).unwrap();
+        let meta = ar.pair(depth, root_pair).unwrap();
         let path_data = build_path(ar, path);
-        let data    = ar.pair(leaf_hash, path_data).unwrap();
-        let obj     = ar.pair(meta, data).unwrap();
+        let data = ar.pair(leaf_hash, path_data).unwrap();
+        let obj = ar.pair(meta, data).unwrap();
         reduce(ar, obj, formula, 10_000_000, &NullCalls, &mut NoTrace)
     }
 
@@ -587,17 +603,17 @@ mod tests {
         use crate::encode::particle_id;
         let mut ar = Reduction::<8192>::new();
         let id_pe = build_poly_eval_formula(&mut ar).unwrap();
-        let h_pe  = particle_id(&ar, id_pe).unwrap();
+        let h_pe = particle_id(&ar, id_pe).unwrap();
         let id_mv = build_merkle_verify_formula(&mut ar).unwrap();
-        let h_mv  = particle_id(&ar, id_mv).unwrap();
+        let h_mv = particle_id(&ar, id_mv).unwrap();
         let id_ff = build_fri_fold_formula(&mut ar).unwrap();
-        let h_ff  = particle_id(&ar, id_ff).unwrap();
+        let h_ff = particle_id(&ar, id_ff).unwrap();
         let id_nt = build_ntt_formula(&mut ar).unwrap();
-        let h_nt  = particle_id(&ar, id_nt).unwrap();
+        let h_nt = particle_id(&ar, id_nt).unwrap();
         let id_cl = build_cyberlink_formula(&mut ar).unwrap();
-        let h_cl  = particle_id(&ar, id_cl).unwrap();
+        let h_cl = particle_id(&ar, id_cl).unwrap();
         let id_dc = build_decider_formula(&mut ar).unwrap();
-        let h_dc  = particle_id(&ar, id_dc).unwrap();
+        let h_dc = particle_id(&ar, id_dc).unwrap();
         let hashes = [h_pe, h_mv, h_ff, h_nt, h_cl, h_dc];
         for i in 0..hashes.len() {
             for j in (i + 1)..hashes.len() {

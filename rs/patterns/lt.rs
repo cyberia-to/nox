@@ -12,36 +12,53 @@
 //!
 //! result follows spec/patterns/10-lt.md: 0 when a < b, 1 otherwise.
 
-use nebu::Goldilocks;
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary_field};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Order, Reduction};
 use crate::jets::registry::JetRegistry;
+use crate::reduce::{ErrorKind, Outcome, evaluate_binary_field, pair_children};
+use crate::trace::{TraceRow, Tracer};
+use nebu::Goldilocks;
 
 pub fn lt<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
     let (af, bf) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (va, vb, budget) = match evaluate_binary_field(reduction, object, af, bf, budget, hints, tracer, depth, registry) {
-        Ok(v) => v, Err(o) => return o,
+    let (va, vb, budget) = match evaluate_binary_field(
+        reduction, object, af, bf, budget, hints, tracer, depth, registry,
+    ) {
+        Ok(v) => v,
+        Err(o) => return o,
     };
     finish(reduction, va, vb, budget, row, tracer)
 }
 
 pub(crate) fn finish<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, va: Goldilocks, vb: Goldilocks, budget: u64,
-    row: &mut TraceRow, tracer: &mut T,
+    reduction: &mut Reduction<N>,
+    va: Goldilocks,
+    vb: Goldilocks,
+    budget: u64,
+    row: &mut TraceRow,
+    tracer: &mut T,
 ) -> Outcome {
     let a = va.as_u64();
     let b = vb.as_u64();
     let is_lt = a < b;
-    let result_val = if is_lt { Goldilocks::ZERO } else { Goldilocks::ONE };
+    let result_val = if is_lt {
+        Goldilocks::ZERO
+    } else {
+        Goldilocks::ONE
+    };
     let result_id = match reduction.atom(result_val) {
         Some(r) => r,
         None => return Outcome::Error(ErrorKind::Unavailable),
@@ -73,14 +90,16 @@ pub(crate) fn finish<const N: usize, T: Tracer>(
 #[cfg(test)]
 mod tests {
     extern crate alloc;
-    use alloc::vec::Vec;
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::{NoTrace, VecTrace};
-    use crate::data::{Reduction};
+    use alloc::vec::Vec;
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     fn make_lt<const N: usize>(ar: &mut Reduction<N>, a: u64, b: u64) -> crate::data::Order {
         let t10 = ar.atom(g(10)).unwrap();

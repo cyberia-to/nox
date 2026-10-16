@@ -10,8 +10,8 @@
 //! the verifier never calls provide() — it checks the zheng proof.
 //! look reads committed polynomial state — same inputs always produce same output.
 
+use crate::data::{Order, Reduction};
 use nebu::Goldilocks;
-use crate::data::{Reduction, Order};
 
 /// look provider trait — deterministic BBG state reads
 ///
@@ -21,7 +21,12 @@ use crate::data::{Reduction, Order};
 ///
 /// returns Some(value) or None (= lookup unavailable, e.g. BBG not connected)
 pub trait LookProvider {
-    fn look(&self, commitment: Goldilocks, namespace: Goldilocks, key: Goldilocks) -> Option<Goldilocks>;
+    fn look(
+        &self,
+        commitment: Goldilocks,
+        namespace: Goldilocks,
+        key: Goldilocks,
+    ) -> Option<Goldilocks>;
 }
 
 /// call provider trait — the prover's interface to inject witnesses
@@ -40,7 +45,12 @@ pub trait CallProvider<const N: usize>: LookProvider + Sync {
     /// object: the data the formula operates on
     ///
     /// returns Some(witness_data) or None (= halt, prover doesn't know)
-    fn provide(&self, reduction: &mut Reduction<N>, tag: Goldilocks, object: Order) -> Option<Order>;
+    fn provide(
+        &self,
+        reduction: &mut Reduction<N>,
+        tag: Goldilocks,
+        object: Order,
+    ) -> Option<Order>;
 
     /// Return the 32-byte Lens commitment for the data polynomial of `object_id`.
     ///
@@ -60,13 +70,23 @@ pub struct NullCalls;
 pub type NullLooks = NullCalls;
 
 impl LookProvider for NullCalls {
-    fn look(&self, _commitment: Goldilocks, _namespace: Goldilocks, _key: Goldilocks) -> Option<Goldilocks> {
+    fn look(
+        &self,
+        _commitment: Goldilocks,
+        _namespace: Goldilocks,
+        _key: Goldilocks,
+    ) -> Option<Goldilocks> {
         None
     }
 }
 
 impl<const N: usize> CallProvider<N> for NullCalls {
-    fn provide(&self, _order: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
+    fn provide(
+        &self,
+        _order: &mut Reduction<N>,
+        _tag: Goldilocks,
+        _object: Order,
+    ) -> Option<Order> {
         None
     }
 }

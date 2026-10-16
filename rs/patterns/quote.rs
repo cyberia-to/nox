@@ -12,13 +12,15 @@ pub fn quote(body: Order, budget: u64, row: &mut TraceRow) -> Outcome {
 
 #[cfg(test)]
 mod tests {
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::NoTrace;
-    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     #[test]
     fn quote_returns_literal() {

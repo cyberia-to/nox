@@ -19,20 +19,25 @@
 
 extern crate alloc;
 
-
-use nebu::Goldilocks;
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, ErrorKind};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Order, Reduction};
+use crate::reduce::{ErrorKind, Outcome};
+use crate::trace::{TraceRow, Tracer};
+use nebu::Goldilocks;
 
 pub fn poly_eval_jet<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-    _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    _body: Order,
+    budget: u64,
+    _hints: &dyn CallProvider<N>,
+    _tracer: &mut dyn Tracer,
+    _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     let prepared = match super::admission::prepare_poly(reduction, object, budget) {
-        Ok(input) => input, Err(outcome) => return outcome,
+        Ok(input) => input,
+        Err(outcome) => return outcome,
     };
     let evals_id = prepared.input.tree;
     let point_id = prepared.input.parameter;
@@ -70,12 +75,14 @@ fn multilinear_eval(evals: &[Goldilocks], point: &[Goldilocks]) -> Goldilocks {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::reduce::Outcome;
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::Outcome;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::data::{Reduction};
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     /// Build a balanced binary tree from evaluations (power-of-two length).
     fn build_tree<const N: usize>(ar: &mut Reduction<N>, vals: &[Goldilocks]) -> Order {
@@ -84,7 +91,7 @@ mod tests {
             return ar.atom(vals[0]).unwrap();
         }
         let mid = vals.len() / 2;
-        let left  = build_tree(ar, &vals[..mid]);
+        let left = build_tree(ar, &vals[..mid]);
         let right = build_tree(ar, &vals[mid..]);
         ar.pair(left, right).unwrap()
     }
@@ -100,19 +107,30 @@ mod tests {
 
     /// Build full calling object and run poly_eval_jet.
     fn run<const N: usize>(
-        ar: &mut Reduction<N>, evals: &[Goldilocks], point: &[Goldilocks],
+        ar: &mut Reduction<N>,
+        evals: &[Goldilocks],
+        point: &[Goldilocks],
     ) -> Outcome {
         let k = evals.len().trailing_zeros() as u64;
-        let k_id  = ar.atom(g(k)).unwrap();
+        let k_id = ar.atom(g(k)).unwrap();
         let dummy = ar.atom(g(0)).unwrap(); // formula placeholder
-        let lhs   = ar.pair(k_id, dummy).unwrap();
-        let tree  = build_tree(ar, evals);
-        let pt    = build_point(ar, point);
-        let rhs   = ar.pair(tree, pt).unwrap();
-        let obj   = ar.pair(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0)).unwrap();
+        let lhs = ar.pair(k_id, dummy).unwrap();
+        let tree = build_tree(ar, evals);
+        let pt = build_point(ar, point);
+        let rhs = ar.pair(tree, pt).unwrap();
+        let obj = ar.pair(lhs, rhs).unwrap();
+        let body = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
-        poly_eval_jet(ar, obj, body, 100_000, &NullCalls, &mut NoTrace, 0, &mut row)
+        poly_eval_jet(
+            ar,
+            obj,
+            body,
+            100_000,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        )
     }
 
     #[test]
@@ -157,18 +175,18 @@ mod tests {
     fn budget_exhaustion() {
         let mut ar = Reduction::<256>::new();
         // k=1 needs cost=2, pass budget=1 → Halt
-        let k_id  = ar.atom(g(1)).unwrap();
+        let k_id = ar.atom(g(1)).unwrap();
         let dummy = ar.atom(g(0)).unwrap();
-        let lhs   = ar.pair(k_id, dummy).unwrap();
-        let e0    = ar.atom(g(3)).unwrap();
-        let e1    = ar.atom(g(7)).unwrap();
-        let tree  = ar.pair(e0, e1).unwrap();
-        let term  = ar.atom(g(0)).unwrap();
-        let pt_h  = ar.atom(g(0)).unwrap();
-        let pt    = ar.pair(pt_h, term).unwrap();
-        let rhs   = ar.pair(tree, pt).unwrap();
-        let obj   = ar.pair(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0)).unwrap();
+        let lhs = ar.pair(k_id, dummy).unwrap();
+        let e0 = ar.atom(g(3)).unwrap();
+        let e1 = ar.atom(g(7)).unwrap();
+        let tree = ar.pair(e0, e1).unwrap();
+        let term = ar.atom(g(0)).unwrap();
+        let pt_h = ar.atom(g(0)).unwrap();
+        let pt = ar.pair(pt_h, term).unwrap();
+        let rhs = ar.pair(tree, pt).unwrap();
+        let obj = ar.pair(lhs, rhs).unwrap();
+        let body = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
         match poly_eval_jet(&mut ar, obj, body, 1, &NullCalls, &mut NoTrace, 0, &mut row) {
             Outcome::Halt(_) => {}

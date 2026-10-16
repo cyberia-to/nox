@@ -22,21 +22,27 @@
 
 extern crate alloc;
 
-
-use nebu::Goldilocks;
-use crate::data::{Reduction, Order};
-#[cfg(test)] use crate::data::Data;
-use crate::reduce::{Outcome, ErrorKind};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+#[cfg(test)]
+use crate::data::Data;
+use crate::data::{Order, Reduction};
+use crate::reduce::{ErrorKind, Outcome};
+use crate::trace::{TraceRow, Tracer};
+use nebu::Goldilocks;
 
 pub fn ntt_jet<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-    _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    _body: Order,
+    budget: u64,
+    _hints: &dyn CallProvider<N>,
+    _tracer: &mut dyn Tracer,
+    _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     let prepared = match super::admission::prepare_ntt(reduction, object, budget) {
-        Ok(input) => input, Err(outcome) => return outcome,
+        Ok(input) => input,
+        Err(outcome) => return outcome,
     };
     let tree_id = prepared.input.tree;
     let omega_id = prepared.input.parameter;
@@ -64,7 +70,9 @@ pub fn ntt_jet<const N: usize>(
 /// Cooley-Tukey DIT NTT (input must already be in bit-reversed order).
 fn ntt_dit(vals: &mut [Goldilocks], omega: Goldilocks) {
     let n = vals.len();
-    if n <= 1 { return; }
+    if n <= 1 {
+        return;
+    }
 
     let mut len = 2;
     while len <= n {
@@ -77,7 +85,7 @@ fn ntt_dit(vals: &mut [Goldilocks], omega: Goldilocks) {
             for k in 0..len / 2 {
                 let u = vals[j + k];
                 let v = vals[j + k + len / 2] * w;
-                vals[j + k]           = u + v;
+                vals[j + k] = u + v;
                 vals[j + k + len / 2] = u - v;
                 w *= w_len;
             }
@@ -90,7 +98,9 @@ fn ntt_dit(vals: &mut [Goldilocks], omega: Goldilocks) {
 fn pow_field(mut base: Goldilocks, mut exp: u64) -> Goldilocks {
     let mut result = Goldilocks::ONE;
     while exp > 0 {
-        if exp & 1 == 1 { result *= base; }
+        if exp & 1 == 1 {
+            result *= base;
+        }
         base = base * base;
         exp >>= 1;
     }
@@ -102,7 +112,9 @@ fn bit_reverse_permute(vals: &mut [Goldilocks]) {
     let bits = n.trailing_zeros() as usize;
     for i in 0..n {
         let j = bit_reverse(i, bits);
-        if i < j { vals.swap(i, j); }
+        if i < j {
+            vals.swap(i, j);
+        }
     }
 }
 
@@ -115,12 +127,15 @@ fn bit_reverse(mut x: usize, bits: usize) -> usize {
     result
 }
 
-pub(crate) fn build_tree<const N: usize>(reduction: &mut Reduction<N>, vals: &[Goldilocks]) -> Option<Order> {
+pub(crate) fn build_tree<const N: usize>(
+    reduction: &mut Reduction<N>,
+    vals: &[Goldilocks],
+) -> Option<Order> {
     if vals.len() == 1 {
         return reduction.atom(vals[0]);
     }
     let mid = vals.len() / 2;
-    let left  = build_tree(reduction, &vals[..mid])?;
+    let left = build_tree(reduction, &vals[..mid])?;
     let right = build_tree(reduction, &vals[mid..])?;
     reduction.pair(left, right)
 }
@@ -128,31 +143,44 @@ pub(crate) fn build_tree<const N: usize>(reduction: &mut Reduction<N>, vals: &[G
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::reduce::Outcome;
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::Outcome;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::data::{Reduction};
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     fn make_tree<const N: usize>(ar: &mut Reduction<N>, vals: &[Goldilocks]) -> Order {
         build_tree(ar, vals).unwrap()
     }
 
     fn run_ntt<const M: usize>(
-        ar: &mut Reduction<M>, vals: &[Goldilocks], omega: Goldilocks,
+        ar: &mut Reduction<M>,
+        vals: &[Goldilocks],
+        omega: Goldilocks,
     ) -> Outcome {
         let n_val = vals.len().trailing_zeros() as u64;
-        let n_id  = ar.atom(g(n_val)).unwrap();
+        let n_id = ar.atom(g(n_val)).unwrap();
         let dummy = ar.atom(g(0)).unwrap();
-        let lhs   = ar.pair(n_id, dummy).unwrap();
-        let tree  = make_tree(ar, vals);
+        let lhs = ar.pair(n_id, dummy).unwrap();
+        let tree = make_tree(ar, vals);
         let om_id = ar.atom(omega).unwrap();
-        let rhs   = ar.pair(tree, om_id).unwrap();
-        let obj   = ar.pair(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0)).unwrap();
+        let rhs = ar.pair(tree, om_id).unwrap();
+        let obj = ar.pair(lhs, rhs).unwrap();
+        let body = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
-        ntt_jet(ar, obj, body, 1_000_000, &NullCalls, &mut NoTrace, 0, &mut row)
+        ntt_jet(
+            ar,
+            obj,
+            body,
+            1_000_000,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        )
     }
 
     #[test]
@@ -202,14 +230,14 @@ mod tests {
             o => panic!("{:?}", o),
         }
         // Now test with insufficient budget
-        let n_id  = ar.atom(g(2)).unwrap();
+        let n_id = ar.atom(g(2)).unwrap();
         let dummy = ar.atom(g(0)).unwrap();
-        let lhs   = ar.pair(n_id, dummy).unwrap();
-        let tree  = make_tree(&mut ar, &[g(1), g(2), g(3), g(4)]);
-        let om    = ar.atom(g(1)).unwrap();
-        let rhs   = ar.pair(tree, om).unwrap();
-        let obj   = ar.pair(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0)).unwrap();
+        let lhs = ar.pair(n_id, dummy).unwrap();
+        let tree = make_tree(&mut ar, &[g(1), g(2), g(3), g(4)]);
+        let om = ar.atom(g(1)).unwrap();
+        let rhs = ar.pair(tree, om).unwrap();
+        let obj = ar.pair(lhs, rhs).unwrap();
+        let body = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
         match ntt_jet(&mut ar, obj, body, 5, &NullCalls, &mut NoTrace, 0, &mut row) {
             Outcome::Halt(_) => {}

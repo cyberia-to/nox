@@ -4,11 +4,11 @@
 //! hash-consing ensures identical sub-expressions share one slot.
 //! DAG, not tree — immutable data nodes, safe structural sharing.
 
-use nebu::Goldilocks;
-use super::inner::Data;
-use super::hash::{Digest, hash_atom, hash_pair};
 use super::cost::{Cost, PATTERN_COSTS};
-use super::{Order, NIL};
+use super::hash::{Digest, hash_atom, hash_pair};
+use super::inner::Data;
+use super::{NIL, Order};
+use nebu::Goldilocks;
 
 /// order entry — data node + cached identity hash + cached cost bound.
 ///
@@ -61,7 +61,9 @@ impl<const N: usize> Reduction<N> {
         // bounded worst-case (~N/4 max probe). The hash-cons table lives in
         // the same Reduction; refusing past 3N/4 means index_insert always finds
         // an empty slot quickly.
-        if self.count >= self.allocation_limit { return None; }
+        if self.count >= self.allocation_limit {
+            return None;
+        }
         let idx = self.count;
         self.entries[idx as usize] = core::mem::MaybeUninit::new(entry);
         self.count += 1;
@@ -70,7 +72,9 @@ impl<const N: usize> Reduction<N> {
 
     /// returns None for out-of-bounds Order (never panics)
     pub fn get(&self, r: Order) -> Option<&DataEntry> {
-        if (r as usize) >= self.count as usize { return None; }
+        if (r as usize) >= self.count as usize {
+            return None;
+        }
         // SAFETY: entries[0..count] are initialized, r < count
         Some(unsafe { self.entries[r as usize].assume_init_ref() })
     }
@@ -78,9 +82,15 @@ impl<const N: usize> Reduction<N> {
     pub fn atom(&mut self, value: Goldilocks) -> Option<Order> {
         let inner = Data::Atom { value };
         let hash = hash_atom(value);
-        if let Some(existing) = self.index_lookup(&hash) { return Some(existing); }
+        if let Some(existing) = self.index_lookup(&hash) {
+            return Some(existing);
+        }
         // Atoms have no formula interpretation; bound is 0 by definition.
-        let r = self.alloc_raw(DataEntry { inner, hash, bound: Cost::Exact(0) })?;
+        let r = self.alloc_raw(DataEntry {
+            inner,
+            hash,
+            bound: Cost::Exact(0),
+        })?;
         self.index_insert(&hash, r);
         Some(r)
     }
@@ -89,7 +99,9 @@ impl<const N: usize> Reduction<N> {
         let lh = self.get(left)?.hash;
         let rh = self.get(right)?.hash;
         let hash = hash_pair(&lh, &rh);
-        if let Some(existing) = self.index_lookup(&hash) { return Some(existing); }
+        if let Some(existing) = self.index_lookup(&hash) {
+            return Some(existing);
+        }
         let inner = Data::Pair { left, right };
         let bound = self.compute_pair_bound(left, right);
         let r = self.alloc_raw(DataEntry { inner, hash, bound })?;
@@ -102,17 +114,20 @@ impl<const N: usize> Reduction<N> {
     /// pattern range; otherwise bound is 0 (the pair is data, not code).
     /// Children's cached bounds are looked up in O(1).
     fn compute_pair_bound(&self, left: Order, right: Order) -> Cost {
-        let left_entry = match self.get(left) { Some(e) => e, None => return Cost::Exact(0) };
+        let left_entry = match self.get(left) {
+            Some(e) => e,
+            None => return Cost::Exact(0),
+        };
         let tag = match left_entry.inner {
             Data::Atom { value } => value.as_u64(),
             _ => return Cost::Exact(0),
         };
-        if (tag as usize) >= PATTERN_COSTS.len() { return Cost::Exact(0); }
+        if (tag as usize) >= PATTERN_COSTS.len() {
+            return Cost::Exact(0);
+        }
         let base = PATTERN_COSTS[tag as usize];
 
-        let child_bound = |id: Order| -> Cost {
-            self.get(id).map_or(Cost::Exact(0), |e| e.bound)
-        };
+        let child_bound = |id: Order| -> Cost { self.get(id).map_or(Cost::Exact(0), |e| e.bound) };
         let pair = |id: Order| -> Option<(Order, Order)> {
             match self.get(id)?.inner {
                 Data::Pair { left, right } => Some((left, right)),
@@ -141,9 +156,9 @@ impl<const N: usize> Reduction<N> {
             // Branch: max of arms
             4 => match pair(right) {
                 Some((test, rest)) => match pair(rest) {
-                    Some((yes, no)) => Cost::branch(
-                        base, child_bound(test), child_bound(yes), child_bound(no),
-                    ),
+                    Some((yes, no)) => {
+                        Cost::branch(base, child_bound(test), child_bound(yes), child_bound(no))
+                    }
                     None => Cost::Exact(base),
                 },
                 None => Cost::Exact(base),
@@ -199,8 +214,12 @@ impl<const N: usize> Reduction<N> {
         let mut slot = (hash[0].as_u64() as u32) & self.index_mask;
         for _ in 0..N {
             let val = self.index_vals[slot as usize];
-            if val == NIL { return None; }
-            if self.index_keys[slot as usize] == *hash { return Some(val); }
+            if val == NIL {
+                return None;
+            }
+            if self.index_keys[slot as usize] == *hash {
+                return Some(val);
+            }
             slot = (slot + 1) & self.index_mask;
         }
         None
@@ -218,16 +237,22 @@ impl<const N: usize> Reduction<N> {
         }
     }
 
-    pub fn count(&self) -> u32 { self.count }
+    pub fn count(&self) -> u32 {
+        self.count
+    }
 
     /// Maximum distinct nodes admitted by this arena, including loaded data.
-    pub fn allocation_limit(&self) -> u32 { self.allocation_limit }
+    pub fn allocation_limit(&self) -> u32 {
+        self.allocation_limit
+    }
 
     /// Tighten the arena's lifetime node allowance. Existing nodes stay valid;
     /// hash-cons hits still succeed at the limit. A rejected change is inert.
     /// The limit cannot be raised, even after a failed allocation.
     pub fn limit_allocations(&mut self, limit: u32) -> bool {
-        if limit < self.count || limit > self.allocation_limit { return false; }
+        if limit < self.count || limit > self.allocation_limit {
+            return false;
+        }
         self.allocation_limit = limit;
         true
     }
@@ -286,23 +311,34 @@ impl<const N: usize> Reduction<N> {
     }
 
     pub fn is_atom(&self, r: Order) -> bool {
-        self.get(r).is_some_and(|e| matches!(e.inner, Data::Atom { .. }))
+        self.get(r)
+            .is_some_and(|e| matches!(e.inner, Data::Atom { .. }))
     }
 
     pub fn is_pair(&self, r: Order) -> bool {
-        self.get(r).is_some_and(|e| matches!(e.inner, Data::Pair { .. }))
+        self.get(r)
+            .is_some_and(|e| matches!(e.inner, Data::Pair { .. }))
     }
 
     pub fn head(&self, r: Order) -> Option<Order> {
-        match self.get(r)?.inner { Data::Pair { left, .. } => Some(left), _ => None }
+        match self.get(r)?.inner {
+            Data::Pair { left, .. } => Some(left),
+            _ => None,
+        }
     }
 
     pub fn tail(&self, r: Order) -> Option<Order> {
-        match self.get(r)?.inner { Data::Pair { right, .. } => Some(right), _ => None }
+        match self.get(r)?.inner {
+            Data::Pair { right, .. } => Some(right),
+            _ => None,
+        }
     }
 
     pub fn atom_value(&self, r: Order) -> Option<Goldilocks> {
-        match self.get(r)?.inner { Data::Atom { value } => Some(value), _ => None }
+        match self.get(r)?.inner {
+            Data::Atom { value } => Some(value),
+            _ => None,
+        }
     }
 
     pub fn digest(&self, r: Order) -> Option<&Digest> {

@@ -1,16 +1,22 @@
 //! pattern 2: compose — evaluate two sub-formulas, apply second to first
 //! reduce(s, [2 [x y]], b) = reduce(reduce(s,x), reduce(s,y), b')
 
-use crate::data::{Reduction, Order};
-use crate::reduce::{reduce_inner, Outcome, ErrorKind, pair_children, evaluate_binary};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Order, Reduction};
 use crate::jets::registry::JetRegistry;
+use crate::reduce::{ErrorKind, Outcome, evaluate_binary, pair_children, reduce_inner};
+use crate::trace::{TraceRow, Tracer};
 
 pub fn compose<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
     let (a, b) = match pair_children(reduction, body) {
         Some(p) => p,
@@ -19,8 +25,11 @@ pub fn compose<const N: usize, T: Tracer>(
     // Initial phase: evaluate the two sub-formulas under the partition rule.
     // Both arms are statically bounded (their bounds may themselves contain
     // DYNAMIC markers, in which case evaluate_binary falls back to sequential).
-    let (obj, frm, budget) = match evaluate_binary(reduction, object, a, b, budget, hints, tracer, depth, registry) {
-        Ok(v) => v, Err(o) => return o,
+    let (obj, frm, budget) = match evaluate_binary(
+        reduction, object, a, b, budget, hints, tracer, depth, registry,
+    ) {
+        Ok(v) => v,
+        Err(o) => return o,
     };
     row.r[4] = obj as u64;
     row.r[5] = frm as u64;
@@ -28,18 +37,29 @@ pub fn compose<const N: usize, T: Tracer>(
     row.r[7] = b as u64;
     // Continuation phase: reduce(obj, frm) is the dynamic-cost frontier.
     // Sequential semantics — frm is only known now (runtime value).
-    reduce_inner(reduction, obj, frm, budget, hints, tracer, depth + 1, registry)
+    reduce_inner(
+        reduction,
+        obj,
+        frm,
+        budget,
+        hints,
+        tracer,
+        depth + 1,
+        registry,
+    )
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::NoTrace;
-    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     /// compose: [quote 42] then [axis 1 = identity] → 42
     /// formula = [2 [1 42] [0 1]]

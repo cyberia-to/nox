@@ -13,33 +13,46 @@
 //! zheng constraints: r10/r11/r12 are bits; sum 2^k * r10 = a; sum 2^k * r12 = c;
 //! r12 = r11 per row; r11 ties to r10 of row (k - n).
 
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary_word, WORD_MASK};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Order, Reduction};
 use crate::jets::registry::JetRegistry;
+use crate::reduce::{ErrorKind, Outcome, WORD_MASK, evaluate_binary_word, pair_children};
+use crate::trace::{TraceRow, Tracer};
 use nebu::Goldilocks;
 
 const SHIFT_OUT_OF_RANGE: u64 = 32;
 
 pub fn shl<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
     let (af, nf) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (a, n, budget) = match evaluate_binary_word(reduction, object, af, nf, budget, hints, tracer, depth, registry) {
-        Ok(v) => v, Err(o) => return o,
+    let (a, n, budget) = match evaluate_binary_word(
+        reduction, object, af, nf, budget, hints, tracer, depth, registry,
+    ) {
+        Ok(v) => v,
+        Err(o) => return o,
     };
     finish(reduction, a, n, budget, row, tracer)
 }
 
 pub(crate) fn finish<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, a: u64, n: u64, budget: u64,
-    row: &mut TraceRow, tracer: &mut T,
+    reduction: &mut Reduction<N>,
+    a: u64,
+    n: u64,
+    budget: u64,
+    row: &mut TraceRow,
+    tracer: &mut T,
 ) -> Outcome {
     let c = if n >= 32 { 0 } else { (a << n) & WORD_MASK };
     let result = match reduction.atom(Goldilocks::new(c)) {
@@ -80,14 +93,16 @@ pub(crate) fn finish<const N: usize, T: Tracer>(
 #[cfg(test)]
 mod tests {
     extern crate alloc;
-    use alloc::vec::Vec;
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::{NoTrace, VecTrace};
-    use crate::data::{Reduction};
+    use alloc::vec::Vec;
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     fn make_shl<const N: usize>(ar: &mut Reduction<N>, v: u64, sh: u64) -> crate::data::Order {
         let t = ar.atom(g(14)).unwrap();
@@ -119,8 +134,12 @@ mod tests {
             let obj = ar.atom(g(0)).unwrap();
             let formula = make_shl(&mut ar, 1, sh);
             match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
-                Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().as_u64(), 0,
-                                                "shift {} should give 0", sh),
+                Outcome::Ok(r, _) => assert_eq!(
+                    ar.atom_value(r).unwrap().as_u64(),
+                    0,
+                    "shift {} should give 0",
+                    sh
+                ),
                 o => panic!("shift {}: {:?}", sh, o),
             }
         }
@@ -133,8 +152,12 @@ mod tests {
             let obj = ar.atom(g(0)).unwrap();
             let formula = make_shl(&mut ar, 1, sh);
             match reduce(&mut ar, obj, formula, 1000, &NullCalls, &mut NoTrace) {
-                Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap().as_u64(), 0,
-                                                "shift {} should give 0", sh),
+                Outcome::Ok(r, _) => assert_eq!(
+                    ar.atom_value(r).unwrap().as_u64(),
+                    0,
+                    "shift {} should give 0",
+                    sh
+                ),
                 o => panic!("{:?}", o),
             }
         }

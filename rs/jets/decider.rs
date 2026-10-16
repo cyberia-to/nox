@@ -23,11 +23,11 @@
 //! call provider (hints). A full CPU verifier will be added in 0.2.0.
 //! The formula hash uniquely identifies this jet; see jets/formulas.rs.
 
-use nebu::Goldilocks;
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Order, Reduction};
+use crate::reduce::{ErrorKind, Outcome, pair_children};
+use crate::trace::{TraceRow, Tracer};
+use nebu::Goldilocks;
 
 /// Cost matching 825 cross-term constraints of HyperNova.
 const DECIDER_COST: u64 = 825;
@@ -36,8 +36,13 @@ const DECIDER_COST: u64 = 825;
 const DECIDER_CALL_TAG: u64 = 0xDEC1_DEC1;
 
 pub fn decider_jet<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    _body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    _tracer: &mut dyn Tracer,
+    _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [proof | instance]
@@ -69,20 +74,31 @@ pub fn decider_jet<const N: usize>(
 mod tests {
     use super::*;
     use crate::call::NullCalls;
+    use crate::data::Reduction;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::data::{Reduction};
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     #[test]
     fn decider_with_null_calls_returns_zero() {
         let mut ar = Reduction::<256>::new();
-        let proof    = ar.atom(g(1)).unwrap();
+        let proof = ar.atom(g(1)).unwrap();
         let instance = ar.atom(g(2)).unwrap();
-        let obj      = ar.pair(proof, instance).unwrap();
-        let body     = ar.atom(g(0)).unwrap();
-        let mut row  = TraceRow::default();
-        match decider_jet(&mut ar, obj, body, 10_000, &NullCalls, &mut NoTrace, 0, &mut row) {
+        let obj = ar.pair(proof, instance).unwrap();
+        let body = ar.atom(g(0)).unwrap();
+        let mut row = TraceRow::default();
+        match decider_jet(
+            &mut ar,
+            obj,
+            body,
+            10_000,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        ) {
             Outcome::Ok(r, rem) => {
                 assert_eq!(ar.atom_value(r).unwrap(), g(0));
                 assert_eq!(rem, 10_000 - 825);
@@ -94,12 +110,21 @@ mod tests {
     #[test]
     fn decider_exhausted_budget_halts() {
         let mut ar = Reduction::<256>::new();
-        let proof    = ar.atom(g(1)).unwrap();
+        let proof = ar.atom(g(1)).unwrap();
         let instance = ar.atom(g(2)).unwrap();
-        let obj      = ar.pair(proof, instance).unwrap();
-        let body     = ar.atom(g(0)).unwrap();
-        let mut row  = TraceRow::default();
-        match decider_jet(&mut ar, obj, body, 100, &NullCalls, &mut NoTrace, 0, &mut row) {
+        let obj = ar.pair(proof, instance).unwrap();
+        let body = ar.atom(g(0)).unwrap();
+        let mut row = TraceRow::default();
+        match decider_jet(
+            &mut ar,
+            obj,
+            body,
+            100,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        ) {
             Outcome::Halt(_) => {}
             o => panic!("expected Halt, got {:?}", o),
         }

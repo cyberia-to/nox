@@ -1,7 +1,7 @@
 use super::{admission::*, backends, formulas, registry::*};
 use crate::call::NullCalls;
 use crate::data::{Order, Reduction};
-use crate::reduce::{reduce, reduce_with_registry, ErrorKind, Outcome};
+use crate::reduce::{ErrorKind, Outcome, reduce, reduce_with_registry};
 use crate::trace::{NoTrace, TraceRow, VecTrace};
 use nebu::Goldilocks;
 fn atom<const N: usize>(r: &mut Reduction<N>, v: u64) -> Order {
@@ -186,9 +186,11 @@ fn bounded_shared_dag_expands_logical_positions_and_ignores_point_tail() {
     let key = digest_key(r.digest(f).unwrap());
     for registry in all_backends() {
         assert!(registry.lookup_exact_for(&key, &r, obj, 0).is_none());
-        assert!(registry
-            .lookup_exact_for(&key, &r, obj, MAX_ACCELERATED_WORDS as u64)
-            .is_some());
+        assert!(
+            registry
+                .lookup_exact_for(&key, &r, obj, MAX_ACCELERATED_WORDS as u64)
+                .is_some()
+        );
         let direct = registry.lookup_exact(&key).unwrap();
         let count = r.count();
         assert!(matches!(

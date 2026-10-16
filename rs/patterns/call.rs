@@ -4,26 +4,42 @@
 //! step 3: validate check(witness, object) = 0
 //! step 4: return witness
 
-use nebu::Goldilocks;
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_unary, evaluate};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
 use crate::data::NIL;
+use crate::data::{Order, Reduction};
 use crate::jets::registry::JetRegistry;
+use crate::reduce::{ErrorKind, Outcome, evaluate, evaluate_unary, pair_children};
+use crate::trace::{TraceRow, Tracer};
+use nebu::Goldilocks;
 
 pub fn call_witness<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    calls: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    calls: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
     let (tag_formula, check_formula) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
     // Initial phase: tag is statically bounded — partitioned eval.
-    let (tag_result, budget) = match evaluate_unary(reduction, object, tag_formula, budget, calls, tracer, depth, registry) {
-        Ok(v) => v, Err(o) => return o,
+    let (tag_result, budget) = match evaluate_unary(
+        reduction,
+        object,
+        tag_formula,
+        budget,
+        calls,
+        tracer,
+        depth,
+        registry,
+    ) {
+        Ok(v) => v,
+        Err(o) => return o,
     };
     let tag_value = match reduction.atom_value(tag_result) {
         Some(v) => v,
@@ -43,7 +59,16 @@ pub fn call_witness<const N: usize, T: Tracer>(
     // a Malformed/TypeError/Unavailable in check_f is a bug in check_f
     // itself, NOT a witness rejection. only a finished check returning
     // non-zero counts as CallRejected (handled below).
-    let (check_result, budget) = match evaluate(reduction, witness_object, check_formula, budget, calls, tracer, depth, registry) {
+    let (check_result, budget) = match evaluate(
+        reduction,
+        witness_object,
+        check_formula,
+        budget,
+        calls,
+        tracer,
+        depth,
+        registry,
+    ) {
         Ok(v) => v,
         Err(o) => return o,
     };
@@ -71,13 +96,15 @@ pub fn call_witness<const N: usize, T: Tracer>(
 
 #[cfg(test)]
 mod tests {
-    use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::{CallProvider, LookProvider, NullCalls};
+    use crate::data::{Order, Reduction};
+    use crate::reduce::{ErrorKind, Outcome, reduce};
     use crate::trace::NoTrace;
-    use crate::data::{Reduction, Order};
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     #[test]
     fn call_null_provider_halts() {
@@ -104,10 +131,17 @@ mod tests {
     fn call_rejected_on_bad_witness() {
         struct BadWitness;
         impl LookProvider for BadWitness {
-            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
+            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> {
+                None
+            }
         }
         impl<const N: usize> CallProvider<N> for BadWitness {
-            fn provide(&self, reduction: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
+            fn provide(
+                &self,
+                reduction: &mut Reduction<N>,
+                _tag: Goldilocks,
+                _object: Order,
+            ) -> Option<Order> {
                 // provide witness = 99, but check expects 0
                 Some(reduction.atom(g(99)).unwrap())
             }
@@ -137,10 +171,17 @@ mod tests {
     fn call_accepts_zero_check() {
         struct ZeroWitness;
         impl LookProvider for ZeroWitness {
-            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
+            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> {
+                None
+            }
         }
         impl<const N: usize> CallProvider<N> for ZeroWitness {
-            fn provide(&self, reduction: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
+            fn provide(
+                &self,
+                reduction: &mut Reduction<N>,
+                _tag: Goldilocks,
+                _object: Order,
+            ) -> Option<Order> {
                 Some(reduction.atom(g(0)).unwrap())
             }
         }
@@ -170,10 +211,17 @@ mod tests {
     fn call_accepts_valid_witness() {
         struct GoodWitness;
         impl LookProvider for GoodWitness {
-            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
+            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> {
+                None
+            }
         }
         impl<const N: usize> CallProvider<N> for GoodWitness {
-            fn provide(&self, reduction: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
+            fn provide(
+                &self,
+                reduction: &mut Reduction<N>,
+                _tag: Goldilocks,
+                _object: Order,
+            ) -> Option<Order> {
                 Some(reduction.atom(g(42)).unwrap())
             }
         }
@@ -211,10 +259,17 @@ mod tests {
 
         struct AlwaysWitness42;
         impl LookProvider for AlwaysWitness42 {
-            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> { None }
+            fn look(&self, _: Goldilocks, _: Goldilocks, _: Goldilocks) -> Option<Goldilocks> {
+                None
+            }
         }
         impl<const N: usize> CallProvider<N> for AlwaysWitness42 {
-            fn provide(&self, reduction: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
+            fn provide(
+                &self,
+                reduction: &mut Reduction<N>,
+                _tag: Goldilocks,
+                _object: Order,
+            ) -> Option<Order> {
                 Some(reduction.atom(g(42)).unwrap())
             }
         }
