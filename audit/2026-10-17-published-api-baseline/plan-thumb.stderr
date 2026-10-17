@@ -1,0 +1,8 @@
+   Compiling strata-core v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/core)
+   Compiling cyber-hemera v0.3.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/hemera/rs)
+   Compiling strata-ext v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/ext)
+   Compiling strata-proof v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/proof)
+   Compiling strata-compute v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/compute)
+   Compiling strata-nebu v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/nebu/rs)
+   Compiling cyber-nox v0.2.0 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.28s
