@@ -1,0 +1,18 @@
+{
+  "command": [
+    "nu",
+    "audit/2026-10-17-published-api-baseline/compare.nu",
+    ".",
+    "pair-2",
+    "/Users/master/.cache/cyber/nox/published-api-baseline/api-1",
+    "api-1"
+  ],
+  "cwd": "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox",
+  "env": {},
+  "started": "2026-10-17T09:58:20.274361+00:00",
+  "finished": "2026-10-17T09:58:20.291675+00:00",
+  "exit_code": 1,
+  "expected_exit_code": 1,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "e5cc808374430721e19908e8427b36da3dc2e06fb2762f6a0b79394ac1e46133"
+}

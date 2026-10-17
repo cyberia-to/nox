@@ -1,0 +1,59 @@
+export def require [ok: bool, message: string] {
+    if not $ok { error make {msg: $message} }
+}
+
+export def digest [path: string] { open --raw $path | hash sha256 }
+
+export def package-inputs [root: string] {
+    ^rg --files --hidden $root | lines | sort | each {|p|
+        {path: ($p | path relative-to $root), sha256: (digest $p)}
+    }
+}
+
+export def owner-inputs [root: string] {
+    ^git -C $root ls-files --cached --others --exclude-standard | lines | sort | uniq
+    | where {|p| not ($p | str starts-with audit/) and not ($p | str starts-with .claude/)
+        and (($p | str ends-with '.rs') or ($p | path basename) in [Cargo.toml Cargo.lock rust-toolchain.toml])}
+    | each {|p| {path: $p, sha256: (digest ($root | path join $p))}}
+}
+
+export def capture [out: string, name: string, argv: list<string>, cwd: string, environment: record, expected: int = 0] {
+    for suffix in [json stdout stderr] {
+        require (not ($out | path join $'($name).($suffix)' | path exists)) $'receipt already exists: ($name).($suffix)'
+    }
+    let started = (date now | format date '%+')
+    let result = (with-env $environment { cd $cwd; do { ^($argv | first) ...($argv | skip 1) } | complete })
+    $result.stdout | save ($out | path join $'($name).stdout')
+    $result.stderr | save ($out | path join $'($name).stderr')
+    let record = {command: $argv, cwd: $cwd, env: $environment, started: $started,
+        finished: (date now | format date '%+'), exit_code: $result.exit_code, expected_exit_code: $expected,
+        stdout_sha256: ($result.stdout | hash sha256), stderr_sha256: ($result.stderr | hash sha256)}
+    $record | to json | save ($out | path join $'($name).json')
+    require ($result.exit_code == $expected) $'unexpected command outcome: ($name), exit ($result.exit_code)'
+    $record
+}
+
+export def extract-crate [archive: string, destination: string] {
+    require (not ($destination | path exists)) 'package destination already exists'
+    let listing = (do { ^tar -tzf $archive } | complete)
+    require ($listing.exit_code == 0) 'cannot list crate archive'
+    for entry in ($listing.stdout | lines) {
+        require (($entry | str starts-with 'cyber-nox-0.2.0/') and not ('..' in ($entry | split row '/'))) 'unexpected archive member'
+    }
+    mkdir $destination
+    let extracted = (do { ^tar -xzf $archive -C $destination } | complete)
+    require ($extracted.exit_code == 0) 'cannot extract crate archive'
+    $destination | path join cyber-nox-0.2.0
+}
+
+export def check-rust-against-git [repo: string, revision: string, package: string] {
+    let files = (package-inputs $package | where {|f| $f.path | str ends-with '.rs'})
+    let git_paths = (^git -C $repo ls-tree -r --name-only $revision -- rs | lines
+        | where {|p| $p | str ends-with '.rs'} | each {|p| $p | str substring 3..} | sort)
+    require (($files | get path | sort) == $git_paths) 'package Rust inventory differs from owning revision'
+    for file in $files {
+        let git_bytes = (do { ^git -C $repo show $'($revision):rs/($file.path)' } | complete)
+        require ($git_bytes.exit_code == 0 and ($git_bytes.stdout | hash sha256) == $file.sha256) $'package Rust differs: ($file.path)'
+    }
+    $files
+}

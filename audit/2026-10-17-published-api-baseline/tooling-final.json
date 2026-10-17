@@ -1,0 +1,38 @@
+{
+  "files": [
+    {
+      "path": "support.nu",
+      "sha256": "4dce632f0057cbf03ec3c11b40efe824344dbd546db1aed211e9500292f15718"
+    },
+    {
+      "path": "prepare.nu",
+      "sha256": "1140eaf2d6e63ab69ca9a25a35bc79d1de76fde49cacb671fbab6f093c0216e9"
+    },
+    {
+      "path": "compare.nu",
+      "sha256": "a6a069adc8ac89cf8ec7d2f0d1c3a5451951d73e0ad36ecd2364b1afbedd7b3a"
+    },
+    {
+      "path": "features.nu",
+      "sha256": "c8dd68afaf77539d6419f83f50837b3601c8dc6fb177a6b58c6361d3df786c9b"
+    },
+    {
+      "path": "guards.nu",
+      "sha256": "7d5cc99e8acfd2df77c00f8eeda776d618811e637f1303f7772869887d45df42"
+    },
+    {
+      "path": "retain.nu",
+      "sha256": "63c37c6b89fe8980e35245c0b4828a6b1e806ee762b7380abf561716c1df1cfc"
+    },
+    {
+      "path": "verify.nu",
+      "sha256": "fb2fb25f69fc99a6d29352da75c09e36150e921a820f7670f9d4c5ff8fa25b14"
+    },
+    {
+      "path": "std-surface.rs.txt",
+      "sha256": "dec56f43cf249f451589ce24591ec0d97e7113f94d84c695e314a3c0bb3ac0d6"
+    }
+  ],
+  "sha256": "18dcb9fc24f8fd80ee6d9d7ab24258b0957b5fae411a3038f8ed6343b9f898c1",
+  "owner_head": "bac9dcc0bfa4444e6942b2dae273a434b444454e"
+}

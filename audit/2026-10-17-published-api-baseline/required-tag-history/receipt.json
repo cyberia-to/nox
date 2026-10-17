@@ -1,0 +1,44 @@
+{
+  "argv": [
+    "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo",
+    "rustdoc",
+    "--manifest-path",
+    "/tmp/nox-no-std-inputs/nox-tag/rs/Cargo.toml",
+    "-p",
+    "cyber-nox",
+    "--lib",
+    "--locked",
+    "--offline",
+    "--",
+    "-Z",
+    "unstable-options",
+    "--output-format",
+    "json"
+  ],
+  "cwd": "/tmp/nox-no-std-inputs/nox-tag",
+  "env": {
+    "PATH": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin:/Users/master/Library/Application Support/Zed/external_agents/registry/npx/codex-acp/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/Users/master/.grok/bin:/Users/master/.local/bin:/Users/master/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/master/.grok/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/pkg/env/active/bin:/opt/pmk/env/global/bin:/opt/homebrew/bin:/Users/master/.codex/tmp/arg0/codex-arg0VVHGyu:/Users/master/Library/Application Support/Zed/external_agents/registry/npx/codex-acp/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/Users/master/.cargo/bin:/Users/master/.foundry/bin:/Users/master/.foundry/bin",
+    "CARGO_HOME": "/tmp/nox-no-std-cargo-home",
+    "CARGO_TARGET_DIR": "/tmp/nox-no-std-api-parent-tag-target",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTC": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustdoc",
+    "RUSTFLAGS": "",
+    "RUSTDOCFLAGS": "",
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "started": "2026-10-13T02:12:54.486459Z",
+  "finished": "2026-10-13T02:12:54.556324Z",
+  "exit_code": 101,
+  "runner_sha256": "e0c021f2cb211f32151c51c7fe344a5b091221a118a40ea8c1cc7989746c8f72",
+  "stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "bytes": 236,
+    "sha256": "cde97627c2e4cc2199e0001ae89d0a76d3a712b05c202fd4c2db53985364dfe1"
+  }
+}

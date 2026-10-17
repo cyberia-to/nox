@@ -1,0 +1,941 @@
+{
+  "source_sha256": "1bde647cf85b04fe16afff07e1bcdd9c8eef09ecd1cc767a83cd7a7916d82a9c",
+  "inputs": [
+    {
+      "repo": "nox",
+      "root": "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox",
+      "head": "102b9e3ee35921f2289db6e87ce3182cb06946b3",
+      "files": [
+        {
+          "path": "Cargo.lock",
+          "sha256": "9bc954f1ed09d6dc9b49f5d35e76289ef700567ee36a9b8172d15588b179a179"
+        },
+        {
+          "path": "Cargo.toml",
+          "sha256": "ad7773752267560ef10a2c82d6e5d5352d8a96ba7f362816cf2695f1d3396753"
+        },
+        {
+          "path": "cli/Cargo.toml",
+          "sha256": "1e3d0e407e958073928fc3525bd4fa73db9305f77dd841c75b3599ce4461d3a4"
+        },
+        {
+          "path": "cli/main.rs",
+          "sha256": "233bb92cd27ec177f309a9ea54fa0e6aab75e12e0af0ef0e8d9ca55d2d9e1d10"
+        },
+        {
+          "path": "rs/Cargo.lock",
+          "sha256": "dcf5605216c908bcb5d4baff2e2ec1e98626c995ea1eaee801828efc9ab067de"
+        },
+        {
+          "path": "rs/Cargo.toml",
+          "sha256": "c40c954cf23798f1f82e3aae9b882651a4431bf4d263da9382f5f89e79652689"
+        },
+        {
+          "path": "rs/benches/reduction.rs",
+          "sha256": "4e70a210cb805fc643ecd89c6a7ade473e897e736e4cbbec0d0274a9f03f4897"
+        },
+        {
+          "path": "rs/bound.rs",
+          "sha256": "f453bfb52cdba6173bc0dbe71db7227bb6a1bb6bae03d7cbe1da1266c399062a"
+        },
+        {
+          "path": "rs/brakedown_look.rs",
+          "sha256": "dc02ca8112f067a8a3ff94539ecbafd0a4b5b3616893bb7dfc4af869766a46ae"
+        },
+        {
+          "path": "rs/call.rs",
+          "sha256": "62e16f101d461edc11465078fe0c1a5c74dac78a1f3de35cb6423d83cb330f1b"
+        },
+        {
+          "path": "rs/data/cost.rs",
+          "sha256": "746b16cff3747b2f8824b5f9163d73810adbbebda330ddd3674208385455e1b9"
+        },
+        {
+          "path": "rs/data/hash.rs",
+          "sha256": "a1cbf7c94e4f02789d3b61f5a73eddd066652e55a4a04f1414d752d513281967"
+        },
+        {
+          "path": "rs/data/inner.rs",
+          "sha256": "6fd946f5874707af0f9db665bbfe0e8b6939f990b3505a3b62891d4ae56fb084"
+        },
+        {
+          "path": "rs/data/mod.rs",
+          "sha256": "4062376bc001094c481b813fbd6572a5c35be702662fa8859289a2ac57767d7f"
+        },
+        {
+          "path": "rs/data/reduction.rs",
+          "sha256": "e9babd1a16b19ad62f4844a2e6e0876205b93349ad21ee5df479bed79b47cb27"
+        },
+        {
+          "path": "rs/encode.rs",
+          "sha256": "a8cf9b0ae042a37e87aa3fd02bf7e85b62f18b751a15a03809a82a2494fab0ff"
+        },
+        {
+          "path": "rs/examples/dump_formulas.rs",
+          "sha256": "7d97d1d33986a1b2945b5fad9ea4d28184bcd66a7edfb49a60f9bb505bd77db8"
+        },
+        {
+          "path": "rs/jets/backends/cpu.rs",
+          "sha256": "6a06ea6a785fd3491ec8b1b2e9d292accaa76272eb348a10542b714dd2fb396e"
+        },
+        {
+          "path": "rs/jets/backends/honeycrisp.rs",
+          "sha256": "f11f2a6ab7f004bb0225d538ec35e50ce6983568280483e8c13d435890ed2048"
+        },
+        {
+          "path": "rs/jets/backends/mod.rs",
+          "sha256": "52ca41ff78235b8cf553c5418f0221bb57a6e82b5593f6828fd8dbdfda297099"
+        },
+        {
+          "path": "rs/jets/backends/wgpu.rs",
+          "sha256": "e9ea0c58aa41d09cf64797e5c38cc81d485c56b9b943147287a7ac8a998d0243"
+        },
+        {
+          "path": "rs/jets/decider.rs",
+          "sha256": "b513d25c69608cd695a49745b64bc96edaa8e3446bbba38b713b124076f52dea"
+        },
+        {
+          "path": "rs/jets/formulas.rs",
+          "sha256": "9a6e7676c400289718aee2a11a58eeadd422dbfff693aa4164ee6087847333c2"
+        },
+        {
+          "path": "rs/jets/fri_fold.rs",
+          "sha256": "c8fd03c41bf1daa4fe8d6c3c5c495cb9bf79ec60c8c6ef86dcade8b6e90e59eb"
+        },
+        {
+          "path": "rs/jets/merkle_verify.rs",
+          "sha256": "0aafdb8b2be902324e2ab2d9856bc088cab4bf9f54ba4930110a92aa44f2c0fa"
+        },
+        {
+          "path": "rs/jets/mod.rs",
+          "sha256": "b508c4f07c223cf50eb347721fa3f50d0d9fb0fc2a3f344cfe7dd31910b91551"
+        },
+        {
+          "path": "rs/jets/ntt.rs",
+          "sha256": "38f8f01827e4b7e72faa7914d1f18117942c7ebc158ca7c59844012b4ff72644"
+        },
+        {
+          "path": "rs/jets/poly_eval.rs",
+          "sha256": "983e9e76df7053cc1f62e61b5c8a8c9945dc2b4d468270517f92eafdfe3d07f4"
+        },
+        {
+          "path": "rs/jets/poly_eval_brakedown.rs",
+          "sha256": "6fe8de7a6b3fe4c79ce9de17ed6e40228c32bdc2d61c28f37a1fcac07faecf06"
+        },
+        {
+          "path": "rs/jets/registry.rs",
+          "sha256": "909d7be0df968f5312aac82bd1cf4b372041b4639e4d5bd4c8591bd91e4fafc2"
+        },
+        {
+          "path": "rs/jets/state.rs",
+          "sha256": "4afb68c5387062a102b0fc5e58053839c2e2b85a43ee8ebe9214b91683de1272"
+        },
+        {
+          "path": "rs/lib.rs",
+          "sha256": "c24be3c5e0a8eb88d2494feba34e514e6df0049345c188748423406fcbe418ec"
+        },
+        {
+          "path": "rs/parallel.rs",
+          "sha256": "6a10eb1eb2a29b565b973eadf01768aa534948537a474c51c9920f0696b7e7ab"
+        },
+        {
+          "path": "rs/patterns/add.rs",
+          "sha256": "d8168977d3290f5baa745c7f822a61c2b7770f64101b754417a9473abed67b5a"
+        },
+        {
+          "path": "rs/patterns/and.rs",
+          "sha256": "685551d917eba114e1cb8a02bf7878042a6e584c577d261c7f9a03cf9d235f01"
+        },
+        {
+          "path": "rs/patterns/axis.rs",
+          "sha256": "391e8d83008cfb35ab6b344236fb91250ba133e6b344e31445f5f018f2c81954"
+        },
+        {
+          "path": "rs/patterns/branch.rs",
+          "sha256": "75bdf722f3761e4915c957301641eff97339ee41bfee2fd4c5ae97a4a42c398c"
+        },
+        {
+          "path": "rs/patterns/call.rs",
+          "sha256": "d31b514af5ad416fba8d2b7f03dbebe6a0d599aa9971e1ac4a285909bd851dcc"
+        },
+        {
+          "path": "rs/patterns/compose.rs",
+          "sha256": "f8e66397e92113946ad14ac4f7583bf7491e02a35edef91424e4d1c2e801bcd4"
+        },
+        {
+          "path": "rs/patterns/cons.rs",
+          "sha256": "5f36798aecb0e342c21f40532293d9e063469df439d7ac4de54d0c6151b5b764"
+        },
+        {
+          "path": "rs/patterns/eq.rs",
+          "sha256": "b00d4d865f010f9f926cac109542c2a887893ad0697dd8deafdf3a67081330a0"
+        },
+        {
+          "path": "rs/patterns/hash.rs",
+          "sha256": "ed154905d9a46f986ad71fc816cc0a0934f7af65142f078410178022bba6e123"
+        },
+        {
+          "path": "rs/patterns/inv.rs",
+          "sha256": "dc66b58aaf37d670366a4d60e9c0757dba765af8fa35f4345670c244902a1a06"
+        },
+        {
+          "path": "rs/patterns/look.rs",
+          "sha256": "377ee771e36d8f1aef18057ceed2c889b2d5a6c2aa19d4004d00e4788377e562"
+        },
+        {
+          "path": "rs/patterns/lt.rs",
+          "sha256": "a8441cc3b94188312dc4325585ac7af66ee1cf1cbfda55f4adb7e0cb44953431"
+        },
+        {
+          "path": "rs/patterns/mod.rs",
+          "sha256": "cf63780f4bcdaa3ed91e07e0e149cd69091214cce3de3d0f4c14c60322dbd05c"
+        },
+        {
+          "path": "rs/patterns/mul.rs",
+          "sha256": "bf4c11307a93bf63062c17d2d5a14d054d7170095f30d72a47fb59f46a06d5f7"
+        },
+        {
+          "path": "rs/patterns/not.rs",
+          "sha256": "702fc9d49109895f1d52bffc4ae014371963049a32218e9ad1ca071e0e42042e"
+        },
+        {
+          "path": "rs/patterns/quote.rs",
+          "sha256": "4222583dbb99701eebb7bf48d14499f2f63a4a3cf74d10ee9bf8cc81ed266751"
+        },
+        {
+          "path": "rs/patterns/shl.rs",
+          "sha256": "79eae92998df97d5293a7eb9f686098f27b1d185bf81ca47bf2434fc4c7cf3c3"
+        },
+        {
+          "path": "rs/patterns/sub.rs",
+          "sha256": "40ea5fd59fa4c91d3107e152d4839f88e801acdd13d300262a33da3c9a888e2c"
+        },
+        {
+          "path": "rs/patterns/xor.rs",
+          "sha256": "6bff1109a4c1136d3ed7756b9890e5ba2c489edb5bb12e3f06d3e2e8c79bc05b"
+        },
+        {
+          "path": "rs/reduce.rs",
+          "sha256": "101fe7a38d814006b666cc609c6bea3f2ae13d6feebeca191a8b8b33628e3e8a"
+        },
+        {
+          "path": "rs/trace.rs",
+          "sha256": "3d0b1616b9f61544c5bbebbe9916f7cfae9b29d5b1b8bae8f01e9edc64e5568b"
+        }
+      ]
+    },
+    {
+      "repo": "hemera",
+      "root": "/Users/master/cyber/hemera",
+      "head": "1c385e54e18885075f0dd12a0407ad0234e1bebf",
+      "files": [
+        {
+          "path": "Cargo.lock",
+          "sha256": "cb39b0444279e9122294ec469839df3ef7599072a4212e31ef6a73fe5e5c29dc"
+        },
+        {
+          "path": "Cargo.toml",
+          "sha256": "e94575ed81a4143aa1fca117650faf83f2d919d44f8f1425ca76b4aea898c0eb"
+        },
+        {
+          "path": "bench/Cargo.toml",
+          "sha256": "d87deaf8b4ee41c299e1f5afb41f0b0d6afdea46c134bb8276ec37f1b9d19bb1"
+        },
+        {
+          "path": "bench/benches/hash.rs",
+          "sha256": "7595f3549bd608603f1785af476376b559b440272a0b5d3b3de69a48b664055f"
+        },
+        {
+          "path": "bench/benches/permutation.rs",
+          "sha256": "a1d3e2cdc072db929701ee47a4a471efe27bfbb6ea4c51a6378c2e51d8b13dbb"
+        },
+        {
+          "path": "bench/benches/tree.rs",
+          "sha256": "8852d61cf27055a23315e335822a4f7cd4523716dbbd5000048096769cc9cd4f"
+        },
+        {
+          "path": "cli/Cargo.toml",
+          "sha256": "90377e5078488fac4be08323a61840d5d7462bcd4129d6648a1f5e3b489fea5d"
+        },
+        {
+          "path": "cli/src/main.rs",
+          "sha256": "12d17fd42698c356b5ccccfbdd526f45459a99faa4500f31b7365a94ee9e9aba"
+        },
+        {
+          "path": "rs/Cargo.toml",
+          "sha256": "351913fa05ec28a0fce1078fd03c0fe84b957435b970c9dd122f140983fcdd75"
+        },
+        {
+          "path": "rs/examples/bench.rs",
+          "sha256": "dff24684ad117b4302303c101f5d0994eb10cbab5bd79f162e36dbff7d766221"
+        },
+        {
+          "path": "rs/examples/neon_mul.rs",
+          "sha256": "5a86e7009d4c1a539531369f6ab71cef2aa4198eb08fba70d83a4e2b719f098b"
+        },
+        {
+          "path": "rs/examples/split.rs",
+          "sha256": "507fdeb2d27a7cc92e61577ac1033c1e1751478ddbd89a084200b7570debd0c0"
+        },
+        {
+          "path": "rs/src/arith.rs",
+          "sha256": "42c41ce43ab3f00e8ac32c812830044583e686581cd44762d61977f9a3c33ebf"
+        },
+        {
+          "path": "rs/src/async_io.rs",
+          "sha256": "39b6cb18e796f5bcae85d671f9515b4328e09c7fe6d879be1ad12077bc3f140b"
+        },
+        {
+          "path": "rs/src/backend.rs",
+          "sha256": "7c42ab817693b484f327cbb745b7fac3ae76bf4a5c762990cea62ef01b913d53"
+        },
+        {
+          "path": "rs/src/batch.rs",
+          "sha256": "b95a2466560a85c4ee081f9b4309e918e9b3103f2f2e3ceea13c5d3aca17823f"
+        },
+        {
+          "path": "rs/src/bootstrap.rs",
+          "sha256": "fa865dbb6fcee2b047000d8235d259d66a924c17cbee5c2be451e4926e71b6f7"
+        },
+        {
+          "path": "rs/src/cdc.rs",
+          "sha256": "f88706b2d53622156b9bb73d1ddb5865e23009157da4e6773506a54d0de004f7"
+        },
+        {
+          "path": "rs/src/constants.rs",
+          "sha256": "512cf0b5b52160a3b70611ff624adb489174d9be42b9bca63bf35cc05a9d27b8"
+        },
+        {
+          "path": "rs/src/encoding.rs",
+          "sha256": "ae06d9e9a43319e812a3271f13f7447855fe7ebfae5d60510c93a2771d284712"
+        },
+        {
+          "path": "rs/src/field.rs",
+          "sha256": "92b7b9e0bec97c342bc7279f53fa3bde6d4021ab2a4d95b1673fe26688a8d8ae"
+        },
+        {
+          "path": "rs/src/kernel.rs",
+          "sha256": "cc05e4c745ead3bdc60bfa1b8285686957c63917ea13e788005b51c4120f08b2"
+        },
+        {
+          "path": "rs/src/lib.rs",
+          "sha256": "6a437a3200e3401e967269a76ad92e427889504f78b1c8cc6c24590ba76de93b"
+        },
+        {
+          "path": "rs/src/merkle.rs",
+          "sha256": "053e5e0025b14a5af8cf795ef5a898c5955d944de33201576ab8f2102e6e243c"
+        },
+        {
+          "path": "rs/src/params.rs",
+          "sha256": "bf5b2cb5a80697d272546425bddcdf2cb2bfe7e08367ae7c793a0922088f2a91"
+        },
+        {
+          "path": "rs/src/permutation.rs",
+          "sha256": "7238b9789a19c0aa10ec6e828e75fcaf87ce437103137cfe4556729b4037d76c"
+        },
+        {
+          "path": "rs/src/profile.rs",
+          "sha256": "bd666bffb1e797330ae93eb7cc4fe38e5bbb4e02b5dc532e756ac056d8f37d49"
+        },
+        {
+          "path": "rs/src/reference.rs",
+          "sha256": "a91a3a2f7f0a01e3003cd8b5856e684a22391ee8050cce7523e71737ed49f516"
+        },
+        {
+          "path": "rs/src/sparse.rs",
+          "sha256": "0dd1710a908b0635081b336e0463d1156822cef0ad97b112322e7b46f0a1f5b9"
+        },
+        {
+          "path": "rs/src/sponge.rs",
+          "sha256": "b9a446dd947169dbb36c9e4ca5bcf6fd8d27c2d1fb11f7daa279eb9fd622c002"
+        },
+        {
+          "path": "rs/src/step_sponge.rs",
+          "sha256": "41b563fc79b6ec22f718d2632bb870828dffc0cdd254f4697389ba81b6f1545f"
+        },
+        {
+          "path": "rs/src/stream.rs",
+          "sha256": "94a84dfcff2c60ac864e1a5b7bb1b9816070c02a8627377d67bc1d4b6b99ec12"
+        },
+        {
+          "path": "rs/src/stream_async.rs",
+          "sha256": "c2408c2568e8abd39bb17c43114ed0ed81131b5c9b576451cb08eef6ad07d5fc"
+        },
+        {
+          "path": "rs/src/trace.rs",
+          "sha256": "05b302fd8a6fc843ef802a63d415e23a395965084ef3ee7da841dc014c76ec89"
+        },
+        {
+          "path": "rs/src/tree.rs",
+          "sha256": "51b30ed44349847e099771dba76a946d7b3b82b64b923f6abb39501ae06eb6a0"
+        },
+        {
+          "path": "rs/tests/constant_time.rs",
+          "sha256": "fc6e9e767773a7715b306179ee16cefd6da52ae74ed14e5c6c1e7091dc36adbf"
+        },
+        {
+          "path": "rs/tests/differential.rs",
+          "sha256": "737ba241712a25c71f94270504bd1eb210194adc082260095bee09a0ab203080"
+        },
+        {
+          "path": "rs/tests/vectors.rs",
+          "sha256": "49033f3deb095605e41a9961b637b7283159d05be7b62179acff0692b3146f19"
+        },
+        {
+          "path": "wgsl/Cargo.toml",
+          "sha256": "dd23d76b7de3eb7b34a9ae1677f181d7413691e49424b31dd7bdbc7aeb48bd32"
+        },
+        {
+          "path": "wgsl/src/lib.rs",
+          "sha256": "8670be91a067c23662accc89a94cf82b5e21d913974009728212921b72182f9e"
+        },
+        {
+          "path": "wgsl/tests/gpu.rs",
+          "sha256": "a79d92d23c7e4eb32493686795ba382fd3151362fc352b37e5d88bf723b78115"
+        }
+      ]
+    },
+    {
+      "repo": "strata",
+      "root": "/Users/master/cyber/strata",
+      "head": "56aedb2d12b3126c601eb333419136d403614dbb",
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "sha256": "b10c4b006e843435a72edf993da144781835c84def8969295e99f63632f453c9"
+        },
+        {
+          "path": "cli/Cargo.toml",
+          "sha256": "8ab288713604cd5cd2f7559db05d1a0f21843fdff67d384494a0926a209ae5d0"
+        },
+        {
+          "path": "cli/src/main.rs",
+          "sha256": "4e697affbcc10deb4428fd004fdd037956fd120b793cc55524223bcefe49c9a1"
+        },
+        {
+          "path": "compute/Cargo.toml",
+          "sha256": "73dedb862ee01c4d8a8c89aa9ef58060e5a2aea777dc3b2230afa36e5b6d3496"
+        },
+        {
+          "path": "compute/src/lib.rs",
+          "sha256": "7e56b5a0b540d667936d99e84972bdc860a46b06e7fdef02f5f8402d33ecb69a"
+        },
+        {
+          "path": "core/Cargo.toml",
+          "sha256": "d66bf3c5cea53cf966cdc3135ae88863b116d62c4c3d92bd391a3e94aa7c00e0"
+        },
+        {
+          "path": "core/src/lib.rs",
+          "sha256": "cf1735ab6236604419d82d7d2e07a886351756baa49a46e03b7c080d3e46b497"
+        },
+        {
+          "path": "core/src/testing.rs",
+          "sha256": "ab453dcad8764f442390835b7d43d34d9f5158f0f794519267f20e7e7cb67916"
+        },
+        {
+          "path": "ext/Cargo.toml",
+          "sha256": "608924d6ce12e3e30be06bdd04fd3e977e2d4ea71ae35a13a0fb9cf2a9e1d513"
+        },
+        {
+          "path": "ext/src/lib.rs",
+          "sha256": "0e0017042efdcaab47b89d7ebfe6a6bed6d9e0f76d23e3eb860573973a33bca2"
+        },
+        {
+          "path": "genies/cli/Cargo.toml",
+          "sha256": "c9f8d16f346cbaa7860209ceb38a0a2ac8c34a151f1937880a621e6c1d9b3f5e"
+        },
+        {
+          "path": "genies/cli/src/main.rs",
+          "sha256": "e3921febd80a7a96d0f07395be5090c4a0ba062cec434cebbf5d6b642d7387b0"
+        },
+        {
+          "path": "genies/rs/Cargo.toml",
+          "sha256": "a0afb792d43fa46e891e37ff7a15eb1d56215db93ab3ec3bd6d8eaf16c30e7c4"
+        },
+        {
+          "path": "genies/rs/benches/genies.rs",
+          "sha256": "f4664276c6c486f3403901c8ce09e92025efccda37b686a9408e4a41cee54575"
+        },
+        {
+          "path": "genies/rs/src/action.rs",
+          "sha256": "c593e32c9942231544795f54db127fec8f96bd1beb900fc201c525dac9f75371"
+        },
+        {
+          "path": "genies/rs/src/algebra_impl.rs",
+          "sha256": "61c6c55fabe9f8ca0f9cc56a080a45f94d26bf089ae2de99baa3f05a47ef5a73"
+        },
+        {
+          "path": "genies/rs/src/curve.rs",
+          "sha256": "0dfe464a7b7d59dd92c842cccab16d176a815036b72e9f4812f870a54248b5ff"
+        },
+        {
+          "path": "genies/rs/src/encoding.rs",
+          "sha256": "1d45c51d828e76ef4de847d8ad390f66296445625c2e9862d331b4b0f2033b58"
+        },
+        {
+          "path": "genies/rs/src/fq.rs",
+          "sha256": "fba19e95cbd1a7d1dcf8400d6e86090e2aa74a41a4dd293588a5c05a9aa4736a"
+        },
+        {
+          "path": "genies/rs/src/isogeny.rs",
+          "sha256": "6474ae6fa908c063127d4a2397745bf2ba794e9078d2f0b1f17ec32d02224ae2"
+        },
+        {
+          "path": "genies/rs/src/lib.rs",
+          "sha256": "c05889127f467c335d81d92a3a24408457c57de9801f3d50fe981eb03f7c0765"
+        },
+        {
+          "path": "genies/rs/src/ops.rs",
+          "sha256": "210cf28dc95b6844f2a450796103739a0ee00b1c9e373e98cbe0d62d6169cf77"
+        },
+        {
+          "path": "genies/rs/src/vectors.rs",
+          "sha256": "1d35b154c859c7ce336a1a6304dc226c39934ce2f3a3d0fdb5e4cc3551d00018"
+        },
+        {
+          "path": "genies/wgsl/Cargo.toml",
+          "sha256": "628be6ec3c0cbabc5960f701fe5cf900e602c32d8802e96a62cf8ee7d85a7e48"
+        },
+        {
+          "path": "genies/wgsl/src/lib.rs",
+          "sha256": "ca832bb5daf5eaf09ad47fd37d8466aef493cc4ba561ece6468a744b66a55589"
+        },
+        {
+          "path": "genies/wgsl/src/shaders/mod.rs",
+          "sha256": "adf6190e9c720b04e914681fad7c3d6ca3a13a8cdaf5d00c7b5be3920a50fcbf"
+        },
+        {
+          "path": "jali/cli/Cargo.toml",
+          "sha256": "c5041f9afa4ad62422624a10725675dc49d33bea5eff2fe1aaaf42a7dea12085"
+        },
+        {
+          "path": "jali/cli/src/main.rs",
+          "sha256": "33cbcf644ecef1cba2894b9c89a734cd390829fcc551414c1269b07358e1457d"
+        },
+        {
+          "path": "jali/rs/Cargo.toml",
+          "sha256": "851459897a5a08243774cbd9a0a892ec1f05dd9f37e49761b84a9b93492f2691"
+        },
+        {
+          "path": "jali/rs/benches/ring.rs",
+          "sha256": "e28abe5092c64ceef7e7b3f1203bd280e3c28feb09d3e52780d077307fc474f8"
+        },
+        {
+          "path": "jali/rs/src/encoding.rs",
+          "sha256": "e4a1ddfea673d3fd3c91719ded992b94491eb6ef43eb27e948f26b4b47c82ae0"
+        },
+        {
+          "path": "jali/rs/src/lib.rs",
+          "sha256": "b1a3ddb4b49e0ff9dd33b359da7d2ef3f990a11fe69c1793a12c36583be75041"
+        },
+        {
+          "path": "jali/rs/src/noise.rs",
+          "sha256": "4a754d4bdb5d2dfce15c10c817a49d4174988daa2b09d6d286c4cea5e4b66cee"
+        },
+        {
+          "path": "jali/rs/src/ntt.rs",
+          "sha256": "d9fae4a04f6748da79a2bf8e02a23d941f59d9637ec2fa6522ad937bdb490a7d"
+        },
+        {
+          "path": "jali/rs/src/ring.rs",
+          "sha256": "390a2be6432a8e050e77e118f6e9a73dcd548bbe6b5dc5219b549b358a403bba"
+        },
+        {
+          "path": "jali/rs/src/sample.rs",
+          "sha256": "86fa40f2b963c5c17620167db6fb4d2dec45f31268a9f997b228331ea07e696d"
+        },
+        {
+          "path": "jali/rs/src/vectors.rs",
+          "sha256": "c2774aaf7e9b5d24b7be1b7d7dc4c7354925ed39359f3a78116b8172f2550529"
+        },
+        {
+          "path": "jali/wgsl/Cargo.toml",
+          "sha256": "7ec456d64fe3caf3ed83bc68be1b477241e75a84f1e945dda89ec7e8a0b06087"
+        },
+        {
+          "path": "jali/wgsl/src/lib.rs",
+          "sha256": "9423159c43d3354df6027418261b7798bc270ab0efa8b372e63f19b0663bf78c"
+        },
+        {
+          "path": "jali/wgsl/src/shaders/mod.rs",
+          "sha256": "79c0e70c74d4e6707254092f25d484901a5dfaf9d81a330d90fed36177ed3c13"
+        },
+        {
+          "path": "kuro/cli/Cargo.toml",
+          "sha256": "ee2564b323fcc0a7295881f8aef9eafc6f276ca83fe3ac968ba7e35dcc6c253f"
+        },
+        {
+          "path": "kuro/cli/src/main.rs",
+          "sha256": "37218b1cc4ce3c7ca938ded8cb0cb79f8842907faecca403a0cd5aeb0e438011"
+        },
+        {
+          "path": "kuro/rs/Cargo.toml",
+          "sha256": "424f8b9fa7829ae73fbd55325e6c6c62c3b2c805cad17b938d51c40730010e20"
+        },
+        {
+          "path": "kuro/rs/algebra_impl.rs",
+          "sha256": "0ef39179ae4217ff10b9e6df803250230f22b2d34780981827010df866deb83a"
+        },
+        {
+          "path": "kuro/rs/batch.rs",
+          "sha256": "5fef2f21b90a5a615410f1c2656333f11df5843133de24a052f2288ed1f43520"
+        },
+        {
+          "path": "kuro/rs/benches/tower.rs",
+          "sha256": "8e91c3fd1c8f9eefb352fc449881fc773a09f87f108fdc844480dd4e995b98c6"
+        },
+        {
+          "path": "kuro/rs/encoding.rs",
+          "sha256": "a871421e374318b3df926428ecf7725eb7afd10b7256be2779539beb3304c1f4"
+        },
+        {
+          "path": "kuro/rs/inv.rs",
+          "sha256": "284432bd60408d54533b73f0dbf8f51c4f7e8e2966b8c379476d2cbb6a576c4b"
+        },
+        {
+          "path": "kuro/rs/lib.rs",
+          "sha256": "61c0cfcd14c1fd0e5c8198a0ea35635c7cf380b10e6a6997c970b74d44f7e5a7"
+        },
+        {
+          "path": "kuro/rs/ops.rs",
+          "sha256": "ca8a2fd13cbeb28f253a65aaa8dd539f078408cd61471965047aae771871625d"
+        },
+        {
+          "path": "kuro/rs/packed.rs",
+          "sha256": "cdfa1b9b0504a52b2e60dd9b933d48e8f516c1c416bf3feb9a751a88de903424"
+        },
+        {
+          "path": "kuro/rs/tower.rs",
+          "sha256": "b63edc86cf2ab5aedbba02102be6d4b3e31d5933ab086e3e64c4c85ffa554787"
+        },
+        {
+          "path": "kuro/rs/vectors.rs",
+          "sha256": "da2051baa28fe4e4773a0b9f3342e57b9b2413a8787edd5d69fafd7754018cc6"
+        },
+        {
+          "path": "kuro/wgsl/Cargo.toml",
+          "sha256": "b186228f7e4601dd76117c4defa85664919f6d6ae56a729db0a2cc31de6831c3"
+        },
+        {
+          "path": "kuro/wgsl/src/lib.rs",
+          "sha256": "69d12d7eb7864c464d1a4f70d02872c689e618f961af24e261aadce7431dafe4"
+        },
+        {
+          "path": "kuro/wgsl/src/shaders/mod.rs",
+          "sha256": "ab063763431b8f3f4a9f403419da4ed9819c07a52c8ed070c8d6b59c33ec6f1e"
+        },
+        {
+          "path": "nebu/cli/Cargo.toml",
+          "sha256": "0d051b8184b8c9034baadf8dbf45efd30ee4fb6463f6c88a36ee4a1288c6c1a6"
+        },
+        {
+          "path": "nebu/cli/src/main.rs",
+          "sha256": "f4fffc225286e53635fb1d3ecbd77b7ad34df556ce8424e8aa9b25bc6b1ddee1"
+        },
+        {
+          "path": "nebu/rs/Cargo.toml",
+          "sha256": "d8680eb61013c42f54bbd5834d758f10d844dc4882b8121f1f5fc9aa7e429c20"
+        },
+        {
+          "path": "nebu/rs/algebra_impl.rs",
+          "sha256": "40fe7fd3d8103f5dc8da3b8c37f387624ae457db84a06aacb3f9470bebe6074f"
+        },
+        {
+          "path": "nebu/rs/batch.rs",
+          "sha256": "6e581b1a0f2cc4ef10d70fddcfd2d6bad8c36c52c00f0ac39326fc4bf4005efe"
+        },
+        {
+          "path": "nebu/rs/benches/goldilocks.rs",
+          "sha256": "2df80389f271a2fe8662244b6e9493031c6693762d62ba423f6e61f1f4ceb4cd"
+        },
+        {
+          "path": "nebu/rs/encoding.rs",
+          "sha256": "9a49105f65e33dd795ad43cee4da23cea0a87e15a6d1b67637366458fc6376fe"
+        },
+        {
+          "path": "nebu/rs/extension/algebra_impl.rs",
+          "sha256": "241455d204d085bc0d0e0c52d9cc662f975bbd41e448ae2adc37262679d9a572"
+        },
+        {
+          "path": "nebu/rs/extension/fp2.rs",
+          "sha256": "29432a7cd89e137ca5006983d50490fce7535b811fd9e672abcc51c6e5d9d143"
+        },
+        {
+          "path": "nebu/rs/extension/fp3.rs",
+          "sha256": "418762a2f68aa127f44c30225d9a87f6b874596b42150c189d3fa5142cb96295"
+        },
+        {
+          "path": "nebu/rs/extension/fp4.rs",
+          "sha256": "a377ded1cc4891e79977f31a7fb92de659897c733944856d40fae3a5798dd3e5"
+        },
+        {
+          "path": "nebu/rs/extension/mod.rs",
+          "sha256": "0f901ac526a0ca2550e444948b3153f02f57d10deb49d3e4dc885602b373e5fd"
+        },
+        {
+          "path": "nebu/rs/field.rs",
+          "sha256": "610a90535e7c3417d4aa696b6d95782127eaaa857106d89851ead5736bdeadc8"
+        },
+        {
+          "path": "nebu/rs/lib.rs",
+          "sha256": "2b05ba8191d72e116900eb7d36946ee2342fc0eab761809ed13842f8714f4541"
+        },
+        {
+          "path": "nebu/rs/ntt.rs",
+          "sha256": "8ff11a07de251e47e8420775e999c56b0da02bc9355c3b34378f86da8b5e7f68"
+        },
+        {
+          "path": "nebu/rs/packed.rs",
+          "sha256": "464373f74431cb87d57cf0725fdca722767ef446370c10fb1177b9d78564c9c0"
+        },
+        {
+          "path": "nebu/rs/packed_avx2.rs",
+          "sha256": "ffa4ad8619d371f3b9f8c0f89b675f9043f665fe8184831db06350b22ce7a619"
+        },
+        {
+          "path": "nebu/rs/poly.rs",
+          "sha256": "91c477dff136910a2913f9e21c04e4ae4f272af35e23e177b38dc0f5c6b7b271"
+        },
+        {
+          "path": "nebu/rs/proptests.rs",
+          "sha256": "17781ae470a1fad43de93f5604ee3135931c2a0b38395310050dd4ac071d127e"
+        },
+        {
+          "path": "nebu/rs/sqrt.rs",
+          "sha256": "5fea48422e1a222567d9a184e018b014fd0916336920763136ba4618d0826f70"
+        },
+        {
+          "path": "nebu/rs/vectors.rs",
+          "sha256": "9d46546231ce05130887a1195e4c4c09193356cce71e72892d34495389914a2c"
+        },
+        {
+          "path": "nebu/wgsl/Cargo.toml",
+          "sha256": "83a2ac47004a78dbc4041b4f3b68f4d7f4f712af3b7b9d3301b32c6998295592"
+        },
+        {
+          "path": "nebu/wgsl/src/lib.rs",
+          "sha256": "3ea8995a8814317508c2a0088d1763e34980c408c583f2f27a40a1d79c6f3524"
+        },
+        {
+          "path": "nebu/wgsl/tests/gpu.rs",
+          "sha256": "5c08805bb91f388fdf1559db0e6d95ece774cef2cdf11cd3dcfb7267990ac3b5"
+        },
+        {
+          "path": "proof/Cargo.toml",
+          "sha256": "ee45baf48effc4601e21169dc77db4128687e9a1ac8b27d10fd80adf8fe3b146"
+        },
+        {
+          "path": "proof/src/lib.rs",
+          "sha256": "627464cff9f20be47d38d84d3e4ae3445b8973e57a318f504297af8a73f2b168"
+        },
+        {
+          "path": "src/Cargo.toml",
+          "sha256": "a38afdc761d24a5316b82d3322f24a98748894788918d14ec2e0528e3b484cd7"
+        },
+        {
+          "path": "src/lib.rs",
+          "sha256": "721bc88bdb213abc6d7f7428eed32ae9747c75edd78d88b6335988bc60326ab8"
+        },
+        {
+          "path": "trop/cli/Cargo.toml",
+          "sha256": "a2ab63ca9599daebdfe4b3f4218ccfcea3b3a9f08115aa7358ea27df3a72a9b8"
+        },
+        {
+          "path": "trop/cli/src/main.rs",
+          "sha256": "bae0ba4d0d0c76522f19b9942642591229771ce91053129d8150416bebfbff9b"
+        },
+        {
+          "path": "trop/rs/Cargo.toml",
+          "sha256": "dda1d2f34cea1a79a7181a18bdd97d76c1ef6604c1d4d063d7edb7f33366d5be"
+        },
+        {
+          "path": "trop/rs/benches/tropical.rs",
+          "sha256": "f8f2e66c536e643ade2e94a1ab3b8fa8d07b5d26a729730a861c98c8988eecc7"
+        },
+        {
+          "path": "trop/rs/src/algebra_impl.rs",
+          "sha256": "86d74f5f1d6686f0f59f701eace91f842497a4e259d26948e744e5daed1690e3"
+        },
+        {
+          "path": "trop/rs/src/determinant.rs",
+          "sha256": "11493b271454e607ad760f445cbc70004d19aff350674f851058835299f58c3b"
+        },
+        {
+          "path": "trop/rs/src/dual.rs",
+          "sha256": "05825b0f4aaec93aa9c43825de78ff4f051aa30335665e7999652553e36b0a25"
+        },
+        {
+          "path": "trop/rs/src/eigenvalue.rs",
+          "sha256": "0e4e4bd17542a6abb6f728f024351e738184d6bd9ae0d0a221e1f7c496cf8fe8"
+        },
+        {
+          "path": "trop/rs/src/element.rs",
+          "sha256": "356c87e9d7c9bc86ac42b5c904673631cf8417acae3d64323471537a8c9da39c"
+        },
+        {
+          "path": "trop/rs/src/encoding.rs",
+          "sha256": "4892d59f34972a01da50e325584538d122d8dde80254f49ad7b513edbe3a8534"
+        },
+        {
+          "path": "trop/rs/src/kleene.rs",
+          "sha256": "8b655765b0db4a11b88da20231c92c3e95bc16129eae60bc4a00bf03a78c2adc"
+        },
+        {
+          "path": "trop/rs/src/lib.rs",
+          "sha256": "5a72852cd5ff25375cd6dbcc8fa667d9ce8ed4da74cdd71b3b60a5a278bbdef8"
+        },
+        {
+          "path": "trop/rs/src/matrix.rs",
+          "sha256": "39c991d29050cf0a2e5bd2bef3d98a7ec910ead8f30de9a23b6b2d98f6ea7dea"
+        },
+        {
+          "path": "trop/rs/src/vectors.rs",
+          "sha256": "2ca1fb63882ed3be1aca42317cf2b5fb9f6d53da96c0f94237723b7cf30cc8cc"
+        },
+        {
+          "path": "trop/wgsl/Cargo.toml",
+          "sha256": "99476b7650cdbcaaafb20e475910a32826414798c4978b8a112340aa1e3ee660"
+        },
+        {
+          "path": "trop/wgsl/src/lib.rs",
+          "sha256": "0c924d79f976cf0b7f5ef63b26db123bcb2f3127109175782dce09832a6b21de"
+        },
+        {
+          "path": "trop/wgsl/src/shaders/mod.rs",
+          "sha256": "4fa11aaefbcee991cbbbf554a063c3d8d1d21604b1a02b9245f05622f45ac1e5"
+        }
+      ]
+    },
+    {
+      "repo": "lens",
+      "root": "/Users/master/cyber/lens",
+      "head": "8b26cef6587bee6a686f2cf163f6a8496931ee6a",
+      "files": [
+        {
+          "path": "Cargo.lock",
+          "sha256": "16e6ec2a7eefd10473c1048c06a7e36915aeb558163821c8d3efbfa3d74f0a54"
+        },
+        {
+          "path": "Cargo.toml",
+          "sha256": "bc8e2b39092151c4ffe31f70cc9a27637ac01f13efad2c924a404bfd151a2d76"
+        },
+        {
+          "path": "assayer/Cargo.toml",
+          "sha256": "d756544d59ba29de2765755e7088af89e83aa661fd4b723a65788d3dafcc0db1"
+        },
+        {
+          "path": "assayer/src/lib.rs",
+          "sha256": "37b7e6913cdcb9f8b7127ae29b0c9ebb8debe96aee2b26225af7213ff7a82282"
+        },
+        {
+          "path": "binius/Cargo.toml",
+          "sha256": "ded752ece5f2ff73e38838f047178ed80cde7b7e4aa185ca41246ee923199e8e"
+        },
+        {
+          "path": "binius/src/lib.rs",
+          "sha256": "8a13cd8faf376db601ce5596bff874329af1edef1858bbf3223fbfa84c7b6603"
+        },
+        {
+          "path": "brakedown/Cargo.toml",
+          "sha256": "c0eb369abd3c8863885708c69a39505a20b55a85343690913e1c38a910c6f345"
+        },
+        {
+          "path": "brakedown/src/expander.rs",
+          "sha256": "c309e10d46622b1ff321a57409ce9cecf9d7631284c8e41acb1e4c73afc0eec7"
+        },
+        {
+          "path": "brakedown/src/lib.rs",
+          "sha256": "995de7bf95b547c6bf2166ceca8ede6df18dbb58ea4067ac17bfbd55fcb1085c"
+        },
+        {
+          "path": "brakedown/src/tensor.rs",
+          "sha256": "cd4f6cdc5452ecd713c078df5dc28da6838b0daf7ea39771265094224c19f8fb"
+        },
+        {
+          "path": "cli/Cargo.toml",
+          "sha256": "74d2b5a2af43e70dbdfb60177b36d00de44516b0c6d61f61edded5400f8a5ec1"
+        },
+        {
+          "path": "cli/src/algo.rs",
+          "sha256": "8a39fb7411c59f7f4a9a566fc693c39b839da879e595f119a7751acd58ffe191"
+        },
+        {
+          "path": "cli/src/artifact.rs",
+          "sha256": "9dc363d277dbe9eb928ea50f0c6cf3c9bf50a2066781a2c6228a4d0f069dbba9"
+        },
+        {
+          "path": "cli/src/assayer.rs",
+          "sha256": "4a602fc5441e1db515a85bb0a2acf81def4303478154c042b9692686e9f5a677"
+        },
+        {
+          "path": "cli/src/commands.rs",
+          "sha256": "a210d17672336d52deca9f9213af7a160f19e02592623ad665b01c885fbd8489"
+        },
+        {
+          "path": "cli/src/field.rs",
+          "sha256": "b0020025226b0a5e308359d65f7cbea7b064e204a0b3d49a179ccd4acc0668f0"
+        },
+        {
+          "path": "cli/src/main.rs",
+          "sha256": "60c62acde4fc2ec3a2143fbcb2ee2980836644466f680609da1e1e2adcc833e3"
+        },
+        {
+          "path": "cli/src/tests.rs",
+          "sha256": "dcf353357965d6159501f24fa32ff0fcf67beda148419104c8a4ca43a9625475"
+        },
+        {
+          "path": "core/Cargo.toml",
+          "sha256": "91ad706a1f90d4fce40abf594112eb1d92821a845c304f71f6ab9b469f490a04"
+        },
+        {
+          "path": "core/src/fri.rs",
+          "sha256": "17978ade5b2f344187ae2293e61f2871bb2a8e32db9684b2f4d7a6f9bab8c841"
+        },
+        {
+          "path": "core/src/lib.rs",
+          "sha256": "4cd735919b67840603b925b15e21a981c5bd628efd008bcf87d466ea5a776e59"
+        },
+        {
+          "path": "core/src/transcript.rs",
+          "sha256": "432a57303ecb0302142fd7859e3750f19be304263144d50fe217918170e8a6b5"
+        },
+        {
+          "path": "core/src/types.rs",
+          "sha256": "b3f5dd5bf695346068d078319efa88cad6e75297c8e5583c1ebe4dc15d8112a6"
+        },
+        {
+          "path": "core/tests/serde_roundtrip.rs",
+          "sha256": "38009eacca04d66c9be90e3ac3b25819bbb101a1cf8e4648e9fc489300f080af"
+        },
+        {
+          "path": "ikat/Cargo.toml",
+          "sha256": "01d55f01e476735813f3ace8eb513024a0d71bb917e46568ed698891cc24d553"
+        },
+        {
+          "path": "ikat/src/lib.rs",
+          "sha256": "567711d380578589fd259c58453abeabdd17158c624246aec8993510ce8f56c3"
+        },
+        {
+          "path": "porphyry/Cargo.toml",
+          "sha256": "91422fc49520c4bfdc65525416695f944fc0331e51fc6421eabcb3a3f00e94bc"
+        },
+        {
+          "path": "porphyry/src/lib.rs",
+          "sha256": "6e8faedfcb328ec6fbd6b61fb60f343f228cff5d5b9279b786b8c8f4aa4e9fac"
+        },
+        {
+          "path": "src/Cargo.toml",
+          "sha256": "9d21ae8599366882120206d52b19ff5319c2a534f9b232db57190e13f9a7b282"
+        },
+        {
+          "path": "src/integration_tests.rs",
+          "sha256": "46999534706a06f06b8f4ae0dd625ab35e17a7cf88f45d31d7a6f9441ca209df"
+        },
+        {
+          "path": "src/lib.rs",
+          "sha256": "cdfbea2b768989edec05a7dade9984025dca32f91a69bc962de3b758afe0a272"
+        }
+      ]
+    }
+  ]
+}

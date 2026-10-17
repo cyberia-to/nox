@@ -1,0 +1,9 @@
+    Checking strata-core v0.1.0
+    Checking cyber-hemera v0.3.1
+    Checking strata-ext v0.1.0
+    Checking strata-compute v0.1.0
+    Checking strata-proof v0.1.0
+    Checking strata-nebu v0.1.1
+    Checking cyber-nox v0.2.0 (/Users/master/.cache/cyber/nox/published-api-baseline/pair-2/baseline/cyber-nox-0.2.0)
+    Checking nox-inherited-std-witness v0.0.0 (/Users/master/.cache/cyber/nox/published-api-baseline/features-1/baseline)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.28s

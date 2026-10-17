@@ -1,0 +1,164 @@
+{
+  "pair": "pair-4",
+  "pair_sha256": "cd51ed96e777f19d951843a2ff8c8bee5fc515887d94fe241d7e59011a8e4a4d",
+  "artifacts": [
+    {
+      "name": "baseline-default",
+      "path": "/Users/master/.cache/cyber/nox/published-api-baseline/api-3/baseline-default/doc/nox.json",
+      "sha256": "74fb861e0e7ace4fdb4370c4371a3bf4ac83e67b330d201cb1bd6947f1377ebf",
+      "bytes": 658984,
+      "dependencies": [
+        {
+          "name": "cyber-hemera",
+          "version": "0.3.1",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "ebcf7ffcd69170adde7e792826d7cececda962ea220b9834c6535bbc71e5a6df"
+        },
+        {
+          "name": "cyber-nox",
+          "version": "0.2.0",
+          "dependencies": [
+            "acpu",
+            "criterion",
+            "cyber-hemera",
+            "cyber-lens-brakedown",
+            "cyber-lens-core",
+            "strata-nebu"
+          ]
+        },
+        {
+          "name": "strata-nebu",
+          "version": "0.1.1",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "f4a881cdb3622cd6b38333246f516c70e3e5c63d2bc0c0e48344d8e7b0392766",
+          "dependencies": [
+            "strata-compute",
+            "strata-core",
+            "strata-ext",
+            "strata-proof"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "current-default",
+      "path": "/Users/master/.cache/cyber/nox/published-api-baseline/api-3/current-default/doc/nox.json",
+      "sha256": "d76991c3363baa2c2c4cbc68216035e5808edd2f45eb915177a4fabb048efb28",
+      "bytes": 537789,
+      "dependencies": [
+        {
+          "name": "cyber-hemera",
+          "version": "0.3.1",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "ebcf7ffcd69170adde7e792826d7cececda962ea220b9834c6535bbc71e5a6df"
+        },
+        {
+          "name": "cyber-nox",
+          "version": "0.2.0",
+          "dependencies": [
+            "acpu",
+            "criterion",
+            "cyber-hemera",
+            "cyber-lens-brakedown",
+            "cyber-lens-core",
+            "strata-nebu"
+          ]
+        },
+        {
+          "name": "strata-nebu",
+          "version": "0.1.1",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "f4a881cdb3622cd6b38333246f516c70e3e5c63d2bc0c0e48344d8e7b0392766",
+          "dependencies": [
+            "strata-compute",
+            "strata-core",
+            "strata-ext",
+            "strata-proof"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "baseline-std",
+      "path": "/Users/master/.cache/cyber/nox/published-api-baseline/api-3/baseline-std/doc/nox.json",
+      "sha256": "adf079ddd929d464cac1e125339d34cf18683d710f067cc07ea219d66f658148",
+      "bytes": 660577,
+      "dependencies": [
+        {
+          "name": "cyber-hemera",
+          "version": "0.3.1",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "ebcf7ffcd69170adde7e792826d7cececda962ea220b9834c6535bbc71e5a6df"
+        },
+        {
+          "name": "cyber-nox",
+          "version": "0.2.0",
+          "dependencies": [
+            "acpu",
+            "criterion",
+            "cyber-hemera",
+            "cyber-lens-brakedown",
+            "cyber-lens-core",
+            "strata-nebu"
+          ]
+        },
+        {
+          "name": "strata-nebu",
+          "version": "0.1.1",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "f4a881cdb3622cd6b38333246f516c70e3e5c63d2bc0c0e48344d8e7b0392766",
+          "dependencies": [
+            "strata-compute",
+            "strata-core",
+            "strata-ext",
+            "strata-proof"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "current-std",
+      "path": "/Users/master/.cache/cyber/nox/published-api-baseline/api-3/current-std/doc/nox.json",
+      "sha256": "b3e285af1fb0d6d5e6263d02a00b3aa8592d497417c192d2c430c6c9245a2553",
+      "bytes": 660637,
+      "dependencies": [
+        {
+          "name": "cyber-hemera",
+          "version": "0.3.1",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "ebcf7ffcd69170adde7e792826d7cececda962ea220b9834c6535bbc71e5a6df"
+        },
+        {
+          "name": "cyber-nox",
+          "version": "0.2.0",
+          "dependencies": [
+            "acpu",
+            "criterion",
+            "cyber-hemera",
+            "cyber-lens-brakedown",
+            "cyber-lens-core",
+            "strata-nebu"
+          ]
+        },
+        {
+          "name": "strata-nebu",
+          "version": "0.1.1",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "f4a881cdb3622cd6b38333246f516c70e3e5c63d2bc0c0e48344d8e7b0392766",
+          "dependencies": [
+            "strata-compute",
+            "strata-core",
+            "strata-ext",
+            "strata-proof"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_sha256": "5b6e560efbc872349a7d97201f0d68f7d713ffc790993936416b40b1f7a566ab",
+  "policy": {
+    "required_exact_locked_tag": "red-unresolved",
+    "replacement_authorized": false,
+    "release_ready": false
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "pair": "pair-4",
+  "pair_sha256": "cd51ed96e777f19d951843a2ff8c8bee5fc515887d94fe241d7e59011a8e4a4d",
+  "cases": [
+    {
+      "name": "baseline-default",
+      "expected_exit_code": 0,
+      "fixture": "/Users/master/.cache/cyber/nox/published-api-baseline/features-3/baseline",
+      "inputs": [
+        {
+          "path": "Cargo.lock",
+          "sha256": "eacf759e20a2704c6ce29d69947fda15c67de145fe936ddd7ebb2b4f881eb999"
+        },
+        {
+          "path": "Cargo.toml",
+          "sha256": "357ab75c21171b3c735a18b6fc141e8be6e8990cee739e0f9c9a8ba1ed40c791"
+        },
+        {
+          "path": "lib.rs",
+          "sha256": "dec56f43cf249f451589ce24591ec0d97e7113f94d84c695e314a3c0bb3ac0d6"
+        }
+      ]
+    },
+    {
+      "name": "baseline-std",
+      "expected_exit_code": 0,
+      "fixture": "/Users/master/.cache/cyber/nox/published-api-baseline/features-3/baseline",
+      "inputs": [
+        {
+          "path": "Cargo.lock",
+          "sha256": "eacf759e20a2704c6ce29d69947fda15c67de145fe936ddd7ebb2b4f881eb999"
+        },
+        {
+          "path": "Cargo.toml",
+          "sha256": "357ab75c21171b3c735a18b6fc141e8be6e8990cee739e0f9c9a8ba1ed40c791"
+        },
+        {
+          "path": "lib.rs",
+          "sha256": "dec56f43cf249f451589ce24591ec0d97e7113f94d84c695e314a3c0bb3ac0d6"
+        }
+      ]
+    },
+    {
+      "name": "current-default",
+      "expected_exit_code": 101,
+      "fixture": "/Users/master/.cache/cyber/nox/published-api-baseline/features-3/current",
+      "inputs": [
+        {
+          "path": "Cargo.lock",
+          "sha256": "eacf759e20a2704c6ce29d69947fda15c67de145fe936ddd7ebb2b4f881eb999"
+        },
+        {
+          "path": "Cargo.toml",
+          "sha256": "100701822cda05fa9265a5fa01a20f6be0b4aef6dc9af500618a6709c2fcd594"
+        },
+        {
+          "path": "lib.rs",
+          "sha256": "dec56f43cf249f451589ce24591ec0d97e7113f94d84c695e314a3c0bb3ac0d6"
+        }
+      ]
+    },
+    {
+      "name": "current-std",
+      "expected_exit_code": 0,
+      "fixture": "/Users/master/.cache/cyber/nox/published-api-baseline/features-3/current",
+      "inputs": [
+        {
+          "path": "Cargo.lock",
+          "sha256": "eacf759e20a2704c6ce29d69947fda15c67de145fe936ddd7ebb2b4f881eb999"
+        },
+        {
+          "path": "Cargo.toml",
+          "sha256": "100701822cda05fa9265a5fa01a20f6be0b4aef6dc9af500618a6709c2fcd594"
+        },
+        {
+          "path": "lib.rs",
+          "sha256": "dec56f43cf249f451589ce24591ec0d97e7113f94d84c695e314a3c0bb3ac0d6"
+        }
+      ]
+    }
+  ],
+  "source_sha256": "8a0eb29ec4ce3d107f4e905b8a82e271b2d155a457cbe812f8dcc5b3a31f84e0",
+  "policy": {
+    "required_exact_locked_tag": "red-unresolved",
+    "replacement_authorized": false,
+    "release_ready": false
+  }
+}

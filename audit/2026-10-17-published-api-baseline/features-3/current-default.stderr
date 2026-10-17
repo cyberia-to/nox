@@ -1,0 +1,25 @@
+    Checking strata-core v0.1.0
+    Checking cyber-hemera v0.3.1
+    Checking strata-ext v0.1.0
+    Checking strata-compute v0.1.0
+    Checking strata-proof v0.1.0
+    Checking strata-nebu v0.1.1
+    Checking cyber-nox v0.2.0 (/Users/master/.cache/cyber/nox/published-api-baseline/pair-4/current/cyber-nox-0.2.0)
+    Checking nox-inherited-std-witness v0.0.0 (/Users/master/.cache/cyber/nox/published-api-baseline/features-3/current)
+error[E0277]: the trait bound `OutputReader: std::io::Read` is not satisfied
+ --> lib.rs:3:33
+  |
+3 |     let _ = std::io::Read::read(reader, &mut byte);
+  |             ------------------- ^^^^^^ the trait `std::io::Read` is not implemented for `OutputReader`
+  |             |
+  |             required by a bound introduced by this call
+
+error[E0599]: no method named `to_hex` found for reference `&cyber_hemera::Hash` in the current scope
+ --> lib.rs:4:10
+  |
+4 |     hash.to_hex()
+  |          ^^^^^^ method not found in `&cyber_hemera::Hash`
+
+Some errors have detailed explanations: E0277, E0599.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `nox-inherited-std-witness` (lib) due to 2 previous errors

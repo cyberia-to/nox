@@ -1,0 +1,8 @@
+{
+  "tooling_sha256": "18dcb9fc24f8fd80ee6d9d7ab24258b0957b5fae411a3038f8ed6343b9f898c1",
+  "runner_sha256": "7fc54fafb1d375591786e056310128cc807911ec661eaf5112f94bb6133b7a50",
+  "source_sha256": "686e179925c4956364e5e9876d51e4d1abe268ff163ea3df334080ad81546b3a",
+  "compared_capsule_sha256": "c42fedba5bb9a0f4385dc3b677677a417eb9120dde63efdd2fb74f601fcf446b",
+  "default": "229 pass / 31 skip",
+  "std": "229 pass / 31 skip"
+}

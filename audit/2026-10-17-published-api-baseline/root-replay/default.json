@@ -1,0 +1,26 @@
+{
+  "command": [
+    "cargo-semver-checks",
+    "check-release",
+    "--current-rustdoc",
+    "/Users/master/.cache/cyber/nox/published-api-root-verification-20261017/current-default.json",
+    "--baseline-rustdoc",
+    "/Users/master/.cache/cyber/nox/published-api-root-verification-20261017/baseline-default.json",
+    "--release-type",
+    "patch",
+    "--color",
+    "never"
+  ],
+  "cwd": "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox",
+  "env": {
+    "RUSTUP_TOOLCHAIN": "1.95.0",
+    "RUSTFLAGS": "",
+    "RUSTDOCFLAGS": ""
+  },
+  "started": "2026-10-17T10:08:49.516417+00:00",
+  "finished": "2026-10-17T10:08:49.541237+00:00",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "bddc8fc09b6f2c471f3aeba12c6e40413158e2f6e1ec630bb4c1904aa45b1e17"
+}
