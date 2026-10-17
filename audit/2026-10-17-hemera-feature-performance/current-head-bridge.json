@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-10-17T14:24:07.781649+00:00",
+  "scope": "Read-only source identity bridge; no builds, compiler runs or timing",
+  "worktree_head": "ec4ccbf4a74819c349e1ec3be38f0ac9276364b7",
+  "frozen_nox_source": "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+  "observed_default_head": "262de214521c47d18cd539040280f22e4b1fd8a4",
+  "production_change_merge": "7a52650ab50c3804a9620172667dbdb94df28f1c",
+  "preparation_pr": "https://github.com/cyberia-to/nox/pull/39",
+  "production_pr": "https://github.com/cyberia-to/nox/pull/36",
+  "production_delta_equals_pr36": true,
+  "unchanged_after_pr36_paths": [
+    "cli",
+    "rs",
+    "Cargo.toml",
+    "Cargo.lock"
+  ],
+  "changed_files": [
+    {
+      "path": "cli/main.rs",
+      "frozen_base": {
+        "blob": "06c3998f8504bbd607dce0a73f37efdb64bf5e88",
+        "sha256": "233bb92cd27ec177f309a9ea54fa0e6aab75e12e0af0ef0e8d9ca55d2d9e1d10"
+      },
+      "observed_head": {
+        "blob": "483304c9c04c27303eb05018081b166226e8e50a",
+        "sha256": "2fd0d987427ac1f986c6f4fb1135cfa7ded427f6b9b9b76d8aaffb247789ce54"
+      }
+    },
+    {
+      "path": "rs/data/cost.rs",
+      "frozen_base": {
+        "blob": "25737b889e0194381a3664452a121d990b1f2a47",
+        "sha256": "746b16cff3747b2f8824b5f9163d73810adbbebda330ddd3674208385455e1b9"
+      },
+      "observed_head": {
+        "blob": "b98eb7477e8da3bcf184fe2d2fca42ea2cce4c5e",
+        "sha256": "cb80659c3f955da77e1b87d0dd55b2c51b8b149f3e7c9877cdc9c555b7bed08f"
+      }
+    },
+    {
+      "path": "rs/data/hash.rs",
+      "frozen_base": {
+        "blob": "98a3420084321a200ade432726ef33fe0376eb1c",
+        "sha256": "a1cbf7c94e4f02789d3b61f5a73eddd066652e55a4a04f1414d752d513281967"
+      },
+      "observed_head": {
+        "blob": "9f5ae94ff49a74381d35ca33a246fb8fac2c87ef",
+        "sha256": "925271f0a63c760d3cd33d2c97c3f5a70914f70e3b4f477311e742060727a7fc"
+      }
+    },
+    {
+      "path": "rs/data/reduction.rs",
+      "frozen_base": {
+        "blob": "b8f4684f94eb6a6bba224c6d37f7a608e561ec3b",
+        "sha256": "e9babd1a16b19ad62f4844a2e6e0876205b93349ad21ee5df479bed79b47cb27"
+      },
+      "observed_head": {
+        "blob": "79772e77d42aa846825a497bc8124bd6e2764796",
+        "sha256": "b0e14ac3c7374e22046401414c0ac0edf4b0c87d0521fd6a47773eb6952a8d89"
+      }
+    },
+    {
+      "path": "rs/encode.rs",
+      "frozen_base": {
+        "blob": "01d7657076464c1772282eb2c037f119c7b555e9",
+        "sha256": "a8cf9b0ae042a37e87aa3fd02bf7e85b62f18b751a15a03809a82a2494fab0ff"
+      },
+      "observed_head": {
+        "blob": "d83ac8d6a41eb5747acd478ddcda75409e60a2bc",
+        "sha256": "3fb70b0813c3707706d4b85f8aa9b5da31e153de9847793376a096e236723323"
+      }
+    },
+    {
+      "path": "rs/jets/backends/honeycrisp.rs",
+      "frozen_base": {
+        "blob": "9073c2e5345ec2357e77a5fdcc3edfe79ed5da5f",
+        "sha256": "f11f2a6ab7f004bb0225d538ec35e50ce6983568280483e8c13d435890ed2048"
+      },
+      "observed_head": {
+        "blob": "5278e61b06ebcc6c51791429264cc70577f765d2",
+        "sha256": "030ad802e0f5ebc555ffcadc226052ddd712de7e298b94d0f6c390200c8e2ac9"
+      }
+    },
+    {
+      "path": "rs/jets/fri_fold.rs",
+      "frozen_base": {
+        "blob": "38ceba3e312311e5b3ea8e6060a32860ec1536ea",
+        "sha256": "c8fd03c41bf1daa4fe8d6c3c5c495cb9bf79ec60c8c6ef86dcade8b6e90e59eb"
+      },
+      "observed_head": {
+        "blob": "c2cbb1a23eb7a3e2f62e73d81de8077656203969",
+        "sha256": "6bbd1b31382d0e938a47113ba1208ba72316f2a38a10cb633693e74be744f749"
+      }
+    },
+    {
+      "path": "rs/jets/merkle_verify.rs",
+      "frozen_base": {
+        "blob": "227e1e8a96a61aef17531500562109650025f128",
+        "sha256": "0aafdb8b2be902324e2ab2d9856bc088cab4bf9f54ba4930110a92aa44f2c0fa"
+      },
+      "observed_head": {
+        "blob": "ee11ce3ecf0e8c2b0ad8a2c2acdce51aa6750240",
+        "sha256": "1f88ca87be3e1c414852df22f5f01c1697cd6862c961b8f03822fa3359e49894"
+      }
+    },
+    {
+      "path": "rs/jets/ntt.rs",
+      "frozen_base": {
+        "blob": "1ebff782876056b5e1c60af52e93f696591be2ab",
+        "sha256": "38f8f01827e4b7e72faa7914d1f18117942c7ebc158ca7c59844012b4ff72644"
+      },
+      "observed_head": {
+        "blob": "6b8cbe507402154aae54e7c2e8331e57e50c8af4",
+        "sha256": "5387669d462a66b64bd9fee407ec35e008cc25c1c2d57aa9628e22a36cf2dccb"
+      }
+    },
+    {
+      "path": "rs/jets/poly_eval.rs",
+      "frozen_base": {
+        "blob": "42deaab491245b65b590ee52b43932ed6d39b8b3",
+        "sha256": "983e9e76df7053cc1f62e61b5c8a8c9945dc2b4d468270517f92eafdfe3d07f4"
+      },
+      "observed_head": {
+        "blob": "89d0ab964fb9e35665d5f6e886f94a07923da728",
+        "sha256": "7f1d1512ab1b12cc4a462b4fe70a1ed776fca16f888894e4f2ab57de9ada9021"
+      }
+    },
+    {
+      "path": "rs/reduce.rs",
+      "frozen_base": {
+        "blob": "c55de0f612e85714ad44ad943f855841f99d46fd",
+        "sha256": "101fe7a38d814006b666cc609c6bea3f2ae13d6feebeca191a8b8b33628e3e8a"
+      },
+      "observed_head": {
+        "blob": "6aa9b1cef81caf9149403f3f9822a62ced41173a",
+        "sha256": "984e930fcc0c31e3700bfb2bd476aed8ea46d2b70f5cf6d8581a976f4865a9c8"
+      }
+    }
+  ],
+  "unchanged_files": [
+    {
+      "path": "Cargo.toml",
+      "frozen_base": {
+        "blob": "8aa29fbab134ff089d08bf66e67efff7cc5a110e",
+        "sha256": "ad7773752267560ef10a2c82d6e5d5352d8a96ba7f362816cf2695f1d3396753"
+      },
+      "observed_head": {
+        "blob": "8aa29fbab134ff089d08bf66e67efff7cc5a110e",
+        "sha256": "ad7773752267560ef10a2c82d6e5d5352d8a96ba7f362816cf2695f1d3396753"
+      }
+    },
+    {
+      "path": "Cargo.lock",
+      "frozen_base": {
+        "blob": "2402417598c63c69ba9a3a2eb1414d91cfd62c1f",
+        "sha256": "9bc954f1ed09d6dc9b49f5d35e76289ef700567ee36a9b8172d15588b179a179"
+      },
+      "observed_head": {
+        "blob": "2402417598c63c69ba9a3a2eb1414d91cfd62c1f",
+        "sha256": "9bc954f1ed09d6dc9b49f5d35e76289ef700567ee36a9b8172d15588b179a179"
+      }
+    },
+    {
+      "path": "rs/Cargo.toml",
+      "frozen_base": {
+        "blob": "443daf70bf21a36f0a5fee996d07d998cb0bdc73",
+        "sha256": "c40c954cf23798f1f82e3aae9b882651a4431bf4d263da9382f5f89e79652689"
+      },
+      "observed_head": {
+        "blob": "443daf70bf21a36f0a5fee996d07d998cb0bdc73",
+        "sha256": "c40c954cf23798f1f82e3aae9b882651a4431bf4d263da9382f5f89e79652689"
+      }
+    },
+    {
+      "path": "rs/benches/reduction.rs",
+      "frozen_base": {
+        "blob": "8e4f3fffbe58520413b7a9c7a1bdbd2f31d25c9e",
+        "sha256": "4e70a210cb805fc643ecd89c6a7ade473e897e736e4cbbec0d0274a9f03f4897"
+      },
+      "observed_head": {
+        "blob": "8e4f3fffbe58520413b7a9c7a1bdbd2f31d25c9e",
+        "sha256": "4e70a210cb805fc643ecd89c6a7ade473e897e736e4cbbec0d0274a9f03f4897"
+      }
+    }
+  ],
+  "delta": {
+    "command": [
+      "git",
+      "diff",
+      "--binary",
+      "--full-index",
+      "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+      "262de214521c47d18cd539040280f22e4b1fd8a4",
+      "--",
+      "cli/main.rs",
+      "rs/data/cost.rs",
+      "rs/data/hash.rs",
+      "rs/data/reduction.rs",
+      "rs/encode.rs",
+      "rs/jets/backends/honeycrisp.rs",
+      "rs/jets/fri_fold.rs",
+      "rs/jets/merkle_verify.rs",
+      "rs/jets/ntt.rs",
+      "rs/jets/poly_eval.rs",
+      "rs/reduce.rs"
+    ],
+    "exit_code": 0,
+    "compressed_path": "current-head-delta.patch.gz",
+    "uncompressed_sha256": "f7b1158e5688de7806152190eebcdcf405e7af94713ad636415c575552ba23f2",
+    "compressed_sha256": "f55ff91ae4de3ae2c7e5f3395a196fcf5fbca9e42d273af3066bfbf503ae6e5a"
+  },
+  "pr_snapshot": {
+    "command": [
+      "gh",
+      "pr",
+      "view",
+      36,
+      "--json",
+      "number,title,body,url,state,mergedAt,mergeCommit,headRefOid"
+    ],
+    "exit_code": 0,
+    "path": "current-head-pr36.json",
+    "sha256": "58bcdd2adb4e2ef8b56ef01e04d1652e330115d2a5bcd7d45d66690e82fbb87c",
+    "validation_scope": "PR-body gate claims read only; no raw gate receipts added by PR36 and no gates rerun here"
+  },
+  "freeze_sha256": "b0dd79a69c3c9eec478984976fe65cafbc3f89cef1316674c7e39baca6425bee",
+  "frozen_files_checked": 256,
+  "timed_runs": 0,
+  "conclusion": "C/D remains fixed to 64d091e5 at freeze. No compiler-input equality or performance verdict transfers to observed master 262de214."
+}
