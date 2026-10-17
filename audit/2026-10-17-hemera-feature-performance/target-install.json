@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/Users/master/.cargo/bin/rustup",
+    "target",
+    "add",
+    "--toolchain",
+    "1.95.0",
+    "thumbv7em-none-eabi"
+  ],
+  "rustup_sha256": "ec1b9233e7f72990ecd8e62063fa7f6c3dfc2bec8e97f88bff165f9100ac696a",
+  "started": "2026-10-17T13:13:17.197147+00:00",
+  "finished": "2026-10-17T13:13:17.290437+00:00",
+  "revision": "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+  "result": {
+    "stdout": "",
+    "stderr": "info: component rust-std for target thumbv7em-none-eabi is up to date\n",
+    "exit_code": 0
+  }
+}
