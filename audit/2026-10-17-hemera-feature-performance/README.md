@@ -1,8 +1,8 @@
 # Matched Hemera feature performance — prepared, timing held
 
 The source/tool/build preflight passes. No benchmark has executed in this
-investigation. The accepted finite schedule remains pending root review of the
-freeze and an explicitly coordinated quiet window. Active unrelated compute
+investigation. Root review of the freeze is complete; the accepted finite
+schedule awaits an explicitly coordinated quiet window. Active unrelated compute
 currently prevents that window. The historical initial 5/9 and repeat 6/9 red
 threshold crossings remain red/unverified.
 
@@ -12,6 +12,10 @@ as `edba749`; owning compiler inputs remain fixed at
 lockfile, version or benchmark source was edited. All commands below take the
 owning repository argument. Their complete argv, paths, hashes and streams are
 retained beside this report.
+
+The [post-merge source bridge](current-head-bridge.md) records production changes
+in master at `262de214`. C/D remains scoped to the frozen `64d091e5` inputs;
+no current-master performance result is established.
 
 ## Inputs and builds
 
