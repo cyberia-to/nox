@@ -1,0 +1,43 @@
+diff --git a/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/nox/CLAUDE.md b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/nox/CLAUDE.md
+index b13ca83..c5371a8 100644
+--- a/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/nox/CLAUDE.md
++++ b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/nox/CLAUDE.md
+@@ -570,3 +570,16 @@ Layer 2: 36 genesis jets (hash, poly_eval, merkle_verify, fri_fold, ntt families
+ 
+ - `Cargo.toml` dependency versions — discuss before changing
+ - `specs/` — canonical spec, change there first then propagate
++
++
++## no_std dependency gate
++
++Every commit runs this gate from the repository root with committed sibling
++checkouts and the `thumbv7em-none-eabi` target installed:
++
++```sh
++cargo build -p cyber-nox --no-default-features --target thumbv7em-none-eabi --locked
++```
++
++A missing target or dependency is a red prerequisite, not a passed gate. This
++checks real library code generation without std; host tests do not replace it.
+diff --git a/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/nox/rs/Cargo.toml b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/nox/rs/Cargo.toml
+index 341cb82..443daf7 100644
+--- a/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/nox/rs/Cargo.toml
++++ b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/nox/rs/Cargo.toml
+@@ -14,7 +14,7 @@ path = "lib.rs"
+ 
+ [features]
+ default = []
+-std = []
++std = ["hemera/std"]
+ # threaded par_binary executor — opt-in. T1 (sequential-equivalence)
+ # makes the sequential path canonical; forking the arena per binary
+ # pattern is expensive, so std alone must not switch execution mode
+@@ -26,7 +26,7 @@ honeycrisp = ["std", "dep:acpu"]
+ 
+ [dependencies]
+ nebu = { package = "strata-nebu", version = "0.1", path = "../../strata/nebu/rs" }
+-hemera = { package = "cyber-hemera", version = "0.3", path = "../../hemera/rs" }
++hemera = { package = "cyber-hemera", version = "0.3", path = "../../hemera/rs", default-features = false }
+ cyber-lens-core = { version = "0.1", path = "../../lens/core", optional = true }
+ cyber-lens-brakedown = { version = "0.1", path = "../../lens/brakedown", optional = true }
+ acpu = { version = "0.2", optional = true }

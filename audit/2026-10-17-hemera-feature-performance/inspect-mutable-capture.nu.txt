@@ -1,0 +1,87 @@
+use control.nu *
+def main [repo: path, cache: path] {
+    let repo = ($repo | path expand)
+    let cache = ($cache | path expand)
+    let out = ($repo | path join audit/2026-10-17-hemera-feature-performance)
+    require (not ($out | path join code.json | path exists)) 'one inspection epoch'
+    let run_env = (environment $cache A)
+    let helper_dir = ($cache | path join helpers)
+    mkdir $helper_dir ($cache | path join sections)
+    for name in [macho measure] {
+        let command = [$run_env.RUSTC --edition=2024 -Dwarnings -O ($out | path join $'($name).rs') -o ($helper_dir | path join $name)]
+        let receipt = (capture $command $run_env $repo $out $'compile-($name)')
+        require ($receipt.exit_code == 0) $'audit helper compile ($name)'
+    }
+    let objdump = (^xcrun --find llvm-objdump | str trim)
+    let nm = (^xcrun --find llvm-nm | str trim)
+    let builds = (open ($out | path join builds.json))
+    mut inspections = []
+    for b in $builds.builds {
+        require ((sha $b.binary) == $b.sha256) 'unchanged frozen binary'
+        let dir = ($cache | path join sections $b.cell)
+        let sections_command = [($helper_dir | path join macho) $b.binary $dir]
+        let sections_result = (capture $sections_command $run_env $repo $out $'sections-($b.cell)')
+        require ($sections_result.exit_code == 0) 'Mach-O helper result'
+        let sections = (open --raw ($dir | path join sections.tsv) | from tsv | each {|r|
+            let backed = ($r.file_backed == 'true')
+            $r | update address ($r.address | into int) | update file_offset ($r.file_offset | into int)
+                | update bytes ($r.bytes | into int) | update flags ($r.flags | into int) | update file_backed $backed
+                | insert sha256 (if $backed { sha ($dir | path join $'($r.segment).($r.section).bin') } else { null })
+        })
+        let nm_result = (capture [$nm --numeric-sort --demangle $b.binary] $run_env $repo $out $'symbols-($b.cell)')
+        require ($nm_result.exit_code == 0) 'raw symbol inspection'
+        let symbols = (open --raw ($out | path join $'symbols-($b.cell).stdout') | lines
+            | parse --regex '^(?<address>[0-9a-f]+) (?<kind>.) (?<name>.+)$'
+            | each {|s| $s | update address ($s.address | into int --radix 16)})
+        let text_section = ($sections | where segment == __TEXT and section == __text | first)
+        let code = (open --raw ($dir | path join __TEXT.__text.bin) | into binary)
+        let functions = (open --raw ($dir | path join functions.tsv) | from tsv | each {|f|
+            let address = ($f.address | into int)
+            let span = ($f.span_to_next_start | into int)
+            let begin = $address - $text_section.address
+            let names = ($symbols | where address == $address | get name)
+            {address: $address, span_to_next_start: $span, raw_symbols: ($f.symbols | default ''), names: $names,
+                normalized_names: ($names | each {|n| $n | str replace --all --regex '::h[0-9a-f]{16}' ''}),
+                code_sha256: ($code | bytes at $begin..($begin + $span - 1) | hash sha256),
+                relevant_label: ($names | any {|n| $n =~ '(nox::|hemera::|nebu::|reduction::)'})}
+        })
+        let disassembly = (capture [$objdump --macho --disassemble --demangle $b.binary] $run_env $repo $out $'disassembly-($b.cell)')
+        require ($disassembly.exit_code == 0) 'raw disassembly inspection'
+        let loads = (capture [/usr/bin/otool -l $b.binary] $run_env $repo $out $'load-commands-($b.cell)')
+        require ($loads.exit_code == 0) 'Mach-O load commands'
+        let raw = ($out | path join $'disassembly-($b.cell).stdout')
+        let normalized = (open --raw $raw | str replace --all $b.binary '<BINARY>'
+            | str replace --all --regex '::h[0-9a-f]{16}' '::h<CRATE-HASH>'
+            | str replace --all --regex '(?m)^[0-9a-f]{16}\s+' '<ADDRESS> ')
+        let normpath = ($out | path join $'disassembly-($b.cell).normalized.txt')
+        $normalized | save $normpath
+        ^gzip -n $raw $normpath
+        $inspections = ($inspections | append {cell: $b.cell, binary_sha256: $b.sha256, sections: $sections,
+            functions: $functions, normalized_disassembly_sha256: ($normalized | hash sha256),
+            normalization: 'replace binary path, Rust ::h + 16 hex symbol suffixes, and leading 16-hex instruction addresses only; operands unchanged',
+            function_span_policy: 'LC_FUNCTION_STARTS to next function start (last to text end), including any alignment padding; exact semantic function size unknown'})
+    }
+    let comparisons = ([[A B] [C D] [A P] [B D]] | each {|pair|
+        let a = ($inspections | where cell == $pair.0 | first)
+        let b = ($inspections | where cell == $pair.1 | first)
+        {parent: $pair.0, candidate: $pair.1,
+            sections: ($a.sections | each {|s|
+                let t = ($b.sections | where segment == $s.segment and section == $s.section | first)
+                {segment: $s.segment, section: $s.section, parent_bytes: $s.bytes, candidate_bytes: $t.bytes,
+                    addresses_equal: ($s.address == $t.address), file_backed: $s.file_backed,
+                    raw_bytes_equal: (if $s.file_backed { $s.sha256 == $t.sha256 } else { null })}
+            }), normalized_disassembly_equal: ($a.normalized_disassembly_sha256 == $b.normalized_disassembly_sha256),
+            relevant_functions: ($a.functions | where relevant_label | each {|f|
+                let matched = ($b.functions | where {|g| $g.normalized_names == $f.normalized_names})
+                {names: $f.normalized_names, parent_address: $f.address, parent_span: $f.span_to_next_start,
+                    candidate_matches: ($matched | each {|g| {address: $g.address, span: $g.span_to_next_start,
+                        bytes_equal: ($g.code_sha256 == $f.code_sha256)}})}
+            })}
+    })
+    {inspections: $inspections, comparisons: $comparisons,
+        helper_sources: ([macho.rs measure.rs inspect.nu] | each {|n| {path: $n, sha256: (sha ($out | path join $n))}}),
+        helpers: ([macho measure] | each {|n| let p = ($helper_dir | path join $n); {path: $p, sha256: (sha $p)}}),
+        scope: 'All raw section bytes and function-start spans retained; symbol label projection cannot establish a complete reachable call graph. Link-driver rustc invocations retained in Cargo -vv; child linker argv was not instrumented.'
+    } | to json | save ($out | path join code.json)
+    print ($comparisons | each {|r| {pair: $'($r.parent)/($r.candidate)', changed_sections: ($r.sections | where raw_bytes_equal == false | get section), normalized_disassembly_equal: $r.normalized_disassembly_equal}} | to json)
+}

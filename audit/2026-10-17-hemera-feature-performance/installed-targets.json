@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/Users/master/.cargo/bin/rustup",
+    "target",
+    "list",
+    "--installed",
+    "--toolchain",
+    "1.95.0"
+  ],
+  "observed": "2026-10-17T13:13:00.200355+00:00",
+  "revision": "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+  "result": {
+    "stdout": "aarch64-apple-darwin\nthumbv7em-none-eabi\n",
+    "stderr": "",
+    "exit_code": 0
+  }
+}
