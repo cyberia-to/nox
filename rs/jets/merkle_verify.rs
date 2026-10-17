@@ -209,9 +209,7 @@ mod tests {
 
     /// 4-leaf tree. Returns (root, leaf0_digest, path-to-root steps for leaf0:
     /// [(sibling, dir), (sibling, dir)]).
-    fn four_leaf_tree<const N: usize>(
-        ar: &mut Reduction<N>,
-    ) -> (Order, Order, Vec<(Order, u64)>) {
+    fn four_leaf_tree<const N: usize>(ar: &mut Reduction<N>) -> (Order, Order, Vec<(Order, u64)>) {
         let a0 = ar.atom(g(100)).unwrap();
         let l0 = nox_hash(ar, a0);
         let a1 = ar.atom(g(200)).unwrap();
@@ -240,21 +238,30 @@ mod tests {
         declared_depth: u64,
         budget: u64,
     ) -> Outcome {
-        let depth_id  = ar.atom(g(declared_depth)).unwrap();
+        let depth_id = ar.atom(g(declared_depth)).unwrap();
         let formula_p = ar.atom(g(0)).unwrap();
-        let root_f    = ar.pair(root, formula_p).unwrap();
-        let meta      = ar.pair(depth_id, root_f).unwrap();
-        let mut path  = ar.atom(g(0)).unwrap(); // terminator
+        let root_f = ar.pair(root, formula_p).unwrap();
+        let meta = ar.pair(depth_id, root_f).unwrap();
+        let mut path = ar.atom(g(0)).unwrap(); // terminator
         for &(sibling, dir) in steps.iter().rev() {
             let dir_atom = ar.atom(g(dir)).unwrap();
-            let step     = ar.pair(sibling, dir_atom).unwrap();
+            let step = ar.pair(sibling, dir_atom).unwrap();
             path = ar.pair(step, path).unwrap();
         }
-        let data       = ar.pair(current, path).unwrap();
-        let object     = ar.pair(meta, data).unwrap();
+        let data = ar.pair(current, path).unwrap();
+        let object = ar.pair(meta, data).unwrap();
         let dummy_body = ar.atom(g(0)).unwrap();
-        let mut row    = TraceRow::default();
-        merkle_verify_jet(ar, object, dummy_body, budget, &NullCalls, &mut NoTrace, 0, &mut row)
+        let mut row = TraceRow::default();
+        merkle_verify_jet(
+            ar,
+            object,
+            dummy_body,
+            budget,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        )
     }
 
     /// Build calling object and run merkle_verify_jet.

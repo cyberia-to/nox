@@ -145,7 +145,10 @@ mod tests {
 
     #[test]
     fn sum1_saturates_instead_of_overflowing() {
-        assert_eq!(Cost::sum1(u64::MAX, Cost::Exact(u64::MAX)), Cost::Exact(u64::MAX));
+        assert_eq!(
+            Cost::sum1(u64::MAX, Cost::Exact(u64::MAX)),
+            Cost::Exact(u64::MAX)
+        );
     }
 
     #[test]

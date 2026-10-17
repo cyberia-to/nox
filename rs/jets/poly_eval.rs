@@ -271,16 +271,25 @@ mod tests {
     #[test]
     fn k_at_bit_width_is_rejected_not_a_shift_panic() {
         let mut ar = Reduction::<256>::new();
-        let k_id  = ar.atom(g(64)).unwrap();
+        let k_id = ar.atom(g(64)).unwrap();
         let dummy = ar.atom(g(0)).unwrap();
-        let lhs   = ar.pair(k_id, dummy).unwrap();
-        let leaf  = ar.atom(g(0)).unwrap();
-        let term  = ar.atom(g(0)).unwrap();
-        let rhs   = ar.pair(leaf, term).unwrap();
-        let obj   = ar.pair(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0)).unwrap();
+        let lhs = ar.pair(k_id, dummy).unwrap();
+        let leaf = ar.atom(g(0)).unwrap();
+        let term = ar.atom(g(0)).unwrap();
+        let rhs = ar.pair(leaf, term).unwrap();
+        let obj = ar.pair(lhs, rhs).unwrap();
+        let body = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
-        match poly_eval_jet(&mut ar, obj, body, u64::MAX, &NullCalls, &mut NoTrace, 0, &mut row) {
+        match poly_eval_jet(
+            &mut ar,
+            obj,
+            body,
+            u64::MAX,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        ) {
             Outcome::Error(ErrorKind::TypeError) => {}
             o => panic!("expected TypeError, got {:?}", o),
         }
@@ -300,20 +309,29 @@ mod tests {
         // which `Vec::with_capacity` turns into an unconditional "capacity
         // overflow" process abort, confirmed pre-fix on this exact input.
         let huge_k = nebu::field::P - 64;
-        let k_id  = ar.atom(g(huge_k)).unwrap();
+        let k_id = ar.atom(g(huge_k)).unwrap();
         let dummy = ar.atom(g(0)).unwrap();
-        let lhs   = ar.pair(k_id, dummy).unwrap();
-        let e0    = ar.atom(g(3)).unwrap();
-        let e1    = ar.atom(g(7)).unwrap();
-        let tree  = ar.pair(e0, e1).unwrap(); // length 2 — matches the masked `expected`
-        let term  = ar.atom(g(0)).unwrap();
-        let pt_h  = ar.atom(g(0)).unwrap();
-        let pt    = ar.pair(pt_h, term).unwrap();
-        let rhs   = ar.pair(tree, pt).unwrap();
-        let obj   = ar.pair(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0)).unwrap();
+        let lhs = ar.pair(k_id, dummy).unwrap();
+        let e0 = ar.atom(g(3)).unwrap();
+        let e1 = ar.atom(g(7)).unwrap();
+        let tree = ar.pair(e0, e1).unwrap(); // length 2 — matches the masked `expected`
+        let term = ar.atom(g(0)).unwrap();
+        let pt_h = ar.atom(g(0)).unwrap();
+        let pt = ar.pair(pt_h, term).unwrap();
+        let rhs = ar.pair(tree, pt).unwrap();
+        let obj = ar.pair(lhs, rhs).unwrap();
+        let body = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
-        match poly_eval_jet(&mut ar, obj, body, u64::MAX, &NullCalls, &mut NoTrace, 0, &mut row) {
+        match poly_eval_jet(
+            &mut ar,
+            obj,
+            body,
+            u64::MAX,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        ) {
             Outcome::Error(ErrorKind::TypeError) => {}
             o => panic!("expected TypeError, got {:?}", o),
         }

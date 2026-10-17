@@ -119,7 +119,10 @@ mod tests {
         let d = [g(1), g(0x0102_0304_0506_0708), g(0), g(0)];
         let bytes = digest_bytes(&d);
         assert_eq!(&bytes[0..8], &[1, 0, 0, 0, 0, 0, 0, 0]);
-        assert_eq!(&bytes[8..16], &[0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01]);
+        assert_eq!(
+            &bytes[8..16],
+            &[0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01]
+        );
     }
 
     // digest_from_bytes canonicalizes every limb (its own doc comment says so):
