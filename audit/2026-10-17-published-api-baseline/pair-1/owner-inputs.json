@@ -1,0 +1,10 @@
+{
+  "command": [
+    "nu",
+    "-c",
+    "use audit/2026-10-17-published-api-baseline/support.nu *; owner-inputs ."
+  ],
+  "exit_code": 1,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "a36b54133779928e3df53eb81a6867cc9f9c3c85545f7a18aec92143d37b0d21"
+}

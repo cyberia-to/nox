@@ -1,0 +1,31 @@
+{
+  "pair": "pair-2",
+  "api": "api-2",
+  "files": [
+    {
+      "path": "baseline-default.json",
+      "sha256": "ae7730e569c3424dc1576a19ed47d880e0e8faf4bcfca219b5ae5fd86771f176"
+    },
+    {
+      "path": "current-default.json",
+      "sha256": "45b10ae893a3ad371c81060253bf94e2a439447feca385aa8b57b1847cbc7d25"
+    },
+    {
+      "path": "baseline-std.json",
+      "sha256": "4873b5821c1e4df5d4d028242761beedfd7147fe16a5dad9a610a680b24ade6d"
+    },
+    {
+      "path": "current-std.json",
+      "sha256": "3c7a00c0da8b9bc2031cd6a124dc53f41ec92d9b067275d4a5b53351c36ba2e4"
+    },
+    {
+      "path": "baseline.crate",
+      "sha256": "7c807c1b53e66cea79e8e130ca938450029af3f096984a2839fee6443a171b3f"
+    },
+    {
+      "path": "current.crate",
+      "sha256": "75f2a7af442eda05b1985b6e6bd0863036e4a822041c9fcb00b7049213d8663f"
+    }
+  ],
+  "sha256": "a726e925786c1801a435a61447772da50ab09365dc46773a63c453f6cbf8060c"
+}

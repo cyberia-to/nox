@@ -1,0 +1,30 @@
+{
+  "head": "bac9dcc0bfa4444e6942b2dae273a434b444454e",
+  "source_sha256": "a697240541739fc2cb0a79c451b91667a9d6865a78a78470efcc7f77fee89d37",
+  "source_before_after": "equal",
+  "command": [
+    "cargo",
+    "build",
+    "-p",
+    "cyber-nox",
+    "--no-default-features",
+    "--target",
+    "thumbv7em-none-eabi",
+    "--locked",
+    "--offline"
+  ],
+  "cwd": "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox",
+  "started": "2026-10-17T10:07:06.568968+00:00",
+  "finished": "2026-10-17T10:07:07.763987+00:00",
+  "exit_code": 0,
+  "cargo_target": "/Users/master/.cache/cyber/nox/published-api-baseline/owner",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)",
+  "rustc_path": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc",
+  "rustdoc_path": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustdoc",
+  "rustflags": "-Dwarnings",
+  "rustdocflags": "-Dwarnings",
+  "jobs": "2",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "60ae70588e7337f67e063f39ee9eecf46d1eb2a2066655849bc6e09212360238"
+}

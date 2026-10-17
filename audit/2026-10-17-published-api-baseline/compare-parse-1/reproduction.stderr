@@ -1,0 +1,13 @@
+Error: nu::parser::name_is_builtin_var
+
+  x `env` used as variable name.
+    ,-[/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/audit/2026-10-17-published-api-baseline/compare.nu:38:17]
+ 37 |             let name = $'($side)-($feature)'
+ 38 |             let env = ($environment | upsert CARGO_TARGET_DIR ($cache | path join $name))
+    :                 ^|^
+    :                  `-- already a builtin variable
+ 39 |             let feature_args = (if $feature == std { [--features std] } else { [] })
+    `----
+  help: 'env' is the name of a builtin Nushell variable and cannot be used as
+        a variable name
+

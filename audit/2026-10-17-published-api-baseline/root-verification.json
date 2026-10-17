@@ -1,0 +1,13 @@
+{
+  "owner_head": "bac9dcc0bfa4444e6942b2dae273a434b444454e",
+  "owner_files_sha256": "686e179925c4956364e5e9876d51e4d1abe268ff163ea3df334080ad81546b3a",
+  "package_pair": "cd51ed96e777f19d951843a2ff8c8bee5fc515887d94fe241d7e59011a8e4a4d",
+  "capsule": "c42fedba5bb9a0f4385dc3b677677a417eb9120dde63efdd2fb74f601fcf446b",
+  "api_checks": {
+    "default": "229 pass / 31 skip",
+    "std": "229 pass / 31 skip"
+  },
+  "feature_witness": "baseline default/std pass; current default refuses E0277/E0599; current std passes",
+  "required_exact_locked_tag": "red-unresolved",
+  "release_ready": false
+}

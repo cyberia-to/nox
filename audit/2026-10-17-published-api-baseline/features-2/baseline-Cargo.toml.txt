@@ -1,0 +1,21 @@
+[package]
+name = "nox-inherited-std-witness"
+version = "0.0.0"
+edition = "2024"
+
+[workspace]
+
+[lib]
+path = "lib.rs"
+
+[features]
+std = ["nox/std"]
+
+[dependencies.nox]
+package = "cyber-nox"
+path = "/Users/master/.cache/cyber/nox/published-api-baseline/pair-2/baseline/cyber-nox-0.2.0"
+
+[dependencies.hemera]
+package = "cyber-hemera"
+version = "=0.3.1"
+default-features = false

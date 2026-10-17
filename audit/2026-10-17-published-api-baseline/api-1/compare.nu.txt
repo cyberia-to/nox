@@ -1,0 +1,72 @@
+use support.nu *
+
+# Both artifacts are supplied explicitly; cargo-semver-checks never chooses a baseline.
+def main [repo: string, pair: string, cache: string, epoch: string] {
+    let root = ($repo | path expand)
+    let audit = ($root | path join audit/2026-10-17-published-api-baseline)
+    let pair_file = ($audit | path join $pair identities.json)
+    let identity = (open $pair_file)
+    let cache = ($cache | path expand)
+    let out = ($audit | path join $epoch)
+    require (not ($out | path exists) and not ($cache | path exists)) 'epoch/cache already exists'
+    require (($epoch | str replace -r '^[a-z0-9-]+$' '') == '') 'invalid epoch name'
+    require ((owner-inputs $root) == $identity.owner_files) 'owner compiler inputs changed'
+    for side in [baseline current] {
+        let input = ($identity | get $side)
+        require ((package-inputs $input.root) == $input.files) $'($side) package inputs changed'
+        require ((digest $input.archive) == $input.archive_sha256) $'($side) archive changed'
+    }
+    mkdir $cache $out
+    let source = ([support.nu prepare.nu compare.nu] | each {|p| {path: $p, sha256: (digest ($audit | path join $p))}})
+    $source | to json | save ($out | path join tooling.json)
+    let environment = ($identity.environment | merge {
+        RUSTC_BOOTSTRAP: '1', RUSTFLAGS: '', RUSTDOCFLAGS: ''
+    })
+    # These are extraction flags, not a strict rustdoc quality gate. Both sides
+    # retain all warnings; the old published source predates rustdoc hygiene.
+    let tools = ([cargo rustc rustdoc cargo-semver-checks] | each {|tool|
+        let path = (with-env $environment { which $tool | first | get path })
+        capture $out $'tool-($tool)' [$path --version] $root $environment | ignore
+        {name: $tool, path: $path, sha256: (digest $path)}
+    })
+    $tools | to json | save ($out | path join tools.json)
+    mut artifacts = []
+    for feature in [default std] {
+        for side in [baseline current] {
+            let input = ($identity | get $side)
+            let name = $'($side)-($feature)'
+            let command_env = ($environment | upsert CARGO_TARGET_DIR ($cache | path join $name))
+            let feature_args = (if $feature == std { [--features std] } else { [] })
+            let args = ([cargo rustdoc --manifest-path ($input.root | path join Cargo.toml)
+                -p cyber-nox --lib --locked --offline] | append $feature_args
+                | append [-- -Z unstable-options --output-format json])
+            capture $out $name $args $input.root $command_env | ignore
+            let artifact = ($command_env.CARGO_TARGET_DIR | path join doc nox.json)
+            require ($artifact | path exists) $'missing explicit rustdoc artifact: ($name)'
+            let graph = ([cargo tree --manifest-path ($input.root | path join Cargo.toml)
+                --locked --offline -e features -p cyber-nox] | append $feature_args)
+            capture $out $'($name)-features' $graph $input.root $command_env | ignore
+            let lock = (open --raw ($input.root | path join Cargo.lock) | from toml)
+            $artifacts = ($artifacts | append {name: $name, path: $artifact, sha256: (digest $artifact),
+                bytes: (ls $artifact | first | get size | into int),
+                dependencies: ($lock.package | where name in [cyber-nox cyber-hemera strata-nebu])})
+        }
+        let old = ($artifacts | where name == $'baseline-($feature)' | first)
+        let new = ($artifacts | where name == $'current-($feature)' | first)
+        let args = [cargo-semver-checks check-release --current-rustdoc $new.path
+            --baseline-rustdoc $old.path --release-type patch --color never]
+        capture $out $'compare-($feature)' $args $root $environment | ignore
+    }
+    require ((owner-inputs $root) == $identity.owner_files) 'owner inputs changed during comparison'
+    for side in [baseline current] {
+        let input = ($identity | get $side)
+        require ((package-inputs $input.root) == $input.files) $'($side) package changed during comparison'
+    }
+    for file in $source {
+        require ((digest ($audit | path join $file.path)) == $file.sha256) 'tooling changed during comparison'
+    }
+    {pair: $pair, pair_sha256: (digest $pair_file), artifacts: $artifacts,
+        source_sha256: ($source | to json --raw | hash sha256), policy: $identity.policy}
+    | to json | save ($out | path join result.json)
+    {result: ($out | path join result.json), policy: $identity.policy} | to json
+}

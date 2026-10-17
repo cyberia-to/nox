@@ -1,0 +1,11 @@
+Error: nu::shell::cant_convert
+
+  x Can't convert to string.
+    ,-[/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/audit/2026-10-17-published-api-baseline/support.nu:34:7]
+ 33 |     ^git -C $root ls-files --cached --others --exclude-standard | lines | append $config_paths | sort | uniq
+ 34 |     | where {|p| compiler-path $p}
+    :       ^^|^^
+    :         `-- can't convert error to string
+ 35 |     | each {|p| {path: $p, sha256: (digest ($root | path join $p))}}
+    `----
+
