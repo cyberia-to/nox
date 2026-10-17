@@ -1,0 +1,14 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "source_base": "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+  "git_head": "edba7498b3c669871169dcbc2e739ac07bbcf8b2",
+  "exit_code": 2,
+  "stdout_sha256": "49caf03bd5e71efb254653a479f58018242ec82ac5ff259d7ea01b7ff26578da",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "interpretation": "Literal archived patch context lines contain required spaces. Preserve exact frozen evidence bytes; authored files checked separately with root review."
+}

@@ -1,0 +1,27 @@
+{
+  "scripts": [
+    {
+      "path": "verify.nu",
+      "sha256": "306ebe2c75ed27ab7f5358e367ce2a70b6b2799ff08c9efa384e5f49189686b9"
+    },
+    {
+      "path": "portable.nu",
+      "sha256": "732dfd1332210d0046a50f5dafdc45ec65661246d71fdb5cb57f6f06f2df414e"
+    },
+    {
+      "path": "control.nu",
+      "sha256": "d8e5bdd043d437cae9f88e8509e345b65e3d215dd48b80defefe1c042cee6fde"
+    },
+    {
+      "path": "timing.nu",
+      "sha256": "7b76ac86b2dc518492ec2003172e04a69fef9757de0fe2ebfc50f4920cb2b6c9"
+    },
+    {
+      "path": "freeze.nu",
+      "sha256": "ebb140b1d50759c0e00de768ade831ece6bc4916596bb214fa690e73d813aaa4"
+    }
+  ],
+  "source_base": "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+  "branch_head": "edba7498b3c669871169dcbc2e739ac07bbcf8b2",
+  "started": "2026-10-17T13:43:37.170358+00:00"
+}

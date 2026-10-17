@@ -41,3 +41,49 @@ and the initial 5/9 and repeat 6/9 threshold crossings. Historical Ruby was neve
 executed. Root additionally requires absolute `RUSTC`/`RUSTDOC` pins for all
 forthcoming cell builds and timing, beyond the clean PATH used by the plan gate.
 No benchmark builds or timed invocations have occurred at this preparation point.
+
+The subsequent source and registry exports completed unchanged. Initial build
+runner parsing rejected a local parameter named `env` because Nushell reserves
+that variable; `build-reserved-var.nu.txt` and `control-reserved-var.nu.txt` retain
+that pre-execution runner. Renaming it to `run_env` allowed execution.
+
+The A build completed successfully once, but postprocessing expected every
+`-vv --message-format=json` stdout line to be JSON. Cargo also emitted ordinary
+build-script lines, beginning with `[proc-macro2 1.0.107] cargo:rustc-check-cfg`.
+`build.nu`, its raw A receipt, and original tool/script freeze remain unchanged.
+`finish-builds.nu` resumes by reading the existing successful A receipt, parses
+only JSON-object lines while retaining all raw output, and builds each remaining
+cell once. This correction causes no repeated benchmark build or measured run.
+
+The inspection runner initially failed Nushell parsing because a closure captured
+a mutable local accumulator. `inspect-mutable-capture.nu.txt` preserves that
+pre-execution source. Assigning the completed accumulator to an immutable binding
+allowed inspection; neither a benchmark build nor a measured run was repeated.
+Both Rust audit helpers compiled with `-Dwarnings`. A `measure` smoke invocation
+wrapped only `/usr/bin/true`; its before/after telemetry and process receipt are
+retained separately from the finite benchmark schedule. No benchmark binary was
+executed by that smoke check.
+
+The portable replay initially stopped while remapping source paths: Nushell
+parsed `update cells` as its built-in cell-update subcommand, which requires a
+closure. `portable-initial.nu.txt` retains that source. Using `upsert cells`
+selects the intended record-field operation. The failed replay removed only its
+own temporary extraction; retained capsules and all compiler inputs stayed intact.
+
+The final source-bound portable/live replay passes in `preflight-final.json`.
+The frozen set contains no timing evidence. The ordinary preparation commit then
+runs the named thumb gate once more in `precommit-thumb.json`, passing without
+warnings and with the complete accepted hygiene source-byte inventory unchanged.
+Those precommit receipts follow the pre-timing freeze and are retained outside
+its immutable inventory. Root independently replayed the portable verifier
+without `--live`; timing authorization remains absent.
+
+The full staged `git diff --cached --check` reports trailing whitespace in
+archived `.patch` context lines. These literal spaces are required evidence
+bytes and remain unchanged in the freeze. `raw-patch-whitespace.json` and its
+compressed raw output retain the exit-2 diagnostic. Root reviewed that scope;
+the separate authored Nu/Rust/Markdown/JSON check passes for all 83 staged files
+in `authored-whitespace.json`. No whitespace policy or frozen receipt was changed.
+An initial ephemeral diagnostic-capture invocation failed parsing the nonexistent
+Nushell `path extension` command before execution; the successful invocation uses
+`path parse | get extension`. It caused no file mutation or benchmark execution.
