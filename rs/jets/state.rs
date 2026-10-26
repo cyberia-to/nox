@@ -22,22 +22,20 @@
 //! Jets delegate to the call provider (hints) for actual state mutation.
 //! With NullCalls, state operations return Goldilocks::ZERO (failure).
 
-use nebu::Goldilocks;
-use crate::data::{Reduction, Order, Data};
-use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
-use crate::jets::formulas::{
-    TRANSFER_TAG, INSERT_TAG, UPDATE_TAG, AGGREGATE_TAG, CONSERVE_TAG,
-};
+use crate::data::{Data, Order, Reduction};
+use crate::jets::formulas::{AGGREGATE_TAG, CONSERVE_TAG, INSERT_TAG, TRANSFER_TAG, UPDATE_TAG};
+use crate::reduce::{ErrorKind, Outcome, pair_children};
+use crate::trace::{TraceRow, Tracer};
+use nebu::Goldilocks;
 
 /// Call-provider tags for each state operation.
-const CYBERLINK_CALL_TAG:  u64 = 0xCEB1_1000;
-const TRANSFER_CALL_TAG:   u64 = 0xCEB1_1001;
-const INSERT_CALL_TAG:     u64 = 0xCEB1_1002;
-const UPDATE_CALL_TAG:     u64 = 0xCEB1_1003;
-const AGGREGATE_CALL_TAG:  u64 = 0xCEB1_1004;
-const CONSERVE_CALL_TAG:   u64 = 0xCEB1_1005;
+const CYBERLINK_CALL_TAG: u64 = 0xCEB1_1000;
+const TRANSFER_CALL_TAG: u64 = 0xCEB1_1001;
+const INSERT_CALL_TAG: u64 = 0xCEB1_1002;
+const UPDATE_CALL_TAG: u64 = 0xCEB1_1003;
+const AGGREGATE_CALL_TAG: u64 = 0xCEB1_1004;
+const CONSERVE_CALL_TAG: u64 = 0xCEB1_1005;
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -56,11 +54,16 @@ fn formula_tag<const N: usize>(reduction: &Reduction<N>, formula: Order) -> Opti
 /// Delegate a state operation to the call provider.
 /// Returns Goldilocks::ZERO if hints cannot service the request.
 fn delegate<const N: usize>(
-    reduction: &mut Reduction<N>, hints: &dyn CallProvider<N>,
-    call_tag: u64, object: Order, budget: u64,
+    reduction: &mut Reduction<N>,
+    hints: &dyn CallProvider<N>,
+    call_tag: u64,
+    object: Order,
+    budget: u64,
     row: &mut TraceRow,
 ) -> Outcome {
-    if budget < 1 { return Outcome::Halt(budget); }
+    if budget < 1 {
+        return Outcome::Halt(budget);
+    }
     row.r[4] = call_tag;
     row.r[5] = object as u64;
     let tag = Goldilocks::new(call_tag);
@@ -81,11 +84,18 @@ fn delegate<const N: usize>(
 /// object = [from_cid | to_cid]
 /// Returns Field atom 1 (success) or 0 (failure) per hints response.
 pub fn cyberlink_jet<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    _body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    _tracer: &mut dyn Tracer,
+    _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
-    if budget < 1 { return Outcome::Halt(budget); }
+    if budget < 1 {
+        return Outcome::Halt(budget);
+    }
     let (from_id, to_id) = match pair_children(reduction, object) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
@@ -106,8 +116,13 @@ pub fn is_transfer<const N: usize>(reduction: &Reduction<N>, formula: Order) -> 
 ///
 /// object = [sender | [recipient | amount]]
 pub fn transfer_jet<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    _body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    _tracer: &mut dyn Tracer,
+    _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     delegate(reduction, hints, TRANSFER_CALL_TAG, object, budget, row)
@@ -124,8 +139,13 @@ pub fn is_insert<const N: usize>(reduction: &Reduction<N>, formula: Order) -> bo
 ///
 /// object = [key | value]
 pub fn insert_jet<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    _body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    _tracer: &mut dyn Tracer,
+    _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     delegate(reduction, hints, INSERT_CALL_TAG, object, budget, row)
@@ -142,8 +162,13 @@ pub fn is_update<const N: usize>(reduction: &Reduction<N>, formula: Order) -> bo
 ///
 /// object = [key | new_value]
 pub fn update_jet<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    _body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    _tracer: &mut dyn Tracer,
+    _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     delegate(reduction, hints, UPDATE_CALL_TAG, object, budget, row)
@@ -161,8 +186,13 @@ pub fn is_aggregate<const N: usize>(reduction: &Reduction<N>, formula: Order) ->
 /// object = [combiner_formula | [values_list | accumulator]]
 /// Delegates to hints for the actual aggregation logic.
 pub fn aggregate_jet<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    _body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    _tracer: &mut dyn Tracer,
+    _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     delegate(reduction, hints, AGGREGATE_CALL_TAG, object, budget, row)
@@ -180,8 +210,13 @@ pub fn is_conserve<const N: usize>(reduction: &Reduction<N>, formula: Order) -> 
 /// object = [inputs_list | outputs_list]
 /// Returns Field atom 1 if conservation holds, 0 otherwise.
 pub fn conserve_jet<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    _body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    _tracer: &mut dyn Tracer,
+    _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     delegate(reduction, hints, CONSERVE_CALL_TAG, object, budget, row)
@@ -191,20 +226,31 @@ pub fn conserve_jet<const N: usize>(
 mod tests {
     use super::*;
     use crate::call::NullCalls;
+    use crate::data::Reduction;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::data::{Reduction};
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     #[test]
     fn cyberlink_with_null_calls_returns_zero() {
         let mut ar = Reduction::<256>::new();
         let from = ar.atom(g(1)).unwrap();
-        let to   = ar.atom(g(2)).unwrap();
-        let obj  = ar.pair(from, to).unwrap();
+        let to = ar.atom(g(2)).unwrap();
+        let obj = ar.pair(from, to).unwrap();
         let body = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
-        match cyberlink_jet(&mut ar, obj, body, 100, &NullCalls, &mut NoTrace, 0, &mut row) {
+        match cyberlink_jet(
+            &mut ar,
+            obj,
+            body,
+            100,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        ) {
             Outcome::Ok(r, rem) => {
                 assert_eq!(ar.atom_value(r).unwrap(), g(0));
                 assert_eq!(rem, 99);
@@ -217,13 +263,22 @@ mod tests {
     fn transfer_with_null_calls_returns_zero() {
         let mut ar = Reduction::<256>::new();
         let sender = ar.atom(g(10)).unwrap();
-        let recip  = ar.atom(g(20)).unwrap();
+        let recip = ar.atom(g(20)).unwrap();
         let amount = ar.atom(g(100)).unwrap();
-        let inner  = ar.pair(recip, amount).unwrap();
-        let obj    = ar.pair(sender, inner).unwrap();
-        let body   = ar.atom(g(0)).unwrap();
+        let inner = ar.pair(recip, amount).unwrap();
+        let obj = ar.pair(sender, inner).unwrap();
+        let body = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
-        match transfer_jet(&mut ar, obj, body, 100, &NullCalls, &mut NoTrace, 0, &mut row) {
+        match transfer_jet(
+            &mut ar,
+            obj,
+            body,
+            100,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        ) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(0)),
             o => panic!("{:?}", o),
         }
@@ -238,27 +293,27 @@ mod tests {
             let b = ar.atom(g(0)).unwrap();
             ar.pair(t, b).unwrap()
         };
-        let f_transfer  = mk(&mut ar, TRANSFER_TAG);
-        let f_insert    = mk(&mut ar, INSERT_TAG);
-        let f_update    = mk(&mut ar, UPDATE_TAG);
+        let f_transfer = mk(&mut ar, TRANSFER_TAG);
+        let f_insert = mk(&mut ar, INSERT_TAG);
+        let f_update = mk(&mut ar, UPDATE_TAG);
         let f_aggregate = mk(&mut ar, AGGREGATE_TAG);
-        let f_conserve  = mk(&mut ar, CONSERVE_TAG);
-        let f_other     = mk(&mut ar, 42); // unrelated tag
+        let f_conserve = mk(&mut ar, CONSERVE_TAG);
+        let f_other = mk(&mut ar, 42); // unrelated tag
 
-        assert!( is_transfer(&ar, f_transfer));
+        assert!(is_transfer(&ar, f_transfer));
         assert!(!is_transfer(&ar, f_insert));
-        assert!( is_insert(&ar, f_insert));
+        assert!(is_insert(&ar, f_insert));
         assert!(!is_insert(&ar, f_update));
-        assert!( is_update(&ar, f_update));
-        assert!( is_aggregate(&ar, f_aggregate));
-        assert!( is_conserve(&ar, f_conserve));
+        assert!(is_update(&ar, f_update));
+        assert!(is_aggregate(&ar, f_aggregate));
+        assert!(is_conserve(&ar, f_conserve));
         assert!(!is_conserve(&ar, f_other));
     }
 
     #[test]
     fn budget_zero_halts() {
         let mut ar = Reduction::<256>::new();
-        let obj  = ar.atom(g(0)).unwrap();
+        let obj = ar.atom(g(0)).unwrap();
         let body = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
         match cyberlink_jet(&mut ar, obj, body, 0, &NullCalls, &mut NoTrace, 0, &mut row) {

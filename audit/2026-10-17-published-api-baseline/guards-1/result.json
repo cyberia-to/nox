@@ -1,0 +1,47 @@
+{
+  "source": [
+    {
+      "path": "support.nu",
+      "sha256": "4dce632f0057cbf03ec3c11b40efe824344dbd546db1aed211e9500292f15718"
+    },
+    {
+      "path": "guards.nu",
+      "sha256": "7d5cc99e8acfd2df77c00f8eeda776d618811e637f1303f7772869887d45df42"
+    }
+  ],
+  "cases": [
+    {
+      "case": "clean",
+      "accepted": true
+    },
+    {
+      "case": "audit-only",
+      "accepted": true
+    },
+    {
+      "case": "Cargo.toml",
+      "accepted": false,
+      "error": "owning compiler input differs from HEAD: Cargo.toml"
+    },
+    {
+      "case": "Cargo.lock",
+      "accepted": false,
+      "error": "owning compiler input differs from HEAD: Cargo.lock"
+    },
+    {
+      "case": "rs/Cargo.toml",
+      "accepted": false,
+      "error": "owning compiler input differs from HEAD: rs/Cargo.toml"
+    },
+    {
+      "case": "rs/lib.rs",
+      "accepted": false,
+      "error": "owning compiler input differs from HEAD: rs/lib.rs"
+    },
+    {
+      "case": "ignored-config",
+      "accepted": false,
+      "error": "owning compiler inventory is not committed"
+    }
+  ]
+}

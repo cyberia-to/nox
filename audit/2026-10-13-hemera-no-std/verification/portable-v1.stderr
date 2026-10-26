@@ -1,0 +1,10 @@
+Error: nu::shell::error
+
+  x Name not found
+     ,-[/Users/master/cyber/nox-no-std-dependencies/audit/2026-10-13-hemera-no-std/verify.nu:216:20]
+ 215 |         rm --recursive --force $dest
+ 216 |         error make {msg: $e.msg}
+     :                    ^^^^^^^^^^^^^
+ 217 |     }
+     `----
+

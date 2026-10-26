@@ -1,0 +1,3607 @@
+{
+  "command": [
+    "nu",
+    "audit/2026-10-17-hemera-feature-performance/summarize-preflight.nu",
+    "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox"
+  ],
+  "source_base": "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+  "script_sha256": "8e27af8fa85cd4667f3eaff15d47a59a564a107c9aa3338e5d0fda63f8598eb0",
+  "source_era_bridge": [
+    {
+      "repo": "nox",
+      "historical_revision": "0b1407a4b855e4961ede07e1b7ea199cb8018c30",
+      "current_revision": "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+      "changed": [
+        {
+          "path": "audit/2026-10-16-honeycrisp-backend-design/probe.rs",
+          "historical": [],
+          "current": [
+            {
+              "path": "audit/2026-10-16-honeycrisp-backend-design/probe.rs",
+              "mode": "100644",
+              "blob": "50271cf36cf37daf8c89bb5531bf790db1ce2aae",
+              "bytes": 6820,
+              "sha256": "eb0e4498e99aa7de6ddcaca18ee39ec38a160ebccd322dc30a8e070a6cfae77d"
+            }
+          ]
+        },
+        {
+          "path": "cli/main.rs",
+          "historical": [
+            {
+              "path": "cli/main.rs",
+              "mode": "100644",
+              "blob": "85d2c0610acb7259c32a0ba66671d4dd06fd4f97",
+              "bytes": 10407,
+              "sha256": "8cc2adfc619d9a769c4c019c49dcc4a0fd32163df909cd3c720e71fcf24b7d11"
+            }
+          ],
+          "current": [
+            {
+              "path": "cli/main.rs",
+              "mode": "100644",
+              "blob": "06c3998f8504bbd607dce0a73f37efdb64bf5e88",
+              "bytes": 10923,
+              "sha256": "233bb92cd27ec177f309a9ea54fa0e6aab75e12e0af0ef0e8d9ca55d2d9e1d10"
+            }
+          ]
+        },
+        {
+          "path": "rs/benches/reduction.rs",
+          "historical": [
+            {
+              "path": "rs/benches/reduction.rs",
+              "mode": "100644",
+              "blob": "002b80f0166864b7b33417cab6033764b44d877b",
+              "bytes": 9457,
+              "sha256": "10cebcc2e0d554912eb87a68922b5fd64cac59b1385d74f47d715c77e521ad2d"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/benches/reduction.rs",
+              "mode": "100644",
+              "blob": "8e4f3fffbe58520413b7a9c7a1bdbd2f31d25c9e",
+              "bytes": 10094,
+              "sha256": "4e70a210cb805fc643ecd89c6a7ade473e897e736e4cbbec0d0274a9f03f4897"
+            }
+          ]
+        },
+        {
+          "path": "rs/bound.rs",
+          "historical": [
+            {
+              "path": "rs/bound.rs",
+              "mode": "100644",
+              "blob": "d1b90f445638dcca7eb227626963bd57923a4330",
+              "bytes": 7818,
+              "sha256": "138a9ddbdb939b69fc89b7011f1088e1ee1de0ce914fb96109ebabf17701cfef"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/bound.rs",
+              "mode": "100644",
+              "blob": "d293e694a36c1d834f8be78fbbae748cc9618b5d",
+              "bytes": 7828,
+              "sha256": "f453bfb52cdba6173bc0dbe71db7227bb6a1bb6bae03d7cbe1da1266c399062a"
+            }
+          ]
+        },
+        {
+          "path": "rs/brakedown_look.rs",
+          "historical": [
+            {
+              "path": "rs/brakedown_look.rs",
+              "mode": "100644",
+              "blob": "fbe0c493a366dac937b48338d14e1f05d96c4fd2",
+              "bytes": 5941,
+              "sha256": "d7780fa8546e3609f9cf3232f54e0eaaf095a8511ec9876b4683dfc3471f8dfb"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/brakedown_look.rs",
+              "mode": "100644",
+              "blob": "3f3029954ca7e52b8ad2738272b73b0ee8f446ed",
+              "bytes": 6188,
+              "sha256": "dc02ca8112f067a8a3ff94539ecbafd0a4b5b3616893bb7dfc4af869766a46ae"
+            }
+          ]
+        },
+        {
+          "path": "rs/call.rs",
+          "historical": [
+            {
+              "path": "rs/call.rs",
+              "mode": "100644",
+              "blob": "d2b91568c4a4ddc93c710bdb01ef38ab800ddfe6",
+              "bytes": 2948,
+              "sha256": "6ec907fde65f217ca571662374c2c5135dffc431fd8e1d924fab87931627e5f1"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/call.rs",
+              "mode": "100644",
+              "blob": "f7dd6b0702bfdef4cbbe55d3316f25a21ea43436",
+              "bytes": 3108,
+              "sha256": "62e16f101d461edc11465078fe0c1a5c74dac78a1f3de35cb6423d83cb330f1b"
+            }
+          ]
+        },
+        {
+          "path": "rs/data/cost.rs",
+          "historical": [
+            {
+              "path": "rs/data/cost.rs",
+              "mode": "100644",
+              "blob": "678d6ffd0a453be9366d29a82efec4feb2186faf",
+              "bytes": 3103,
+              "sha256": "415cf92cff17a4cf2721d0dcdc65eee418566aed03b006d7ad9250800e924b4a"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/data/cost.rs",
+              "mode": "100644",
+              "blob": "25737b889e0194381a3664452a121d990b1f2a47",
+              "bytes": 3186,
+              "sha256": "746b16cff3747b2f8824b5f9163d73810adbbebda330ddd3674208385455e1b9"
+            }
+          ]
+        },
+        {
+          "path": "rs/data/inner.rs",
+          "historical": [
+            {
+              "path": "rs/data/inner.rs",
+              "mode": "100644",
+              "blob": "75119c8be7a81584c7a20acdf99763cca4a83fbf",
+              "bytes": 246,
+              "sha256": "dddb188ee25a9bc74d120c5e3e38c4a27ed1287c657469938c65966e69ca0095"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/data/inner.rs",
+              "mode": "100644",
+              "blob": "bb706ae98351019c65a0c20b896e4ae6e9d7fe94",
+              "bytes": 246,
+              "sha256": "6fd946f5874707af0f9db665bbfe0e8b6939f990b3505a3b62891d4ae56fb084"
+            }
+          ]
+        },
+        {
+          "path": "rs/data/mod.rs",
+          "historical": [
+            {
+              "path": "rs/data/mod.rs",
+              "mode": "100644",
+              "blob": "007f36aa529231d46dbb03193007a4355281fa6b",
+              "bytes": 4607,
+              "sha256": "f09ba156c6078319dd8cb3334689a35ec2367a10f8864f80635084120a073730"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/data/mod.rs",
+              "mode": "100644",
+              "blob": "f177c342fcba22ed734722edf60d6f84c811f257",
+              "bytes": 4757,
+              "sha256": "4062376bc001094c481b813fbd6572a5c35be702662fa8859289a2ac57767d7f"
+            }
+          ]
+        },
+        {
+          "path": "rs/data/reduction.rs",
+          "historical": [
+            {
+              "path": "rs/data/reduction.rs",
+              "mode": "100644",
+              "blob": "7a17d51b3902e6bae43758b4509b4fc87efbb3a6",
+              "bytes": 11729,
+              "sha256": "7f4ca0805b578557da7f2eb0e13896a1cdc114c7ad03aa80d8b0118664fccdbf"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/data/reduction.rs",
+              "mode": "100644",
+              "blob": "b8f4684f94eb6a6bba224c6d37f7a608e561ec3b",
+              "bytes": 12080,
+              "sha256": "e9babd1a16b19ad62f4844a2e6e0876205b93349ad21ee5df479bed79b47cb27"
+            }
+          ]
+        },
+        {
+          "path": "rs/encode.rs",
+          "historical": [
+            {
+              "path": "rs/encode.rs",
+              "mode": "100644",
+              "blob": "37db5dc5f9a014e70bc566748d85c6f71241c3c1",
+              "bytes": 20751,
+              "sha256": "162ba9d57dcfa978a8e03039c53697290c5e6f6ce7cff1e24c84c931e9f46de7"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/encode.rs",
+              "mode": "100644",
+              "blob": "01d7657076464c1772282eb2c037f119c7b555e9",
+              "bytes": 20937,
+              "sha256": "a8cf9b0ae042a37e87aa3fd02bf7e85b62f18b751a15a03809a82a2494fab0ff"
+            }
+          ]
+        },
+        {
+          "path": "rs/examples/dump_formulas.rs",
+          "historical": [
+            {
+              "path": "rs/examples/dump_formulas.rs",
+              "mode": "100644",
+              "blob": "911a386d3d0df981aa30c33fffee52ec6a9e29cc",
+              "bytes": 2117,
+              "sha256": "dba5fb85fc26e6d974bffa0bd208907409401369c9d23353db8c399d3147a95a"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/examples/dump_formulas.rs",
+              "mode": "100644",
+              "blob": "ab8823cd058da41f22b6d4855423736cbd50339d",
+              "bytes": 2105,
+              "sha256": "7d97d1d33986a1b2945b5fad9ea4d28184bcd66a7edfb49a60f9bb505bd77db8"
+            }
+          ]
+        },
+        {
+          "path": "rs/jets/backends/cpu.rs",
+          "historical": [
+            {
+              "path": "rs/jets/backends/cpu.rs",
+              "mode": "100644",
+              "blob": "c7731def38dab3dfa89e1429d09d793ced1af44b",
+              "bytes": 1852,
+              "sha256": "98e39e958e2866b0cc89279dfa86bdf42140da87934a5815d88128b99c52bb92"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/jets/backends/cpu.rs",
+              "mode": "100644",
+              "blob": "5d15b5931f6f22ad029e23b5d62aaf66c0be52d5",
+              "bytes": 1817,
+              "sha256": "6a06ea6a785fd3491ec8b1b2e9d292accaa76272eb348a10542b714dd2fb396e"
+            }
+          ]
+        },
+        {
+          "path": "rs/jets/backends/honeycrisp.rs",
+          "historical": [
+            {
+              "path": "rs/jets/backends/honeycrisp.rs",
+              "mode": "100644",
+              "blob": "c042d4ad06e818cf1c3dff47055b458817c8cb14",
+              "bytes": 9447,
+              "sha256": "c15192e61c2a93fe5945baa467f20289efd58d93b830ce2c84d02a4a4d6b0e47"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/jets/backends/honeycrisp.rs",
+              "mode": "100644",
+              "blob": "9073c2e5345ec2357e77a5fdcc3edfe79ed5da5f",
+              "bytes": 9675,
+              "sha256": "f11f2a6ab7f004bb0225d538ec35e50ce6983568280483e8c13d435890ed2048"
+            }
+          ]
+        },
+        {
+          "path": "rs/jets/decider.rs",
+          "historical": [
+            {
+              "path": "rs/jets/decider.rs",
+              "mode": "100644",
+              "blob": "870f6bd3eb72371675b56fd60d71ee3b38e47a9e",
+              "bytes": 4024,
+              "sha256": "ef596143f8249901193faf7790f5e4eabbe5acea1d1e38273d4016edcd0cddf4"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/jets/decider.rs",
+              "mode": "100644",
+              "blob": "998cccc90f9b3f6d8ae3605894b8ce8679677128",
+              "bytes": 4242,
+              "sha256": "b513d25c69608cd695a49745b64bc96edaa8e3446bbba38b713b124076f52dea"
+            }
+          ]
+        },
+        {
+          "path": "rs/jets/formulas.rs",
+          "historical": [
+            {
+              "path": "rs/jets/formulas.rs",
+              "mode": "100644",
+              "blob": "a20601784ca349ae4a66ab4dbfef73f283b83a2d",
+              "bytes": 27012,
+              "sha256": "a09be45c9b2b53d0c2ba4107a16571bc2abd03fd5f65d97fe6913020596087b6"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/jets/formulas.rs",
+              "mode": "100644",
+              "blob": "2e8ea7eb9386d57b6368786a3176ca618c3a3f61",
+              "bytes": 26639,
+              "sha256": "9a6e7676c400289718aee2a11a58eeadd422dbfff693aa4164ee6087847333c2"
+            }
+          ]
+        },
+        {
+          "path": "rs/jets/fri_fold.rs",
+          "historical": [
+            {
+              "path": "rs/jets/fri_fold.rs",
+              "mode": "100644",
+              "blob": "78c91a0ff8a9fba7750b2a5d2059acf0c280bdaa",
+              "bytes": 6493,
+              "sha256": "3634e1fc0399d98726ab12eff2c1a1157777ff73e2f4103b8d613c2656007b59"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/jets/fri_fold.rs",
+              "mode": "100644",
+              "blob": "38ceba3e312311e5b3ea8e6060a32860ec1536ea",
+              "bytes": 6665,
+              "sha256": "c8fd03c41bf1daa4fe8d6c3c5c495cb9bf79ec60c8c6ef86dcade8b6e90e59eb"
+            }
+          ]
+        },
+        {
+          "path": "rs/jets/merkle_verify.rs",
+          "historical": [
+            {
+              "path": "rs/jets/merkle_verify.rs",
+              "mode": "100644",
+              "blob": "0db687ca12f5b194b37b600f58ee13edb3c07ae9",
+              "bytes": 9333,
+              "sha256": "99f8b1ee4e283577c407a09bf84dbab43af0d334f27cf8f07d942c133574e7b1"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/jets/merkle_verify.rs",
+              "mode": "100644",
+              "blob": "227e1e8a96a61aef17531500562109650025f128",
+              "bytes": 9601,
+              "sha256": "0aafdb8b2be902324e2ab2d9856bc088cab4bf9f54ba4930110a92aa44f2c0fa"
+            }
+          ]
+        },
+        {
+          "path": "rs/jets/mod.rs",
+          "historical": [
+            {
+              "path": "rs/jets/mod.rs",
+              "mode": "100644",
+              "blob": "d5d1767a68bb8c23967698e41bd5b203f810a8e6",
+              "bytes": 936,
+              "sha256": "f5dad0cce4deba2c18916c2d031a3b6b7670cb13ba287a32c4cb1048ff04ea73"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/jets/mod.rs",
+              "mode": "100644",
+              "blob": "1102d0707b7926f8384656c417450a3fb6d21bfc",
+              "bytes": 936,
+              "sha256": "b508c4f07c223cf50eb347721fa3f50d0d9fb0fc2a3f344cfe7dd31910b91551"
+            }
+          ]
+        },
+        {
+          "path": "rs/jets/ntt.rs",
+          "historical": [
+            {
+              "path": "rs/jets/ntt.rs",
+              "mode": "100644",
+              "blob": "4075a1552c5899556c9f3cb577d2ba3ab4a98145",
+              "bytes": 8797,
+              "sha256": "38456aaba28b4dd858de997f7ee3949e570a093c3a8eda1e75cb2e4d3202e727"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/jets/ntt.rs",
+              "mode": "100644",
+              "blob": "1ebff782876056b5e1c60af52e93f696591be2ab",
+              "bytes": 9029,
+              "sha256": "38f8f01827e4b7e72faa7914d1f18117942c7ebc158ca7c59844012b4ff72644"
+            }
+          ]
+        },
+        {
+          "path": "rs/jets/poly_eval.rs",
+          "historical": [
+            {
+              "path": "rs/jets/poly_eval.rs",
+              "mode": "100644",
+              "blob": "442fc653c00879d3998cd5d9f05c321a30b8566a",
+              "bytes": 8374,
+              "sha256": "aad64efe27e592c8ae086582c1070b65e14f3bafbe5258139af7d0537cbf361d"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/jets/poly_eval.rs",
+              "mode": "100644",
+              "blob": "42deaab491245b65b590ee52b43932ed6d39b8b3",
+              "bytes": 8609,
+              "sha256": "983e9e76df7053cc1f62e61b5c8a8c9945dc2b4d468270517f92eafdfe3d07f4"
+            }
+          ]
+        },
+        {
+          "path": "rs/jets/registry.rs",
+          "historical": [
+            {
+              "path": "rs/jets/registry.rs",
+              "mode": "100644",
+              "blob": "32ba031e706a5a38ae90111c2c41855fbe6edde9",
+              "bytes": 9075,
+              "sha256": "3b7742dad7d4edc857489203a24badaf7fcd9bb16228071c68779f4d5bd1804b"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/jets/registry.rs",
+              "mode": "100644",
+              "blob": "669c59fc8cc10e4e2be5cd3315987e45e6d9046b",
+              "bytes": 9464,
+              "sha256": "909d7be0df968f5312aac82bd1cf4b372041b4639e4d5bd4c8591bd91e4fafc2"
+            }
+          ]
+        },
+        {
+          "path": "rs/jets/state.rs",
+          "historical": [
+            {
+              "path": "rs/jets/state.rs",
+              "mode": "100644",
+              "blob": "7cc7e4c179ce6cb8d133007ff521670dd46d0502",
+              "bytes": 11073,
+              "sha256": "2ddcb9d8bf5e182b6f31ce7e67cdfb6bdf810a13dc3ff1ec082ee3d326f2f852"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/jets/state.rs",
+              "mode": "100644",
+              "blob": "0923522ec704ccf9d87c668b46d9aa6c332df01c",
+              "bytes": 11404,
+              "sha256": "4afb68c5387062a102b0fc5e58053839c2e2b85a43ee8ebe9214b91683de1272"
+            }
+          ]
+        },
+        {
+          "path": "rs/lib.rs",
+          "historical": [
+            {
+              "path": "rs/lib.rs",
+              "mode": "100644",
+              "blob": "a5c622a092e0d622dd6e84b949a1b93e1ab31a1f",
+              "bytes": 1905,
+              "sha256": "f799518ce4c30b6a06f14b1a6d935217126980ea11126c926aee0f622f700105"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/lib.rs",
+              "mode": "100644",
+              "blob": "d8dfd8ef8532b8ceb1939746540df30b9b3964ba",
+              "bytes": 1901,
+              "sha256": "c24be3c5e0a8eb88d2494feba34e514e6df0049345c188748423406fcbe418ec"
+            }
+          ]
+        },
+        {
+          "path": "rs/parallel.rs",
+          "historical": [
+            {
+              "path": "rs/parallel.rs",
+              "mode": "100644",
+              "blob": "c867a0f68142ad85010e9cbaa2eb31dc32c2d0ad",
+              "bytes": 18268,
+              "sha256": "ff74286ce7034c989703acf4a7231b8df94d147cdfc1ab6a2a356891008f25cd"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/parallel.rs",
+              "mode": "100644",
+              "blob": "a4129a8515ca3c01c60246b45fe851fa7aac1327",
+              "bytes": 18614,
+              "sha256": "6a10eb1eb2a29b565b973eadf01768aa534948537a474c51c9920f0696b7e7ab"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/add.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/add.rs",
+              "mode": "100644",
+              "blob": "7b2dc38768025b80bfa4cde1ae05a372bf744592",
+              "bytes": 3709,
+              "sha256": "28b1b3ed7fa40f4b4eec0ba3e1d0bd9cf63dd1465c6dab3aabfb2c331923717f"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/add.rs",
+              "mode": "100644",
+              "blob": "13ad8dcc322b8b4a8448b781c89daeaada38e105",
+              "bytes": 3854,
+              "sha256": "d8168977d3290f5baa745c7f822a61c2b7770f64101b754417a9473abed67b5a"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/and.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/and.rs",
+              "mode": "100644",
+              "blob": "019b2de9048c0007ac54e9fc248aec64741f6d92",
+              "bytes": 3946,
+              "sha256": "14e1f30fb50c294c94032f4fab928e25e97b39845e5dd4cf1aaf22e548a4411c"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/and.rs",
+              "mode": "100644",
+              "blob": "b0d389b7f15946938391479abcaefb252356c48a",
+              "bytes": 4165,
+              "sha256": "685551d917eba114e1cb8a02bf7878042a6e584c577d261c7f9a03cf9d235f01"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/axis.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/axis.rs",
+              "mode": "100644",
+              "blob": "5359d0e59f875fc7f0eb82e4835d650378dbc5c7",
+              "bytes": 7541,
+              "sha256": "5be1cc41a21213d3a78d2823b5df1bc827d5ec58551064661946b0fa75a52b9f"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/axis.rs",
+              "mode": "100644",
+              "blob": "b6deba275ef89bb78783c4891da9ee4ac9de864a",
+              "bytes": 7620,
+              "sha256": "391e8d83008cfb35ab6b344236fb91250ba133e6b344e31445f5f018f2c81954"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/branch.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/branch.rs",
+              "mode": "100644",
+              "blob": "0919d32dd544d98a679c2540d565874ff2d3f2b3",
+              "bytes": 4417,
+              "sha256": "4aab8c37617887be47fb67c2c2504dc8756835d74d98a04187b72b1b89ac1d29"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/branch.rs",
+              "mode": "100644",
+              "blob": "2c5bd47656a05426b7bcbe9110b1e1169ed183b5",
+              "bytes": 4569,
+              "sha256": "75bdf722f3761e4915c957301641eff97339ee41bfee2fd4c5ae97a4a42c398c"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/call.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/call.rs",
+              "mode": "100644",
+              "blob": "4afaf8129b4d331bb5b7ca4ef36946b36b089ce2",
+              "bytes": 10923,
+              "sha256": "6b542c4551c5c10b7739a1978d7e410bc4714acc7600a9b18788de2f562d40d4"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/call.rs",
+              "mode": "100644",
+              "blob": "dd01e467b0e59eb4ee8c7efcd7a3452d98c99c70",
+              "bytes": 11537,
+              "sha256": "d31b514af5ad416fba8d2b7f03dbebe6a0d599aa9971e1ac4a285909bd851dcc"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/compose.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/compose.rs",
+              "mode": "100644",
+              "blob": "5d2c041b0396539884139a5dca67aefcaf06f20f",
+              "bytes": 3289,
+              "sha256": "481c7db185dca0cf450665be76fc3ea763ecd72edbfb28e05c5405279d857c2b"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/compose.rs",
+              "mode": "100644",
+              "blob": "7aed0ce39614d6e75d1b479a451ec63339dd1def",
+              "bytes": 3417,
+              "sha256": "f8e66397e92113946ad14ac4f7583bf7491e02a35edef91424e4d1c2e801bcd4"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/cons.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/cons.rs",
+              "mode": "100644",
+              "blob": "d44aacc1a1a99a0ba1a1aa436082069bd0ddb599",
+              "bytes": 2326,
+              "sha256": "71db2cc1144e836fe50e55f0cdd4912fda1f2b16b26cb598171faa2de61bf43e"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/cons.rs",
+              "mode": "100644",
+              "blob": "542860f11a5ec735e7928738e3533ce862647aa4",
+              "bytes": 2383,
+              "sha256": "5f36798aecb0e342c21f40532293d9e063469df439d7ac4de54d0c6151b5b764"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/eq.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/eq.rs",
+              "mode": "100644",
+              "blob": "7c4c8e965849790e530488c759f8a2e1e31acbb3",
+              "bytes": 8796,
+              "sha256": "66465be841aecd0f6f759512738b134d0ff2817bc18ec01d41eb6e3f6196912e"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/eq.rs",
+              "mode": "100644",
+              "blob": "aabb98f0a2cee7f4e9a11ddacf7c7263d48d0b66",
+              "bytes": 8921,
+              "sha256": "b00d4d865f010f9f926cac109542c2a887893ad0697dd8deafdf3a67081330a0"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/hash.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/hash.rs",
+              "mode": "100644",
+              "blob": "77b5179324c53dfd52f7188bd99e27969987df52",
+              "bytes": 8617,
+              "sha256": "30493547a38c2a0aada82f21088f783562277de4d52472750fe3be08284b2cfe"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/hash.rs",
+              "mode": "100644",
+              "blob": "42de1e12272cb96166b941ab62fa77286ec0fe49",
+              "bytes": 8869,
+              "sha256": "ed154905d9a46f986ad71fc816cc0a0934f7af65142f078410178022bba6e123"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/inv.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/inv.rs",
+              "mode": "100644",
+              "blob": "b2ccfdd4094cfa67a7ed81c32c0e2f0a1933768e",
+              "bytes": 7903,
+              "sha256": "4e94c358a9d16c42e39208d10ce6696bd71fdd1fdc6102b93004c208aef2f299"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/inv.rs",
+              "mode": "100644",
+              "blob": "2ddb654ca812b6b6dc448e3dc16b6d359ecf6321",
+              "bytes": 7932,
+              "sha256": "dc66b58aaf37d670366a4d60e9c0757dba765af8fa35f4345670c244902a1a06"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/look.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/look.rs",
+              "mode": "100644",
+              "blob": "a72d46e4c059f4766dd0fe25a0e6048fa12f45c7",
+              "bytes": 11317,
+              "sha256": "a42de12424231b3547c9cc98bad76f9439964cb3be5a46ab7184c7ae23670f92"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/look.rs",
+              "mode": "100644",
+              "blob": "818f7c67a35aa1dabf8891ebeaf6325743cb9799",
+              "bytes": 11962,
+              "sha256": "377ee771e36d8f1aef18057ceed2c889b2d5a6c2aa19d4004d00e4788377e562"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/lt.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/lt.rs",
+              "mode": "100644",
+              "blob": "93cafdb29e9aee0883223dc5bea8e41d6e3536ea",
+              "bytes": 5227,
+              "sha256": "e1fa15cac146a9e30f224d12a4c6cd0fa3e1478a7941efa12d4fca57e14faa59"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/lt.rs",
+              "mode": "100644",
+              "blob": "33771dfd81b0c77063074eec54986c0ca2bea744",
+              "bytes": 5308,
+              "sha256": "a8441cc3b94188312dc4325585ac7af66ee1cf1cbfda55f4adb7e0cb44953431"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/mod.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/mod.rs",
+              "mode": "100644",
+              "blob": "9d599bdfba9064c2866596023919ec504391abe5",
+              "bytes": 1649,
+              "sha256": "f4bfa68bd8465a472893444a052450b3f322d1fd31d8c2aa92b42673a9f1d71a"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/mod.rs",
+              "mode": "100644",
+              "blob": "0f188c08887cd5fc309964b011aec93914cce0a3",
+              "bytes": 1535,
+              "sha256": "cf63780f4bcdaa3ed91e07e0e149cd69091214cce3de3d0f4c14c60322dbd05c"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/mul.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/mul.rs",
+              "mode": "100644",
+              "blob": "b430669ba760bd3dff600172796ca723de319296",
+              "bytes": 3148,
+              "sha256": "ec5030b82e5e2c5bfec70adf38dde288f417db540205c14b04d1d854ac55df7f"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/mul.rs",
+              "mode": "100644",
+              "blob": "c44bb4ea08c4270e85ca3386bfcfcca5b20533e4",
+              "bytes": 3293,
+              "sha256": "bf4c11307a93bf63062c17d2d5a14d054d7170095f30d72a47fb59f46a06d5f7"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/not.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/not.rs",
+              "mode": "100644",
+              "blob": "39321b78f5843ba4d193c370f19668b7d8b7bd01",
+              "bytes": 3732,
+              "sha256": "d1855f95397d3e639c0e831a198a497ade90618e898188a8b0d0f2fa9ccfa73c"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/not.rs",
+              "mode": "100644",
+              "blob": "77e8dab04b9c92d806538e6e9f849d800c94c300",
+              "bytes": 3944,
+              "sha256": "702fc9d49109895f1d52bffc4ae014371963049a32218e9ad1ca071e0e42042e"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/quote.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/quote.rs",
+              "mode": "100644",
+              "blob": "5dc33668a31afcb5b8637c522ef6373f09f7061e",
+              "bytes": 993,
+              "sha256": "d1a5e48a60f762734dec4faa1ed7e9a3f81b4bcd4b467338d349ef4a0edbb8a1"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/quote.rs",
+              "mode": "100644",
+              "blob": "ad3d03e91d0eadacf16dc941f7c5dc577a375b97",
+              "bytes": 1003,
+              "sha256": "4222583dbb99701eebb7bf48d14499f2f63a4a3cf74d10ee9bf8cc81ed266751"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/shl.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/shl.rs",
+              "mode": "100644",
+              "blob": "8955dcc8fd4622ab8ce173f93979625b8eeb57b0",
+              "bytes": 6730,
+              "sha256": "6a664fb20f8208a08eb6ffc937de500e0f743b30b24d4bc7ed45cb4694acb4a6"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/shl.rs",
+              "mode": "100644",
+              "blob": "5f2afbb62f2aa3a18a249b11324922ed3b180db7",
+              "bytes": 6887,
+              "sha256": "79eae92998df97d5293a7eb9f686098f27b1d185bf81ca47bf2434fc4c7cf3c3"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/sub.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/sub.rs",
+              "mode": "100644",
+              "blob": "1abf1862f2c4bc993b7ee3f4749b907c2daf8ce8",
+              "bytes": 3285,
+              "sha256": "db5d20399fbfbbdfcee7f0f253a7a97d00e6bb0e17e2f1e89d3064bbece7bbb0"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/sub.rs",
+              "mode": "100644",
+              "blob": "513fa23f9a26f27134e6578f8466d506e86c45a2",
+              "bytes": 3430,
+              "sha256": "40ea5fd59fa4c91d3107e152d4839f88e801acdd13d300262a33da3c9a888e2c"
+            }
+          ]
+        },
+        {
+          "path": "rs/patterns/xor.rs",
+          "historical": [
+            {
+              "path": "rs/patterns/xor.rs",
+              "mode": "100644",
+              "blob": "00e42e5ea8eecdac45134e8db8b4091cf2c2df11",
+              "bytes": 4460,
+              "sha256": "0f3a361eaec1c3646f41c196d0d1da3033e4fe30cd92e5c931f4e6d359b66bf0"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/patterns/xor.rs",
+              "mode": "100644",
+              "blob": "62ce9aaf05a2bf17c311fb8bbb01b3cb5c54f802",
+              "bytes": 4679,
+              "sha256": "6bff1109a4c1136d3ed7756b9890e5ba2c489edb5bb12e3f06d3e2e8c79bc05b"
+            }
+          ]
+        },
+        {
+          "path": "rs/reduce.rs",
+          "historical": [
+            {
+              "path": "rs/reduce.rs",
+              "mode": "100644",
+              "blob": "db3128823db43de0f5382d4d304f8cd4ce7bd5cb",
+              "bytes": 24264,
+              "sha256": "1cc710b9bbcfbfb47e71b4df8ce2a3513959aada3f4a80433761b72aabd4d9c2"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/reduce.rs",
+              "mode": "100644",
+              "blob": "c55de0f612e85714ad44ad943f855841f99d46fd",
+              "bytes": 25434,
+              "sha256": "101fe7a38d814006b666cc609c6bea3f2ae13d6feebeca191a8b8b33628e3e8a"
+            }
+          ]
+        },
+        {
+          "path": "rs/trace.rs",
+          "historical": [
+            {
+              "path": "rs/trace.rs",
+              "mode": "100644",
+              "blob": "9df80b2f0f132a7d590757b627d5b15e3ca00b45",
+              "bytes": 2068,
+              "sha256": "33411f9ef2fb1c401e476e55d1e4e539be5ae00bce0b0d04bfcf10ee620265b0"
+            }
+          ],
+          "current": [
+            {
+              "path": "rs/trace.rs",
+              "mode": "100644",
+              "blob": "21124398419148f92dcb3e2839a3c78a4e894b39",
+              "bytes": 2088,
+              "sha256": "3d0b1616b9f61544c5bbebbe9916f7cfae9b29d5b1b8bae8f01e9edc64e5568b"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repo": "hemera",
+      "historical_revision": "d5f0a09539360934fb32db9b2e15a91995607db6",
+      "current_revision": "1c385e54e18885075f0dd12a0407ad0234e1bebf",
+      "changed": []
+    },
+    {
+      "repo": "strata",
+      "historical_revision": "494df7a0973ae10a6cc1c2022e644d70449a29d6",
+      "current_revision": "56aedb2d12b3126c601eb333419136d403614dbb",
+      "changed": [
+        {
+          "path": "nebu/rs/algebra_impl.rs",
+          "historical": [
+            {
+              "path": "nebu/rs/algebra_impl.rs",
+              "mode": "100644",
+              "blob": "02e4f55c148bb2e6317f5dedd75cf469e40c06b0",
+              "bytes": 7175,
+              "sha256": "a8f2574e8af39d15c7a25a2edb15aa75a3c9cbd03cdbb369097b232b480ed111"
+            }
+          ],
+          "current": [
+            {
+              "path": "nebu/rs/algebra_impl.rs",
+              "mode": "100644",
+              "blob": "afe889e4c9bdc965242907b2482470c2c7b9eebf",
+              "bytes": 8495,
+              "sha256": "40fe7fd3d8103f5dc8da3b8c37f387624ae457db84a06aacb3f9470bebe6074f"
+            }
+          ]
+        },
+        {
+          "path": "nebu/rs/proptests.rs",
+          "historical": [
+            {
+              "path": "nebu/rs/proptests.rs",
+              "mode": "100644",
+              "blob": "1fdd0c107255c6fe3440aa0a58e0847d0d31af79",
+              "bytes": 5872,
+              "sha256": "e7d051165a27605ed8b5cdfe595fc753422bfbb03781f400ba965a67c61d20b7"
+            }
+          ],
+          "current": [
+            {
+              "path": "nebu/rs/proptests.rs",
+              "mode": "100644",
+              "blob": "92d0876580a5f5e4106099874de73d4504f296f8",
+              "bytes": 4736,
+              "sha256": "17781ae470a1fad43de93f5604ee3135931c2a0b38395310050dd4ac071d127e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repo": "lens",
+      "historical_revision": "8b26cef6587bee6a686f2cf163f6a8496931ee6a",
+      "current_revision": "8b26cef6587bee6a686f2cf163f6a8496931ee6a",
+      "changed": []
+    }
+  ],
+  "cfgs": [
+    {
+      "cell": "A",
+      "resolved_features": [
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#aho-corasick@1.1.5",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#anes@0.1.6",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#anstyle@1.0.14",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#autocfg@1.5.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#bumpalo@3.20.3",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#cast@0.3.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#cfg-if@1.0.4",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium@0.2.2",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium-io@0.2.2",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium-ll@0.2.2",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap@4.6.6",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap_builder@4.6.6",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap_lex@1.1.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#criterion@0.5.1",
+          "features": [
+            "cargo_bench_support",
+            "default",
+            "html_reports",
+            "plotters",
+            "rayon"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#criterion-plot@0.5.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-deque@0.8.7",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-epoch@0.9.20",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-utils@0.8.22",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crunchy@0.2.4",
+          "features": [
+            "default",
+            "limit_128"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/hemera/rs#cyber-hemera@0.3.1",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/nox/rs#cyber-nox@0.2.0",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#either@1.17.0",
+          "features": [
+            "std",
+            "use_std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-core@0.3.34",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-task@0.3.34",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-util@0.3.34",
+          "features": [
+            "alloc",
+            "slab",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#half@2.7.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#hermit-abi@0.5.2",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#is-terminal@0.4.17",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#itertools@0.10.5",
+          "features": [
+            "default",
+            "use_alloc",
+            "use_std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#itoa@1.0.18",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#js-sys@0.3.104",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#libc@0.2.189",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#memchr@2.8.3",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/nox/cli#nox-cli@0.1.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#num-traits@0.2.19",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#once_cell@1.21.4",
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#oorandom@11.1.5",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#pin-project-lite@0.2.17",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters@0.3.7",
+          "features": [
+            "area_series",
+            "line_series",
+            "plotters-svg",
+            "svg_backend"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters-backend@0.3.7",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters-svg@0.3.7",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107",
+          "features": [
+            "default",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#quote@1.0.47",
+          "features": [
+            "default",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rayon@1.12.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rayon-core@1.13.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex@1.13.1",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex-automata@0.4.18",
+          "features": [
+            "alloc",
+            "meta",
+            "nfa-pikevm",
+            "nfa-thompson",
+            "std",
+            "syntax"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex-syntax@0.8.11",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rustversion@1.0.23",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#same-file@1.0.6",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde@1.0.229",
+          "features": [
+            "alloc",
+            "default",
+            "derive",
+            "serde_derive",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_core@1.0.229",
+          "features": [
+            "alloc",
+            "result",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_derive@1.0.229",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.151",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#slab@0.4.12",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/strata/compute#strata-compute@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/strata/core#strata-core@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/strata/ext#strata-ext@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/strata/nebu/rs#strata-nebu@0.1.1",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/strata/proof#strata-proof@0.1.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#syn@2.0.119",
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#syn@3.0.3",
+          "features": [
+            "clone-impls",
+            "derive",
+            "parsing",
+            "printing",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#tinytemplate@1.2.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#unicode-ident@1.0.24",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#walkdir@2.5.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen@0.2.127",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-macro@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-macro-support@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-shared@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#web-sys@0.3.104",
+          "features": [
+            "CanvasRenderingContext2d",
+            "Document",
+            "DomRect",
+            "DomRectReadOnly",
+            "Element",
+            "EventTarget",
+            "HtmlCanvasElement",
+            "HtmlElement",
+            "Node",
+            "Window",
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#winapi-util@0.1.11",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#windows-link@0.2.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#windows-sys@0.61.2",
+          "features": [
+            "Win32",
+            "Win32_Foundation",
+            "Win32_Storage",
+            "Win32_Storage_FileSystem",
+            "Win32_System",
+            "Win32_System_Console",
+            "Win32_System_SystemInformation",
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zerocopy@0.8.56",
+          "features": [
+            "derive",
+            "simd",
+            "zerocopy-derive"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zerocopy-derive@0.8.56",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zmij@1.0.23",
+          "features": []
+        }
+      ],
+      "own_rustc_commands": [
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=nebu CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/strata/nebu/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/strata/nebu/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='Goldilocks prime field arithmetic' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=../../LICENSE CARGO_PKG_NAME=strata-nebu CARGO_PKG_README=../README.md CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/strata' CARGO_PKG_RUST_VERSION=1.89 CARGO_PKG_VERSION=0.1.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=1 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name nebu --edition=2024 /Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/strata/nebu/rs/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"acpu\", \"default\", \"fast\", \"serde\"))' -C metadata=c1fc4341fea81477 -C extra-filename=-f95cfd2078e09671 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps --extern strata_compute=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps/libstrata_compute-07534c8005e19352.rmeta --extern strata_core=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps/libstrata_core-a21f5bb53d9d1e56.rmeta --extern strata_ext=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps/libstrata_ext-8694c61dceaea1eb.rmeta --extern strata_proof=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps/libstrata_proof-b6be6727127f12cf.rmeta`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=cyber_hemera CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/hemera/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/hemera/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='Hemera — Poseidon2 hash over Goldilocks field' CARGO_PKG_HOMEPAGE='https://github.com/cyberia-to/hemera' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=../LICENSE CARGO_PKG_NAME=cyber-hemera CARGO_PKG_README=../README.md CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/hemera' CARGO_PKG_RUST_VERSION=1.89 CARGO_PKG_VERSION=0.3.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=3 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name cyber_hemera --edition=2024 /Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/hemera/rs/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no '--warn=clippy::unused-async' --warn=unexpected_cfgs --warn=missing_debug_implementations --check-cfg 'cfg(hemera_portable)' --cfg 'feature=\"default\"' --cfg 'feature=\"std\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"async\", \"default\", \"serde\", \"std\"))' -C metadata=b30004b501d57a33 -C extra-filename=-363f6c7fbb2439b3 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=nox CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/nox/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/nox/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='proof-native virtual machine over the Goldilocks field' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=LICENSE CARGO_PKG_NAME=cyber-nox CARGO_PKG_README='' CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/nox' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.2.0 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=2 CARGO_PKG_VERSION_PATCH=0 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name nox --edition=2024 rs/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"brakedown\", \"default\", \"honeycrisp\", \"parallel\", \"std\", \"wgpu\"))' -C metadata=2dd20210ecc28aac -C extra-filename=-c89bccaf3a57e154 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps --extern hemera=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps/libcyber_hemera-363f6c7fbb2439b3.rmeta --extern nebu=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps/libnebu-f95cfd2078e09671.rmeta`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=reduction CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/nox/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/A/nox/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='proof-native virtual machine over the Goldilocks field' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=LICENSE CARGO_PKG_NAME=cyber-nox CARGO_PKG_README='' CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/nox' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.2.0 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=2 CARGO_PKG_VERSION_PATCH=0 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 CARGO_TARGET_TMPDIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/tmp DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name reduction --edition=2024 rs/benches/reduction.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C opt-level=3 -C embed-bitcode=no --cfg test --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"brakedown\", \"default\", \"honeycrisp\", \"parallel\", \"std\", \"wgpu\"))' -C metadata=20a33989e1eeadca -C extra-filename=-7445aa1ebaf07e9b --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps --extern criterion=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps/libcriterion-0b4cfb26a90eae02.rlib --extern hemera=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps/libcyber_hemera-363f6c7fbb2439b3.rlib --extern nox=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps/libnox-c89bccaf3a57e154.rlib --extern nebu=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/A/release/deps/libnebu-f95cfd2078e09671.rlib`"
+      ]
+    },
+    {
+      "cell": "B",
+      "resolved_features": [
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#aho-corasick@1.1.5",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#anes@0.1.6",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#anstyle@1.0.14",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#autocfg@1.5.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#bumpalo@3.20.3",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#cast@0.3.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#cfg-if@1.0.4",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium@0.2.2",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium-io@0.2.2",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium-ll@0.2.2",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap@4.6.6",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap_builder@4.6.6",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap_lex@1.1.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#criterion@0.5.1",
+          "features": [
+            "cargo_bench_support",
+            "default",
+            "html_reports",
+            "plotters",
+            "rayon"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#criterion-plot@0.5.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-deque@0.8.7",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-epoch@0.9.20",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-utils@0.8.22",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crunchy@0.2.4",
+          "features": [
+            "default",
+            "limit_128"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/hemera/rs#cyber-hemera@0.3.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/nox/rs#cyber-nox@0.2.0",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#either@1.17.0",
+          "features": [
+            "std",
+            "use_std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-core@0.3.34",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-task@0.3.34",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-util@0.3.34",
+          "features": [
+            "alloc",
+            "slab",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#half@2.7.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#hermit-abi@0.5.2",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#is-terminal@0.4.17",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#itertools@0.10.5",
+          "features": [
+            "default",
+            "use_alloc",
+            "use_std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#itoa@1.0.18",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#js-sys@0.3.104",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#libc@0.2.189",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#memchr@2.8.3",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/nox/cli#nox-cli@0.1.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#num-traits@0.2.19",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#once_cell@1.21.4",
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#oorandom@11.1.5",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#pin-project-lite@0.2.17",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters@0.3.7",
+          "features": [
+            "area_series",
+            "line_series",
+            "plotters-svg",
+            "svg_backend"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters-backend@0.3.7",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters-svg@0.3.7",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107",
+          "features": [
+            "default",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#quote@1.0.47",
+          "features": [
+            "default",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rayon@1.12.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rayon-core@1.13.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex@1.13.1",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex-automata@0.4.18",
+          "features": [
+            "alloc",
+            "meta",
+            "nfa-pikevm",
+            "nfa-thompson",
+            "std",
+            "syntax"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex-syntax@0.8.11",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rustversion@1.0.23",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#same-file@1.0.6",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde@1.0.229",
+          "features": [
+            "alloc",
+            "default",
+            "derive",
+            "serde_derive",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_core@1.0.229",
+          "features": [
+            "alloc",
+            "result",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_derive@1.0.229",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.151",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#slab@0.4.12",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/strata/compute#strata-compute@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/strata/core#strata-core@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/strata/ext#strata-ext@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/strata/nebu/rs#strata-nebu@0.1.1",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/strata/proof#strata-proof@0.1.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#syn@2.0.119",
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#syn@3.0.3",
+          "features": [
+            "clone-impls",
+            "derive",
+            "parsing",
+            "printing",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#tinytemplate@1.2.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#unicode-ident@1.0.24",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#walkdir@2.5.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen@0.2.127",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-macro@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-macro-support@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-shared@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#web-sys@0.3.104",
+          "features": [
+            "CanvasRenderingContext2d",
+            "Document",
+            "DomRect",
+            "DomRectReadOnly",
+            "Element",
+            "EventTarget",
+            "HtmlCanvasElement",
+            "HtmlElement",
+            "Node",
+            "Window",
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#winapi-util@0.1.11",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#windows-link@0.2.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#windows-sys@0.61.2",
+          "features": [
+            "Win32",
+            "Win32_Foundation",
+            "Win32_Storage",
+            "Win32_Storage_FileSystem",
+            "Win32_System",
+            "Win32_System_Console",
+            "Win32_System_SystemInformation",
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zerocopy@0.8.56",
+          "features": [
+            "derive",
+            "simd",
+            "zerocopy-derive"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zerocopy-derive@0.8.56",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zmij@1.0.23",
+          "features": []
+        }
+      ],
+      "own_rustc_commands": [
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=nebu CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/strata/nebu/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/strata/nebu/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='Goldilocks prime field arithmetic' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=../../LICENSE CARGO_PKG_NAME=strata-nebu CARGO_PKG_README=../README.md CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/strata' CARGO_PKG_RUST_VERSION=1.89 CARGO_PKG_VERSION=0.1.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=1 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name nebu --edition=2024 /Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/strata/nebu/rs/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"acpu\", \"default\", \"fast\", \"serde\"))' -C metadata=c984a11eb8166cbf -C extra-filename=-6ffd7870a5bb3ba3 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps --extern strata_compute=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps/libstrata_compute-7a2f2e52d821593c.rmeta --extern strata_core=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps/libstrata_core-d99d516ffe9ab9e7.rmeta --extern strata_ext=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps/libstrata_ext-66d6772d5aeadc58.rmeta --extern strata_proof=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps/libstrata_proof-709fd4b6908f9979.rmeta`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=cyber_hemera CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/hemera/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/hemera/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='Hemera — Poseidon2 hash over Goldilocks field' CARGO_PKG_HOMEPAGE='https://github.com/cyberia-to/hemera' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=../LICENSE CARGO_PKG_NAME=cyber-hemera CARGO_PKG_README=../README.md CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/hemera' CARGO_PKG_RUST_VERSION=1.89 CARGO_PKG_VERSION=0.3.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=3 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name cyber_hemera --edition=2024 /Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/hemera/rs/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no '--warn=clippy::unused-async' --warn=unexpected_cfgs --warn=missing_debug_implementations --check-cfg 'cfg(hemera_portable)' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"async\", \"default\", \"serde\", \"std\"))' -C metadata=65581defbfcbda5c -C extra-filename=-a07da63cc2a75eeb --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=nox CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/nox/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/nox/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='proof-native virtual machine over the Goldilocks field' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=LICENSE CARGO_PKG_NAME=cyber-nox CARGO_PKG_README='' CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/nox' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.2.0 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=2 CARGO_PKG_VERSION_PATCH=0 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name nox --edition=2024 rs/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"brakedown\", \"default\", \"honeycrisp\", \"parallel\", \"std\", \"wgpu\"))' -C metadata=8a177ac60bf4b95d -C extra-filename=-fe4edfdbc4b49122 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps --extern hemera=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps/libcyber_hemera-a07da63cc2a75eeb.rmeta --extern nebu=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps/libnebu-6ffd7870a5bb3ba3.rmeta`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=reduction CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/nox/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/nox/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='proof-native virtual machine over the Goldilocks field' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=LICENSE CARGO_PKG_NAME=cyber-nox CARGO_PKG_README='' CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/nox' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.2.0 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=2 CARGO_PKG_VERSION_PATCH=0 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 CARGO_TARGET_TMPDIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/tmp DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name reduction --edition=2024 rs/benches/reduction.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C opt-level=3 -C embed-bitcode=no --cfg test --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"brakedown\", \"default\", \"honeycrisp\", \"parallel\", \"std\", \"wgpu\"))' -C metadata=8a5c624ef8ab5815 -C extra-filename=-6836a15e585f254b --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps --extern criterion=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps/libcriterion-0b4cfb26a90eae02.rlib --extern hemera=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps/libcyber_hemera-a07da63cc2a75eeb.rlib --extern nox=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps/libnox-fe4edfdbc4b49122.rlib --extern nebu=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/B/release/deps/libnebu-6ffd7870a5bb3ba3.rlib`"
+      ]
+    },
+    {
+      "cell": "C",
+      "resolved_features": [
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#aho-corasick@1.1.5",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#anes@0.1.6",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#anstyle@1.0.14",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#autocfg@1.5.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#bumpalo@3.20.3",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#cast@0.3.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#cfg-if@1.0.4",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium@0.2.2",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium-io@0.2.2",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium-ll@0.2.2",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap@4.6.6",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap_builder@4.6.6",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap_lex@1.1.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#criterion@0.5.1",
+          "features": [
+            "cargo_bench_support",
+            "default",
+            "html_reports",
+            "plotters",
+            "rayon"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#criterion-plot@0.5.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-deque@0.8.7",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-epoch@0.9.20",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-utils@0.8.22",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crunchy@0.2.4",
+          "features": [
+            "default",
+            "limit_128"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/hemera/rs#cyber-hemera@0.3.1",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/nox/rs#cyber-nox@0.2.0",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#either@1.17.0",
+          "features": [
+            "std",
+            "use_std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-core@0.3.34",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-task@0.3.34",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-util@0.3.34",
+          "features": [
+            "alloc",
+            "slab",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#half@2.7.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#hermit-abi@0.5.2",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#is-terminal@0.4.17",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#itertools@0.10.5",
+          "features": [
+            "default",
+            "use_alloc",
+            "use_std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#itoa@1.0.18",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#js-sys@0.3.104",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#libc@0.2.189",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#memchr@2.8.3",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/nox/cli#nox-cli@0.1.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#num-traits@0.2.19",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#once_cell@1.21.4",
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#oorandom@11.1.5",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#pin-project-lite@0.2.17",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters@0.3.7",
+          "features": [
+            "area_series",
+            "line_series",
+            "plotters-svg",
+            "svg_backend"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters-backend@0.3.7",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters-svg@0.3.7",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107",
+          "features": [
+            "default",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#quote@1.0.47",
+          "features": [
+            "default",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rayon@1.12.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rayon-core@1.13.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex@1.13.1",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex-automata@0.4.18",
+          "features": [
+            "alloc",
+            "meta",
+            "nfa-pikevm",
+            "nfa-thompson",
+            "std",
+            "syntax"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex-syntax@0.8.11",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rustversion@1.0.23",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#same-file@1.0.6",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde@1.0.229",
+          "features": [
+            "alloc",
+            "default",
+            "derive",
+            "serde_derive",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_core@1.0.229",
+          "features": [
+            "alloc",
+            "result",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_derive@1.0.229",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.151",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#slab@0.4.12",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/strata/compute#strata-compute@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/strata/core#strata-core@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/strata/ext#strata-ext@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/strata/nebu/rs#strata-nebu@0.1.1",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/strata/proof#strata-proof@0.1.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#syn@2.0.119",
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#syn@3.0.3",
+          "features": [
+            "clone-impls",
+            "derive",
+            "parsing",
+            "printing",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#tinytemplate@1.2.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#unicode-ident@1.0.24",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#walkdir@2.5.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen@0.2.127",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-macro@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-macro-support@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-shared@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#web-sys@0.3.104",
+          "features": [
+            "CanvasRenderingContext2d",
+            "Document",
+            "DomRect",
+            "DomRectReadOnly",
+            "Element",
+            "EventTarget",
+            "HtmlCanvasElement",
+            "HtmlElement",
+            "Node",
+            "Window",
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#winapi-util@0.1.11",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#windows-link@0.2.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#windows-sys@0.61.2",
+          "features": [
+            "Win32",
+            "Win32_Foundation",
+            "Win32_Storage",
+            "Win32_Storage_FileSystem",
+            "Win32_System",
+            "Win32_System_Console",
+            "Win32_System_SystemInformation",
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zerocopy@0.8.56",
+          "features": [
+            "derive",
+            "simd",
+            "zerocopy-derive"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zerocopy-derive@0.8.56",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zmij@1.0.23",
+          "features": []
+        }
+      ],
+      "own_rustc_commands": [
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=nebu CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/strata/nebu/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/strata/nebu/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='Goldilocks prime field arithmetic' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=../../LICENSE CARGO_PKG_NAME=strata-nebu CARGO_PKG_README=../README.md CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/strata' CARGO_PKG_RUST_VERSION=1.89 CARGO_PKG_VERSION=0.1.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=1 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name nebu --edition=2024 /Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/strata/nebu/rs/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"acpu\", \"default\", \"fast\", \"serde\"))' -C metadata=10b4a18b1aab9002 -C extra-filename=-24c6d58e4450badb --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps --extern strata_compute=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps/libstrata_compute-6279c474aa050524.rmeta --extern strata_core=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps/libstrata_core-0085fcb50a50f792.rmeta --extern strata_ext=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps/libstrata_ext-2eb23def15ffbbd0.rmeta --extern strata_proof=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps/libstrata_proof-9e0734cf3b531056.rmeta`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=cyber_hemera CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/hemera/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/hemera/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='Hemera — Poseidon2 hash over Goldilocks field' CARGO_PKG_HOMEPAGE='https://github.com/cyberia-to/hemera' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=../LICENSE CARGO_PKG_NAME=cyber-hemera CARGO_PKG_README=../README.md CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/hemera' CARGO_PKG_RUST_VERSION=1.89 CARGO_PKG_VERSION=0.3.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=3 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name cyber_hemera --edition=2024 /Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/hemera/rs/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no '--warn=clippy::unused-async' --warn=unexpected_cfgs --warn=missing_debug_implementations --check-cfg 'cfg(hemera_portable)' --cfg 'feature=\"default\"' --cfg 'feature=\"std\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"async\", \"default\", \"serde\", \"std\"))' -C metadata=51e440ffb44b3ef2 -C extra-filename=-32a1f5c5ce7ae974 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=nox CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/nox/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/nox/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='proof-native virtual machine over the Goldilocks field' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=LICENSE CARGO_PKG_NAME=cyber-nox CARGO_PKG_README='' CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/nox' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.2.0 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=2 CARGO_PKG_VERSION_PATCH=0 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name nox --edition=2024 rs/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"brakedown\", \"default\", \"honeycrisp\", \"parallel\", \"std\", \"wgpu\"))' -C metadata=e451e5c4466055dd -C extra-filename=-ef337d45fbd51729 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps --extern hemera=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps/libcyber_hemera-32a1f5c5ce7ae974.rmeta --extern nebu=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps/libnebu-24c6d58e4450badb.rmeta`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=reduction CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/nox/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/C/nox/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='proof-native virtual machine over the Goldilocks field' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=LICENSE CARGO_PKG_NAME=cyber-nox CARGO_PKG_README='' CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/nox' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.2.0 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=2 CARGO_PKG_VERSION_PATCH=0 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 CARGO_TARGET_TMPDIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/tmp DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name reduction --edition=2024 rs/benches/reduction.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C opt-level=3 -C embed-bitcode=no --cfg test --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"brakedown\", \"default\", \"honeycrisp\", \"parallel\", \"std\", \"wgpu\"))' -C metadata=ce48816deb396466 -C extra-filename=-1a874bec63a13a86 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps --extern criterion=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps/libcriterion-0b4cfb26a90eae02.rlib --extern hemera=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps/libcyber_hemera-32a1f5c5ce7ae974.rlib --extern nox=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps/libnox-ef337d45fbd51729.rlib --extern nebu=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/C/release/deps/libnebu-24c6d58e4450badb.rlib`"
+      ]
+    },
+    {
+      "cell": "D",
+      "resolved_features": [
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#aho-corasick@1.1.5",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#anes@0.1.6",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#anstyle@1.0.14",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#autocfg@1.5.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#bumpalo@3.20.3",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#cast@0.3.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#cfg-if@1.0.4",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium@0.2.2",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium-io@0.2.2",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium-ll@0.2.2",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap@4.6.6",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap_builder@4.6.6",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap_lex@1.1.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#criterion@0.5.1",
+          "features": [
+            "cargo_bench_support",
+            "default",
+            "html_reports",
+            "plotters",
+            "rayon"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#criterion-plot@0.5.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-deque@0.8.7",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-epoch@0.9.20",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-utils@0.8.22",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crunchy@0.2.4",
+          "features": [
+            "default",
+            "limit_128"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/rs#cyber-hemera@0.3.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/nox/rs#cyber-nox@0.2.0",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#either@1.17.0",
+          "features": [
+            "std",
+            "use_std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-core@0.3.34",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-task@0.3.34",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-util@0.3.34",
+          "features": [
+            "alloc",
+            "slab",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#half@2.7.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#hermit-abi@0.5.2",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#is-terminal@0.4.17",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#itertools@0.10.5",
+          "features": [
+            "default",
+            "use_alloc",
+            "use_std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#itoa@1.0.18",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#js-sys@0.3.104",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#libc@0.2.189",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#memchr@2.8.3",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/nox/cli#nox-cli@0.1.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#num-traits@0.2.19",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#once_cell@1.21.4",
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#oorandom@11.1.5",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#pin-project-lite@0.2.17",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters@0.3.7",
+          "features": [
+            "area_series",
+            "line_series",
+            "plotters-svg",
+            "svg_backend"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters-backend@0.3.7",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters-svg@0.3.7",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107",
+          "features": [
+            "default",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#quote@1.0.47",
+          "features": [
+            "default",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rayon@1.12.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rayon-core@1.13.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex@1.13.1",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex-automata@0.4.18",
+          "features": [
+            "alloc",
+            "meta",
+            "nfa-pikevm",
+            "nfa-thompson",
+            "std",
+            "syntax"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex-syntax@0.8.11",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rustversion@1.0.23",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#same-file@1.0.6",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde@1.0.229",
+          "features": [
+            "alloc",
+            "default",
+            "derive",
+            "serde_derive",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_core@1.0.229",
+          "features": [
+            "alloc",
+            "result",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_derive@1.0.229",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.151",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#slab@0.4.12",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/strata/compute#strata-compute@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/strata/core#strata-core@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/strata/ext#strata-ext@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/strata/nebu/rs#strata-nebu@0.1.1",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/strata/proof#strata-proof@0.1.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#syn@2.0.119",
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#syn@3.0.3",
+          "features": [
+            "clone-impls",
+            "derive",
+            "parsing",
+            "printing",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#tinytemplate@1.2.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#unicode-ident@1.0.24",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#walkdir@2.5.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen@0.2.127",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-macro@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-macro-support@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-shared@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#web-sys@0.3.104",
+          "features": [
+            "CanvasRenderingContext2d",
+            "Document",
+            "DomRect",
+            "DomRectReadOnly",
+            "Element",
+            "EventTarget",
+            "HtmlCanvasElement",
+            "HtmlElement",
+            "Node",
+            "Window",
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#winapi-util@0.1.11",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#windows-link@0.2.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#windows-sys@0.61.2",
+          "features": [
+            "Win32",
+            "Win32_Foundation",
+            "Win32_Storage",
+            "Win32_Storage_FileSystem",
+            "Win32_System",
+            "Win32_System_Console",
+            "Win32_System_SystemInformation",
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zerocopy@0.8.56",
+          "features": [
+            "derive",
+            "simd",
+            "zerocopy-derive"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zerocopy-derive@0.8.56",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zmij@1.0.23",
+          "features": []
+        }
+      ],
+      "own_rustc_commands": [
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=nebu CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/strata/nebu/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/strata/nebu/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='Goldilocks prime field arithmetic' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=../../LICENSE CARGO_PKG_NAME=strata-nebu CARGO_PKG_README=../README.md CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/strata' CARGO_PKG_RUST_VERSION=1.89 CARGO_PKG_VERSION=0.1.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=1 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name nebu --edition=2024 /Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/strata/nebu/rs/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"acpu\", \"default\", \"fast\", \"serde\"))' -C metadata=23ae75d8c98edbbf -C extra-filename=-3e610be3e5bb36d9 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps --extern strata_compute=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps/libstrata_compute-320c7b612b656788.rmeta --extern strata_core=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps/libstrata_core-5613383b6c4975be.rmeta --extern strata_ext=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps/libstrata_ext-56b55a006bae831d.rmeta --extern strata_proof=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps/libstrata_proof-696c323a52b208c0.rmeta`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=cyber_hemera CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='Hemera — Poseidon2 hash over Goldilocks field' CARGO_PKG_HOMEPAGE='https://github.com/cyberia-to/hemera' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=../LICENSE CARGO_PKG_NAME=cyber-hemera CARGO_PKG_README=../README.md CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/hemera' CARGO_PKG_RUST_VERSION=1.89 CARGO_PKG_VERSION=0.3.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=3 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name cyber_hemera --edition=2024 /Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/rs/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no '--warn=clippy::unused-async' --warn=unexpected_cfgs --warn=missing_debug_implementations --check-cfg 'cfg(hemera_portable)' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"async\", \"default\", \"serde\", \"std\"))' -C metadata=18f74fa6d11aa3a5 -C extra-filename=-e762886549967ad0 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=nox CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/nox/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/nox/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='proof-native virtual machine over the Goldilocks field' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=LICENSE CARGO_PKG_NAME=cyber-nox CARGO_PKG_README='' CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/nox' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.2.0 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=2 CARGO_PKG_VERSION_PATCH=0 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name nox --edition=2024 rs/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"brakedown\", \"default\", \"honeycrisp\", \"parallel\", \"std\", \"wgpu\"))' -C metadata=1ca087be43bf1bc5 -C extra-filename=-19b8cf003d08ee30 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps --extern hemera=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps/libcyber_hemera-e762886549967ad0.rmeta --extern nebu=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps/libnebu-3e610be3e5bb36d9.rmeta`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=reduction CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/nox/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/nox/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='proof-native virtual machine over the Goldilocks field' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=LICENSE CARGO_PKG_NAME=cyber-nox CARGO_PKG_README='' CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/nox' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.2.0 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=2 CARGO_PKG_VERSION_PATCH=0 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 CARGO_TARGET_TMPDIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/tmp DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name reduction --edition=2024 rs/benches/reduction.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C opt-level=3 -C embed-bitcode=no --cfg test --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"brakedown\", \"default\", \"honeycrisp\", \"parallel\", \"std\", \"wgpu\"))' -C metadata=42864d4dc774a6d9 -C extra-filename=-5f0b23dd18557bf1 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps --extern criterion=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps/libcriterion-0b4cfb26a90eae02.rlib --extern hemera=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps/libcyber_hemera-e762886549967ad0.rlib --extern nox=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps/libnox-19b8cf003d08ee30.rlib --extern nebu=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D/release/deps/libnebu-3e610be3e5bb36d9.rlib`"
+      ]
+    },
+    {
+      "cell": "P",
+      "resolved_features": [
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#aho-corasick@1.1.5",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#anes@0.1.6",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#anstyle@1.0.14",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#autocfg@1.5.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#bumpalo@3.20.3",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#cast@0.3.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#cfg-if@1.0.4",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium@0.2.2",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium-io@0.2.2",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#ciborium-ll@0.2.2",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap@4.6.6",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap_builder@4.6.6",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#clap_lex@1.1.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#criterion@0.5.1",
+          "features": [
+            "cargo_bench_support",
+            "default",
+            "html_reports",
+            "plotters",
+            "rayon"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#criterion-plot@0.5.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-deque@0.8.7",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-epoch@0.9.20",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crossbeam-utils@0.8.22",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#crunchy@0.2.4",
+          "features": [
+            "default",
+            "limit_128"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/hemera/rs#cyber-hemera@0.3.1",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/nox/rs#cyber-nox@0.2.0",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#either@1.17.0",
+          "features": [
+            "std",
+            "use_std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-core@0.3.34",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-task@0.3.34",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#futures-util@0.3.34",
+          "features": [
+            "alloc",
+            "slab",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#half@2.7.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#hermit-abi@0.5.2",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#is-terminal@0.4.17",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#itertools@0.10.5",
+          "features": [
+            "default",
+            "use_alloc",
+            "use_std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#itoa@1.0.18",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#js-sys@0.3.104",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#libc@0.2.189",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#memchr@2.8.3",
+          "features": [
+            "alloc",
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/nox/cli#nox-cli@0.1.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#num-traits@0.2.19",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#once_cell@1.21.4",
+          "features": [
+            "alloc",
+            "default",
+            "race",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#oorandom@11.1.5",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#pin-project-lite@0.2.17",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters@0.3.7",
+          "features": [
+            "area_series",
+            "line_series",
+            "plotters-svg",
+            "svg_backend"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters-backend@0.3.7",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#plotters-svg@0.3.7",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107",
+          "features": [
+            "default",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#quote@1.0.47",
+          "features": [
+            "default",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rayon@1.12.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rayon-core@1.13.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex@1.13.1",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex-automata@0.4.18",
+          "features": [
+            "alloc",
+            "meta",
+            "nfa-pikevm",
+            "nfa-thompson",
+            "std",
+            "syntax"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#regex-syntax@0.8.11",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#rustversion@1.0.23",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#same-file@1.0.6",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde@1.0.229",
+          "features": [
+            "alloc",
+            "default",
+            "derive",
+            "serde_derive",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_core@1.0.229",
+          "features": [
+            "alloc",
+            "result",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_derive@1.0.229",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.151",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#slab@0.4.12",
+          "features": [
+            "std"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/strata/compute#strata-compute@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/strata/core#strata-core@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/strata/ext#strata-ext@0.1.1",
+          "features": []
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/strata/nebu/rs#strata-nebu@0.1.1",
+          "features": [
+            "default"
+          ]
+        },
+        {
+          "id": "path+file:///Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/strata/proof#strata-proof@0.1.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#syn@2.0.119",
+          "features": [
+            "clone-impls",
+            "default",
+            "derive",
+            "extra-traits",
+            "full",
+            "parsing",
+            "printing",
+            "proc-macro",
+            "visit",
+            "visit-mut"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#syn@3.0.3",
+          "features": [
+            "clone-impls",
+            "derive",
+            "parsing",
+            "printing",
+            "proc-macro"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#tinytemplate@1.2.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#unicode-ident@1.0.24",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#walkdir@2.5.0",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen@0.2.127",
+          "features": [
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-macro@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-macro-support@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#wasm-bindgen-shared@0.2.127",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#web-sys@0.3.104",
+          "features": [
+            "CanvasRenderingContext2d",
+            "Document",
+            "DomRect",
+            "DomRectReadOnly",
+            "Element",
+            "EventTarget",
+            "HtmlCanvasElement",
+            "HtmlElement",
+            "Node",
+            "Window",
+            "default",
+            "std"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#winapi-util@0.1.11",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#windows-link@0.2.1",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#windows-sys@0.61.2",
+          "features": [
+            "Win32",
+            "Win32_Foundation",
+            "Win32_Storage",
+            "Win32_Storage_FileSystem",
+            "Win32_System",
+            "Win32_System_Console",
+            "Win32_System_SystemInformation",
+            "default"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zerocopy@0.8.56",
+          "features": [
+            "derive",
+            "simd",
+            "zerocopy-derive"
+          ]
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zerocopy-derive@0.8.56",
+          "features": []
+        },
+        {
+          "id": "registry+https://github.com/rust-lang/crates.io-index#zmij@1.0.23",
+          "features": []
+        }
+      ],
+      "own_rustc_commands": [
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=nebu CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/strata/nebu/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/strata/nebu/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='Goldilocks prime field arithmetic' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=../../LICENSE CARGO_PKG_NAME=strata-nebu CARGO_PKG_README=../README.md CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/strata' CARGO_PKG_RUST_VERSION=1.89 CARGO_PKG_VERSION=0.1.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=1 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name nebu --edition=2024 /Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/strata/nebu/rs/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"acpu\", \"default\", \"fast\", \"serde\"))' -C metadata=76c6d8513cffd0b4 -C extra-filename=-34e8054e825d0017 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps --extern strata_compute=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps/libstrata_compute-2f159cd8fea83fd1.rmeta --extern strata_core=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps/libstrata_core-0a0cd6a4fbca7cd8.rmeta --extern strata_ext=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps/libstrata_ext-722c3139e7c38fa8.rmeta --extern strata_proof=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps/libstrata_proof-42a9b687a5c8dc92.rmeta`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=cyber_hemera CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/hemera/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/hemera/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='Hemera — Poseidon2 hash over Goldilocks field' CARGO_PKG_HOMEPAGE='https://github.com/cyberia-to/hemera' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=../LICENSE CARGO_PKG_NAME=cyber-hemera CARGO_PKG_README=../README.md CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/hemera' CARGO_PKG_RUST_VERSION=1.89 CARGO_PKG_VERSION=0.3.1 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=3 CARGO_PKG_VERSION_PATCH=1 CARGO_PKG_VERSION_PRE='' DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name cyber_hemera --edition=2024 /Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/hemera/rs/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no '--warn=clippy::unused-async' --warn=unexpected_cfgs --warn=missing_debug_implementations --check-cfg 'cfg(hemera_portable)' --cfg 'feature=\"default\"' --cfg 'feature=\"std\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"async\", \"default\", \"serde\", \"std\"))' -C metadata=c3035195d9595577 -C extra-filename=-2c9993173ba49c3e --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=nox CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/nox/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/nox/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='proof-native virtual machine over the Goldilocks field' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=LICENSE CARGO_PKG_NAME=cyber-nox CARGO_PKG_README='' CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/nox' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.2.0 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=2 CARGO_PKG_VERSION_PATCH=0 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name nox --edition=2024 rs/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C embed-bitcode=no --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"brakedown\", \"default\", \"honeycrisp\", \"parallel\", \"std\", \"wgpu\"))' -C metadata=424c5d29dc5656aa -C extra-filename=-d92376ccd9d5010f --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps --extern hemera=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps/libcyber_hemera-2c9993173ba49c3e.rmeta --extern nebu=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps/libnebu-34e8054e825d0017.rmeta`",
+        "     Running `CARGO=/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo CARGO_CRATE_NAME=reduction CARGO_MANIFEST_DIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/nox/rs CARGO_MANIFEST_PATH=/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/P/nox/rs/Cargo.toml CARGO_PKG_AUTHORS='' CARGO_PKG_DESCRIPTION='proof-native virtual machine over the Goldilocks field' CARGO_PKG_HOMEPAGE='' CARGO_PKG_LICENSE='' CARGO_PKG_LICENSE_FILE=LICENSE CARGO_PKG_NAME=cyber-nox CARGO_PKG_README='' CARGO_PKG_REPOSITORY='https://github.com/cyberia-to/nox' CARGO_PKG_RUST_VERSION='' CARGO_PKG_VERSION=0.2.0 CARGO_PKG_VERSION_MAJOR=0 CARGO_PKG_VERSION_MINOR=2 CARGO_PKG_VERSION_PATCH=0 CARGO_PKG_VERSION_PRE='' CARGO_PRIMARY_PACKAGE=1 CARGO_TARGET_TMPDIR=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/tmp DYLD_FALLBACK_LIBRARY_PATH='/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps:/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/lib:/Users/master/lib:/usr/local/lib:/usr/lib' /Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc --crate-name reduction --edition=2024 rs/benches/reduction.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C opt-level=3 -C embed-bitcode=no --cfg test --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"brakedown\", \"default\", \"honeycrisp\", \"parallel\", \"std\", \"wgpu\"))' -C metadata=de9cbae571bc553b -C extra-filename=-18c8e24ffe500674 --out-dir /Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps -C strip=debuginfo -L dependency=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps --extern criterion=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps/libcriterion-0b4cfb26a90eae02.rlib --extern hemera=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps/libcyber_hemera-2c9993173ba49c3e.rlib --extern nox=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps/libnox-d92376ccd9d5010f.rlib --extern nebu=/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/P/release/deps/libnebu-34e8054e825d0017.rlib`"
+      ]
+    }
+  ],
+  "binaries": [
+    {
+      "cell": "A",
+      "sha256": "49814fac53940c8481f747c49d0925a8620e7fa54ead064c3a0b203dd7d851ea",
+      "bytes": 3044656
+    },
+    {
+      "cell": "B",
+      "sha256": "0afa4ba30ea6fe96e58018b52e51d5ec2093ad86ab6313103a3051fe4230ba0f",
+      "bytes": 3044656
+    },
+    {
+      "cell": "C",
+      "sha256": "a6d8ee8c214e011539427eb75d37acb92f5b45e859224a03b5f52ad5254d6fab",
+      "bytes": 3044656
+    },
+    {
+      "cell": "D",
+      "sha256": "283e5a4be6dc16699433f3209421f6122b4e1fdfc0f3725626ab15130ebbc08e",
+      "bytes": 3044656
+    },
+    {
+      "cell": "P",
+      "sha256": "6582befad4e98fcc25e247fe779a62a863c78370f23a9358614a944fb952f57e",
+      "bytes": 3044656
+    }
+  ],
+  "code_comparisons": [
+    {
+      "pair": "A/B",
+      "changed_sections": [
+        {
+          "segment": "__TEXT",
+          "section": "__text"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__gcc_except_tab"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__cstring"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__const"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__unwind_info"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__eh_frame"
+        },
+        {
+          "segment": "__DATA_CONST",
+          "section": "__const"
+        }
+      ],
+      "relevant_spans": 49,
+      "unique_name_matches": 47,
+      "raw_equal_spans": 35,
+      "moved_spans": 5
+    },
+    {
+      "pair": "C/D",
+      "changed_sections": [
+        {
+          "segment": "__TEXT",
+          "section": "__text"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__gcc_except_tab"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__cstring"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__const"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__unwind_info"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__eh_frame"
+        },
+        {
+          "segment": "__DATA_CONST",
+          "section": "__const"
+        }
+      ],
+      "relevant_spans": 49,
+      "unique_name_matches": 47,
+      "raw_equal_spans": 16,
+      "moved_spans": 29
+    },
+    {
+      "pair": "A/P",
+      "changed_sections": [
+        {
+          "segment": "__TEXT",
+          "section": "__text"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__gcc_except_tab"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__cstring"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__const"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__unwind_info"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__eh_frame"
+        },
+        {
+          "segment": "__DATA_CONST",
+          "section": "__const"
+        }
+      ],
+      "relevant_spans": 49,
+      "unique_name_matches": 47,
+      "raw_equal_spans": 44,
+      "moved_spans": 2
+    },
+    {
+      "pair": "B/D",
+      "changed_sections": [
+        {
+          "segment": "__TEXT",
+          "section": "__text"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__gcc_except_tab"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__cstring"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__const"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__unwind_info"
+        },
+        {
+          "segment": "__TEXT",
+          "section": "__eh_frame"
+        },
+        {
+          "segment": "__DATA_CONST",
+          "section": "__const"
+        }
+      ],
+      "relevant_spans": 49,
+      "unique_name_matches": 47,
+      "raw_equal_spans": 22,
+      "moved_spans": 26
+    }
+  ],
+  "benchmark_format_exact": true,
+  "interpretation": "The identical-source A/P path control changes raw text/layout, so A/B or C/D byte differences do not alone isolate feature effects; B/D spans multiple source changes."
+}

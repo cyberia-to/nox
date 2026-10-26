@@ -16,18 +16,18 @@
 //! reduces normally through Layer 1 patterns. Remove all jets: identical
 //! results, orders of magnitude slower. See specs/jets.md.
 
-pub mod registry;
 mod admission;
 pub use admission::{MAX_ACCELERATED_DEPTH, MAX_ACCELERATED_WORDS};
-pub mod formulas;
 pub mod backends;
+pub mod formulas;
+pub mod registry;
 
-pub mod merkle_verify;
-pub mod poly_eval;
-pub mod fri_fold;
-pub mod ntt;
-pub mod state;
 pub mod decider;
+pub mod fri_fold;
+pub mod merkle_verify;
+pub mod ntt;
+pub mod poly_eval;
+pub mod state;
 
 #[cfg(feature = "brakedown")]
 pub mod poly_eval_brakedown;

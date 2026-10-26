@@ -1,0 +1,27 @@
+   Compiling crossbeam-utils v0.8.22
+   Compiling mutants v0.0.3
+    Checking cyber-hemera v0.3.1 (/Users/master/cyber/hemera/rs)
+    Checking crossbeam-queue v0.3.13
+    Checking unimem v0.2.0
+    Checking acpu v0.2.0
+    Checking cyber-nox v0.2.0 (/Users/master/cyber/nox/rs)
+error[E0425]: cannot find function `ntt_forward` in module `acpu::field`
+  --> rs/jets/backends/honeycrisp.rs:85:22
+   |
+85 |         acpu::field::ntt_forward(&mut vals_u64, omega_u64);
+   |                      ^^^^^^^^^^^ not found in `acpu::field`
+
+error[E0425]: cannot find function `multilinear_eval` in module `acpu::field`
+   --> rs/jets/backends/honeycrisp.rs:159:38
+    |
+159 |         let value_u64 = acpu::field::multilinear_eval(&evals_u64, &point_u64);
+    |                                      ^^^^^^^^^^^^^^^^ not found in `acpu::field`
+    |
+note: function `crate::jets::poly_eval::multilinear_eval` exists but is inaccessible
+   --> rs/jets/poly_eval.rs:114:1
+    |
+114 | fn multilinear_eval(evals: &[Goldilocks], point: &[Goldilocks]) -> Goldilocks {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `cyber-nox` (lib) due to 2 previous errors

@@ -1,0 +1,13 @@
+{
+  "command": [
+    "nu",
+    "audit/2026-10-17-hemera-feature-performance/verify.nu",
+    ".",
+    "--live"
+  ],
+  "source_base": "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+  "observed": "2026-10-17T13:39:35.894318+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "f20855293441bba9bf03b3848f66118617c1ce6c73d828aed481298f7f276e12",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

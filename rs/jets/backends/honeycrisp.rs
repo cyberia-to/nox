@@ -25,21 +25,27 @@ mod hc_jets {
     extern crate alloc;
     use alloc::vec::Vec;
 
-    use nebu::Goldilocks;
-    use crate::data::{Reduction, Order};
-    use crate::reduce::{Outcome, ErrorKind};
     use crate::call::CallProvider;
-    use crate::trace::{Tracer, TraceRow};
+    use crate::data::{Order, Reduction};
+    use crate::reduce::{ErrorKind, Outcome};
+    use crate::trace::{TraceRow, Tracer};
+    use nebu::Goldilocks;
 
     // ── NTT jet ──────────────────────────────────────────────────────────────
 
     pub fn honeycrisp_ntt_jet<const N: usize>(
-        reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-        _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+        reduction: &mut Reduction<N>,
+        object: Order,
+        _body: Order,
+        budget: u64,
+        _hints: &dyn CallProvider<N>,
+        _tracer: &mut dyn Tracer,
+        _depth: u64,
         row: &mut TraceRow,
     ) -> Outcome {
         let prepared = match crate::jets::admission::prepare_ntt(reduction, object, budget) {
-            Ok(input) => input, Err(outcome) => return outcome,
+            Ok(input) => input,
+            Err(outcome) => return outcome,
         };
         let tree_id = prepared.input.tree;
         let omega_id = prepared.input.parameter;
@@ -69,12 +75,18 @@ mod hc_jets {
     // ── poly_eval jet ─────────────────────────────────────────────────────────
 
     pub fn honeycrisp_poly_eval_jet<const N: usize>(
-        reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-        _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+        reduction: &mut Reduction<N>,
+        object: Order,
+        _body: Order,
+        budget: u64,
+        _hints: &dyn CallProvider<N>,
+        _tracer: &mut dyn Tracer,
+        _depth: u64,
         row: &mut TraceRow,
     ) -> Outcome {
         let prepared = match crate::jets::admission::prepare_poly(reduction, object, budget) {
-            Ok(input) => input, Err(outcome) => return outcome,
+            Ok(input) => input,
+            Err(outcome) => return outcome,
         };
         let evals_id = prepared.input.tree;
         let point_id = prepared.input.parameter;
@@ -97,8 +109,6 @@ mod hc_jets {
             None => Outcome::Error(ErrorKind::Unavailable),
         }
     }
-
-
 }
 
 /// Build the genesis registry using Honeycrisp (acpu) jets for NTT and poly_eval.
@@ -107,27 +117,35 @@ pub fn genesis_honeycrisp<const N: usize>() -> JetRegistry<N> {
     #[cfg(all(feature = "honeycrisp", target_os = "macos", target_arch = "aarch64"))]
     {
         use crate::jets::registry::compute_genesis_digests;
-        use crate::jets::{merkle_verify, fri_fold, state, decider};
+        use crate::jets::{decider, fri_fold, merkle_verify, state};
 
         let digests = compute_genesis_digests();
         let mut reg = JetRegistry::empty();
 
         // acpu-accelerated jets
-        reg.insert_exact_guarded(digests.ntt, hc_jets::honeycrisp_ntt_jet::<N>, crate::jets::admission::ntt_admitted::<N>);
-        reg.insert_exact_guarded(digests.poly_eval, hc_jets::honeycrisp_poly_eval_jet::<N>, crate::jets::admission::poly_admitted::<N>);
+        reg.insert_exact_guarded(
+            digests.ntt,
+            hc_jets::honeycrisp_ntt_jet::<N>,
+            crate::jets::admission::ntt_admitted::<N>,
+        );
+        reg.insert_exact_guarded(
+            digests.poly_eval,
+            hc_jets::honeycrisp_poly_eval_jet::<N>,
+            crate::jets::admission::poly_admitted::<N>,
+        );
 
         // CPU fallbacks for remaining exact-match jets
         reg.insert_exact(digests.merkle_verify, merkle_verify::merkle_verify_jet::<N>);
-        reg.insert_exact(digests.fri_fold,      fri_fold::fri_fold_jet::<N>);
-        reg.insert_exact(digests.cyberlink,     state::cyberlink_jet::<N>);
-        reg.insert_exact(digests.decider,       decider::decider_jet::<N>);
+        reg.insert_exact(digests.fri_fold, fri_fold::fri_fold_jet::<N>);
+        reg.insert_exact(digests.cyberlink, state::cyberlink_jet::<N>);
+        reg.insert_exact(digests.decider, decider::decider_jet::<N>);
 
         // Template jets — CPU implementations
-        reg.insert_template(state::is_transfer::<N>,  state::transfer_jet::<N>);
-        reg.insert_template(state::is_insert::<N>,    state::insert_jet::<N>);
-        reg.insert_template(state::is_update::<N>,    state::update_jet::<N>);
+        reg.insert_template(state::is_transfer::<N>, state::transfer_jet::<N>);
+        reg.insert_template(state::is_insert::<N>, state::insert_jet::<N>);
+        reg.insert_template(state::is_update::<N>, state::update_jet::<N>);
         reg.insert_template(state::is_aggregate::<N>, state::aggregate_jet::<N>);
-        reg.insert_template(state::is_conserve::<N>,  state::conserve_jet::<N>);
+        reg.insert_template(state::is_conserve::<N>, state::conserve_jet::<N>);
 
         reg
     }

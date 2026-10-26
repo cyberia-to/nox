@@ -1,0 +1,153 @@
+{
+  "at": "2026-10-13T03:01:23.496524Z",
+  "parent": "0b1407a4b855e4961ede07e1b7ea199cb8018c30",
+  "source_patch_sha256": "387f9ccee4480bbfeb957ee9a2cbb7d959ac808db5635a3f296ee51b001f3899",
+  "source_matches_review": true,
+  "markdown_scope": [
+    ".claude/tasks/exact-tag-api-baseline/research.md",
+    ".claude/tasks/hemera-no-std/execution.md",
+    ".claude/tasks/hemera-no-std/feature-audit.md",
+    ".claude/tasks/hemera-no-std/plan.md",
+    ".claude/tasks/hemera-no-std/research.md",
+    ".claude/tasks/hemera-no-std/review-v1.md",
+    "audit/2026-10-13-hemera-no-std/README.md",
+    "audit/2026-10-13-hemera-no-std/review/code-v1/verdict.md",
+    "audit/2026-10-13-hemera-no-std/review/disposition.md",
+    "audit/2026-10-13-hemera-no-std/verification/preparation.md"
+  ],
+  "relative_links": [
+    {
+      "file": ".claude/tasks/hemera-no-std/execution.md",
+      "target": "../../../audit/2026-10-13-hemera-no-std/review/plan-v2/stdout.json",
+      "exists": true
+    },
+    {
+      "file": ".claude/tasks/hemera-no-std/execution.md",
+      "target": "../exact-tag-api-baseline/research.md",
+      "exists": true
+    },
+    {
+      "file": ".claude/tasks/hemera-no-std/plan.md",
+      "target": "research.md",
+      "exists": true
+    },
+    {
+      "file": ".claude/tasks/hemera-no-std/plan.md",
+      "target": "feature-audit.md",
+      "exists": true
+    },
+    {
+      "file": ".claude/tasks/hemera-no-std/plan.md",
+      "target": "review-v1.md",
+      "exists": true
+    },
+    {
+      "file": ".claude/tasks/hemera-no-std/research.md",
+      "target": "review-v1.md",
+      "exists": true
+    },
+    {
+      "file": ".claude/tasks/hemera-no-std/research.md",
+      "target": "feature-audit.md",
+      "exists": true
+    },
+    {
+      "file": ".claude/tasks/exact-tag-api-baseline/research.md",
+      "target": "../hemera-no-std/research.md",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "review/disposition.md",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "../2026-10-13-hemera-no-std-plan-v2/README.md",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "capsule.json",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "index.json",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "../../.claude/tasks/hemera-no-std/execution.md",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "../../.claude/tasks/exact-tag-api-baseline/research.md",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "../2026-10-13-hemera-no-std-plan/README.md",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "review/plan-v2/stdout.json",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "review/plan-v2/invocation.json",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "review/plan-v2/completion.json",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "review/disposition.md",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/README.md",
+      "target": "verification/preparation.md",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/review/disposition.md",
+      "target": "code-v1/stdout.json",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/review/disposition.md",
+      "target": "code-v1/verdict.md",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/review/disposition.md",
+      "target": "code-v1/invocation.json",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/review/disposition.md",
+      "target": "code-v1/completion.json",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/review/disposition.md",
+      "target": "code-v1/launcher.rb.txt",
+      "exists": true
+    },
+    {
+      "file": "audit/2026-10-13-hemera-no-std/review/disposition.md",
+      "target": "code-v1/benchmark-statistic-check.json",
+      "exists": true
+    }
+  ],
+  "missing_links": [],
+  "loose_audit_cargo_manifests": [],
+  "status": "PASS"
+}

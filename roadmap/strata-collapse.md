@@ -86,7 +86,7 @@ isogeny group action has no construction over F_p at all
 substrate.
 
 nox already models this: genies is "a separate instantiation `nox<F_q>` with
-its own jet registry; cross-algebra composition via HyperNova folds F_q
+its own jet registry; cross-algebra composition accumulates F_q
 sub-traces into the F_p accumulator." This proposal does not introduce that —
 it confirms F_q as the *single* irreducible second floor. After the collapse,
 nox is exactly two prime substrates:
@@ -159,8 +159,9 @@ is forced today.
 - **F_q as instruction vs delegated jet.** §4 argues first-class. But F_q
   appears only in privacy workloads (stealth addresses, VDF, blind sig). Is a
   permanent second instruction set worth it, or should F_q be a
-  delegated-prover jet that the F_p decider folds, accepting the boundary
-  cost (~766 F_p constraints per crossing)?
+  delegated-prover jet whose claims the F_p accumulation absorbs, accepting a
+  boundary cost that is not measured (cross-field composition is open
+  research)?
 - **does kuro need a primitive at all?** F₂ add = xor (11), F₂ mul = carryless
   mul over and/xor. If carryless mul is a jet over patterns 11–12, kuro is
   *pure* jets — no primitive. Confirm no F₂ op is irreducible beyond the

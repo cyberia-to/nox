@@ -1,0 +1,91 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling crossbeam-utils v0.8.22
+   Compiling serde_core v1.0.229
+    Checking strata-core v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/core)
+   Compiling syn v2.0.119
+   Compiling crossbeam-epoch v0.9.20
+   Compiling zerocopy v0.8.56
+   Compiling zerocopy-derive v0.8.56
+   Compiling syn v3.0.3
+   Compiling serde v1.0.229
+   Compiling zmij v1.0.23
+   Compiling autocfg v1.5.1
+   Compiling crossbeam-deque v0.8.7
+   Compiling serde_derive v1.0.229
+   Compiling num-traits v0.2.19
+    Checking strata-ext v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/ext)
+    Checking strata-proof v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/proof)
+    Checking strata-compute v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/compute)
+   Compiling serde_json v1.0.151
+   Compiling rayon-core v1.13.0
+    Checking cfg-if v1.0.4
+   Compiling libc v0.2.189
+    Checking either v1.17.0
+    Checking half v2.7.1
+    Checking strata-nebu v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/nebu/rs)
+    Checking regex-syntax v0.8.11
+    Checking plotters-backend v0.3.7
+    Checking ciborium-io v0.2.2
+    Checking itoa v1.0.18
+    Checking anstyle v1.0.14
+    Checking memchr v2.8.3
+    Checking clap_lex v1.1.0
+    Checking cyber-hemera v0.3.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/hemera/rs)
+    Checking clap_builder v4.6.6
+    Checking regex-automata v0.4.18
+    Checking ciborium-ll v0.2.2
+    Checking plotters-svg v0.3.7
+    Checking itertools v0.10.5
+    Checking same-file v1.0.6
+    Checking cast v0.3.0
+    Checking walkdir v2.5.0
+    Checking is-terminal v0.4.17
+    Checking plotters v0.3.7
+    Checking criterion-plot v0.5.0
+    Checking rayon v1.12.0
+    Checking regex v1.13.1
+    Checking ciborium v0.2.2
+    Checking clap v4.6.6
+    Checking tinytemplate v1.2.1
+    Checking cyber-nox v0.2.0 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs)
+    Checking anes v0.1.6
+    Checking once_cell v1.21.4
+    Checking oorandom v11.1.5
+    Checking nox-cli v0.1.0 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/cli)
+    Checking criterion v0.5.1
+error: manually reimplementing `div_ceil`
+   --> rs/jets/formulas.rs:463:20
+    |
+463 |         let half = (p + 1) / 2; // multiplicative inverse of 2 mod p
+    |                    ^^^^^^^^^^^ help: consider using `.div_ceil()`: `p.div_ceil(2)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#manual_div_ceil
+    = note: `-D clippy::manual-div-ceil` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_div_ceil)]`
+
+error: manually reimplementing `div_ceil`
+   --> rs/jets/fri_fold.rs:209:36
+    |
+209 |         let half = Goldilocks::new((p + 1) / 2);
+    |                                    ^^^^^^^^^^^ help: consider using `.div_ceil()`: `p.div_ceil(2)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#manual_div_ceil
+
+error: called `Iterator::last` on a `DoubleEndedIterator`; this will needlessly iterate the entire iterator
+   --> rs/patterns/hash.rs:241:20
+    |
+241 |         let last = tracer.0.iter().filter(|r| r.r()[0] == 15).last().unwrap();
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#double_ended_iterator_last
+    = note: `-D clippy::double-ended-iterator-last` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::double_ended_iterator_last)]`
+help: try
+    |
+241 -         let last = tracer.0.iter().filter(|r| r.r()[0] == 15).last().unwrap();
+241 +         let last = tracer.0.iter().filter(|r| r.r()[0] == 15).next_back().unwrap();
+    |
+
+error: could not compile `cyber-nox` (lib test) due to 3 previous errors

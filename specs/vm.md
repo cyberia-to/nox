@@ -78,7 +78,7 @@ Cost, Gain         trop        Tropical        branch + lt (witness jets)
 Iso, Shade         genies      Isogeny         isogeny jets (group_action, ...)
 ```
 
-cross-regime boundary: where types change. the Trident compiler inserts hemera commitments at type transitions — no manual boundary management. nox VM executes uniformly (18 patterns). zheng partitions the trace by operand types and proves each partition through its native lens. HyperNova folds all into one accumulator.
+cross-regime boundary: where types change. the Trident compiler inserts hemera commitments at type transitions — no manual boundary management. nox VM executes uniformly (18 patterns). zheng partitions the trace by operand types and proves each partition through its native lens. zheng accumulates all partitions into one accumulator.
 
 boundary cost: ~766 F_p constraints per type transition (30 field ops + 1 hemera hash).
 
@@ -98,7 +98,7 @@ boundary cost: ~766 F_p constraints per type transition (30 field ops + 1 hemera
 
 ### cross-regime composition
 
-a single Trident program can use multiple types from different algebras. the Trident compiler inserts hemera commitments at type transitions. nox executes uniformly. zheng partitions the trace by operand type and proves each partition through its native lens. HyperNova folds all into one F_p accumulator. one decider, one proof.
+a single Trident program can use multiple types from different algebras. the Trident compiler inserts hemera commitments at type transitions. nox executes uniformly. zheng partitions the trace by operand type and proves each partition through its native lens. zheng accumulates all partitions into one F_p accumulator. one decider, one proof.
 
 ```
 boundary cost: ~766 F_p constraints per type transition
@@ -153,7 +153,7 @@ the operations are identical. the algebra is a parameter. the programmer writes 
 
 ### polynomial data and axis
 
-every data node is a multilinear polynomial (see data/inner.md polynomial representation). axis — the fundamental navigation operation — becomes polynomial evaluation at a binary point. a Lens opening proves the evaluation in O(1) (~75 bytes proof), replacing O(depth) tree traversal. the 16 compute patterns are unchanged semantically — axis still navigates data. the implementation changes from pointer-following to polynomial evaluation. this applies across all instantiations: the data polynomial is over the instantiated field F, and the Lens commitment uses the same field.
+every data node is a multilinear polynomial (see data/inner.md polynomial representation). axis — the fundamental navigation operation — becomes polynomial evaluation at a binary point. a Lens opening proves the evaluation, replacing O(depth) tree traversal of the data. the 16 compute patterns are unchanged semantically — axis still navigates data. the implementation changes from pointer-following to polynomial evaluation. this applies across all instantiations: the data polynomial is over the instantiated field F, and the Lens commitment uses the same field.
 
 ## proof-system polymorphism
 

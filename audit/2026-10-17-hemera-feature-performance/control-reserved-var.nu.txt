@@ -1,0 +1,60 @@
+export def require [ok: bool, msg: string] { if not $ok { error make {msg: $msg} } }
+export def sha [p: path] { open --raw $p | hash sha256 }
+export def environment [cache: path, cell: string] {
+    let rustup = (which rustup | first | get path)
+    let rustc = (^$rustup which --toolchain 1.95.0 rustc | str trim)
+    let rustdoc = (^$rustup which --toolchain 1.95.0 rustdoc | str trim)
+    {HOME: $env.HOME, RUSTUP_HOME: ($env.HOME | path join .rustup),
+        PATH: ([($rustc | path dirname) ($rustup | path dirname) /usr/bin /bin /usr/sbin /sbin] | str join ':'),
+        CARGO_HOME: ($cache | path join cargo-home), CARGO_TARGET_DIR: ($cache | path join targets $cell),
+        CARGO_BUILD_JOBS: '2', CARGO_INCREMENTAL: '0', CARGO_NET_OFFLINE: 'true',
+        RUSTC: $rustc, RUSTDOC: $rustdoc, RUSTFLAGS: '', RUSTDOCFLAGS: '',
+        LANG: C, LC_ALL: C, TZ: UTC}
+}
+export def cargo-command [cache: path, cell: string, args: list] {
+    [(which rustup | first | get path) run 1.95.0 cargo] | append $args
+}
+export def bench-command [cache: path, cell: string, build: bool] {
+    let common = [bench --manifest-path ($cache | path join cells $cell nox Cargo.toml)
+        -p cyber-nox --bench reduction --locked --offline]
+    let extra = (if $build { [--no-run -vv --message-format=json] }
+        else { [-- --warm-up-time '1' --measurement-time '2' --sample-size '20' --noplot] })
+    cargo-command $cache $cell ($common | append $extra)
+}
+export def capture [command: list, env: record, cwd: path, out: path, stem: string] {
+    require (not ($out | path join $'($stem).json' | path exists)) $'retaining ($stem)'
+    let assignments = ($env | transpose name value | each {|r| $'($r.name)=($r.value)'})
+    let started = (date now | format date '%+')
+    let result = (do { cd $cwd; ^/usr/bin/env -i ...$assignments ...$command } | complete)
+    $result.stdout | save ($out | path join $'($stem).stdout')
+    $result.stderr | save ($out | path join $'($stem).stderr')
+    let receipt = {command: $command, launcher: ['/usr/bin/env' '-i'], environment: $env,
+        cwd: $cwd, started: $started, finished: (date now | format date '%+'), exit_code: $result.exit_code,
+        stdout_sha256: ($result.stdout | hash sha256), stderr_sha256: ($result.stderr | hash sha256)}
+    $receipt | to json | save ($out | path join $'($stem).json')
+    $receipt
+}
+export def check-sources [freeze: record] {
+    require (($freeze.cells | to json --raw | hash sha256) == $freeze.cells_sha256) 'source inventory identity'
+    for r in $freeze.cells {
+        let paths = (glob --no-dir ($r.root | path join '**/*') | each {|p| $p | path relative-to $r.root} | sort)
+        require ($paths == ($r.entries.path | sort)) $'unchanged full file set ($r.cell)/($r.repo)'
+        for f in $r.entries {
+            let p = ($r.root | path join $f.path)
+            require ((sha $p) == $f.sha256) $'source drift ($r.cell)/($r.repo)/($f.path)'
+            let executable = (ls --long $p | get 0.mode | str contains x)
+            require ($executable == ($f.mode == '100755')) 'source mode drift'
+        }
+    }
+}
+export def check-registry [freeze: record] {
+    require (($freeze.packages | to json --raw | hash sha256) == $freeze.packages_sha256) 'registry inventory identity'
+    require ((sha ($freeze.cargo_home | path join config.toml)) == $freeze.config_sha256) 'Cargo config drift'
+    for p in $freeze.packages {
+        require ((sha $p.archive) == $p.checksum) 'registry archive drift'
+        require ((sha ($p.source_root | path join .cargo-checksum.json)) == $p.checksum_file_sha256) 'registry checksum drift'
+        let actual = (glob --no-dir ($p.source_root | path join '**/*') | each {|f| $f | path relative-to $p.source_root} | sort)
+        require ($actual == ($p.files.path | append .cargo-checksum.json | sort)) 'registry file set drift'
+        for f in $p.files { require ((sha ($p.source_root | path join $f.path)) == $f.sha256) 'registry file drift' }
+    }
+}

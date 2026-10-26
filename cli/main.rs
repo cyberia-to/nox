@@ -16,11 +16,11 @@
 use std::io::Read;
 
 use nebu::Goldilocks;
-use nox::data::{Reduction, Order, Data};
-use nox::reduce::{reduce_with_registry, Outcome};
 use nox::call::NullCalls;
-use nox::trace::NoTrace;
+use nox::data::{Data, Order, Reduction};
 use nox::jets::registry::JetRegistry;
+use nox::reduce::{Outcome, reduce_with_registry};
+use nox::trace::NoTrace;
 
 const ORDER_SIZE: usize = 1 << 16; // 64K data
 
@@ -54,9 +54,17 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
     let mut chars = input.chars().peekable();
     while let Some(&ch) = chars.peek() {
         match ch {
-            '[' => { tokens.push(Token::Open); chars.next(); }
-            ']' => { tokens.push(Token::Close); chars.next(); }
-            ' ' | '\t' | '\n' | '\r' => { chars.next(); }
+            '[' => {
+                tokens.push(Token::Open);
+                chars.next();
+            }
+            ']' => {
+                tokens.push(Token::Close);
+                chars.next();
+            }
+            ' ' | '\t' | '\n' | '\r' => {
+                chars.next();
+            }
             '0'..='9' => {
                 let mut num = String::new();
                 while let Some(&c) = chars.peek() {
@@ -75,7 +83,9 @@ fn tokenize(input: &str) -> Result<Vec<Token>, String> {
                         break;
                     }
                 }
-                let v: u64 = num.parse().map_err(|e| format!("bad number '{}': {}", num, e))?;
+                let v: u64 = num
+                    .parse()
+                    .map_err(|e| format!("bad number '{}': {}", num, e))?;
                 tokens.push(Token::Num(v));
             }
             _ => return Err(format!("unexpected character: {:?}", ch)),
@@ -99,7 +109,8 @@ fn parse_expr(
     match &tokens[*pos] {
         Token::Num(v) => {
             *pos += 1;
-            reduction.atom(Goldilocks::new(*v))
+            reduction
+                .atom(Goldilocks::new(*v))
                 .ok_or_else(|| "reduction full".to_string())
         }
         Token::Open => {
@@ -126,27 +137,50 @@ fn parse_expr(
             // Right-nest: [a b c] → Pair(a, Pair(b, c))
             let mut result = elems.pop().unwrap();
             while let Some(head) = elems.pop() {
-                result = reduction.pair(head, result)
+                result = reduction
+                    .pair(head, result)
                     .ok_or_else(|| "reduction full".to_string())?;
             }
             Ok(result)
         }
-        Token::Close => {
-            Err("unexpected ']'".to_string())
-        }
+        Token::Close => Err("unexpected ']'".to_string()),
     }
 }
 
 // ─── data printer ────────────────────────────────────────────────
 
+// Iterative, not recursive: `MAX_PARSE_DEPTH` above only bounds the nesting
+// of the *textual* formula. A reduction's *computed* result can right-nest
+// far deeper than any parseable input (cons is applied by patterns, not by
+// the parser), up to `ORDER_SIZE` levels — recursing here at that depth
+// would blow even the 32 MB thread stack `main` sets up for the reduction
+// itself. An explicit work stack moves the recursion to the heap.
 fn print_data(reduction: &Reduction<ORDER_SIZE>, r: Order) -> String {
-    match reduction.get(r).map(|e| e.inner) {
-        Some(Data::Atom { value, .. }) => format!("{}", value.as_u64()),
-        Some(Data::Pair { left, right }) => {
-            format!("[{} {}]", print_data(reduction, left), print_data(reduction, right))
-        }
-        None => "<invalid>".to_string(),
+    enum Frame {
+        Enter(Order),
+        Join,
     }
+    let mut work = vec![Frame::Enter(r)];
+    let mut out: Vec<String> = Vec::new();
+    while let Some(frame) = work.pop() {
+        match frame {
+            Frame::Enter(r) => match reduction.get(r).map(|e| e.inner) {
+                Some(Data::Atom { value, .. }) => out.push(value.as_u64().to_string()),
+                Some(Data::Pair { left, right }) => {
+                    work.push(Frame::Join);
+                    work.push(Frame::Enter(right));
+                    work.push(Frame::Enter(left));
+                }
+                None => out.push("<invalid>".to_string()),
+            },
+            Frame::Join => {
+                let right = out.pop().expect("print_data: join with no right operand");
+                let left = out.pop().expect("print_data: join with no left operand");
+                out.push(format!("[{left} {right}]"));
+            }
+        }
+    }
+    out.pop().expect("print_data: empty result")
 }
 
 // ─── main ────────────────────────────────────────────────────────
@@ -196,7 +230,10 @@ fn run() -> i32 {
                 if i < args.len() {
                     match args[i].parse::<u64>() {
                         Ok(b) => budget = b,
-                        Err(_) => { eprintln!("error: invalid budget"); return 1; }
+                        Err(_) => {
+                            eprintln!("error: invalid budget");
+                            return 1;
+                        }
                     }
                 } else {
                     eprintln!("error: --budget requires an argument");
@@ -207,12 +244,13 @@ fn run() -> i32 {
                 print_usage();
                 return 0;
             }
-            other => {
-                match std::fs::read_to_string(other) {
-                    Ok(s) => formula_text = s,
-                    Err(e) => { eprintln!("error reading '{}': {}", other, e); return 1; }
+            other => match std::fs::read_to_string(other) {
+                Ok(s) => formula_text = s,
+                Err(e) => {
+                    eprintln!("error reading '{}': {}", other, e);
+                    return 1;
                 }
-            }
+            },
         }
         i += 1;
     }
@@ -241,18 +279,36 @@ fn run() -> i32 {
 
     let object = match parse_data(&mut reduction, &object_text) {
         Ok(n) => n,
-        Err(e) => { eprintln!("error parsing object: {}", e); return 1; }
+        Err(e) => {
+            eprintln!("error parsing object: {}", e);
+            return 1;
+        }
     };
 
-    let formula = match parse_data(&mut reduction, &formula_text) {
+    let formula = match parse_data(&mut reduction, formula_text) {
         Ok(n) => n,
-        Err(e) => { eprintln!("error parsing formula: {}", e); return 1; }
+        Err(e) => {
+            eprintln!("error parsing formula: {}", e);
+            return 1;
+        }
     };
 
-    match reduce_with_registry(&mut reduction, object, formula, budget, &hints, &mut NoTrace, &registry) {
+    match reduce_with_registry(
+        &mut reduction,
+        object,
+        formula,
+        budget,
+        &hints,
+        &mut NoTrace,
+        &registry,
+    ) {
         Outcome::Ok(result, remaining) => {
             println!("{}", print_data(&reduction, result));
-            eprintln!("cost: {} (budget remaining: {})", budget - remaining, remaining);
+            eprintln!(
+                "cost: {} (budget remaining: {})",
+                budget - remaining,
+                remaining
+            );
             0
         }
         Outcome::Halt(remaining) => {
@@ -291,4 +347,74 @@ fn print_usage() {
   -e <formula>            inline formula
 "
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // `Reduction::<ORDER_SIZE>::new()` is ~6 MB by itself (see `main`'s own
+    // comment above), too large for some default test-thread stacks. Run on
+    // the same explicit-stack thread `main` uses for the real binary so
+    // construction itself is never what a test is measuring.
+    fn on_reduction_thread<F: FnOnce() -> String + Send + 'static>(f: F) -> String {
+        std::thread::Builder::new()
+            .stack_size(32 * 1024 * 1024)
+            .spawn(f)
+            .expect("failed to spawn test thread")
+            .join()
+            .expect("test thread panicked")
+    }
+
+    #[test]
+    fn print_data_small_pair_matches_expected_shape() {
+        let out = on_reduction_thread(|| {
+            let mut reduction = Reduction::<ORDER_SIZE>::new();
+            let a = reduction.atom(Goldilocks::new(1)).unwrap();
+            let b = reduction.atom(Goldilocks::new(2)).unwrap();
+            let pair = reduction.pair(a, b).unwrap();
+            print_data(&reduction, pair)
+        });
+        assert_eq!(out, "[1 2]");
+    }
+
+    #[test]
+    fn print_data_invalid_order_prints_invalid() {
+        let out = on_reduction_thread(|| {
+            let reduction = Reduction::<ORDER_SIZE>::new();
+            // Order 0 has not been allocated in a fresh reduction.
+            print_data(&reduction, 0)
+        });
+        assert_eq!(out, "<invalid>");
+    }
+
+    // `MAX_PARSE_DEPTH` (4096) only bounds the textual formula a person can
+    // type; it says nothing about the nesting of a *computed* result, which
+    // patterns can cons far deeper (up to ORDER_SIZE, capped below that by
+    // the hash-cons table's own 3/4 load-factor limit — 49,152 here). Build
+    // that shape directly through `reduction.pair`, bypassing the parser
+    // entirely, the same way a reducing program would, then print it.
+    //
+    // The pre-fix recursive `print_data` needs O(depth) stack to print this
+    // and overflows well before this depth on a default (un-widened) thread
+    // — confirmed by hand: temporarily restoring the recursive body and
+    // rerunning this exact test aborts the process with "has overflowed its
+    // stack" instead of returning. The iterative version does not recurse
+    // at all, so its stack use is O(1) regardless of depth or caller.
+    #[test]
+    fn print_data_does_not_overflow_the_stack_on_a_deep_computed_chain() {
+        let depth = 45_000usize;
+        let printed = on_reduction_thread(move || {
+            let mut reduction = Reduction::<ORDER_SIZE>::new();
+            let leaf = reduction.atom(Goldilocks::new(0)).unwrap();
+            let mut chain = leaf;
+            for _ in 0..depth {
+                chain = reduction.pair(leaf, chain).unwrap();
+            }
+            print_data(&reduction, chain)
+        });
+        assert!(printed.starts_with("[0 "));
+        assert!(printed.ends_with(']'));
+        assert_eq!(printed.matches('[').count(), depth);
+    }
 }

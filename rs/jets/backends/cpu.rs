@@ -6,10 +6,10 @@
 //! CPU/Rust reference backend for genesis jets.
 //!
 //! Registers jet function pointers by formula digest.
-//! All jet functions match JetFn<N> directly (non-generic over Tracer).
+//! All jet functions match `JetFn<N>` directly (non-generic over Tracer).
 
 use crate::jets::registry::{JetRegistry, compute_genesis_digests};
-use crate::jets::{poly_eval, merkle_verify, fri_fold, ntt, state, decider};
+use crate::jets::{decider, fri_fold, merkle_verify, ntt, poly_eval, state};
 
 /// Build the CPU genesis registry. Called at startup; digests computed once.
 pub fn genesis_cpu<const N: usize>() -> JetRegistry<N> {
@@ -17,19 +17,27 @@ pub fn genesis_cpu<const N: usize>() -> JetRegistry<N> {
     let mut reg = JetRegistry::empty();
 
     // ── exact-match jets ─────────────────────────────────────────────────────
-    reg.insert_exact_guarded(digests.poly_eval, poly_eval::poly_eval_jet::<N>, crate::jets::admission::poly_admitted::<N>);
+    reg.insert_exact_guarded(
+        digests.poly_eval,
+        poly_eval::poly_eval_jet::<N>,
+        crate::jets::admission::poly_admitted::<N>,
+    );
     reg.insert_exact(digests.merkle_verify, merkle_verify::merkle_verify_jet::<N>);
-    reg.insert_exact(digests.fri_fold,      fri_fold::fri_fold_jet::<N>);
-    reg.insert_exact_guarded(digests.ntt, ntt::ntt_jet::<N>, crate::jets::admission::ntt_admitted::<N>);
-    reg.insert_exact(digests.cyberlink,     state::cyberlink_jet::<N>);
-    reg.insert_exact(digests.decider,       decider::decider_jet::<N>);
+    reg.insert_exact(digests.fri_fold, fri_fold::fri_fold_jet::<N>);
+    reg.insert_exact_guarded(
+        digests.ntt,
+        ntt::ntt_jet::<N>,
+        crate::jets::admission::ntt_admitted::<N>,
+    );
+    reg.insert_exact(digests.cyberlink, state::cyberlink_jet::<N>);
+    reg.insert_exact(digests.decider, decider::decider_jet::<N>);
 
     // ── template jets ────────────────────────────────────────────────────────
-    reg.insert_template(state::is_transfer::<N>,  state::transfer_jet::<N>);
-    reg.insert_template(state::is_insert::<N>,    state::insert_jet::<N>);
-    reg.insert_template(state::is_update::<N>,    state::update_jet::<N>);
+    reg.insert_template(state::is_transfer::<N>, state::transfer_jet::<N>);
+    reg.insert_template(state::is_insert::<N>, state::insert_jet::<N>);
+    reg.insert_template(state::is_update::<N>, state::update_jet::<N>);
     reg.insert_template(state::is_aggregate::<N>, state::aggregate_jet::<N>);
-    reg.insert_template(state::is_conserve::<N>,  state::conserve_jet::<N>);
+    reg.insert_template(state::is_conserve::<N>, state::conserve_jet::<N>);
 
     reg
 }

@@ -1,0 +1,11 @@
+Error: nu::shell::name_not_found
+
+  x Name not found
+     ,-[/Users/master/cyber/nox-no-std-dependencies/audit/2026-10-13-hemera-no-std/verify.nu:139:65]
+ 138 |         let pi = (json $lookup $dest code/support/execution/candidate-package-inputs.json)
+ 139 |         let archive = ($dest | path join objects ($lookup | get code/support/execution/candidate-package.crate))
+     :                                                                 ^^^^^^^^^^^^^^^^^^^^|^^^^^^^^^^^^^^^^^^^
+     :                                                                                     `-- did you mean 'code/support/execution/candidate-package-h264-inputs.json'?
+ 140 |         if (open --raw $archive | hash sha256) != $pi.archive_sha256 { error make {msg: 'normalized archive identity'} }
+     `----
+

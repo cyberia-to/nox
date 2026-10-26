@@ -530,22 +530,22 @@ result: (200, 95)
 
 ## proof-carrying reduction
 
-reduction and proving are one operation. each reduce() call generates a trace row AND folds it into a running [[HyperNova]] accumulator:
+reduction and proving are one operation. each reduce() call generates a trace row AND folds it into a running accumulator. the accumulation scheme is set by [[soft3/proposals/proof-system-repair|the proof-system repair]]; the earlier fold over hemera was unsound and its per-step costs do not hold:
 
 ```
 reduce_with_proof(s, formula, f, acc) =
   if f < cost then Halt
   let (tag, body) = formula
   let (result, f', trace_row) = dispatch(s, tag, body, f)
-  let acc' = fold_row(acc, trace_row)         ← ~30 field ops
+  let acc' = fold_row(acc, trace_row)
   (result, f', acc')
 ```
 
-at computation end, the accumulator IS the proof. run one decider to produce the final verifiable [[zheng]] proof. no separate proving phase — proving overhead is ~30 field operations per reduce() call, folded into execution.
+at computation end, one decider over the accumulator produces the final verifiable [[zheng]] proof. no separate proving phase — the proving work is folded into execution.
 
-with polynomial data, hemera drops to ~3 calls per execution: (1) domain separation wrap for the particle, (2) Fiat-Shamir seed for the proof, (3) Brakedown binding for the Lens commitment. the legacy model required hundreds of hemera calls for recursive tree hashing (one permutation per pair in the data). polynomial commitment replaces recursive hashing with O(N) field operations + 1 hemera call per identity.
+with polynomial data, hemera serves three roles per execution: (1) domain separation wrap for the particle, (2) Fiat-Shamir challenges for the proof, (3) the Merkle trees that authenticate the Lens commitment's openings. polynomial commitment replaces recursive hashing of the data with O(N) field operations + 1 hemera call per identity.
 
-hemera hash operations (pattern 15) during execution also fold via the sponge construction: each absorption block folds into the accumulator (~30 field ops) instead of being proved independently. hashing 4 KiB of data into a particle: ~2,956 constraints folded (was ~54,464 with independent permutations, 18× savings).
+hemera hash operations (pattern 15) during execution also enter the accumulator through the sponge construction instead of being proved independently.
 
 ### signal assembly
 
@@ -569,13 +569,13 @@ signal = {
   - budget was sufficient and correctly metered
   - the result data has the claimed identity H(result)
 
-verification: one zheng decider call (10-50 μs), independent of computation size.
-signal size: ~1-5 KiB (proof + impulse + 160 bytes ordering metadata)
-proof cost: ZERO additional (accumulated during execution)
+verification: one zheng decider call, independent of computation size.
+signal size: proof + impulse + 160 bytes ordering metadata
+proof cost: accumulated during execution
 ```
 
 the signal is the unit of state change for [[BBG]]. it flows from device through [[structural-sync|structural sync]] (layers 1-5) to the network.
 
 ## zheng integration
 
-the reduction trace (sequence of pattern applications with register states) IS the zheng witness. the trace layout is per-instantiation — column widths depend on F element size. see trace.md for the register layout and AIR constraints. see jets.md for optimized verification. see [[zheng]] recursion.md for HyperNova folding mechanics.
+the reduction trace (sequence of pattern applications with register states) IS the zheng witness. the trace layout is per-instantiation — column widths depend on F element size. see trace.md for the register layout and AIR constraints. see jets.md for optimized verification. see [[soft3/proposals/proof-system-repair|the proof-system repair]] for the accumulation that replaces the retired fold.

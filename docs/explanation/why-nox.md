@@ -80,14 +80,13 @@ call (pattern 16) provides zero-knowledge proofs natively. a [[neuron]] can prov
 
 this is the duality: maximum verification (every computation is proven) with maximum privacy (every secret is protectable). the same system that makes everything verifiable also makes everything concealable. the choice belongs to the neuron — prove publicly or prove in zero knowledge.
 
-### recursive verification: O(1) forever
+### constant-size verification: the goal
 
-the [[zheng]] verifier is a nox program. it can verify proofs of its own execution. this recursion produces constant-size proofs at every level:
+the [[zheng]] verifier is a nox program, so proofs can be composed inside nox; that recursion serves composition, not size. constant size comes from accumulation (phase 3 of [[soft3/proposals/proof-system-repair|the proof-system repair]]): every nox step is one uniform step relation whose evaluation claims enter an accumulator of one root plus a fixed number of claims, and one WHIR opening of the final accumulator decides all of it.
 
 ```
-1 billion transactions → 1 proof (~100 KiB)
-1 trillion transactions → 1 proof (~100 KiB)
-100 years of operation → 1 proof (~100 KiB)
+goal: any number of steps → 1 proof, ≤ 64 KB, verify ≤ 1 ms, post-quantum
+measured: TODO(F-numbers)
 ```
 
 a new node joining the network can verify the entire history with a single proof check. this is the scalability mechanism: the cost of participation does not grow with the age or size of the network.

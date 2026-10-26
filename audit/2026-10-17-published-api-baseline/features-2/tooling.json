@@ -1,0 +1,14 @@
+[
+  {
+    "path": "support.nu",
+    "sha256": "6114b54d0b454eb5f58398c1f4f205f898f08ad80088ef4950361b398d20cf4e"
+  },
+  {
+    "path": "features.nu",
+    "sha256": "c8dd68afaf77539d6419f83f50837b3601c8dc6fb177a6b58c6361d3df786c9b"
+  },
+  {
+    "path": "std-surface.rs.txt",
+    "sha256": "dec56f43cf249f451589ce24591ec0d97e7113f94d84c695e314a3c0bb3ac0d6"
+  }
+]

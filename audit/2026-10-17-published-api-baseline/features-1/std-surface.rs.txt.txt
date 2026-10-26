@@ -1,0 +1,5 @@
+pub fn std_surface(hash: &hemera::Hash, reader: &mut hemera::OutputReader) -> String {
+    let mut byte = [0u8; 1];
+    let _ = std::io::Read::read(reader, &mut byte);
+    hash.to_hex()
+}

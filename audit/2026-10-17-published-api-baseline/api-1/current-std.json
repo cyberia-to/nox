@@ -1,0 +1,39 @@
+{
+  "command": [
+    "cargo",
+    "rustdoc",
+    "--manifest-path",
+    "/Users/master/.cache/cyber/nox/published-api-baseline/pair-2/current/cyber-nox-0.2.0/Cargo.toml",
+    "-p",
+    "cyber-nox",
+    "--lib",
+    "--locked",
+    "--offline",
+    "--features",
+    "std",
+    "--",
+    "-Z",
+    "unstable-options",
+    "--output-format",
+    "json"
+  ],
+  "cwd": "/Users/master/.cache/cyber/nox/published-api-baseline/pair-2/current/cyber-nox-0.2.0",
+  "env": {
+    "PATH": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin:/Users/master/.cargo/bin:/opt/homebrew/bin:/usr/bin:/bin",
+    "RUSTUP_TOOLCHAIN": "1.95.0",
+    "RUSTC": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustdoc",
+    "CARGO_TARGET_DIR": "/Users/master/.cache/cyber/nox/published-api-baseline/api-1/current-std",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_INCREMENTAL": "0",
+    "RUSTFLAGS": "",
+    "RUSTDOCFLAGS": "",
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "started": "2026-10-17T09:58:22.293797+00:00",
+  "finished": "2026-10-17T09:58:22.654013+00:00",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "8ec34ff38757c32a62f43663baca9c45e7a279f26d164ff3c49d39315f7a0e55"
+}

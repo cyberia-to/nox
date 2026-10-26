@@ -1,0 +1,4 @@
+command=/usr/bin/pmset -g custom
+started_unix_ns=1792243833736959000
+elapsed_ns=6627125
+exit_code=0

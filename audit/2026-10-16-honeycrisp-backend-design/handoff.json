@@ -1,0 +1,12 @@
+{
+  "command": "nu audit/2026-10-16-honeycrisp-backend-design/verify.nu .",
+  "output": "source identities and all five receipt streams verified",
+  "nox_head": "434d48ee7e94fdde0f4e7bb71012afb80db21a7e",
+  "nox_branch": "fix/honeycrisp-backend",
+  "nox_status": [
+    "?? .claude/plans/honeycrisp-backend.md",
+    "?? audit/2026-10-16-honeycrisp-backend-design/"
+  ],
+  "honeycrisp_status": [],
+  "retention": "Read-only design complete; preserve owned checkout for root review. All existing Honeycrisp ignored artifacts untouched."
+}

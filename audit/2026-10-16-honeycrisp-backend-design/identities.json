@@ -1,0 +1,375 @@
+{
+  "command": [
+    "nu",
+    "audit/2026-10-16-honeycrisp-backend-design/identities.nu",
+    "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox",
+    "/Users/master/cyber/honeycrisp",
+    "/Users/master/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/acpu-0.2.0",
+    "/Users/master/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f/acpu-0.2.0.crate",
+    "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0"
+  ],
+  "nox_head": "434d48ee7e94fdde0f4e7bb71012afb80db21a7e",
+  "honeycrisp_head": "70dfb1f55e4cb2570d5a78a497be5828a203087b",
+  "published": {
+    "version": "0.2.0",
+    "checksum": "81089272e2a248781b1e2c38ad7247a98bea63a602c0a445dc63e955b2035375",
+    "vcs": {
+      "git": {
+        "sha1": "96fa4f4509d7a966cb22a4bb9e12ac753cff43ae"
+      },
+      "path_in_vcs": "acpu"
+    },
+    "extracted_files_verified": 93,
+    "index": {
+      "url": "https://index.crates.io/ac/pu/acpu",
+      "sha256": "d98260b30f542be3e23d368397839d2c775cd1f9ba3612f857fe8f77ad84bfac"
+    },
+    "field_exports_sha256": "9a591ddd12bcb86b0b651d8e8201940837abb2338d992849ed53a1dfdba03aae"
+  },
+  "local_package": {
+    "archive_sha256": "661b7735d62550242e41d4560151d9e6dd3831183f06225bf622a87ed148fc9e",
+    "manifest_sha256": "5f25b8e6323a5eb7de700ac2e9f2e2c3cb58db98241c05890eaecfe4b3c3a0c3",
+    "lock_sha256": "9063821b212a00313274e765e14513ad95666aa093dd72cd1a9d09b57f222ead",
+    "vcs": {
+      "git": {
+        "sha1": "70dfb1f55e4cb2570d5a78a497be5828a203087b"
+      },
+      "path_in_vcs": "acpu"
+    },
+    "sources": [
+      {
+        "path": "bench/ai.rs",
+        "owning_and_package_sha256": "9006159e76e5a7c5fac359755bbd7431e140659610fe978f87de7bea5876ab54"
+      },
+      {
+        "path": "bench/amx.rs",
+        "owning_and_package_sha256": "3b0770c0eff496b70a7d46436d38e6a916d3ef113d6bf3ab0183c598612eceda"
+      },
+      {
+        "path": "bench/common.rs",
+        "owning_and_package_sha256": "84665a08aa20f4025e1d1b4b2d2a081cc190b81360822acf7f2baab6fbeb2915"
+      },
+      {
+        "path": "bench/cores.rs",
+        "owning_and_package_sha256": "6cfaccc794f7e0022258159da0df0a8c0a703dbf8c343358de71ca26499974ad"
+      },
+      {
+        "path": "bench/crypto.rs",
+        "owning_and_package_sha256": "982fc459a491b51d583ff9077fcc3a26ba663ad7f08e119a54346f990845588e"
+      },
+      {
+        "path": "bench/elementwise.rs",
+        "owning_and_package_sha256": "b38830c9d2299b31de830580a94d1c12d5a9c3e0006b7359f1464545252a6a00"
+      },
+      {
+        "path": "bench/integer.rs",
+        "owning_and_package_sha256": "0280c017a683f006103098356a6807f3c72611cd5ff87a3c39f4c4d76cd07f23"
+      },
+      {
+        "path": "bench/memory.rs",
+        "owning_and_package_sha256": "f04f4388a23fa95f525f906618598222982b99fbc9b129b427c6ad990eaaf662"
+      },
+      {
+        "path": "bench/numeric.rs",
+        "owning_and_package_sha256": "eb147692dad39590bc1dec3474584ffc864b802888dbf30d33df9d77151e84bf"
+      },
+      {
+        "path": "bench/render.rs",
+        "owning_and_package_sha256": "3cdc13848760843805ec44df051f7b9ec3fd47b995e71df254b8cce162c42457"
+      },
+      {
+        "path": "bench/sgemm.rs",
+        "owning_and_package_sha256": "845f2048d594d3b5af4600b127d38c7fca8ba8122da973bf4568780732b5d09c"
+      },
+      {
+        "path": "bench/summary.rs",
+        "owning_and_package_sha256": "1219688d761711f0111cd6bdaaef5c3890e8c662e3df7daab4a5eec369376f50"
+      },
+      {
+        "path": "bench/zk.rs",
+        "owning_and_package_sha256": "545365905d2ce99e165c22a5ec8af779887865403d2faa6d2150cebdb94c3f96"
+      },
+      {
+        "path": "examples/amx_opcode_scan.rs",
+        "owning_and_package_sha256": "0fa4c56c3b89cc515f534f295c63d4e1f584c118e1c43c4e6aa44071015b5bae"
+      },
+      {
+        "path": "examples/amx_reverse.rs",
+        "owning_and_package_sha256": "0d0262a545e7adadd1dadfab3f76bbfbd92ddfebbd8ad6433b6a5c98c73518dc"
+      },
+      {
+        "path": "examples/amx_smoke.rs",
+        "owning_and_package_sha256": "e9551f865c7889bd7e4d9e1e127ede08963a2639a74ba0f4a2ddd6211dc194ea"
+      },
+      {
+        "path": "examples/decompose.rs",
+        "owning_and_package_sha256": "0e0d1f73f98620330aec754199678441de44d3d9e3e05228309c9d569ee2736d"
+      },
+      {
+        "path": "examples/diag_bench.rs",
+        "owning_and_package_sha256": "f07307b89bc7bb879d7f3e1c3795f4ec28a83afce9cc5de5ca8c487b88f25177"
+      },
+      {
+        "path": "examples/exp_asm_test.rs",
+        "owning_and_package_sha256": "762f7d43355ff25c643506e062c6d8f6cb8cd24ba4e22b7afc558bcb03623557"
+      },
+      {
+        "path": "examples/matmul.rs",
+        "owning_and_package_sha256": "aa31cbb813761ea006e6f271a6126830a46900946ec1df4f8dfa6773880ff8db"
+      },
+      {
+        "path": "examples/neon_vs_amx.rs",
+        "owning_and_package_sha256": "47f4cd50587036927372f60480d69c1c55e31cb39d5da5d4c0b657fba1ec0587"
+      },
+      {
+        "path": "examples/overhead_test.rs",
+        "owning_and_package_sha256": "fb94a2342257caa0605b3c9d7ea6f39aaef15b61f913cb84f1a01f8ef87e623e"
+      },
+      {
+        "path": "examples/pair_load_test.rs",
+        "owning_and_package_sha256": "5d5904bb167b3adbd9083c3de9dcb7cb525fc8c6f0568b593918c96ce321dd2e"
+      },
+      {
+        "path": "examples/pair_test.rs",
+        "owning_and_package_sha256": "d372b1cd062446b7b9ca612c035ed16d6dd786288784099c5ab581faef86a0e4"
+      },
+      {
+        "path": "examples/phase_time.rs",
+        "owning_and_package_sha256": "4219628eee64276018532de1338b5d5c096ebc1ac49e568c21668e7e38614b44"
+      },
+      {
+        "path": "examples/profile64.rs",
+        "owning_and_package_sha256": "4cf386faa86b57c26b0590f6b18223493eeae1669ea13c5585fb71e2a320e069"
+      },
+      {
+        "path": "examples/profile_sgemm.rs",
+        "owning_and_package_sha256": "d54f4f457add46162d7e6f43c62e9a571bdffc4d0648628f49f31847109fa1ff"
+      },
+      {
+        "path": "examples/sgemm_profile.rs",
+        "owning_and_package_sha256": "1de7da68f29930ec7c57c3dcd033caf25e6ba27e96a95f7f577e526e2925f247"
+      },
+      {
+        "path": "examples/single_vs_par.rs",
+        "owning_and_package_sha256": "d8170970387da328e2c799e848cb7bbd324c6b04f7e3dce3017175a1b181e09d"
+      },
+      {
+        "path": "examples/test_hang.rs",
+        "owning_and_package_sha256": "c86d2e401105862482319cac82715cd8329c250d77c93cbededfccc5f977ef74"
+      },
+      {
+        "path": "examples/thread_scale.rs",
+        "owning_and_package_sha256": "8b275b21ee5988e9051909783f17d1d9f9548587bb06c96afcda2b5d18a30a79"
+      },
+      {
+        "path": "examples/trace64.rs",
+        "owning_and_package_sha256": "5ab5dad88cb5580287292feeef11fe5670c3b652aff676cfc7b661676890a315"
+      },
+      {
+        "path": "examples/trace_accel.rs",
+        "owning_and_package_sha256": "5a112fb51dea57f7aa6684702d34e8c7c1f43995b88bbb108264504754800e37"
+      },
+      {
+        "path": "src/convert.rs",
+        "owning_and_package_sha256": "e7c3d1507c9b518878543922929547ed0da85d1b55972c149143c8c3714d4f86"
+      },
+      {
+        "path": "src/crypto/mod.rs",
+        "owning_and_package_sha256": "cc4eb8949a4d4a8dd3da5f2c74d3bfec3e5505e2b45c3ddb21835c2c298efa93"
+      },
+      {
+        "path": "src/field/goldilocks.rs",
+        "owning_and_package_sha256": "f5e1394708c077f136c5425d35dd90e3e28d15ad8fb77832d731922e914173bf"
+      },
+      {
+        "path": "src/field/merkle.rs",
+        "owning_and_package_sha256": "cfe52cb62c426c48fb3590f27f0da989848b139c7aa46a7970ae2840f27a9907"
+      },
+      {
+        "path": "src/field/mod.rs",
+        "owning_and_package_sha256": "ea596b66ade4ca91ac7567d65a510d7a6641a12bc7190975bf4e466835c1d0e9"
+      },
+      {
+        "path": "src/field/ntt.rs",
+        "owning_and_package_sha256": "5ffa933a7d796068468d54ef766a94e3f9bd6560262f946c8ae3fe238aba1455"
+      },
+      {
+        "path": "src/field/permute.rs",
+        "owning_and_package_sha256": "2f99fbd0ae80e2af7d39bea7511cc887e0a71b8fc1acba392e519db415b94e7f"
+      },
+      {
+        "path": "src/field/poly.rs",
+        "owning_and_package_sha256": "f23e00ec02a665e5dc3e4a93485a8c8317b601f4c50dd31349b0d69ddaf439fe"
+      },
+      {
+        "path": "src/gemm/gemv_amx_asm.rs",
+        "owning_and_package_sha256": "a3a6250f2dcf0745d97e690feef175fde7ed7f38d4fbe58e89043ec9df63ca51"
+      },
+      {
+        "path": "src/gemm/gemv_kern.rs",
+        "owning_and_package_sha256": "26a9b3fdd62a6c1cfb76f5324441d9979674752623be2d641b93cdfe91b6cc03"
+      },
+      {
+        "path": "src/gemm/matvec.rs",
+        "owning_and_package_sha256": "0d00cff9cfb4c1a5bd957b6f75808e29165552dc2870c1ea4d643be9e35180c8"
+      },
+      {
+        "path": "src/gemm/mod.rs",
+        "owning_and_package_sha256": "b78d32f1a3e14da8d2a68c522f48102708cceedc46b4df4ad978d5cd1f7961e6"
+      },
+      {
+        "path": "src/gemm/other.rs",
+        "owning_and_package_sha256": "41bc2adfa4f7fc6bda783130f6bae2e2cdc4f699553aad04327285d229ab6309"
+      },
+      {
+        "path": "src/gemm/pool.rs",
+        "owning_and_package_sha256": "c50622c7bc0ce45910a8ec42ddcffbe6adaaf843d8a4a6a894154a5c0a377245"
+      },
+      {
+        "path": "src/gemm/small.rs",
+        "owning_and_package_sha256": "bd50b88771624dc5e4b6083820ce9b917169dbb55240d5220c377bf163ae9f60"
+      },
+      {
+        "path": "src/lib.rs",
+        "owning_and_package_sha256": "8c4ae72c1bc80bfbaee66797ad14fb58e23d38ba50424c14bb7ae739447e2344"
+      },
+      {
+        "path": "src/matrix/asm.rs",
+        "owning_and_package_sha256": "46be3e4fb00ff77340e05a4d960df40cdaa1d6e6d0edb0c1bc255921236bfb48"
+      },
+      {
+        "path": "src/matrix/fma.rs",
+        "owning_and_package_sha256": "3a80a2b2e5b088194a829fcca90f972cfb19a5ec7676f87a85c8823dc202504d"
+      },
+      {
+        "path": "src/matrix/kern.rs",
+        "owning_and_package_sha256": "82385a164255bb5b62199d18e829d13acf69a3e7263eb7e3646d7933096c8759"
+      },
+      {
+        "path": "src/matrix/mod.rs",
+        "owning_and_package_sha256": "8abc4ebdff73b9a803c776aced909829ad6b497567328df987585f2c23f166af"
+      },
+      {
+        "path": "src/matrix/ops.rs",
+        "owning_and_package_sha256": "8e380bc513d71d7237d95c1650d9f20422ba706817469fbf935279c132793413"
+      },
+      {
+        "path": "src/matrix/regs.rs",
+        "owning_and_package_sha256": "adeb6bbfc090fb0ececf6535bec1972ecf1fc272433e34ac5d745aeef88442ed"
+      },
+      {
+        "path": "src/matrix/tile.rs",
+        "owning_and_package_sha256": "8ba29022ce2c9b78ca3bb55fd85adb7507410b2c276f72098da9fd407f3357d2"
+      },
+      {
+        "path": "src/matrix/tile_f16.rs",
+        "owning_and_package_sha256": "0f7e363c74ab3d3ed8aacfb09d4314d023adb68ef6a34f298abf430eeea6f5cf"
+      },
+      {
+        "path": "src/numeric/bf16.rs",
+        "owning_and_package_sha256": "fdd68b9a4a143817b8fae1e15300d8c27690c7ac1a826d6b97861d6c9477f726"
+      },
+      {
+        "path": "src/numeric/complex.rs",
+        "owning_and_package_sha256": "30d61759b2049a5cb4d75d4c76efa455a009b13129fec6d0bdf6dfec92e50fdf"
+      },
+      {
+        "path": "src/numeric/fp16.rs",
+        "owning_and_package_sha256": "b36dee4ad740e6f6b7ba10d7fcac75c58b32ae60f3486dc0f58e8686e1289d80"
+      },
+      {
+        "path": "src/numeric/mod.rs",
+        "owning_and_package_sha256": "61f86e95164da0fb36d72ebe5514eb7572dcfbbb4700afbed6ada2b1d14814de"
+      },
+      {
+        "path": "src/numeric/quant.rs",
+        "owning_and_package_sha256": "0d1d859de9a1382bb7b2ab325a6ef07aabbee7760e4f88af165f2776674eb677"
+      },
+      {
+        "path": "src/probe/main.rs",
+        "owning_and_package_sha256": "b99becc4b1fc84e1863e99b79fabba3fb9a3376dfba2933d9c2fd30821aab12d"
+      },
+      {
+        "path": "src/probe/mod.rs",
+        "owning_and_package_sha256": "491a42c85918b2ce1e56d44b30fa1e08e7ab48913b912edccd20d4568ba373e0"
+      },
+      {
+        "path": "src/pulse/ffi.rs",
+        "owning_and_package_sha256": "e24afa82241a15fc429cf4681ae2441cbd70ab83ebe31df930bce061d664d31c"
+      },
+      {
+        "path": "src/pulse/mod.rs",
+        "owning_and_package_sha256": "2a5fac0702dad6d5808f870b619a0f905ae50e5b71614cf87b975bde89f7e812"
+      },
+      {
+        "path": "src/sparse/chebyshev.rs",
+        "owning_and_package_sha256": "d5c3199fcd1ae0016e584aaefcbbe0ecb4fad4ed387f106bf875a17ee38f83fb"
+      },
+      {
+        "path": "src/sparse/mod.rs",
+        "owning_and_package_sha256": "a1eb8b86ef8b5c01cfd9be9c2a0cf23ba5fe2b85315274dd961f336c47d2dc14"
+      },
+      {
+        "path": "src/sync/affinity.rs",
+        "owning_and_package_sha256": "7bfe3d34f7e276df619990cb0c10ae5e3e92c1121d4add16df0277448ffe21ae"
+      },
+      {
+        "path": "src/sync/mod.rs",
+        "owning_and_package_sha256": "4b650ee78e86d27bce9fc60e0236c3c84a994b86f97ea83f55bf993e2ba05e85"
+      },
+      {
+        "path": "src/sync/prefetch.rs",
+        "owning_and_package_sha256": "1fac7e1b88b09d02a2c105bd6696f29b66a83361989d10af2f08fea69d89d336"
+      },
+      {
+        "path": "src/vector/exp_kern.rs",
+        "owning_and_package_sha256": "85d44efe477d4985601476878dc1ce1c1b6321a7d28092cc672af5210c5c4d2b"
+      },
+      {
+        "path": "src/vector/integer.rs",
+        "owning_and_package_sha256": "cb9aadd87b49bdd2a45688f900e973e152752ceb472ce41fd3dda243442dddb4"
+      },
+      {
+        "path": "src/vector/integer_fused.rs",
+        "owning_and_package_sha256": "7d1e8f478e3de5cfd15884dbd122ebbc0f79a7326235dacb1daa8f9c1c707ee5"
+      },
+      {
+        "path": "src/vector/math.rs",
+        "owning_and_package_sha256": "e7273c53c90b7cc1e750c5f171d330365551c5d495a1a876f8c39cbfcb668e25"
+      },
+      {
+        "path": "src/vector/media.rs",
+        "owning_and_package_sha256": "72c8db64048f861a1580db2bcb5aead4204f2faa31beb7946b29b81a9547fcaa"
+      },
+      {
+        "path": "src/vector/mod.rs",
+        "owning_and_package_sha256": "c8304e08a5524741c47186e003950307de6ba078e94472a3de646279306203ed"
+      },
+      {
+        "path": "src/vector/reduce.rs",
+        "owning_and_package_sha256": "1c9e7865bcfacc262dd9964c505186999c0d93118393cbec0b23f20303c25d41"
+      },
+      {
+        "path": "src/vector/render.rs",
+        "owning_and_package_sha256": "11e693ddcbd552a8db7be635640217d87be750ac0a10308ae930776dfc698045"
+      },
+      {
+        "path": "src/vector/rope.rs",
+        "owning_and_package_sha256": "1b9d70b29d05e0c95c32a88424a7109f32a3ab6ae161d36632ed63324811dc6c"
+      },
+      {
+        "path": "src/vector/scan.rs",
+        "owning_and_package_sha256": "4685b29b2815ff1f971372a793717f0ca2d37bab9958d99731a944fbcacdd02f"
+      },
+      {
+        "path": "src/vector/softmax.rs",
+        "owning_and_package_sha256": "87d5a6bae48cfea49859b26b99de2769069c2013fe2777cef2ad5f2b358cfba4"
+      },
+      {
+        "path": "tests/integration.rs",
+        "owning_and_package_sha256": "fb5fe9dd18a5b26dc88e8eaa27f3d8455fb18ed27690d5561121cb469b5f4828"
+      }
+    ]
+  },
+  "limitation": "Current source package still declares occupied 0.2.0. Source and normalized-package diagnostics have separate recorded locks; neither overrides production dependency identity."
+}

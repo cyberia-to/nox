@@ -1,0 +1,14 @@
+{
+  "command": [
+    "nu",
+    "audit/2026-10-13-hemera-no-std/verify.nu",
+    "audit/2026-10-13-hemera-no-std"
+  ],
+  "observed": "2026-10-17T13:13:16.024307+00:00",
+  "revision": "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+  "result": {
+    "stdout": "{\n  \"status\": \"PASS\",\n  \"logical_payloads\": 921,\n  \"new_objects\": 213,\n  \"borrowed_objects\": 303,\n  \"review_bytes\": 220069,\n  \"review_sha256\": \"aebaed2fa934763ec3f401c0cb1414b8e6aeae7a93ef9d4c73d3d6d315377e46\",\n  \"sections\": 50,\n  \"support_files\": 904,\n  \"execution_files\": 505,\n  \"records\": 103,\n  \"raw_streams\": 206,\n  \"source_entries\": 536,\n  \"production_files\": 2,\n  \"owning_rust\": 48,\n  \"normalized_package_entries\": 52,\n  \"api_checks\": 229,\n  \"api_skips\": 31,\n  \"api_actual_targets\": [\n    \"/tmp/nox-no-std-api-candidate-target\",\n    \"/tmp/nox-no-std-api-parent-baseline-target\"\n  ],\n  \"initial_threshold_cases\": 5,\n  \"repeat_threshold_cases\": 6,\n  \"performance_gate\": \"red/unverified\",\n  \"required_exact_tag_gate\": \"unmet\",\n  \"base_plan\": {\n    \"status\": \"PASS\",\n    \"logical_payloads\": 386,\n    \"unique_objects\": 303,\n    \"review_bytes\": 227176,\n    \"review_sha256\": \"1f2028db98726cea04732856de00b2b058501b930112df0811f09c83c1ac60d3\",\n    \"sections\": 62,\n    \"support_files\": 378,\n    \"source_entries\": 1287,\n    \"records\": 67,\n    \"raw_streams\": 134,\n    \"packaged_rust\": 48,\n    \"production_changes_applied\": false,\n    \"cfg_sites\": 18,\n    \"reverse_manifest_bodies\": 9,\n    \"benchmark_cases\": 9,\n    \"independent_parent_json_roots\": [\n      \"/tmp/nox-no-std-api-parent-current-target\",\n      \"/tmp/nox-no-std-api-parent-baseline-target\"\n    ]\n  }\n}\n",
+    "stderr": "",
+    "exit_code": 0
+  }
+}

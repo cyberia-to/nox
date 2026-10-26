@@ -1,0 +1,7 @@
+hw.model: Mac16,5
+hw.machine: arm64
+hw.memsize: 51539607552
+hw.ncpu: 16
+hw.physicalcpu: 16
+hw.logicalcpu: 16
+machdep.cpu.brand_string: Apple M4 Max

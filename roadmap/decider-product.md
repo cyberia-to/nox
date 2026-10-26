@@ -4,66 +4,66 @@ date: 2026-06-09
 author: jet taxonomy review session
 ---
 
+> superseded: this page describes the retired zheng design (Merkle-free Brakedown, unchecked HyperNova fold, ~2 KiB / ~5 μs figures). It is unsound and its numbers do not hold. The repair and the measured numbers live in [[soft3/proposals/proof-system-repair|soft3 proposals/proof-system-repair]].
+
 # decider — fold recursion in
 
 ## Abstract
 
-The decider verifies all accumulated chain history in one step. The four
+The decider settles all accumulated chain history in one check. The four
 jets grouped as `recursion` (`poly_eval`, `ntt`, `fri_fold`,
 `merkle_verify`) are not a peer capability — they are field-computation
-ingredients, and the decider is what `poly_eval` builds into. This proposal
-dissolves the `recursion` group: `poly_eval` folds into the decider as its
-core ingredient, `ntt` moves to the FHE product, and `fri_fold` /
+ingredients. This proposal dissolves the `recursion` group: `poly_eval`
+serves the decider, `ntt` moves to the FHE product, and `fri_fold` /
 `merkle_verify` are flagged for a deliberate genesis-inclusion decision.
-Circuit ownership follows the domain — the verifier is zheng's; nox holds
-the formula-hash anchor.
+Circuit ownership follows the domain — the verifier is zheng's.
+
+Status (2026-10): the decider design this proposal was written against
+(an unchecked fold, a Brakedown opening without Merkle authentication, constraint
+counts and byte sizes for both) is retired as unsound. The legacy nox
+decider jet verifies nothing (launch #40). Phase 3 of
+[[soft3/proposals/proof-system-repair|the proof-system repair]] replaces it;
+the ownership conclusion below survives, the figures do not.
 
 ## 1. The decider
 
-The decider checks the HyperNova accumulator (~200 bytes folding every block
-from genesis) and returns accept / reject. 89 constraints, ~100 ns — a light
-client joins by downloading a 240-byte checkpoint and verifying it, less
-work than one hemera permutation (~1,440 constraints). It verifies all history,
-not a window. It is a complete, standalone capability.
+In the repaired design the nox machine is one uniform step relation
+(zheng `specs/machine.md`), accumulated step by step: each step's
+Reed–Solomon evaluation claims are batched with a sumcheck into one root
+plus a fixed number of claims, independent of the number of steps. The
+decider is one WHIR opening (lens `specs/whir.md`) of the final
+accumulator and returns accept / reject. A light client joins with a
+checkpoint = state root + the decider proof: ≤ 64 KB goal, measured size
+TODO(F-numbers); verification ≤ 1 ms goal, measured time TODO(F-numbers).
+It verifies all history, not a window.
 
 ## 2. recursion is the decider's ingredients
 
 A caller does not want `poly_eval` as an end — it wants a verified proof.
-`poly_eval` is the decider's core ingredient. Its 89-constraint breakdown
-(`specs/jets/decider.md`):
-
-```
-sumcheck replay:         20 constraints
-CCS evaluation:          34 constraints
-Brakedown (batched):     35 constraints   ← poly_eval, fused
-hemera:                   0 constraints   (algebraic Fiat-Shamir)
-────────────────         ──────────────
-total:                   89 constraints
-```
-
-The 35-constraint Brakedown step is `poly_eval`'s operation — multilinear
-opening — fused into the verifier. The decider *is* `poly_eval` + sumcheck +
-CCS evaluation, frozen as one exact-match circuit. `poly_eval` belongs under
-the decider, not in a separate `recursion` group.
+Multilinear evaluation is an ingredient of the decider's opening check, not
+a separate product, so `poly_eval` belongs under the decider, not in a
+separate `recursion` group. The decider itself is zheng code, not a frozen
+nox circuit.
 
 ## 3. The other three recursion jets
 
-- **`ntt`** — serves the FHE product (`polynomial-ring`: `ntt_batch`,
+- `ntt` — serves the FHE product (`polynomial-ring`: `ntt_batch`,
   `blind_rotate`) and ring multiplication generally. File it there, or as a
   shared primitive alongside `hash` — it is cross-cutting.
-- **`fri_fold`, `merkle_verify`** — no genesis product consumes them.
-  Brakedown is Merkle-free and FRI-free. They were retained for cross-system
-  interoperability. Freezing a primitive at genesis (A3, append-only) that
-  no product uses is permanent cost with nothing shipped behind it. Their
-  inclusion is a deliberate decision, not a default — see open questions.
+- `fri_fold`, `merkle_verify` — no genesis product consumes them as nox
+  jets. The repaired PCS (WHIR, hemera Merkle trees) does use Merkle
+  authentication paths, but inside zheng, not through a nox jet. Freezing a
+  primitive at genesis (A3, append-only) that no product uses is permanent
+  cost with nothing shipped behind it. Their inclusion is a deliberate
+  decision, not a default — see open questions.
 
 ## 4. Ownership
 
 Recognition is the VM's job: nox holds the decider's formula-hash anchor and
 dispatches on it at reduction time. The implementation belongs to the repo
-that owns the domain — and the verifier is the proof system's. The decider's
-CCS circuit, its three optimizations, and its soundness proofs live in
-zheng; nox keeps the anchor. This is the boundary already applied across the
+that owns the domain — and the verifier is the proof system's. The decider
+and its soundness argument live in zheng (`specs/soundness.md`); nox keeps
+at most the anchor. This is the boundary already applied across the
 jet set:
 
 - verifier circuit → zheng
@@ -74,9 +74,8 @@ jet set:
 ## 5. Proposed structure
 
 ```
-decider                            zheng implements the circuit; nox anchors
+decider                            zheng implements it (one WHIR opening of the accumulator)
   ingredient:  poly_eval           strata-compute / honeycrisp implement; nox anchors
-  circuit:     decider             = poly_eval + sumcheck + CCS, fused
 
 ntt              → file under the FHE product, or as a shared primitive
 fri_fold         → interop primitive; genesis inclusion under review
@@ -84,14 +83,13 @@ merkle_verify    → interop primitive; genesis inclusion under review
 ```
 
 1. Dissolve `recursion` as a top-level group in `specs/jets/README.md`. The
-   decider becomes the group: `poly_eval` (ingredient) + the decider circuit.
-2. `specs/jets/decider.md` keeps the formula, its hash, and the contract; the
-   constraint breakdown, the optimizations, and the soundness proofs migrate
-   to `zheng/specs/`.
+   decider becomes the group: `poly_eval` (ingredient) + the zheng decider.
+2. `specs/jets/decider.md` records the legacy jet and its retirement; the
+   decider and its soundness argument live in `zheng/specs/`.
 3. Reassign `ntt` to the FHE product or a shared-primitive entry; park
    `fri_fold` and `merkle_verify` pending the inclusion decision.
-4. `rs/jets/poly_eval.rs` and `rs/jets/decider.rs` keep their wrappers; wire
-   the decider wrapper to zheng's verifier when exposed.
+4. `rs/jets/decider.rs` is the legacy jet (fixed charge, verifies nothing);
+   it is retired in phase 3 rather than wired to zheng.
 
 ## 6. Note: jets as products
 

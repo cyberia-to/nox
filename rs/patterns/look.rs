@@ -2,16 +2,16 @@
 //! step 1: evaluate ns_formula → namespace field element (must be 0..9)
 //! step 2: evaluate key_formula → key field element
 //! step 3: extract C_t limbs from object at axes [4, 10, 22, 23]
-//! step 4: call LookProvider.look(C_t[0], ns, key)
+//! step 4: call `LookProvider.look(C_t[0], ns, key)`
 //! step 5: return value as field atom, or Unavailable
 
 use nebu::Goldilocks;
 
-use crate::data::{Reduction, Order, Data, NIL};
-use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary_field, make_field};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Data, NIL, Order, Reduction};
 use crate::jets::registry::JetRegistry;
+use crate::reduce::{ErrorKind, Outcome, evaluate_binary_field, make_field, pair_children};
+use crate::trace::{TraceRow, Tracer};
 
 /// Axis addresses of the four 64-bit limbs of the BBG root within the object.
 /// Object layout: `[[l0 | [l1 | [l2 | l3]]] | rest]`.
@@ -42,16 +42,33 @@ fn axis_nav<const N: usize>(reduction: &Reduction<N>, object: Order, addr: u64) 
 }
 
 pub fn look<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
     let (ns_formula, key_formula) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (ns, key, budget) = match evaluate_binary_field(reduction, object, ns_formula, key_formula, budget, hints, tracer, depth, registry) {
-        Ok(v) => v, Err(o) => return o,
+    let (ns, key, budget) = match evaluate_binary_field(
+        reduction,
+        object,
+        ns_formula,
+        key_formula,
+        budget,
+        hints,
+        tracer,
+        depth,
+        registry,
+    ) {
+        Ok(v) => v,
+        Err(o) => return o,
     };
 
     // namespace must be 0..9 (the 10 public BBG evaluation dimensions)
@@ -73,9 +90,9 @@ pub fn look<const N: usize, T: Tracer>(
     }
 
     // r[4]=ct[0], r[5]=ns, r[6]=key, r[7]=value (below), r[11..14]=ct[1..4]
-    row.r[4]  = limbs[0].as_u64();
-    row.r[5]  = ns.as_u64();
-    row.r[6]  = key.as_u64();
+    row.r[4] = limbs[0].as_u64();
+    row.r[5] = ns.as_u64();
+    row.r[6] = key.as_u64();
     row.r[11] = limbs[1].as_u64();
     row.r[12] = limbs[2].as_u64();
     row.r[13] = limbs[3].as_u64();
@@ -95,34 +112,42 @@ pub fn look<const N: usize, T: Tracer>(
 
 #[cfg(test)]
 mod tests {
-    use crate::reduce::{reduce, Outcome, ErrorKind};
     use crate::call::{CallProvider, LookProvider, NullCalls};
+    use crate::data::{Order, Reduction};
+    use crate::reduce::{ErrorKind, Outcome, reduce};
     use crate::trace::NoTrace;
-    use crate::data::{Reduction, Order};
     use nebu::Goldilocks;
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     /// Build a 4-limb BBG object: `[[l0 | [l1 | [l2 | l3]]] | rest]`.
     /// limb0 is passed to LookProvider as `commitment`; limbs 1-3 go to r[11..14].
-    fn make_obj<const N: usize>(ar: &mut Reduction<N>, l0: u64, l1: u64, l2: u64, l3: u64) -> Order {
-        let al0  = ar.atom(g(l0)).unwrap();
-        let al1  = ar.atom(g(l1)).unwrap();
-        let al2  = ar.atom(g(l2)).unwrap();
-        let al3  = ar.atom(g(l3)).unwrap();
-        let inner     = ar.pair(al2, al3).unwrap();
-        let mid       = ar.pair(al1, inner).unwrap();
+    fn make_obj<const N: usize>(
+        ar: &mut Reduction<N>,
+        l0: u64,
+        l1: u64,
+        l2: u64,
+        l3: u64,
+    ) -> Order {
+        let al0 = ar.atom(g(l0)).unwrap();
+        let al1 = ar.atom(g(l1)).unwrap();
+        let al2 = ar.atom(g(l2)).unwrap();
+        let al3 = ar.atom(g(l3)).unwrap();
+        let inner = ar.pair(al2, al3).unwrap();
+        let mid = ar.pair(al1, inner).unwrap();
         let root_pair = ar.pair(al0, mid).unwrap();
-        let rest      = ar.atom(g(0)).unwrap();
+        let rest = ar.atom(g(0)).unwrap();
         ar.pair(root_pair, rest).unwrap()
     }
 
     /// Build formula [17 [[1 ns] [1 key]]] — look with quoted ns and key.
     fn make_look<const N: usize>(ar: &mut Reduction<N>, ns: u64, key: u64) -> Order {
         let t17 = ar.atom(g(17)).unwrap();
-        let t1  = ar.atom(g(1)).unwrap();
-        let vns  = ar.atom(g(ns)).unwrap();
+        let t1 = ar.atom(g(1)).unwrap();
+        let vns = ar.atom(g(ns)).unwrap();
         let vkey = ar.atom(g(key)).unwrap();
-        let ns_formula  = ar.pair(t1, vns).unwrap();
+        let ns_formula = ar.pair(t1, vns).unwrap();
         let key_formula = ar.pair(t1, vkey).unwrap();
         let body = ar.pair(ns_formula, key_formula).unwrap();
         ar.pair(t17, body).unwrap()
@@ -153,7 +178,10 @@ mod tests {
             )
         };
         assert!(run(), "first order: NullCalls look must return Unavailable");
-        assert!(run(), "second order: NullCalls look must return Unavailable");
+        assert!(
+            run(),
+            "second order: NullCalls look must return Unavailable"
+        );
     }
 
     /// Same (ns, key, C_t) in two independent orders with the same provider
@@ -167,7 +195,12 @@ mod tests {
             }
         }
         impl<const N: usize> CallProvider<N> for FixedLooks {
-            fn provide(&self, _order: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
+            fn provide(
+                &self,
+                _order: &mut Reduction<N>,
+                _tag: Goldilocks,
+                _object: Order,
+            ) -> Option<Order> {
                 None
             }
         }
@@ -182,19 +215,33 @@ mod tests {
             }
         };
         assert_eq!(run(), run(), "look must be deterministic across orders");
-        assert_eq!(run(), 18, "look(ns=7, key=11) under FixedLooks yields ns+key=18");
+        assert_eq!(
+            run(),
+            18,
+            "look(ns=7, key=11) under FixedLooks yields ns+key=18"
+        );
     }
 
     #[test]
     fn look_with_value_returns_atom() {
         struct TestLooks;
         impl LookProvider for TestLooks {
-            fn look(&self, _ct: Goldilocks, _ns: Goldilocks, _key: Goldilocks) -> Option<Goldilocks> {
+            fn look(
+                &self,
+                _ct: Goldilocks,
+                _ns: Goldilocks,
+                _key: Goldilocks,
+            ) -> Option<Goldilocks> {
                 Some(Goldilocks::new(99))
             }
         }
         impl<const N: usize> CallProvider<N> for TestLooks {
-            fn provide(&self, _order: &mut Reduction<N>, _tag: Goldilocks, _object: Order) -> Option<Order> {
+            fn provide(
+                &self,
+                _order: &mut Reduction<N>,
+                _tag: Goldilocks,
+                _object: Order,
+            ) -> Option<Order> {
                 None
             }
         }
@@ -221,7 +268,9 @@ mod tests {
             }
         }
         impl<const N: usize> CallProvider<N> for PanicLooks {
-            fn provide(&self, _: &mut Reduction<N>, _: Goldilocks, _: Order) -> Option<Order> { None }
+            fn provide(&self, _: &mut Reduction<N>, _: Goldilocks, _: Order) -> Option<Order> {
+                None
+            }
         }
 
         for ns in [10u64, 100, u64::MAX] {
@@ -255,13 +304,20 @@ mod tests {
         use core::sync::atomic::{AtomicU64, Ordering};
         struct CaptureLooks(AtomicU64);
         impl LookProvider for CaptureLooks {
-            fn look(&self, ct: Goldilocks, _ns: Goldilocks, _key: Goldilocks) -> Option<Goldilocks> {
+            fn look(
+                &self,
+                ct: Goldilocks,
+                _ns: Goldilocks,
+                _key: Goldilocks,
+            ) -> Option<Goldilocks> {
                 self.0.store(ct.as_u64(), Ordering::Relaxed);
                 Some(Goldilocks::ZERO)
             }
         }
         impl<const N: usize> CallProvider<N> for CaptureLooks {
-            fn provide(&self, _: &mut Reduction<N>, _: Goldilocks, _: Order) -> Option<Order> { None }
+            fn provide(&self, _: &mut Reduction<N>, _: Goldilocks, _: Order) -> Option<Order> {
+                None
+            }
         }
 
         let captured = CaptureLooks(AtomicU64::new(0));
@@ -269,6 +325,10 @@ mod tests {
         let obj = make_obj(&mut ar, 0xABCD, 0, 0, 0); // l0=0xABCD is passed as commitment
         let formula = make_look(&mut ar, 0, 0);
         let _ = reduce(&mut ar, obj, formula, 1000, &captured, &mut NoTrace);
-        assert_eq!(captured.0.load(Ordering::Relaxed), 0xABCD, "provider must receive C_t from object axis");
+        assert_eq!(
+            captured.0.load(Ordering::Relaxed),
+            0xABCD,
+            "provider must receive C_t from object axis"
+        );
     }
 }

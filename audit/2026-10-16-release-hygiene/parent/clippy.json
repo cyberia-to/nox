@@ -1,0 +1,56 @@
+{
+  "command": [
+    "cargo",
+    "clippy",
+    "--workspace",
+    "--all-targets",
+    "--locked",
+    "--offline",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/Users/master/cyber/nox",
+  "started": "2026-10-16T21:37:29.116977+00:00",
+  "finished": "2026-10-16T21:37:41.937565+00:00",
+  "exit_code": 101,
+  "inputs": [
+    {
+      "repo": "nox",
+      "head": "7fe9ad368dc93ef136c196c2366b39f1c67e1cd7",
+      "status": [],
+      "lock_sha256": "9bc954f1ed09d6dc9b49f5d35e76289ef700567ee36a9b8172d15588b179a179"
+    },
+    {
+      "repo": "hemera",
+      "head": "1c385e54e18885075f0dd12a0407ad0234e1bebf",
+      "status": [],
+      "lock_sha256": "cb39b0444279e9122294ec469839df3ef7599072a4212e31ef6a73fe5e5c29dc"
+    },
+    {
+      "repo": "strata",
+      "head": "56aedb2d12b3126c601eb333419136d403614dbb",
+      "status": [],
+      "lock_sha256": "ac2474644ca33012c1f9c4fa0f342da58347b975d90a54f2c32f177f74611540"
+    },
+    {
+      "repo": "lens",
+      "head": "8b26cef6587bee6a686f2cf163f6a8496931ee6a",
+      "status": [],
+      "lock_sha256": "16e6ec2a7eefd10473c1048c06a7e36915aeb558163821c8d3efbfa3d74f0a54"
+    }
+  ],
+  "inputs_unchanged": true,
+  "toolchain": {
+    "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)",
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+    "rustc_path": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc",
+    "rustdoc_path": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustdoc"
+  },
+  "cargo_target": "/Users/master/.cache/cyber/kadek/core-delivery-prerequisite",
+  "rustflags": "-Dwarnings",
+  "rustdocflags": "-Dwarnings",
+  "jobs": "2",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "42b2f3b2630a1e07ba9c88d7f05ef103bff060365469cd0797e2b6c7aaec66f8"
+}

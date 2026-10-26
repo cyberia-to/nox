@@ -62,8 +62,8 @@ unrecognized formulas: full nox execution trace → SuperSpartan proof (~8 const
 
 ## proof-carrying interaction
 
-without state jet: each nox reduce() step folds into accumulator (~30 field ops × 500 steps = 15,000 field ops).
-with state jet: pattern recognized → 1 fold of the 3-5 constraint instance = ~30 field ops total. 500× speedup.
+without state jet: each of the ~500 nox reduce() steps folds into the accumulator.
+with state jet: pattern recognized → one fold of the 3-5 constraint instance. the per-fold cost of the retired design does not hold; the repaired accumulation is measured in [[soft3/proposals/proof-system-repair|the proof-system repair]].
 
 ## hardware mapping
 

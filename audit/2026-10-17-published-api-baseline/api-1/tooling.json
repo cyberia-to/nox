@@ -1,0 +1,14 @@
+[
+  {
+    "path": "support.nu",
+    "sha256": "0fe8d63a25105acb6c381910dfcd9da563a84dc33a5dbbd769ad0f36b6bf2b5f"
+  },
+  {
+    "path": "prepare.nu",
+    "sha256": "fb0c223dc379f9c6486d637e3e1cf2ceb8366f77fbfa2d1b3e9f344592bcf4ea"
+  },
+  {
+    "path": "compare.nu",
+    "sha256": "c7e1f96db297a46913959547f3699a6093b5a131c40ff03ad521ab08b57c2a1a"
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "logical_payloads": 386,
+  "unique_objects": 303,
+  "review_bytes": 227176,
+  "review_sha256": "1f2028db98726cea04732856de00b2b058501b930112df0811f09c83c1ac60d3",
+  "sections": 62,
+  "support_files": 378,
+  "source_entries": 1287,
+  "records": 67,
+  "raw_streams": 134,
+  "packaged_rust": 48,
+  "production_changes_applied": false,
+  "cfg_sites": 18,
+  "reverse_manifest_bodies": 9,
+  "benchmark_cases": 9,
+  "independent_parent_json_roots": [
+    "/tmp/nox-no-std-api-parent-current-target",
+    "/tmp/nox-no-std-api-parent-baseline-target"
+  ]
+}
