@@ -62,3 +62,25 @@ collection and cancellation after collection commit. A fixture confirms that
 original parent inputs can disappear from a later snapshot while their
 continuations remain open. Retaining checked activation facts and rejecting
 stale epoch handles remain responsibilities of the eventual proof verifier.
+
+## Version-1 golden re-pinned under hemera 0.4 (2026-10-16)
+
+hemera 0.4 (profile 15, `release/0.4` 7237a23) changes every particle
+digest, so the version-1 golden of `rs/sequential/observe/tests/snapshots.rs`
+was re-captured on nox `feat/hemera-0.4` with `cargo test --release
+-p cyber-nox --lib version_one_gc_stream`:
+
+| counter | base (hemera 0.3) | hemera 0.4 |
+|---|---|---|
+| events / encoded bytes / capture work | 1383 / 341960 / 5183 | unchanged |
+| evaluator / collection checkpoints | 1211 / 6 | unchanged |
+| total allocations, pinned, resident, peak, reclaimed, collections, scratch | 171, 32, 43, 100, 128, 2, 1424 | unchanged |
+| collection_work | 133415 | 133417 |
+| Hemera digest of the ordered encoded stream | `f7e00851…631b61` | `eca8db90…82a4` (bytes in the test) |
+
+The fixture contains no hash pattern, so the event count and the stream
+length are the same; the stream bytes and its digest change because the
+particles inside the events are hemera digests. The collection meter moves
+by two units: the dedup index rebuilt during collection probes by digest,
+and the new digests take two more probe steps. The base probe's raw output
+under hemera 0.3 is kept unchanged in `golden-v1-command.json`.

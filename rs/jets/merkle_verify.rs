@@ -16,12 +16,13 @@
 //!   dir     = 0: sibling is left child; 1: sibling is right child
 //!
 //! Returns: Field atom 1 (valid path) or 0 (invalid).
-//! Budget: depth × 25 (one hash per step, matching COSTS[hash] = 25).
+//! Budget: depth × 61 (one hash per step, matching COSTS[hash] = 61).
 
 extern crate alloc;
 use alloc::vec::Vec;
 
 use hemera::StepSponge;
+use crate::patterns::hash::HASH_COST;
 use hemera::field::Goldilocks as HemeraGold;
 use nebu::Goldilocks;
 use crate::data::{Reduction, Order, Data};
@@ -58,8 +59,8 @@ pub fn merkle_verify_jet<const N: usize>(
         None => return Outcome::Error(ErrorKind::TypeError),
     };
 
-    // Budget: depth × 25 (hash cost per step)
-    let cost = depth.saturating_mul(25);
+    // Budget: depth × 61 (hash cost per step)
+    let cost = depth.saturating_mul(HASH_COST);
     if budget < cost {
         return Outcome::Halt(budget);
     }
@@ -237,7 +238,7 @@ mod tests {
     fn budget_exhaustion_halts() {
         let mut ar = Reduction::<512>::new();
         let (root, hn0, hn1) = two_leaf_tree(&mut ar);
-        // depth=1, cost=25 — pass budget=10 → Halt
+        // depth=1, cost=61 — pass budget=10 → Halt
         let depth_id  = ar.atom(g(1)).unwrap();
         let formula_p = ar.atom(g(0)).unwrap();
         let root_f    = ar.pair(root, formula_p).unwrap();

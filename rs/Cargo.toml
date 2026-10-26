@@ -26,7 +26,7 @@ honeycrisp = ["std", "dep:acpu"]
 
 [dependencies]
 nebu = { package = "strata-nebu", version = "0.1", path = "../../strata/nebu/rs" }
-hemera = { package = "cyber-hemera", version = "0.3", path = "../../hemera/rs" }
+hemera = { package = "cyber-hemera", version = "0.4", path = "../../hemera/rs" }
 cyber-lens-core = { version = "0.1", path = "../../lens/core", optional = true }
 cyber-lens-brakedown = { version = "0.2.0", path = "../../lens/brakedown", optional = true }
 

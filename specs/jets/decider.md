@@ -17,7 +17,7 @@ name:          decider
 recognition:   level 1 CCS jet (exact formula match)
 input:         HyperNova accumulator (~200 bytes) + Lens commitments
 output:        accept / reject
-constraints:   89 (optimistic) or 825 (conservative)
+constraints:   89 (optimistic) or 1,529 (conservative)
 ```
 
 ## three optimizations

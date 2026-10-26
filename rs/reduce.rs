@@ -36,7 +36,7 @@ const COSTS: [u64; 18] = [
     32,  // 12 and
     32,  // 13 not
     32,  // 14 shl
-    25,  // 15 hash  — 24 Poseidon2 rounds + 1 squeeze row
+    61,  // 15 hash  — 60 Poseidon2 rounds + 1 squeeze row (hemera 0.4)
     1,   // 16 call
     1,   // 17 look
 ];
@@ -506,7 +506,7 @@ mod tests {
         let body = ar.pair(t1, obj).unwrap();
         let formula = ar.pair(t15, body).unwrap();
         let mut tr = VecTrace::default();
-        // hash cost = 25, budget = 10 → halt before dispatching
+        // hash cost = 61, budget = 10 → halt before dispatching
         match reduce(&mut ar, obj, formula, 10, &NullCalls, &mut tr) {
             Outcome::Halt(b) => assert_eq!(b, 10),
             o => panic!("expected Halt(10), got {:?}", o),
@@ -571,7 +571,9 @@ mod tests {
         assert_eq!(cost(8), 64);    // inv
         assert_eq!(cost(10), 64);   // lt
         assert_eq!(cost(11), 32);   // xor
-        assert_eq!(cost(15), 25);   // hash (24 rounds + 1 squeeze)
+        assert_eq!(cost(15), 61);   // hash (60 rounds + 1 squeeze)
+        assert_eq!(cost(15), crate::patterns::hash::HASH_COST);
+        assert_eq!(cost(15), crate::data::cost::PATTERN_COSTS[15]);
         assert_eq!(cost(99), 1);    // unknown tag → default
     }
 

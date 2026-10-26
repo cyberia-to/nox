@@ -73,7 +73,7 @@ fn bench_inv(c: &mut Criterion) {
 // ── hash pattern (hashrate) ──────────────────────────────────────────────────
 
 fn bench_hash(c: &mut Criterion) {
-    // Each iteration is one Poseidon2 hash (25 rows: 24 rounds + 1 squeeze).
+    // Each iteration is one Poseidon2 hash (61 rows: 60 rounds + 1 squeeze).
     // Throughput = hashes/sec.
     let mut group = c.benchmark_group("hash");
     group.throughput(Throughput::Elements(1));
