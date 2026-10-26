@@ -1,0 +1,7 @@
+   Compiling crossbeam-queue v0.3.14
+   Compiling unimem v0.2.0
+   Compiling acpu v0.2.0 (/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0)
+   Compiling cyber-nox v0.2.0 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs)
+   Compiling nox-honeycrisp-package-diagnostic v0.0.0 (/tmp/nox-honeycrisp-package-diagnostic)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.52s
+     Running /Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/audit/2026-10-16-honeycrisp-backend-design/probe.rs (/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/debug/deps/source_contract-bf72cd11c1f55b7f)

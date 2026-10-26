@@ -560,7 +560,7 @@ Layer 2: 36 genesis jets (hash, poly_eval, merkle_verify, fri_fold, ntt families
 | hemera | `~/git/hemera/` | hash function (Poseidon2) |
 | nox | `~/git/nox/` | VM (this repo) |
 | lens | `~/git/lens/` | polynomial commitment (5 lenses) |
-| zheng | `~/git/zheng/` | proof system (SuperSpartan + Brakedown) |
+| zheng | `~/git/zheng/` | proof system (SuperSpartan + WHIR) |
 | mudra | `~/git/mudra/` | crypto primitives (KEM, dCTIDH, TFHE, threshold) |
 | bbg | `~/git/bbg/` | authenticated state (Big Badass Graph) |
 | trident | `~/git/trident/` | high-level language, compiles to nox |
@@ -570,3 +570,16 @@ Layer 2: 36 genesis jets (hash, poly_eval, merkle_verify, fri_fold, ntt families
 
 - `Cargo.toml` dependency versions — discuss before changing
 - `specs/` — canonical spec, change there first then propagate
+
+
+## no_std dependency gate
+
+Every commit runs this gate from the repository root with committed sibling
+checkouts and the `thumbv7em-none-eabi` target installed:
+
+```sh
+cargo build -p cyber-nox --no-default-features --target thumbv7em-none-eabi --locked
+```
+
+A missing target or dependency is a red prerequisite, not a passed gate. This
+checks real library code generation without std; host tests do not replace it.

@@ -2,68 +2,27 @@
 tags: nox, jets
 crystal-type: entity
 crystal-domain: comp
-alias: decider jet, 89-constraint verifier, all-history verification
+alias: decider jet, all-history verification
 ---
-# decider jet — 89 constraints
+> superseded: the legacy decider jet of the retired zheng design verifies nothing and is retired in phase 3 of [[soft3/proposals/proof-system-repair|the proof-system repair]].
 
-verifies ALL accumulated chain history in one step. the HyperNova decider checks the universal accumulator (~200 bytes) that folds every block from genesis.
+# decider jet — legacy, retired in phase 3
 
-generic cost: ~8K constraints. with three stacked optimizations: 89 constraints — less than one hemera permutation (~1,440).
+## what the jet is today
 
-## specification
+`rs/jets/decider.rs` recognises the decider formula by its hash and charges a fixed cost. it verifies nothing: it never checks a sumcheck, a CCS evaluation or a commitment opening (launch #40, audited in nox PR #20). no caller may treat its accept as evidence of anything.
 
-```
-name:          decider
-recognition:   level 1 CCS jet (exact formula match)
-input:         HyperNova accumulator (~200 bytes) + Lens commitments
-output:        accept / reject
-constraints:   89 (optimistic) or 1,529 (conservative)
-```
+the figures this page used to carry — a constraint count for the decider, an accumulator and checkpoint size in bytes, a nanosecond verification time, challenges derived without hashing, an opening said to need no Merkle authentication — belonged to the retired design. none of them hold and none are to be quoted.
 
-## three optimizations
+## what replaces it
 
-| # | optimization | what it does | before → after |
-|---|---|---|---|
-| 1 | CCS jet encoding | direct CCS matrix instead of nox trace | ~8K → ~2,070 (4×) |
-| 2 | batched spot-checks | 640 Brakedown checks → 1 batched sumcheck | ~1,280 → ~35 (36×) |
-| 3 | algebraic Fiat-Shamir | derive challenges from Lens commitments, zero hemera | ~1,440 → 0 |
+in the repaired stack every proof is a zheng proof over Goldilocks with Fp3 challenges, hemera Merkle trees and a hemera Fiat–Shamir transcript.
 
-## constraint breakdown
-
-```
-sumcheck replay:         20 constraints
-CCS evaluation:          34 constraints
-Brakedown (batched):     35 constraints
-hemera:                   0 constraints
-────────────────         ──────────────
-total:                   89 constraints
-```
-
-## conservative tier
-
-algebraic Fiat-Shamir (optimization 3) reuses hemera hash already inside Brakedown commitments for challenge derivation. if independent randomness is required, one hemera call remains:
-
-```
-conservative: 89 + 1,440 = 1,529 constraints
-```
-
-825 is still 10× better than generic 8K. the system ships with 825 and transitions to 89 when algebraic FS soundness is formally verified.
-
-## what 89 constraints means
-
-```
-verify ALL chain history:       ~89 constraints ≈ ~100 nanoseconds
-89 constraints < 1 hemera call:  ~1,440 constraints
-verifying all history < hashing 56 bytes
-
-light client join:
-  download checkpoint: 240 bytes
-  verify: 89 constraints ≈ 100 ns
-  trust: mathematical certainty of all history from genesis
-```
+- phase 3 (accumulation, landing in this release): the nox machine becomes one uniform step relation (zheng `specs/machine.md`). each step's Reed–Solomon evaluation claims are accumulated with a sumcheck batch, one combined committed word, out-of-domain samples and a few query openings. the accumulator is one root plus a fixed number of claims, independent of the number of steps.
+- the decider is one WHIR opening (lens `specs/whir.md`) of the final accumulator, run by zheng. it is not a nox jet. nox 0.4 carries the uniform step relation; this jet and its formula anchor are retired.
+- light-client checkpoint: state root + the decider proof of the accumulator. size: ≤ 64 KB goal, measured size TODO(F-numbers). verification: ≤ 1 ms goal, measured time TODO(F-numbers).
 
 ## open questions
 
-1. algebraic Fiat-Shamir soundness — formal proof that challenge derivation from Lens commitments satisfies FS security model
-2. batched sumcheck interaction — can it share challenges with the main SuperSpartan sumcheck?
-3. decider jet equivalence — one-time formal verification that 89-constraint CCS = full decider
+1. genesis: whether any decider formula hash is anchored at genesis at all once the decider lives in zheng, or only the step relation's digest.
+2. composition: a verifier written as a nox program (the Trident verifier) is for composing proofs, never for making them smaller.

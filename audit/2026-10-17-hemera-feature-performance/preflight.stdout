@@ -1,0 +1,33 @@
+{
+  "status": "pass",
+  "scope": "portable source/build/binary/code preflight; timing unmeasured",
+  "live_tools_checked": true,
+  "source_exports": 5,
+  "registry_archives": 72,
+  "unchanged_old_reds": [
+    5,
+    6
+  ],
+  "binaries": [
+    {
+      "cell": "A",
+      "sha256": "49814fac53940c8481f747c49d0925a8620e7fa54ead064c3a0b203dd7d851ea"
+    },
+    {
+      "cell": "B",
+      "sha256": "0afa4ba30ea6fe96e58018b52e51d5ec2093ad86ab6313103a3051fe4230ba0f"
+    },
+    {
+      "cell": "C",
+      "sha256": "a6d8ee8c214e011539427eb75d37acb92f5b45e859224a03b5f52ad5254d6fab"
+    },
+    {
+      "cell": "D",
+      "sha256": "283e5a4be6dc16699433f3209421f6122b4e1fdfc0f3725626ab15130ebbc08e"
+    },
+    {
+      "cell": "P",
+      "sha256": "6582befad4e98fcc25e247fe779a62a863c78370f23a9358614a944fb952f57e"
+    }
+  ]
+}

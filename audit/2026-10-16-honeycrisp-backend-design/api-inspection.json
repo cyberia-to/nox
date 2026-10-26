@@ -1,0 +1,26 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--name-status",
+    "96fa4f4509d7a966cb22a4bb9e12ac753cff43ae",
+    "70dfb1f55e4cb2570d5a78a497be5828a203087b",
+    "--",
+    "acpu/src",
+    "acpu/Cargo.toml"
+  ],
+  "source_delta": [
+    "M\tacpu/src/field/mod.rs",
+    "A\tacpu/src/field/ntt.rs",
+    "A\tacpu/src/field/poly.rs",
+    "M\tacpu/src/lib.rs",
+    "A\tacpu/src/sparse/chebyshev.rs",
+    "A\tacpu/src/sparse/mod.rs"
+  ],
+  "old_file_edits": "diff --git a/acpu/src/field/mod.rs b/acpu/src/field/mod.rs\nindex ff40f0b..88b22f7 100644\n--- a/acpu/src/field/mod.rs\n+++ b/acpu/src/field/mod.rs\n@@ -5,10 +5,14 @@\n \n pub mod goldilocks;\n pub mod merkle;\n+pub mod ntt;\n pub mod permute;\n+pub mod poly;\n \n pub use goldilocks::{\n     gl_add, gl_inv, gl_mul, gl_mul_batch, gl_pow7, gl_pow7_x16, gl_reduce128, gl_sub,\n };\n pub use merkle::{batch_inv, hash_node, merkle_root};\n+pub use ntt::{bit_reverse_permute, ntt_forward, pow_gl};\n pub use permute::poseidon2_permute;\n+pub use poly::multilinear_eval;\ndiff --git a/acpu/src/lib.rs b/acpu/src/lib.rs\nindex c8b3d5e..387eb31 100644\n--- a/acpu/src/lib.rs\n+++ b/acpu/src/lib.rs\n@@ -15,6 +15,7 @@ pub mod matrix;\n pub mod numeric;\n pub mod probe;\n pub mod pulse;\n+pub mod sparse;\n pub mod sync;\n pub mod vector;\n \n@@ -29,6 +30,7 @@ pub use matrix::Matrix;\n pub use numeric::{bf16, complex, fp16, quant};\n pub use probe::{scan, Chip, Feature, Features};\n pub use pulse::Counters;\n+pub use sparse::{chebyshev::chebyshev_matvec, csr_matvec, csr_matvec_set};\n pub use sync::{affinity, prefetch};\n \n use std::fmt;",
+  "own_gate_instructions": {
+    "root": "c4d43568bbc1c3094cf325fd5e08dba94682f9b6d928d9f4fbeb7aae7b07522d",
+    "acpu": "ab1526fb1ffac48cbe47f01b19087da389cf2d443f788e037580efa536b74b01"
+  },
+  "source_status": []
+}

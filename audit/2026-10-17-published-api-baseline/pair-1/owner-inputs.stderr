@@ -1,0 +1,11 @@
+Error: nu::shell::cant_convert
+
+  x Can't convert to string.
+    ,-[/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/audit/2026-10-17-published-api-baseline/support.nu:15:7]
+ 14 |     ^git -C $root ls-files --cached --others --exclude-standard | lines | sort | uniq
+ 15 |     | where {|p| not ($p | str starts-with audit/) and not ($p | str starts-with .claude/)
+    :       ^^|^^
+    :         `-- can't convert error to string
+ 16 |         and (($p | str ends-with '.rs') or ($p | path basename) in [Cargo.toml Cargo.lock rust-toolchain.toml])}
+    `----
+

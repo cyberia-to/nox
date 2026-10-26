@@ -1,0 +1,38 @@
+{
+  "task": "Matched investigation of the unresolved Hemera feature performance gate",
+  "owner": "nox",
+  "agent": "/root/nox_perf_finish",
+  "parent_session": "/root",
+  "branch": "research/hemera-feature-performance",
+  "base": "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+  "reused": "2026-10-17T11:38:31.532842+00:00",
+  "previous_context": "audit/2026-10-17-published-api-baseline/task-honeycrisp-backend.json",
+  "ownership": "Root authorized reuse after merged backend investigation; canonical and origin/master at 64d091e5ad3f277cce77b88ae0de6eea4c49b4df. Recorded sibling targets/revisions preserved.",
+  "retention": "Five fixed binaries and portable raw input/section capsule retained; root source/tool review in progress. No timing is authorized until an explicit quiet window after MKV Miri/external compute. Preserve full unfinished experiment and original red gates.",
+  "dependencies": [
+    {
+      "name": "hemera",
+      "target": "/Users/master/cyber/hemera",
+      "head": "1c385e54e18885075f0dd12a0407ad0234e1bebf",
+      "status": []
+    },
+    {
+      "name": "strata",
+      "target": "/Users/master/cyber/strata",
+      "head": "56aedb2d12b3126c601eb333419136d403614dbb",
+      "status": []
+    },
+    {
+      "name": "lens",
+      "target": "/Users/master/cyber/lens",
+      "head": "8b26cef6587bee6a686f2cf163f6a8496931ee6a",
+      "status": []
+    }
+  ],
+  "completed_pr": "https://github.com/cyberia-to/nox/pull/35",
+  "merge_revision": "64d091e5ad3f277cce77b88ae0de6eea4c49b4df",
+  "resumed": "2026-10-17T13:12:27.332529+00:00",
+  "current_head": "edba7498b3c669871169dcbc2e739ac07bbcf8b2",
+  "checkpoint": "2026-10-17T13:42:11.217454+00:00",
+  "cache": "/Users/master/.cache/cyber/nox/hemera-feature-performance"
+}

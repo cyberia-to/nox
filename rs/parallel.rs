@@ -9,10 +9,10 @@
 //!
 //! Nox commits to a single canonical reduction semantics — bound-partitioned
 //! evaluation (see `specs/reduction.md §parallel reduction`). The
-//! single-threaded [`reduce`](crate::reduce::reduce) function already
+//! single-threaded [`reduce()`] function already
 //! produces the parallel-canonical witness because every binary / unary
-//! pattern uses [`crate::reduce::evaluate_binary`] /
-//! [`crate::reduce::evaluate_unary`] which thread budget via the partition
+//! pattern uses `crate::reduce::evaluate_binary` /
+//! `crate::reduce::evaluate_unary` which thread budget via the partition
 //! rule, not classical f → f1 → f2.
 //!
 //! [`reduce_parallel`] is the explicit name for the parallel-canonical
@@ -55,12 +55,12 @@
 
 use crate::call::CallProvider;
 use crate::data::{Order, Reduction};
-use crate::reduce::{reduce, Outcome};
+use crate::reduce::{Outcome, reduce};
 use crate::trace::Tracer;
 
 /// Parallel-canonical reduction.
 ///
-/// Observationally identical to [`crate::reduce`] on every `(o, t, f)` input.
+/// Observationally identical to [`crate::reduce()`] on every `(o, t, f)` input.
 /// When the `std` feature is enabled, binary sub-formulas with Exact bounds
 /// run on separate threads (`par_binary`). Without `std`, the semantics is
 /// identical but evaluation is single-threaded.
@@ -134,16 +134,24 @@ pub struct StructuralIndex {
 
 impl StructuralIndex {
     /// Empty path = root reduce call.
-    pub fn root() -> Self { Self::default() }
+    pub fn root() -> Self {
+        Self::default()
+    }
 
     /// Push a step onto the path.
-    pub fn push(&mut self, step: PathStep) { self.path.push(step); }
+    pub fn push(&mut self, step: PathStep) {
+        self.path.push(step);
+    }
 
     /// Pop the last step (for unwinding).
-    pub fn pop(&mut self) -> Option<PathStep> { self.path.pop() }
+    pub fn pop(&mut self) -> Option<PathStep> {
+        self.path.pop()
+    }
 
     /// Read-only view of the path.
-    pub fn path(&self) -> &[PathStep] { &self.path }
+    pub fn path(&self) -> &[PathStep] {
+        &self.path
+    }
 }
 
 extern crate alloc;
@@ -184,9 +192,9 @@ pub(crate) fn par_binary<const N: usize, T: Tracer>(
     tracer: &mut T,
     depth: u64,
 ) -> core::result::Result<(Order, Order, u64), Outcome> {
-    use crate::reduce::{evaluate, ErrorKind};
-    use crate::trace::VecTrace;
     use crate::jets::registry::JetRegistry;
+    use crate::reduce::{ErrorKind, evaluate};
+    use crate::trace::VecTrace;
 
     // Fork: each thread gets an independent copy of the order.
     // Box the forks so the closure captures are thin pointers (~8 bytes each),
@@ -205,13 +213,29 @@ pub(crate) fn par_binary<const N: usize, T: Tracer>(
     let hints_b: &'static dyn CallProvider<N> = unsafe { std::mem::transmute(hints) };
 
     let ha = std::thread::spawn(move || {
-        let r = evaluate(&mut *sub_a, object, a, ba, hints_a, &mut trace_a, depth,
-                         &JetRegistry::empty());
+        let r = evaluate(
+            &mut *sub_a,
+            object,
+            a,
+            ba,
+            hints_a,
+            &mut trace_a,
+            depth,
+            &JetRegistry::empty(),
+        );
         (r, sub_a, trace_a)
     });
     let hb = std::thread::spawn(move || {
-        let r = evaluate(&mut *sub_b, object, b, bb, hints_b, &mut trace_b, depth,
-                         &JetRegistry::empty());
+        let r = evaluate(
+            &mut *sub_b,
+            object,
+            b,
+            bb,
+            hints_b,
+            &mut trace_b,
+            depth,
+            &JetRegistry::empty(),
+        );
         (r, sub_b, trace_b)
     });
 
@@ -269,11 +293,13 @@ pub fn reduce_parallel_threaded<const N: usize, T: Tracer>(
 mod tests {
     use super::*;
     use crate::call::NullCalls;
-    use crate::data::{Reduction};
+    use crate::data::Reduction;
     use crate::trace::{NoTrace, VecTrace};
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     /// T1 (empirical): reduce and reduce_parallel produce identical Outcome
     /// on a deterministic Layer 1 program.
@@ -370,9 +396,8 @@ mod tests {
         let obj_par = ar_par.atom(g(0)).unwrap();
         let f_par = make_add(&mut ar_par);
         let mut tr_par = VecTrace::default();
-        let r_par = reduce_parallel_threaded(
-            &mut ar_par, obj_par, f_par, 1000, &NullCalls, &mut tr_par,
-        );
+        let r_par =
+            reduce_parallel_threaded(&mut ar_par, obj_par, f_par, 1000, &NullCalls, &mut tr_par);
 
         match (r_seq, r_par) {
             (Outcome::Ok(vs, bs), Outcome::Ok(vp, bp)) => {
@@ -423,7 +448,11 @@ mod tests {
 
         // Adding to fork doesn't change parent.
         fork.atom(g(99)).unwrap();
-        assert_eq!(ar.count(), base_count, "parent count unchanged after fork write");
+        assert_eq!(
+            ar.count(),
+            base_count,
+            "parent count unchanged after fork write"
+        );
 
         // Reinter re-finds existing data by hash-consing.
         let c_back = ar.reinter(&fork, c).unwrap();
@@ -459,9 +488,16 @@ mod tests {
         assert_eq!(
             path,
             [
-                PathStep::Left, PathStep::Right, PathStep::Test, PathStep::Yes,
-                PathStep::No, PathStep::Sub, PathStep::Continue, PathStep::Tag,
-                PathStep::Check, PathStep::Row(0),
+                PathStep::Left,
+                PathStep::Right,
+                PathStep::Test,
+                PathStep::Yes,
+                PathStep::No,
+                PathStep::Sub,
+                PathStep::Continue,
+                PathStep::Tag,
+                PathStep::Check,
+                PathStep::Row(0),
             ]
         );
     }

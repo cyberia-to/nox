@@ -1,0 +1,15 @@
+{
+  "command": [
+    "nu",
+    "-c",
+    "use audit/2026-10-17-published-api-baseline/support.nu *; committed-owner ."
+  ],
+  "cwd": "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox",
+  "env": {},
+  "started": "2026-10-17T10:03:50.194095+00:00",
+  "finished": "2026-10-17T10:03:50.217668+00:00",
+  "exit_code": 1,
+  "expected_exit_code": 1,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "3c37a2017f8d797b2213bee0cbf12be3055f1ffca73e72f28d6f42943bf81f23"
+}

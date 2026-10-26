@@ -1,0 +1,4 @@
+command=/usr/bin/pmset -g therm
+started_unix_ns=1792243833705415000
+elapsed_ns=6085917
+exit_code=0

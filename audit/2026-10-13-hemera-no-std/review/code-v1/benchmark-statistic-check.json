@@ -1,0 +1,36 @@
+{
+  "source": "/tmp/nox-hemera-no-std-execution/benchmark/repeat-parent/pattern_inv/new/estimates.json",
+  "source_sha256": "51e3aad6a30b310d9d623f55e1d0d2513f4f0178650e967d8c49b059f26d1a31",
+  "record": "102-parent-benchmark-repeat",
+  "stdout_sha256": "e769d9fb5f6d8eb5bf552e9d8cc3220474690f5ecd7822bd943704062fd56949",
+  "printed_line": "pattern/inv             time:   [72.314 µs 106.20 µs 162.79 µs]",
+  "units": "JSON nanoseconds; displayed microseconds",
+  "median": {
+    "confidence_interval": {
+      "confidence_level": 0.95,
+      "lower_bound": 64900.32798833819,
+      "upper_bound": 75195.85386654662
+    },
+    "point_estimate": 68820.4752628324,
+    "standard_error": 4007.0820200909834
+  },
+  "slope": {
+    "confidence_interval": {
+      "confidence_level": 0.95,
+      "lower_bound": 72314.13418571845,
+      "upper_bound": 162786.00003570764
+    },
+    "point_estimate": 106203.2608499846,
+    "standard_error": 26768.28011066481
+  },
+  "mean": {
+    "confidence_interval": {
+      "confidence_level": 0.95,
+      "lower_bound": 68386.84583578235,
+      "upper_bound": 105441.52858048194
+    },
+    "point_estimate": 81714.86454350787,
+    "standard_error": 10984.910541923633
+  },
+  "disposition": "Printed 72.314/106.20/162.79 microseconds matches slope interval/estimate to displayed precision, not median. Different statistics are not internally contradictory evidence. No benchmark cause or noise floor established."
+}

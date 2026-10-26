@@ -1,0 +1,18 @@
+nox-inherited-std-witness v0.0.0 (/Users/master/.cache/cyber/nox/published-api-baseline/features-2/current)
+├── cyber-hemera v0.3.1
+└── cyber-nox feature "default"
+    └── cyber-nox v0.2.0 (/Users/master/.cache/cyber/nox/published-api-baseline/pair-2/current/cyber-nox-0.2.0)
+        ├── cyber-hemera v0.3.1
+        └── strata-nebu feature "default"
+            └── strata-nebu v0.1.1
+                ├── strata-compute feature "default"
+                │   └── strata-compute v0.1.0
+                │       └── strata-core feature "default"
+                │           └── strata-core v0.1.0
+                ├── strata-core feature "default" (*)
+                ├── strata-ext feature "default"
+                │   └── strata-ext v0.1.0
+                │       └── strata-core feature "default" (*)
+                └── strata-proof feature "default"
+                    └── strata-proof v0.1.0
+                        └── strata-core feature "default" (*)

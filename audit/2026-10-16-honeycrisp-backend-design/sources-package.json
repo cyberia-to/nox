@@ -1,0 +1,1774 @@
+{
+  "source_sha256": "9a2b844ef573266a50d0119a345c74ba53698a8b96dc68f32a2af7412c6bb171",
+  "inputs": {
+    "repositories": [
+      {
+        "name": "nox",
+        "root": "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox",
+        "head": "434d48ee7e94fdde0f4e7bb71012afb80db21a7e",
+        "files": [
+          {
+            "path": "Cargo.lock",
+            "sha256": "9bc954f1ed09d6dc9b49f5d35e76289ef700567ee36a9b8172d15588b179a179"
+          },
+          {
+            "path": "Cargo.toml",
+            "sha256": "ad7773752267560ef10a2c82d6e5d5352d8a96ba7f362816cf2695f1d3396753"
+          },
+          {
+            "path": "cli/Cargo.toml",
+            "sha256": "1e3d0e407e958073928fc3525bd4fa73db9305f77dd841c75b3599ce4461d3a4"
+          },
+          {
+            "path": "cli/main.rs",
+            "sha256": "233bb92cd27ec177f309a9ea54fa0e6aab75e12e0af0ef0e8d9ca55d2d9e1d10"
+          },
+          {
+            "path": "rs/Cargo.lock",
+            "sha256": "dcf5605216c908bcb5d4baff2e2ec1e98626c995ea1eaee801828efc9ab067de"
+          },
+          {
+            "path": "rs/Cargo.toml",
+            "sha256": "c40c954cf23798f1f82e3aae9b882651a4431bf4d263da9382f5f89e79652689"
+          },
+          {
+            "path": "rs/benches/reduction.rs",
+            "sha256": "4e70a210cb805fc643ecd89c6a7ade473e897e736e4cbbec0d0274a9f03f4897"
+          },
+          {
+            "path": "rs/bound.rs",
+            "sha256": "f453bfb52cdba6173bc0dbe71db7227bb6a1bb6bae03d7cbe1da1266c399062a"
+          },
+          {
+            "path": "rs/brakedown_look.rs",
+            "sha256": "dc02ca8112f067a8a3ff94539ecbafd0a4b5b3616893bb7dfc4af869766a46ae"
+          },
+          {
+            "path": "rs/call.rs",
+            "sha256": "62e16f101d461edc11465078fe0c1a5c74dac78a1f3de35cb6423d83cb330f1b"
+          },
+          {
+            "path": "rs/data/cost.rs",
+            "sha256": "746b16cff3747b2f8824b5f9163d73810adbbebda330ddd3674208385455e1b9"
+          },
+          {
+            "path": "rs/data/hash.rs",
+            "sha256": "a1cbf7c94e4f02789d3b61f5a73eddd066652e55a4a04f1414d752d513281967"
+          },
+          {
+            "path": "rs/data/inner.rs",
+            "sha256": "6fd946f5874707af0f9db665bbfe0e8b6939f990b3505a3b62891d4ae56fb084"
+          },
+          {
+            "path": "rs/data/mod.rs",
+            "sha256": "4062376bc001094c481b813fbd6572a5c35be702662fa8859289a2ac57767d7f"
+          },
+          {
+            "path": "rs/data/reduction.rs",
+            "sha256": "e9babd1a16b19ad62f4844a2e6e0876205b93349ad21ee5df479bed79b47cb27"
+          },
+          {
+            "path": "rs/encode.rs",
+            "sha256": "a8cf9b0ae042a37e87aa3fd02bf7e85b62f18b751a15a03809a82a2494fab0ff"
+          },
+          {
+            "path": "rs/examples/dump_formulas.rs",
+            "sha256": "7d97d1d33986a1b2945b5fad9ea4d28184bcd66a7edfb49a60f9bb505bd77db8"
+          },
+          {
+            "path": "rs/jets/backends/cpu.rs",
+            "sha256": "6a06ea6a785fd3491ec8b1b2e9d292accaa76272eb348a10542b714dd2fb396e"
+          },
+          {
+            "path": "rs/jets/backends/honeycrisp.rs",
+            "sha256": "f11f2a6ab7f004bb0225d538ec35e50ce6983568280483e8c13d435890ed2048"
+          },
+          {
+            "path": "rs/jets/backends/mod.rs",
+            "sha256": "52ca41ff78235b8cf553c5418f0221bb57a6e82b5593f6828fd8dbdfda297099"
+          },
+          {
+            "path": "rs/jets/backends/wgpu.rs",
+            "sha256": "e9ea0c58aa41d09cf64797e5c38cc81d485c56b9b943147287a7ac8a998d0243"
+          },
+          {
+            "path": "rs/jets/decider.rs",
+            "sha256": "b513d25c69608cd695a49745b64bc96edaa8e3446bbba38b713b124076f52dea"
+          },
+          {
+            "path": "rs/jets/formulas.rs",
+            "sha256": "9a6e7676c400289718aee2a11a58eeadd422dbfff693aa4164ee6087847333c2"
+          },
+          {
+            "path": "rs/jets/fri_fold.rs",
+            "sha256": "c8fd03c41bf1daa4fe8d6c3c5c495cb9bf79ec60c8c6ef86dcade8b6e90e59eb"
+          },
+          {
+            "path": "rs/jets/merkle_verify.rs",
+            "sha256": "0aafdb8b2be902324e2ab2d9856bc088cab4bf9f54ba4930110a92aa44f2c0fa"
+          },
+          {
+            "path": "rs/jets/mod.rs",
+            "sha256": "b508c4f07c223cf50eb347721fa3f50d0d9fb0fc2a3f344cfe7dd31910b91551"
+          },
+          {
+            "path": "rs/jets/ntt.rs",
+            "sha256": "38f8f01827e4b7e72faa7914d1f18117942c7ebc158ca7c59844012b4ff72644"
+          },
+          {
+            "path": "rs/jets/poly_eval.rs",
+            "sha256": "983e9e76df7053cc1f62e61b5c8a8c9945dc2b4d468270517f92eafdfe3d07f4"
+          },
+          {
+            "path": "rs/jets/poly_eval_brakedown.rs",
+            "sha256": "6fe8de7a6b3fe4c79ce9de17ed6e40228c32bdc2d61c28f37a1fcac07faecf06"
+          },
+          {
+            "path": "rs/jets/registry.rs",
+            "sha256": "909d7be0df968f5312aac82bd1cf4b372041b4639e4d5bd4c8591bd91e4fafc2"
+          },
+          {
+            "path": "rs/jets/state.rs",
+            "sha256": "4afb68c5387062a102b0fc5e58053839c2e2b85a43ee8ebe9214b91683de1272"
+          },
+          {
+            "path": "rs/lib.rs",
+            "sha256": "c24be3c5e0a8eb88d2494feba34e514e6df0049345c188748423406fcbe418ec"
+          },
+          {
+            "path": "rs/parallel.rs",
+            "sha256": "6a10eb1eb2a29b565b973eadf01768aa534948537a474c51c9920f0696b7e7ab"
+          },
+          {
+            "path": "rs/patterns/add.rs",
+            "sha256": "d8168977d3290f5baa745c7f822a61c2b7770f64101b754417a9473abed67b5a"
+          },
+          {
+            "path": "rs/patterns/and.rs",
+            "sha256": "685551d917eba114e1cb8a02bf7878042a6e584c577d261c7f9a03cf9d235f01"
+          },
+          {
+            "path": "rs/patterns/axis.rs",
+            "sha256": "391e8d83008cfb35ab6b344236fb91250ba133e6b344e31445f5f018f2c81954"
+          },
+          {
+            "path": "rs/patterns/branch.rs",
+            "sha256": "75bdf722f3761e4915c957301641eff97339ee41bfee2fd4c5ae97a4a42c398c"
+          },
+          {
+            "path": "rs/patterns/call.rs",
+            "sha256": "d31b514af5ad416fba8d2b7f03dbebe6a0d599aa9971e1ac4a285909bd851dcc"
+          },
+          {
+            "path": "rs/patterns/compose.rs",
+            "sha256": "f8e66397e92113946ad14ac4f7583bf7491e02a35edef91424e4d1c2e801bcd4"
+          },
+          {
+            "path": "rs/patterns/cons.rs",
+            "sha256": "5f36798aecb0e342c21f40532293d9e063469df439d7ac4de54d0c6151b5b764"
+          },
+          {
+            "path": "rs/patterns/eq.rs",
+            "sha256": "b00d4d865f010f9f926cac109542c2a887893ad0697dd8deafdf3a67081330a0"
+          },
+          {
+            "path": "rs/patterns/hash.rs",
+            "sha256": "ed154905d9a46f986ad71fc816cc0a0934f7af65142f078410178022bba6e123"
+          },
+          {
+            "path": "rs/patterns/inv.rs",
+            "sha256": "dc66b58aaf37d670366a4d60e9c0757dba765af8fa35f4345670c244902a1a06"
+          },
+          {
+            "path": "rs/patterns/look.rs",
+            "sha256": "377ee771e36d8f1aef18057ceed2c889b2d5a6c2aa19d4004d00e4788377e562"
+          },
+          {
+            "path": "rs/patterns/lt.rs",
+            "sha256": "a8441cc3b94188312dc4325585ac7af66ee1cf1cbfda55f4adb7e0cb44953431"
+          },
+          {
+            "path": "rs/patterns/mod.rs",
+            "sha256": "cf63780f4bcdaa3ed91e07e0e149cd69091214cce3de3d0f4c14c60322dbd05c"
+          },
+          {
+            "path": "rs/patterns/mul.rs",
+            "sha256": "bf4c11307a93bf63062c17d2d5a14d054d7170095f30d72a47fb59f46a06d5f7"
+          },
+          {
+            "path": "rs/patterns/not.rs",
+            "sha256": "702fc9d49109895f1d52bffc4ae014371963049a32218e9ad1ca071e0e42042e"
+          },
+          {
+            "path": "rs/patterns/quote.rs",
+            "sha256": "4222583dbb99701eebb7bf48d14499f2f63a4a3cf74d10ee9bf8cc81ed266751"
+          },
+          {
+            "path": "rs/patterns/shl.rs",
+            "sha256": "79eae92998df97d5293a7eb9f686098f27b1d185bf81ca47bf2434fc4c7cf3c3"
+          },
+          {
+            "path": "rs/patterns/sub.rs",
+            "sha256": "40ea5fd59fa4c91d3107e152d4839f88e801acdd13d300262a33da3c9a888e2c"
+          },
+          {
+            "path": "rs/patterns/xor.rs",
+            "sha256": "6bff1109a4c1136d3ed7756b9890e5ba2c489edb5bb12e3f06d3e2e8c79bc05b"
+          },
+          {
+            "path": "rs/reduce.rs",
+            "sha256": "101fe7a38d814006b666cc609c6bea3f2ae13d6feebeca191a8b8b33628e3e8a"
+          },
+          {
+            "path": "rs/trace.rs",
+            "sha256": "3d0b1616b9f61544c5bbebbe9916f7cfae9b29d5b1b8bae8f01e9edc64e5568b"
+          }
+        ]
+      },
+      {
+        "name": "honeycrisp",
+        "root": "/Users/master/cyber/honeycrisp",
+        "head": "70dfb1f55e4cb2570d5a78a497be5828a203087b",
+        "files": [
+          {
+            "path": "Cargo.lock",
+            "sha256": "b9da0c2f21698c93fccc17695d7c9b2581e824f93e46f305434edcb541b0b678"
+          },
+          {
+            "path": "Cargo.toml",
+            "sha256": "7cddb0de95a53bf9182b71d7255a0263718f13c34bb581c5d0aa9d9608eec517"
+          },
+          {
+            "path": "acpu/Cargo.lock",
+            "sha256": "28b853747304e870394e3b9489fe8dafa7602841f2a59e506b6df453b00b007f"
+          },
+          {
+            "path": "acpu/Cargo.toml",
+            "sha256": "6599d76221ded1b61782af4b8c82f661dc607888bc733aa939c6c67f885069af"
+          },
+          {
+            "path": "acpu/bench/ai.rs",
+            "sha256": "9006159e76e5a7c5fac359755bbd7431e140659610fe978f87de7bea5876ab54"
+          },
+          {
+            "path": "acpu/bench/amx.rs",
+            "sha256": "3b0770c0eff496b70a7d46436d38e6a916d3ef113d6bf3ab0183c598612eceda"
+          },
+          {
+            "path": "acpu/bench/common.rs",
+            "sha256": "84665a08aa20f4025e1d1b4b2d2a081cc190b81360822acf7f2baab6fbeb2915"
+          },
+          {
+            "path": "acpu/bench/cores.rs",
+            "sha256": "6cfaccc794f7e0022258159da0df0a8c0a703dbf8c343358de71ca26499974ad"
+          },
+          {
+            "path": "acpu/bench/crypto.rs",
+            "sha256": "982fc459a491b51d583ff9077fcc3a26ba663ad7f08e119a54346f990845588e"
+          },
+          {
+            "path": "acpu/bench/elementwise.rs",
+            "sha256": "b38830c9d2299b31de830580a94d1c12d5a9c3e0006b7359f1464545252a6a00"
+          },
+          {
+            "path": "acpu/bench/integer.rs",
+            "sha256": "0280c017a683f006103098356a6807f3c72611cd5ff87a3c39f4c4d76cd07f23"
+          },
+          {
+            "path": "acpu/bench/memory.rs",
+            "sha256": "f04f4388a23fa95f525f906618598222982b99fbc9b129b427c6ad990eaaf662"
+          },
+          {
+            "path": "acpu/bench/numeric.rs",
+            "sha256": "eb147692dad39590bc1dec3474584ffc864b802888dbf30d33df9d77151e84bf"
+          },
+          {
+            "path": "acpu/bench/render.rs",
+            "sha256": "3cdc13848760843805ec44df051f7b9ec3fd47b995e71df254b8cce162c42457"
+          },
+          {
+            "path": "acpu/bench/sgemm.rs",
+            "sha256": "845f2048d594d3b5af4600b127d38c7fca8ba8122da973bf4568780732b5d09c"
+          },
+          {
+            "path": "acpu/bench/summary.rs",
+            "sha256": "1219688d761711f0111cd6bdaaef5c3890e8c662e3df7daab4a5eec369376f50"
+          },
+          {
+            "path": "acpu/bench/zk.rs",
+            "sha256": "545365905d2ce99e165c22a5ec8af779887865403d2faa6d2150cebdb94c3f96"
+          },
+          {
+            "path": "acpu/examples/amx_opcode_scan.rs",
+            "sha256": "0fa4c56c3b89cc515f534f295c63d4e1f584c118e1c43c4e6aa44071015b5bae"
+          },
+          {
+            "path": "acpu/examples/amx_reverse.rs",
+            "sha256": "0d0262a545e7adadd1dadfab3f76bbfbd92ddfebbd8ad6433b6a5c98c73518dc"
+          },
+          {
+            "path": "acpu/examples/amx_smoke.rs",
+            "sha256": "e9551f865c7889bd7e4d9e1e127ede08963a2639a74ba0f4a2ddd6211dc194ea"
+          },
+          {
+            "path": "acpu/examples/decompose.rs",
+            "sha256": "0e0d1f73f98620330aec754199678441de44d3d9e3e05228309c9d569ee2736d"
+          },
+          {
+            "path": "acpu/examples/diag_bench.rs",
+            "sha256": "f07307b89bc7bb879d7f3e1c3795f4ec28a83afce9cc5de5ca8c487b88f25177"
+          },
+          {
+            "path": "acpu/examples/exp_asm_test.rs",
+            "sha256": "762f7d43355ff25c643506e062c6d8f6cb8cd24ba4e22b7afc558bcb03623557"
+          },
+          {
+            "path": "acpu/examples/matmul.rs",
+            "sha256": "aa31cbb813761ea006e6f271a6126830a46900946ec1df4f8dfa6773880ff8db"
+          },
+          {
+            "path": "acpu/examples/neon_vs_amx.rs",
+            "sha256": "47f4cd50587036927372f60480d69c1c55e31cb39d5da5d4c0b657fba1ec0587"
+          },
+          {
+            "path": "acpu/examples/overhead_test.rs",
+            "sha256": "fb94a2342257caa0605b3c9d7ea6f39aaef15b61f913cb84f1a01f8ef87e623e"
+          },
+          {
+            "path": "acpu/examples/pair_load_test.rs",
+            "sha256": "5d5904bb167b3adbd9083c3de9dcb7cb525fc8c6f0568b593918c96ce321dd2e"
+          },
+          {
+            "path": "acpu/examples/pair_test.rs",
+            "sha256": "d372b1cd062446b7b9ca612c035ed16d6dd786288784099c5ab581faef86a0e4"
+          },
+          {
+            "path": "acpu/examples/phase_time.rs",
+            "sha256": "4219628eee64276018532de1338b5d5c096ebc1ac49e568c21668e7e38614b44"
+          },
+          {
+            "path": "acpu/examples/profile64.rs",
+            "sha256": "4cf386faa86b57c26b0590f6b18223493eeae1669ea13c5585fb71e2a320e069"
+          },
+          {
+            "path": "acpu/examples/profile_sgemm.rs",
+            "sha256": "d54f4f457add46162d7e6f43c62e9a571bdffc4d0648628f49f31847109fa1ff"
+          },
+          {
+            "path": "acpu/examples/sgemm_profile.rs",
+            "sha256": "1de7da68f29930ec7c57c3dcd033caf25e6ba27e96a95f7f577e526e2925f247"
+          },
+          {
+            "path": "acpu/examples/single_vs_par.rs",
+            "sha256": "d8170970387da328e2c799e848cb7bbd324c6b04f7e3dce3017175a1b181e09d"
+          },
+          {
+            "path": "acpu/examples/test_hang.rs",
+            "sha256": "c86d2e401105862482319cac82715cd8329c250d77c93cbededfccc5f977ef74"
+          },
+          {
+            "path": "acpu/examples/thread_scale.rs",
+            "sha256": "8b275b21ee5988e9051909783f17d1d9f9548587bb06c96afcda2b5d18a30a79"
+          },
+          {
+            "path": "acpu/examples/trace64.rs",
+            "sha256": "5ab5dad88cb5580287292feeef11fe5670c3b652aff676cfc7b661676890a315"
+          },
+          {
+            "path": "acpu/examples/trace_accel.rs",
+            "sha256": "5a112fb51dea57f7aa6684702d34e8c7c1f43995b88bbb108264504754800e37"
+          },
+          {
+            "path": "acpu/src/convert.rs",
+            "sha256": "e7c3d1507c9b518878543922929547ed0da85d1b55972c149143c8c3714d4f86"
+          },
+          {
+            "path": "acpu/src/crypto/mod.rs",
+            "sha256": "cc4eb8949a4d4a8dd3da5f2c74d3bfec3e5505e2b45c3ddb21835c2c298efa93"
+          },
+          {
+            "path": "acpu/src/field/goldilocks.rs",
+            "sha256": "f5e1394708c077f136c5425d35dd90e3e28d15ad8fb77832d731922e914173bf"
+          },
+          {
+            "path": "acpu/src/field/merkle.rs",
+            "sha256": "cfe52cb62c426c48fb3590f27f0da989848b139c7aa46a7970ae2840f27a9907"
+          },
+          {
+            "path": "acpu/src/field/mod.rs",
+            "sha256": "ea596b66ade4ca91ac7567d65a510d7a6641a12bc7190975bf4e466835c1d0e9"
+          },
+          {
+            "path": "acpu/src/field/ntt.rs",
+            "sha256": "5ffa933a7d796068468d54ef766a94e3f9bd6560262f946c8ae3fe238aba1455"
+          },
+          {
+            "path": "acpu/src/field/permute.rs",
+            "sha256": "2f99fbd0ae80e2af7d39bea7511cc887e0a71b8fc1acba392e519db415b94e7f"
+          },
+          {
+            "path": "acpu/src/field/poly.rs",
+            "sha256": "f23e00ec02a665e5dc3e4a93485a8c8317b601f4c50dd31349b0d69ddaf439fe"
+          },
+          {
+            "path": "acpu/src/gemm/gemv_amx_asm.rs",
+            "sha256": "a3a6250f2dcf0745d97e690feef175fde7ed7f38d4fbe58e89043ec9df63ca51"
+          },
+          {
+            "path": "acpu/src/gemm/gemv_kern.rs",
+            "sha256": "26a9b3fdd62a6c1cfb76f5324441d9979674752623be2d641b93cdfe91b6cc03"
+          },
+          {
+            "path": "acpu/src/gemm/matvec.rs",
+            "sha256": "0d00cff9cfb4c1a5bd957b6f75808e29165552dc2870c1ea4d643be9e35180c8"
+          },
+          {
+            "path": "acpu/src/gemm/mod.rs",
+            "sha256": "b78d32f1a3e14da8d2a68c522f48102708cceedc46b4df4ad978d5cd1f7961e6"
+          },
+          {
+            "path": "acpu/src/gemm/other.rs",
+            "sha256": "41bc2adfa4f7fc6bda783130f6bae2e2cdc4f699553aad04327285d229ab6309"
+          },
+          {
+            "path": "acpu/src/gemm/pool.rs",
+            "sha256": "c50622c7bc0ce45910a8ec42ddcffbe6adaaf843d8a4a6a894154a5c0a377245"
+          },
+          {
+            "path": "acpu/src/gemm/small.rs",
+            "sha256": "bd50b88771624dc5e4b6083820ce9b917169dbb55240d5220c377bf163ae9f60"
+          },
+          {
+            "path": "acpu/src/lib.rs",
+            "sha256": "8c4ae72c1bc80bfbaee66797ad14fb58e23d38ba50424c14bb7ae739447e2344"
+          },
+          {
+            "path": "acpu/src/matrix/asm.rs",
+            "sha256": "46be3e4fb00ff77340e05a4d960df40cdaa1d6e6d0edb0c1bc255921236bfb48"
+          },
+          {
+            "path": "acpu/src/matrix/fma.rs",
+            "sha256": "3a80a2b2e5b088194a829fcca90f972cfb19a5ec7676f87a85c8823dc202504d"
+          },
+          {
+            "path": "acpu/src/matrix/kern.rs",
+            "sha256": "82385a164255bb5b62199d18e829d13acf69a3e7263eb7e3646d7933096c8759"
+          },
+          {
+            "path": "acpu/src/matrix/mod.rs",
+            "sha256": "8abc4ebdff73b9a803c776aced909829ad6b497567328df987585f2c23f166af"
+          },
+          {
+            "path": "acpu/src/matrix/ops.rs",
+            "sha256": "8e380bc513d71d7237d95c1650d9f20422ba706817469fbf935279c132793413"
+          },
+          {
+            "path": "acpu/src/matrix/regs.rs",
+            "sha256": "adeb6bbfc090fb0ececf6535bec1972ecf1fc272433e34ac5d745aeef88442ed"
+          },
+          {
+            "path": "acpu/src/matrix/tile.rs",
+            "sha256": "8ba29022ce2c9b78ca3bb55fd85adb7507410b2c276f72098da9fd407f3357d2"
+          },
+          {
+            "path": "acpu/src/matrix/tile_f16.rs",
+            "sha256": "0f7e363c74ab3d3ed8aacfb09d4314d023adb68ef6a34f298abf430eeea6f5cf"
+          },
+          {
+            "path": "acpu/src/numeric/bf16.rs",
+            "sha256": "fdd68b9a4a143817b8fae1e15300d8c27690c7ac1a826d6b97861d6c9477f726"
+          },
+          {
+            "path": "acpu/src/numeric/complex.rs",
+            "sha256": "30d61759b2049a5cb4d75d4c76efa455a009b13129fec6d0bdf6dfec92e50fdf"
+          },
+          {
+            "path": "acpu/src/numeric/fp16.rs",
+            "sha256": "b36dee4ad740e6f6b7ba10d7fcac75c58b32ae60f3486dc0f58e8686e1289d80"
+          },
+          {
+            "path": "acpu/src/numeric/mod.rs",
+            "sha256": "61f86e95164da0fb36d72ebe5514eb7572dcfbbb4700afbed6ada2b1d14814de"
+          },
+          {
+            "path": "acpu/src/numeric/quant.rs",
+            "sha256": "0d1d859de9a1382bb7b2ab325a6ef07aabbee7760e4f88af165f2776674eb677"
+          },
+          {
+            "path": "acpu/src/probe/main.rs",
+            "sha256": "b99becc4b1fc84e1863e99b79fabba3fb9a3376dfba2933d9c2fd30821aab12d"
+          },
+          {
+            "path": "acpu/src/probe/mod.rs",
+            "sha256": "491a42c85918b2ce1e56d44b30fa1e08e7ab48913b912edccd20d4568ba373e0"
+          },
+          {
+            "path": "acpu/src/pulse/ffi.rs",
+            "sha256": "e24afa82241a15fc429cf4681ae2441cbd70ab83ebe31df930bce061d664d31c"
+          },
+          {
+            "path": "acpu/src/pulse/mod.rs",
+            "sha256": "2a5fac0702dad6d5808f870b619a0f905ae50e5b71614cf87b975bde89f7e812"
+          },
+          {
+            "path": "acpu/src/sparse/chebyshev.rs",
+            "sha256": "d5c3199fcd1ae0016e584aaefcbbe0ecb4fad4ed387f106bf875a17ee38f83fb"
+          },
+          {
+            "path": "acpu/src/sparse/mod.rs",
+            "sha256": "a1eb8b86ef8b5c01cfd9be9c2a0cf23ba5fe2b85315274dd961f336c47d2dc14"
+          },
+          {
+            "path": "acpu/src/sync/affinity.rs",
+            "sha256": "7bfe3d34f7e276df619990cb0c10ae5e3e92c1121d4add16df0277448ffe21ae"
+          },
+          {
+            "path": "acpu/src/sync/mod.rs",
+            "sha256": "4b650ee78e86d27bce9fc60e0236c3c84a994b86f97ea83f55bf993e2ba05e85"
+          },
+          {
+            "path": "acpu/src/sync/prefetch.rs",
+            "sha256": "1fac7e1b88b09d02a2c105bd6696f29b66a83361989d10af2f08fea69d89d336"
+          },
+          {
+            "path": "acpu/src/vector/exp_kern.rs",
+            "sha256": "85d44efe477d4985601476878dc1ce1c1b6321a7d28092cc672af5210c5c4d2b"
+          },
+          {
+            "path": "acpu/src/vector/integer.rs",
+            "sha256": "cb9aadd87b49bdd2a45688f900e973e152752ceb472ce41fd3dda243442dddb4"
+          },
+          {
+            "path": "acpu/src/vector/integer_fused.rs",
+            "sha256": "7d1e8f478e3de5cfd15884dbd122ebbc0f79a7326235dacb1daa8f9c1c707ee5"
+          },
+          {
+            "path": "acpu/src/vector/math.rs",
+            "sha256": "e7273c53c90b7cc1e750c5f171d330365551c5d495a1a876f8c39cbfcb668e25"
+          },
+          {
+            "path": "acpu/src/vector/media.rs",
+            "sha256": "72c8db64048f861a1580db2bcb5aead4204f2faa31beb7946b29b81a9547fcaa"
+          },
+          {
+            "path": "acpu/src/vector/mod.rs",
+            "sha256": "c8304e08a5524741c47186e003950307de6ba078e94472a3de646279306203ed"
+          },
+          {
+            "path": "acpu/src/vector/reduce.rs",
+            "sha256": "1c9e7865bcfacc262dd9964c505186999c0d93118393cbec0b23f20303c25d41"
+          },
+          {
+            "path": "acpu/src/vector/render.rs",
+            "sha256": "11e693ddcbd552a8db7be635640217d87be750ac0a10308ae930776dfc698045"
+          },
+          {
+            "path": "acpu/src/vector/rope.rs",
+            "sha256": "1b9d70b29d05e0c95c32a88424a7109f32a3ab6ae161d36632ed63324811dc6c"
+          },
+          {
+            "path": "acpu/src/vector/scan.rs",
+            "sha256": "4685b29b2815ff1f971372a793717f0ca2d37bab9958d99731a944fbcacdd02f"
+          },
+          {
+            "path": "acpu/src/vector/softmax.rs",
+            "sha256": "87d5a6bae48cfea49859b26b99de2769069c2013fe2777cef2ad5f2b358cfba4"
+          },
+          {
+            "path": "acpu/tests/integration.rs",
+            "sha256": "fb5fe9dd18a5b26dc88e8eaa27f3d8455fb18ed27690d5561121cb469b5f4828"
+          },
+          {
+            "path": "unimem/Cargo.lock",
+            "sha256": "a0e0430e223fae646bd8940c7f0fffd6640866c3a3162d01e8a7734a6120c8fa"
+          },
+          {
+            "path": "unimem/Cargo.toml",
+            "sha256": "1fa39e3b8f32df814965dfa5ab613e5453c0f82eb0cc73ab143787897527d1ed"
+          },
+          {
+            "path": "unimem/benches/alloc.rs",
+            "sha256": "0dc96647ebdf7d230b7760a9d07e745a1c121fe475f594cc7712a31360039cac"
+          },
+          {
+            "path": "unimem/benches/bandwidth.rs",
+            "sha256": "b2aea19201f68fe550f4f81e9b68a04435b21f6914f6856168e610b15d09b351"
+          },
+          {
+            "path": "unimem/examples/ane_matmul.rs",
+            "sha256": "7ce32f520f91972674e6d12e144450cb9b72f9a4e4e7d3f91e267de68ce71d4f"
+          },
+          {
+            "path": "unimem/examples/pipeline.rs",
+            "sha256": "66ade602a1a149f8445eb4846b50753ea8fa3129b1d8db78df3b3e8004fd78c4"
+          },
+          {
+            "path": "unimem/experiments/dext_contiguous_alloc/client/Cargo.lock",
+            "sha256": "6c68a9a257f9c16ee0dd177333b44d38087b7af9dec6ecef8435a5f378531f8c"
+          },
+          {
+            "path": "unimem/experiments/dext_contiguous_alloc/client/Cargo.toml",
+            "sha256": "4a09eb40f419441e6301e032c8db5a1e4afe1e0f14335e95e0c3b09e62e94f7e"
+          },
+          {
+            "path": "unimem/experiments/dext_contiguous_alloc/client/src/main.rs",
+            "sha256": "59e8301eb30b5f99495a56b48df671d9ef77ff35f3bfb5b3f670248fccb4976b"
+          },
+          {
+            "path": "unimem/experiments/dext_iosurface_pa/client/Cargo.lock",
+            "sha256": "41ea62bbc944769a136e90cfee1d5f100e3777fe333b4fdf25229d2911713fcc"
+          },
+          {
+            "path": "unimem/experiments/dext_iosurface_pa/client/Cargo.toml",
+            "sha256": "42536ee14e009d9f360cd5673a972bbc0a6579a8d5ce51ee9fd35422019667bf"
+          },
+          {
+            "path": "unimem/experiments/dext_iosurface_pa/client/src/main.rs",
+            "sha256": "f7a5158c96fad5f5165590e4f80d12ae6b8476f711cc0ce6dca5372662012b5c"
+          },
+          {
+            "path": "unimem/experiments/hyp_probe/Cargo.lock",
+            "sha256": "0a4308e4590126846c165dc28ab22b9ba4ac6424ef2365fb722bc9c910818dc2"
+          },
+          {
+            "path": "unimem/experiments/hyp_probe/Cargo.toml",
+            "sha256": "0fbf9c09e934bf07fe7defde1e0cdfe007ece11470457a6282ab85b4014e97f7"
+          },
+          {
+            "path": "unimem/experiments/hyp_probe/src/main.rs",
+            "sha256": "1190078981c5f631fe59f464950410ab46c7c5d1d11a9117a55a033a8600d0d9"
+          },
+          {
+            "path": "unimem/experiments/iosurface_probe/Cargo.lock",
+            "sha256": "de51abc37d058786a8a2a61bf9417a9050d177aff979172a7b674e633154e378"
+          },
+          {
+            "path": "unimem/experiments/iosurface_probe/Cargo.toml",
+            "sha256": "45a38ac9ba5b51991ffd7434bd2f0e400e799f5587fd64900036c23e328b31cf"
+          },
+          {
+            "path": "unimem/experiments/iosurface_probe/src/main.rs",
+            "sha256": "b5a15889332990798e6c6b5ae462718fe7dd75426d51ceb1846dfc4fb9fd9d9e"
+          },
+          {
+            "path": "unimem/fixtures/no-std/consumer.rs",
+            "sha256": "e11677d9d349c914b48854e8d0bb1a9a2b4d97c13c518fcf63f0301b606748d7"
+          },
+          {
+            "path": "unimem/src/block.rs",
+            "sha256": "c663a7d573299cda3e8aec36bf515b2cc5645007840f9bc4c7687b07722a0325"
+          },
+          {
+            "path": "unimem/src/block/creation.rs",
+            "sha256": "f32c0f3efd10be251e83e9aa5787780b6b41f413f741eca899991044c2d03651"
+          },
+          {
+            "path": "unimem/src/block/tests.rs",
+            "sha256": "16a12d6edaaefef3780bf23353109664a77d7e7665cfa1d6153ea0d6462a94b8"
+          },
+          {
+            "path": "unimem/src/ffi.rs",
+            "sha256": "458e716934c8a16814a27fb3d0464757b914bb0e5d8c0c719c3357b8a008db9a"
+          },
+          {
+            "path": "unimem/src/grid.rs",
+            "sha256": "09eb44a83c3c357819779097b512744feef2ca5e8531c47124de246b0782824c"
+          },
+          {
+            "path": "unimem/src/layout.rs",
+            "sha256": "2b6f0054d1075a160fc887de968b827b0cf93072303ea9ad51abf29a41f730e2"
+          },
+          {
+            "path": "unimem/src/lib.rs",
+            "sha256": "11ffac3f6a1ef8d77dcb5ca32ed36adda1282bebd47338b5908bf9d4bc491cc5"
+          },
+          {
+            "path": "unimem/src/tape.rs",
+            "sha256": "7665fad68b385e94d27a52ab866cf092735281265722c335e03fb39144137975"
+          },
+          {
+            "path": "unimem/tests/block_access.rs",
+            "sha256": "2e976fc0554fd38d1dee9cf77c8b654fdbf8740f717929163a2c73d292a38cb2"
+          },
+          {
+            "path": "unimem/tests/block_creation.rs",
+            "sha256": "27a2fc51465ca74ca366031fd924759668c1bd150099c30d4957308a05bbff4a"
+          },
+          {
+            "path": "unimem/tests/roundtrip.rs",
+            "sha256": "d716e4cf2306bd9fe6e2efd368d9f5e139fba24582d9ddb394e83cae0ab6f8ef"
+          }
+        ]
+      },
+      {
+        "name": "hemera",
+        "root": "/Users/master/cyber/hemera",
+        "head": "1c385e54e18885075f0dd12a0407ad0234e1bebf",
+        "files": [
+          {
+            "path": "Cargo.lock",
+            "sha256": "cb39b0444279e9122294ec469839df3ef7599072a4212e31ef6a73fe5e5c29dc"
+          },
+          {
+            "path": "Cargo.toml",
+            "sha256": "e94575ed81a4143aa1fca117650faf83f2d919d44f8f1425ca76b4aea898c0eb"
+          },
+          {
+            "path": "bench/Cargo.toml",
+            "sha256": "d87deaf8b4ee41c299e1f5afb41f0b0d6afdea46c134bb8276ec37f1b9d19bb1"
+          },
+          {
+            "path": "bench/benches/hash.rs",
+            "sha256": "7595f3549bd608603f1785af476376b559b440272a0b5d3b3de69a48b664055f"
+          },
+          {
+            "path": "bench/benches/permutation.rs",
+            "sha256": "a1d3e2cdc072db929701ee47a4a471efe27bfbb6ea4c51a6378c2e51d8b13dbb"
+          },
+          {
+            "path": "bench/benches/tree.rs",
+            "sha256": "8852d61cf27055a23315e335822a4f7cd4523716dbbd5000048096769cc9cd4f"
+          },
+          {
+            "path": "cli/Cargo.toml",
+            "sha256": "90377e5078488fac4be08323a61840d5d7462bcd4129d6648a1f5e3b489fea5d"
+          },
+          {
+            "path": "cli/src/main.rs",
+            "sha256": "12d17fd42698c356b5ccccfbdd526f45459a99faa4500f31b7365a94ee9e9aba"
+          },
+          {
+            "path": "rs/Cargo.toml",
+            "sha256": "351913fa05ec28a0fce1078fd03c0fe84b957435b970c9dd122f140983fcdd75"
+          },
+          {
+            "path": "rs/examples/bench.rs",
+            "sha256": "dff24684ad117b4302303c101f5d0994eb10cbab5bd79f162e36dbff7d766221"
+          },
+          {
+            "path": "rs/examples/neon_mul.rs",
+            "sha256": "5a86e7009d4c1a539531369f6ab71cef2aa4198eb08fba70d83a4e2b719f098b"
+          },
+          {
+            "path": "rs/examples/split.rs",
+            "sha256": "507fdeb2d27a7cc92e61577ac1033c1e1751478ddbd89a084200b7570debd0c0"
+          },
+          {
+            "path": "rs/src/arith.rs",
+            "sha256": "42c41ce43ab3f00e8ac32c812830044583e686581cd44762d61977f9a3c33ebf"
+          },
+          {
+            "path": "rs/src/async_io.rs",
+            "sha256": "39b6cb18e796f5bcae85d671f9515b4328e09c7fe6d879be1ad12077bc3f140b"
+          },
+          {
+            "path": "rs/src/backend.rs",
+            "sha256": "7c42ab817693b484f327cbb745b7fac3ae76bf4a5c762990cea62ef01b913d53"
+          },
+          {
+            "path": "rs/src/batch.rs",
+            "sha256": "b95a2466560a85c4ee081f9b4309e918e9b3103f2f2e3ceea13c5d3aca17823f"
+          },
+          {
+            "path": "rs/src/bootstrap.rs",
+            "sha256": "fa865dbb6fcee2b047000d8235d259d66a924c17cbee5c2be451e4926e71b6f7"
+          },
+          {
+            "path": "rs/src/cdc.rs",
+            "sha256": "f88706b2d53622156b9bb73d1ddb5865e23009157da4e6773506a54d0de004f7"
+          },
+          {
+            "path": "rs/src/constants.rs",
+            "sha256": "512cf0b5b52160a3b70611ff624adb489174d9be42b9bca63bf35cc05a9d27b8"
+          },
+          {
+            "path": "rs/src/encoding.rs",
+            "sha256": "ae06d9e9a43319e812a3271f13f7447855fe7ebfae5d60510c93a2771d284712"
+          },
+          {
+            "path": "rs/src/field.rs",
+            "sha256": "92b7b9e0bec97c342bc7279f53fa3bde6d4021ab2a4d95b1673fe26688a8d8ae"
+          },
+          {
+            "path": "rs/src/kernel.rs",
+            "sha256": "cc05e4c745ead3bdc60bfa1b8285686957c63917ea13e788005b51c4120f08b2"
+          },
+          {
+            "path": "rs/src/lib.rs",
+            "sha256": "6a437a3200e3401e967269a76ad92e427889504f78b1c8cc6c24590ba76de93b"
+          },
+          {
+            "path": "rs/src/merkle.rs",
+            "sha256": "053e5e0025b14a5af8cf795ef5a898c5955d944de33201576ab8f2102e6e243c"
+          },
+          {
+            "path": "rs/src/params.rs",
+            "sha256": "bf5b2cb5a80697d272546425bddcdf2cb2bfe7e08367ae7c793a0922088f2a91"
+          },
+          {
+            "path": "rs/src/permutation.rs",
+            "sha256": "7238b9789a19c0aa10ec6e828e75fcaf87ce437103137cfe4556729b4037d76c"
+          },
+          {
+            "path": "rs/src/profile.rs",
+            "sha256": "bd666bffb1e797330ae93eb7cc4fe38e5bbb4e02b5dc532e756ac056d8f37d49"
+          },
+          {
+            "path": "rs/src/reference.rs",
+            "sha256": "a91a3a2f7f0a01e3003cd8b5856e684a22391ee8050cce7523e71737ed49f516"
+          },
+          {
+            "path": "rs/src/sparse.rs",
+            "sha256": "0dd1710a908b0635081b336e0463d1156822cef0ad97b112322e7b46f0a1f5b9"
+          },
+          {
+            "path": "rs/src/sponge.rs",
+            "sha256": "b9a446dd947169dbb36c9e4ca5bcf6fd8d27c2d1fb11f7daa279eb9fd622c002"
+          },
+          {
+            "path": "rs/src/step_sponge.rs",
+            "sha256": "41b563fc79b6ec22f718d2632bb870828dffc0cdd254f4697389ba81b6f1545f"
+          },
+          {
+            "path": "rs/src/stream.rs",
+            "sha256": "94a84dfcff2c60ac864e1a5b7bb1b9816070c02a8627377d67bc1d4b6b99ec12"
+          },
+          {
+            "path": "rs/src/stream_async.rs",
+            "sha256": "c2408c2568e8abd39bb17c43114ed0ed81131b5c9b576451cb08eef6ad07d5fc"
+          },
+          {
+            "path": "rs/src/trace.rs",
+            "sha256": "05b302fd8a6fc843ef802a63d415e23a395965084ef3ee7da841dc014c76ec89"
+          },
+          {
+            "path": "rs/src/tree.rs",
+            "sha256": "51b30ed44349847e099771dba76a946d7b3b82b64b923f6abb39501ae06eb6a0"
+          },
+          {
+            "path": "rs/tests/constant_time.rs",
+            "sha256": "fc6e9e767773a7715b306179ee16cefd6da52ae74ed14e5c6c1e7091dc36adbf"
+          },
+          {
+            "path": "rs/tests/differential.rs",
+            "sha256": "737ba241712a25c71f94270504bd1eb210194adc082260095bee09a0ab203080"
+          },
+          {
+            "path": "rs/tests/vectors.rs",
+            "sha256": "49033f3deb095605e41a9961b637b7283159d05be7b62179acff0692b3146f19"
+          },
+          {
+            "path": "wgsl/Cargo.toml",
+            "sha256": "dd23d76b7de3eb7b34a9ae1677f181d7413691e49424b31dd7bdbc7aeb48bd32"
+          },
+          {
+            "path": "wgsl/src/lib.rs",
+            "sha256": "8670be91a067c23662accc89a94cf82b5e21d913974009728212921b72182f9e"
+          },
+          {
+            "path": "wgsl/tests/gpu.rs",
+            "sha256": "a79d92d23c7e4eb32493686795ba382fd3151362fc352b37e5d88bf723b78115"
+          }
+        ]
+      },
+      {
+        "name": "strata",
+        "root": "/Users/master/cyber/strata",
+        "head": "56aedb2d12b3126c601eb333419136d403614dbb",
+        "files": [
+          {
+            "path": "Cargo.toml",
+            "sha256": "b10c4b006e843435a72edf993da144781835c84def8969295e99f63632f453c9"
+          },
+          {
+            "path": "cli/Cargo.toml",
+            "sha256": "8ab288713604cd5cd2f7559db05d1a0f21843fdff67d384494a0926a209ae5d0"
+          },
+          {
+            "path": "cli/src/main.rs",
+            "sha256": "4e697affbcc10deb4428fd004fdd037956fd120b793cc55524223bcefe49c9a1"
+          },
+          {
+            "path": "compute/Cargo.toml",
+            "sha256": "73dedb862ee01c4d8a8c89aa9ef58060e5a2aea777dc3b2230afa36e5b6d3496"
+          },
+          {
+            "path": "compute/src/lib.rs",
+            "sha256": "7e56b5a0b540d667936d99e84972bdc860a46b06e7fdef02f5f8402d33ecb69a"
+          },
+          {
+            "path": "core/Cargo.toml",
+            "sha256": "d66bf3c5cea53cf966cdc3135ae88863b116d62c4c3d92bd391a3e94aa7c00e0"
+          },
+          {
+            "path": "core/src/lib.rs",
+            "sha256": "cf1735ab6236604419d82d7d2e07a886351756baa49a46e03b7c080d3e46b497"
+          },
+          {
+            "path": "core/src/testing.rs",
+            "sha256": "ab453dcad8764f442390835b7d43d34d9f5158f0f794519267f20e7e7cb67916"
+          },
+          {
+            "path": "ext/Cargo.toml",
+            "sha256": "608924d6ce12e3e30be06bdd04fd3e977e2d4ea71ae35a13a0fb9cf2a9e1d513"
+          },
+          {
+            "path": "ext/src/lib.rs",
+            "sha256": "0e0017042efdcaab47b89d7ebfe6a6bed6d9e0f76d23e3eb860573973a33bca2"
+          },
+          {
+            "path": "genies/cli/Cargo.toml",
+            "sha256": "c9f8d16f346cbaa7860209ceb38a0a2ac8c34a151f1937880a621e6c1d9b3f5e"
+          },
+          {
+            "path": "genies/cli/src/main.rs",
+            "sha256": "e3921febd80a7a96d0f07395be5090c4a0ba062cec434cebbf5d6b642d7387b0"
+          },
+          {
+            "path": "genies/rs/Cargo.toml",
+            "sha256": "a0afb792d43fa46e891e37ff7a15eb1d56215db93ab3ec3bd6d8eaf16c30e7c4"
+          },
+          {
+            "path": "genies/rs/benches/genies.rs",
+            "sha256": "f4664276c6c486f3403901c8ce09e92025efccda37b686a9408e4a41cee54575"
+          },
+          {
+            "path": "genies/rs/src/action.rs",
+            "sha256": "c593e32c9942231544795f54db127fec8f96bd1beb900fc201c525dac9f75371"
+          },
+          {
+            "path": "genies/rs/src/algebra_impl.rs",
+            "sha256": "61c6c55fabe9f8ca0f9cc56a080a45f94d26bf089ae2de99baa3f05a47ef5a73"
+          },
+          {
+            "path": "genies/rs/src/curve.rs",
+            "sha256": "0dfe464a7b7d59dd92c842cccab16d176a815036b72e9f4812f870a54248b5ff"
+          },
+          {
+            "path": "genies/rs/src/encoding.rs",
+            "sha256": "1d45c51d828e76ef4de847d8ad390f66296445625c2e9862d331b4b0f2033b58"
+          },
+          {
+            "path": "genies/rs/src/fq.rs",
+            "sha256": "fba19e95cbd1a7d1dcf8400d6e86090e2aa74a41a4dd293588a5c05a9aa4736a"
+          },
+          {
+            "path": "genies/rs/src/isogeny.rs",
+            "sha256": "6474ae6fa908c063127d4a2397745bf2ba794e9078d2f0b1f17ec32d02224ae2"
+          },
+          {
+            "path": "genies/rs/src/lib.rs",
+            "sha256": "c05889127f467c335d81d92a3a24408457c57de9801f3d50fe981eb03f7c0765"
+          },
+          {
+            "path": "genies/rs/src/ops.rs",
+            "sha256": "210cf28dc95b6844f2a450796103739a0ee00b1c9e373e98cbe0d62d6169cf77"
+          },
+          {
+            "path": "genies/rs/src/vectors.rs",
+            "sha256": "1d35b154c859c7ce336a1a6304dc226c39934ce2f3a3d0fdb5e4cc3551d00018"
+          },
+          {
+            "path": "genies/wgsl/Cargo.toml",
+            "sha256": "628be6ec3c0cbabc5960f701fe5cf900e602c32d8802e96a62cf8ee7d85a7e48"
+          },
+          {
+            "path": "genies/wgsl/src/lib.rs",
+            "sha256": "ca832bb5daf5eaf09ad47fd37d8466aef493cc4ba561ece6468a744b66a55589"
+          },
+          {
+            "path": "genies/wgsl/src/shaders/mod.rs",
+            "sha256": "adf6190e9c720b04e914681fad7c3d6ca3a13a8cdaf5d00c7b5be3920a50fcbf"
+          },
+          {
+            "path": "jali/cli/Cargo.toml",
+            "sha256": "c5041f9afa4ad62422624a10725675dc49d33bea5eff2fe1aaaf42a7dea12085"
+          },
+          {
+            "path": "jali/cli/src/main.rs",
+            "sha256": "33cbcf644ecef1cba2894b9c89a734cd390829fcc551414c1269b07358e1457d"
+          },
+          {
+            "path": "jali/rs/Cargo.toml",
+            "sha256": "851459897a5a08243774cbd9a0a892ec1f05dd9f37e49761b84a9b93492f2691"
+          },
+          {
+            "path": "jali/rs/benches/ring.rs",
+            "sha256": "e28abe5092c64ceef7e7b3f1203bd280e3c28feb09d3e52780d077307fc474f8"
+          },
+          {
+            "path": "jali/rs/src/encoding.rs",
+            "sha256": "e4a1ddfea673d3fd3c91719ded992b94491eb6ef43eb27e948f26b4b47c82ae0"
+          },
+          {
+            "path": "jali/rs/src/lib.rs",
+            "sha256": "b1a3ddb4b49e0ff9dd33b359da7d2ef3f990a11fe69c1793a12c36583be75041"
+          },
+          {
+            "path": "jali/rs/src/noise.rs",
+            "sha256": "4a754d4bdb5d2dfce15c10c817a49d4174988daa2b09d6d286c4cea5e4b66cee"
+          },
+          {
+            "path": "jali/rs/src/ntt.rs",
+            "sha256": "d9fae4a04f6748da79a2bf8e02a23d941f59d9637ec2fa6522ad937bdb490a7d"
+          },
+          {
+            "path": "jali/rs/src/ring.rs",
+            "sha256": "390a2be6432a8e050e77e118f6e9a73dcd548bbe6b5dc5219b549b358a403bba"
+          },
+          {
+            "path": "jali/rs/src/sample.rs",
+            "sha256": "86fa40f2b963c5c17620167db6fb4d2dec45f31268a9f997b228331ea07e696d"
+          },
+          {
+            "path": "jali/rs/src/vectors.rs",
+            "sha256": "c2774aaf7e9b5d24b7be1b7d7dc4c7354925ed39359f3a78116b8172f2550529"
+          },
+          {
+            "path": "jali/wgsl/Cargo.toml",
+            "sha256": "7ec456d64fe3caf3ed83bc68be1b477241e75a84f1e945dda89ec7e8a0b06087"
+          },
+          {
+            "path": "jali/wgsl/src/lib.rs",
+            "sha256": "9423159c43d3354df6027418261b7798bc270ab0efa8b372e63f19b0663bf78c"
+          },
+          {
+            "path": "jali/wgsl/src/shaders/mod.rs",
+            "sha256": "79c0e70c74d4e6707254092f25d484901a5dfaf9d81a330d90fed36177ed3c13"
+          },
+          {
+            "path": "kuro/cli/Cargo.toml",
+            "sha256": "ee2564b323fcc0a7295881f8aef9eafc6f276ca83fe3ac968ba7e35dcc6c253f"
+          },
+          {
+            "path": "kuro/cli/src/main.rs",
+            "sha256": "37218b1cc4ce3c7ca938ded8cb0cb79f8842907faecca403a0cd5aeb0e438011"
+          },
+          {
+            "path": "kuro/rs/Cargo.toml",
+            "sha256": "424f8b9fa7829ae73fbd55325e6c6c62c3b2c805cad17b938d51c40730010e20"
+          },
+          {
+            "path": "kuro/rs/algebra_impl.rs",
+            "sha256": "0ef39179ae4217ff10b9e6df803250230f22b2d34780981827010df866deb83a"
+          },
+          {
+            "path": "kuro/rs/batch.rs",
+            "sha256": "5fef2f21b90a5a615410f1c2656333f11df5843133de24a052f2288ed1f43520"
+          },
+          {
+            "path": "kuro/rs/benches/tower.rs",
+            "sha256": "8e91c3fd1c8f9eefb352fc449881fc773a09f87f108fdc844480dd4e995b98c6"
+          },
+          {
+            "path": "kuro/rs/encoding.rs",
+            "sha256": "a871421e374318b3df926428ecf7725eb7afd10b7256be2779539beb3304c1f4"
+          },
+          {
+            "path": "kuro/rs/inv.rs",
+            "sha256": "284432bd60408d54533b73f0dbf8f51c4f7e8e2966b8c379476d2cbb6a576c4b"
+          },
+          {
+            "path": "kuro/rs/lib.rs",
+            "sha256": "61c0cfcd14c1fd0e5c8198a0ea35635c7cf380b10e6a6997c970b74d44f7e5a7"
+          },
+          {
+            "path": "kuro/rs/ops.rs",
+            "sha256": "ca8a2fd13cbeb28f253a65aaa8dd539f078408cd61471965047aae771871625d"
+          },
+          {
+            "path": "kuro/rs/packed.rs",
+            "sha256": "cdfa1b9b0504a52b2e60dd9b933d48e8f516c1c416bf3feb9a751a88de903424"
+          },
+          {
+            "path": "kuro/rs/tower.rs",
+            "sha256": "b63edc86cf2ab5aedbba02102be6d4b3e31d5933ab086e3e64c4c85ffa554787"
+          },
+          {
+            "path": "kuro/rs/vectors.rs",
+            "sha256": "da2051baa28fe4e4773a0b9f3342e57b9b2413a8787edd5d69fafd7754018cc6"
+          },
+          {
+            "path": "kuro/wgsl/Cargo.toml",
+            "sha256": "b186228f7e4601dd76117c4defa85664919f6d6ae56a729db0a2cc31de6831c3"
+          },
+          {
+            "path": "kuro/wgsl/src/lib.rs",
+            "sha256": "69d12d7eb7864c464d1a4f70d02872c689e618f961af24e261aadce7431dafe4"
+          },
+          {
+            "path": "kuro/wgsl/src/shaders/mod.rs",
+            "sha256": "ab063763431b8f3f4a9f403419da4ed9819c07a52c8ed070c8d6b59c33ec6f1e"
+          },
+          {
+            "path": "nebu/cli/Cargo.toml",
+            "sha256": "0d051b8184b8c9034baadf8dbf45efd30ee4fb6463f6c88a36ee4a1288c6c1a6"
+          },
+          {
+            "path": "nebu/cli/src/main.rs",
+            "sha256": "f4fffc225286e53635fb1d3ecbd77b7ad34df556ce8424e8aa9b25bc6b1ddee1"
+          },
+          {
+            "path": "nebu/rs/Cargo.toml",
+            "sha256": "d8680eb61013c42f54bbd5834d758f10d844dc4882b8121f1f5fc9aa7e429c20"
+          },
+          {
+            "path": "nebu/rs/algebra_impl.rs",
+            "sha256": "40fe7fd3d8103f5dc8da3b8c37f387624ae457db84a06aacb3f9470bebe6074f"
+          },
+          {
+            "path": "nebu/rs/batch.rs",
+            "sha256": "6e581b1a0f2cc4ef10d70fddcfd2d6bad8c36c52c00f0ac39326fc4bf4005efe"
+          },
+          {
+            "path": "nebu/rs/benches/goldilocks.rs",
+            "sha256": "2df80389f271a2fe8662244b6e9493031c6693762d62ba423f6e61f1f4ceb4cd"
+          },
+          {
+            "path": "nebu/rs/encoding.rs",
+            "sha256": "9a49105f65e33dd795ad43cee4da23cea0a87e15a6d1b67637366458fc6376fe"
+          },
+          {
+            "path": "nebu/rs/extension/algebra_impl.rs",
+            "sha256": "241455d204d085bc0d0e0c52d9cc662f975bbd41e448ae2adc37262679d9a572"
+          },
+          {
+            "path": "nebu/rs/extension/fp2.rs",
+            "sha256": "29432a7cd89e137ca5006983d50490fce7535b811fd9e672abcc51c6e5d9d143"
+          },
+          {
+            "path": "nebu/rs/extension/fp3.rs",
+            "sha256": "418762a2f68aa127f44c30225d9a87f6b874596b42150c189d3fa5142cb96295"
+          },
+          {
+            "path": "nebu/rs/extension/fp4.rs",
+            "sha256": "a377ded1cc4891e79977f31a7fb92de659897c733944856d40fae3a5798dd3e5"
+          },
+          {
+            "path": "nebu/rs/extension/mod.rs",
+            "sha256": "0f901ac526a0ca2550e444948b3153f02f57d10deb49d3e4dc885602b373e5fd"
+          },
+          {
+            "path": "nebu/rs/field.rs",
+            "sha256": "610a90535e7c3417d4aa696b6d95782127eaaa857106d89851ead5736bdeadc8"
+          },
+          {
+            "path": "nebu/rs/lib.rs",
+            "sha256": "2b05ba8191d72e116900eb7d36946ee2342fc0eab761809ed13842f8714f4541"
+          },
+          {
+            "path": "nebu/rs/ntt.rs",
+            "sha256": "8ff11a07de251e47e8420775e999c56b0da02bc9355c3b34378f86da8b5e7f68"
+          },
+          {
+            "path": "nebu/rs/packed.rs",
+            "sha256": "464373f74431cb87d57cf0725fdca722767ef446370c10fb1177b9d78564c9c0"
+          },
+          {
+            "path": "nebu/rs/packed_avx2.rs",
+            "sha256": "ffa4ad8619d371f3b9f8c0f89b675f9043f665fe8184831db06350b22ce7a619"
+          },
+          {
+            "path": "nebu/rs/poly.rs",
+            "sha256": "91c477dff136910a2913f9e21c04e4ae4f272af35e23e177b38dc0f5c6b7b271"
+          },
+          {
+            "path": "nebu/rs/proptests.rs",
+            "sha256": "17781ae470a1fad43de93f5604ee3135931c2a0b38395310050dd4ac071d127e"
+          },
+          {
+            "path": "nebu/rs/sqrt.rs",
+            "sha256": "5fea48422e1a222567d9a184e018b014fd0916336920763136ba4618d0826f70"
+          },
+          {
+            "path": "nebu/rs/vectors.rs",
+            "sha256": "9d46546231ce05130887a1195e4c4c09193356cce71e72892d34495389914a2c"
+          },
+          {
+            "path": "nebu/wgsl/Cargo.toml",
+            "sha256": "83a2ac47004a78dbc4041b4f3b68f4d7f4f712af3b7b9d3301b32c6998295592"
+          },
+          {
+            "path": "nebu/wgsl/src/lib.rs",
+            "sha256": "3ea8995a8814317508c2a0088d1763e34980c408c583f2f27a40a1d79c6f3524"
+          },
+          {
+            "path": "nebu/wgsl/tests/gpu.rs",
+            "sha256": "5c08805bb91f388fdf1559db0e6d95ece774cef2cdf11cd3dcfb7267990ac3b5"
+          },
+          {
+            "path": "proof/Cargo.toml",
+            "sha256": "ee45baf48effc4601e21169dc77db4128687e9a1ac8b27d10fd80adf8fe3b146"
+          },
+          {
+            "path": "proof/src/lib.rs",
+            "sha256": "627464cff9f20be47d38d84d3e4ae3445b8973e57a318f504297af8a73f2b168"
+          },
+          {
+            "path": "src/Cargo.toml",
+            "sha256": "a38afdc761d24a5316b82d3322f24a98748894788918d14ec2e0528e3b484cd7"
+          },
+          {
+            "path": "src/lib.rs",
+            "sha256": "721bc88bdb213abc6d7f7428eed32ae9747c75edd78d88b6335988bc60326ab8"
+          },
+          {
+            "path": "trop/cli/Cargo.toml",
+            "sha256": "a2ab63ca9599daebdfe4b3f4218ccfcea3b3a9f08115aa7358ea27df3a72a9b8"
+          },
+          {
+            "path": "trop/cli/src/main.rs",
+            "sha256": "bae0ba4d0d0c76522f19b9942642591229771ce91053129d8150416bebfbff9b"
+          },
+          {
+            "path": "trop/rs/Cargo.toml",
+            "sha256": "dda1d2f34cea1a79a7181a18bdd97d76c1ef6604c1d4d063d7edb7f33366d5be"
+          },
+          {
+            "path": "trop/rs/benches/tropical.rs",
+            "sha256": "f8f2e66c536e643ade2e94a1ab3b8fa8d07b5d26a729730a861c98c8988eecc7"
+          },
+          {
+            "path": "trop/rs/src/algebra_impl.rs",
+            "sha256": "86d74f5f1d6686f0f59f701eace91f842497a4e259d26948e744e5daed1690e3"
+          },
+          {
+            "path": "trop/rs/src/determinant.rs",
+            "sha256": "11493b271454e607ad760f445cbc70004d19aff350674f851058835299f58c3b"
+          },
+          {
+            "path": "trop/rs/src/dual.rs",
+            "sha256": "05825b0f4aaec93aa9c43825de78ff4f051aa30335665e7999652553e36b0a25"
+          },
+          {
+            "path": "trop/rs/src/eigenvalue.rs",
+            "sha256": "0e4e4bd17542a6abb6f728f024351e738184d6bd9ae0d0a221e1f7c496cf8fe8"
+          },
+          {
+            "path": "trop/rs/src/element.rs",
+            "sha256": "356c87e9d7c9bc86ac42b5c904673631cf8417acae3d64323471537a8c9da39c"
+          },
+          {
+            "path": "trop/rs/src/encoding.rs",
+            "sha256": "4892d59f34972a01da50e325584538d122d8dde80254f49ad7b513edbe3a8534"
+          },
+          {
+            "path": "trop/rs/src/kleene.rs",
+            "sha256": "8b655765b0db4a11b88da20231c92c3e95bc16129eae60bc4a00bf03a78c2adc"
+          },
+          {
+            "path": "trop/rs/src/lib.rs",
+            "sha256": "5a72852cd5ff25375cd6dbcc8fa667d9ce8ed4da74cdd71b3b60a5a278bbdef8"
+          },
+          {
+            "path": "trop/rs/src/matrix.rs",
+            "sha256": "39c991d29050cf0a2e5bd2bef3d98a7ec910ead8f30de9a23b6b2d98f6ea7dea"
+          },
+          {
+            "path": "trop/rs/src/vectors.rs",
+            "sha256": "2ca1fb63882ed3be1aca42317cf2b5fb9f6d53da96c0f94237723b7cf30cc8cc"
+          },
+          {
+            "path": "trop/wgsl/Cargo.toml",
+            "sha256": "99476b7650cdbcaaafb20e475910a32826414798c4978b8a112340aa1e3ee660"
+          },
+          {
+            "path": "trop/wgsl/src/lib.rs",
+            "sha256": "0c924d79f976cf0b7f5ef63b26db123bcb2f3127109175782dce09832a6b21de"
+          },
+          {
+            "path": "trop/wgsl/src/shaders/mod.rs",
+            "sha256": "4fa11aaefbcee991cbbbf554a063c3d8d1d21604b1a02b9245f05622f45ac1e5"
+          }
+        ]
+      },
+      {
+        "name": "lens",
+        "root": "/Users/master/cyber/lens",
+        "head": "8b26cef6587bee6a686f2cf163f6a8496931ee6a",
+        "files": [
+          {
+            "path": "Cargo.lock",
+            "sha256": "16e6ec2a7eefd10473c1048c06a7e36915aeb558163821c8d3efbfa3d74f0a54"
+          },
+          {
+            "path": "Cargo.toml",
+            "sha256": "bc8e2b39092151c4ffe31f70cc9a27637ac01f13efad2c924a404bfd151a2d76"
+          },
+          {
+            "path": "assayer/Cargo.toml",
+            "sha256": "d756544d59ba29de2765755e7088af89e83aa661fd4b723a65788d3dafcc0db1"
+          },
+          {
+            "path": "assayer/src/lib.rs",
+            "sha256": "37b7e6913cdcb9f8b7127ae29b0c9ebb8debe96aee2b26225af7213ff7a82282"
+          },
+          {
+            "path": "binius/Cargo.toml",
+            "sha256": "ded752ece5f2ff73e38838f047178ed80cde7b7e4aa185ca41246ee923199e8e"
+          },
+          {
+            "path": "binius/src/lib.rs",
+            "sha256": "8a13cd8faf376db601ce5596bff874329af1edef1858bbf3223fbfa84c7b6603"
+          },
+          {
+            "path": "brakedown/Cargo.toml",
+            "sha256": "c0eb369abd3c8863885708c69a39505a20b55a85343690913e1c38a910c6f345"
+          },
+          {
+            "path": "brakedown/src/expander.rs",
+            "sha256": "c309e10d46622b1ff321a57409ce9cecf9d7631284c8e41acb1e4c73afc0eec7"
+          },
+          {
+            "path": "brakedown/src/lib.rs",
+            "sha256": "995de7bf95b547c6bf2166ceca8ede6df18dbb58ea4067ac17bfbd55fcb1085c"
+          },
+          {
+            "path": "brakedown/src/tensor.rs",
+            "sha256": "cd4f6cdc5452ecd713c078df5dc28da6838b0daf7ea39771265094224c19f8fb"
+          },
+          {
+            "path": "cli/Cargo.toml",
+            "sha256": "74d2b5a2af43e70dbdfb60177b36d00de44516b0c6d61f61edded5400f8a5ec1"
+          },
+          {
+            "path": "cli/src/algo.rs",
+            "sha256": "8a39fb7411c59f7f4a9a566fc693c39b839da879e595f119a7751acd58ffe191"
+          },
+          {
+            "path": "cli/src/artifact.rs",
+            "sha256": "9dc363d277dbe9eb928ea50f0c6cf3c9bf50a2066781a2c6228a4d0f069dbba9"
+          },
+          {
+            "path": "cli/src/assayer.rs",
+            "sha256": "4a602fc5441e1db515a85bb0a2acf81def4303478154c042b9692686e9f5a677"
+          },
+          {
+            "path": "cli/src/commands.rs",
+            "sha256": "a210d17672336d52deca9f9213af7a160f19e02592623ad665b01c885fbd8489"
+          },
+          {
+            "path": "cli/src/field.rs",
+            "sha256": "b0020025226b0a5e308359d65f7cbea7b064e204a0b3d49a179ccd4acc0668f0"
+          },
+          {
+            "path": "cli/src/main.rs",
+            "sha256": "60c62acde4fc2ec3a2143fbcb2ee2980836644466f680609da1e1e2adcc833e3"
+          },
+          {
+            "path": "cli/src/tests.rs",
+            "sha256": "dcf353357965d6159501f24fa32ff0fcf67beda148419104c8a4ca43a9625475"
+          },
+          {
+            "path": "core/Cargo.toml",
+            "sha256": "91ad706a1f90d4fce40abf594112eb1d92821a845c304f71f6ab9b469f490a04"
+          },
+          {
+            "path": "core/src/fri.rs",
+            "sha256": "17978ade5b2f344187ae2293e61f2871bb2a8e32db9684b2f4d7a6f9bab8c841"
+          },
+          {
+            "path": "core/src/lib.rs",
+            "sha256": "4cd735919b67840603b925b15e21a981c5bd628efd008bcf87d466ea5a776e59"
+          },
+          {
+            "path": "core/src/transcript.rs",
+            "sha256": "432a57303ecb0302142fd7859e3750f19be304263144d50fe217918170e8a6b5"
+          },
+          {
+            "path": "core/src/types.rs",
+            "sha256": "b3f5dd5bf695346068d078319efa88cad6e75297c8e5583c1ebe4dc15d8112a6"
+          },
+          {
+            "path": "core/tests/serde_roundtrip.rs",
+            "sha256": "38009eacca04d66c9be90e3ac3b25819bbb101a1cf8e4648e9fc489300f080af"
+          },
+          {
+            "path": "ikat/Cargo.toml",
+            "sha256": "01d55f01e476735813f3ace8eb513024a0d71bb917e46568ed698891cc24d553"
+          },
+          {
+            "path": "ikat/src/lib.rs",
+            "sha256": "567711d380578589fd259c58453abeabdd17158c624246aec8993510ce8f56c3"
+          },
+          {
+            "path": "porphyry/Cargo.toml",
+            "sha256": "91422fc49520c4bfdc65525416695f944fc0331e51fc6421eabcb3a3f00e94bc"
+          },
+          {
+            "path": "porphyry/src/lib.rs",
+            "sha256": "6e8faedfcb328ec6fbd6b61fb60f343f228cff5d5b9279b786b8c8f4aa4e9fac"
+          },
+          {
+            "path": "src/Cargo.toml",
+            "sha256": "9d21ae8599366882120206d52b19ff5319c2a534f9b232db57190e13f9a7b282"
+          },
+          {
+            "path": "src/integration_tests.rs",
+            "sha256": "46999534706a06f06b8f4ae0dd625ab35e17a7cf88f45d31d7a6f9441ca209df"
+          },
+          {
+            "path": "src/lib.rs",
+            "sha256": "cdfbea2b768989edec05a7dade9984025dca32f91a69bc962de3b758afe0a272"
+          }
+        ]
+      }
+    ],
+    "diagnostic": [
+      {
+        "path": "/private/tmp/nox-honeycrisp-package-diagnostic/Cargo.toml",
+        "sha256": "a303844e8015b17e7a27af6dfc36533208ca5589887364fa4648ac41158feaef"
+      },
+      {
+        "path": "/private/tmp/nox-honeycrisp-package-diagnostic/Cargo.lock",
+        "sha256": "0e3d532764f5dd55d91960e18359101c6decab3909b52b5f139020d81a4f10f8"
+      },
+      {
+        "path": "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/audit/2026-10-16-honeycrisp-backend-design/probe.rs",
+        "sha256": "eb0e4498e99aa7de6ddcaca18ee39ec38a160ebccd322dc30a8e070a6cfae77d"
+      }
+    ],
+    "package": [
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/Cargo.lock",
+        "sha256": "9063821b212a00313274e765e14513ad95666aa093dd72cd1a9d09b57f222ead"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/Cargo.toml",
+        "sha256": "5f25b8e6323a5eb7de700ac2e9f2e2c3cb58db98241c05890eaecfe4b3c3a0c3"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/ai.rs",
+        "sha256": "9006159e76e5a7c5fac359755bbd7431e140659610fe978f87de7bea5876ab54"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/amx.rs",
+        "sha256": "3b0770c0eff496b70a7d46436d38e6a916d3ef113d6bf3ab0183c598612eceda"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/common.rs",
+        "sha256": "84665a08aa20f4025e1d1b4b2d2a081cc190b81360822acf7f2baab6fbeb2915"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/cores.rs",
+        "sha256": "6cfaccc794f7e0022258159da0df0a8c0a703dbf8c343358de71ca26499974ad"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/crypto.rs",
+        "sha256": "982fc459a491b51d583ff9077fcc3a26ba663ad7f08e119a54346f990845588e"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/elementwise.rs",
+        "sha256": "b38830c9d2299b31de830580a94d1c12d5a9c3e0006b7359f1464545252a6a00"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/integer.rs",
+        "sha256": "0280c017a683f006103098356a6807f3c72611cd5ff87a3c39f4c4d76cd07f23"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/memory.rs",
+        "sha256": "f04f4388a23fa95f525f906618598222982b99fbc9b129b427c6ad990eaaf662"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/numeric.rs",
+        "sha256": "eb147692dad39590bc1dec3474584ffc864b802888dbf30d33df9d77151e84bf"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/render.rs",
+        "sha256": "3cdc13848760843805ec44df051f7b9ec3fd47b995e71df254b8cce162c42457"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/sgemm.rs",
+        "sha256": "845f2048d594d3b5af4600b127d38c7fca8ba8122da973bf4568780732b5d09c"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/summary.rs",
+        "sha256": "1219688d761711f0111cd6bdaaef5c3890e8c662e3df7daab4a5eec369376f50"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/bench/zk.rs",
+        "sha256": "545365905d2ce99e165c22a5ec8af779887865403d2faa6d2150cebdb94c3f96"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/amx_opcode_scan.rs",
+        "sha256": "0fa4c56c3b89cc515f534f295c63d4e1f584c118e1c43c4e6aa44071015b5bae"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/amx_reverse.rs",
+        "sha256": "0d0262a545e7adadd1dadfab3f76bbfbd92ddfebbd8ad6433b6a5c98c73518dc"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/amx_smoke.rs",
+        "sha256": "e9551f865c7889bd7e4d9e1e127ede08963a2639a74ba0f4a2ddd6211dc194ea"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/decompose.rs",
+        "sha256": "0e0d1f73f98620330aec754199678441de44d3d9e3e05228309c9d569ee2736d"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/diag_bench.rs",
+        "sha256": "f07307b89bc7bb879d7f3e1c3795f4ec28a83afce9cc5de5ca8c487b88f25177"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/exp_asm_test.rs",
+        "sha256": "762f7d43355ff25c643506e062c6d8f6cb8cd24ba4e22b7afc558bcb03623557"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/matmul.rs",
+        "sha256": "aa31cbb813761ea006e6f271a6126830a46900946ec1df4f8dfa6773880ff8db"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/neon_vs_amx.rs",
+        "sha256": "47f4cd50587036927372f60480d69c1c55e31cb39d5da5d4c0b657fba1ec0587"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/overhead_test.rs",
+        "sha256": "fb94a2342257caa0605b3c9d7ea6f39aaef15b61f913cb84f1a01f8ef87e623e"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/pair_load_test.rs",
+        "sha256": "5d5904bb167b3adbd9083c3de9dcb7cb525fc8c6f0568b593918c96ce321dd2e"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/pair_test.rs",
+        "sha256": "d372b1cd062446b7b9ca612c035ed16d6dd786288784099c5ab581faef86a0e4"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/phase_time.rs",
+        "sha256": "4219628eee64276018532de1338b5d5c096ebc1ac49e568c21668e7e38614b44"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/profile64.rs",
+        "sha256": "4cf386faa86b57c26b0590f6b18223493eeae1669ea13c5585fb71e2a320e069"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/profile_sgemm.rs",
+        "sha256": "d54f4f457add46162d7e6f43c62e9a571bdffc4d0648628f49f31847109fa1ff"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/sgemm_profile.rs",
+        "sha256": "1de7da68f29930ec7c57c3dcd033caf25e6ba27e96a95f7f577e526e2925f247"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/single_vs_par.rs",
+        "sha256": "d8170970387da328e2c799e848cb7bbd324c6b04f7e3dce3017175a1b181e09d"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/test_hang.rs",
+        "sha256": "c86d2e401105862482319cac82715cd8329c250d77c93cbededfccc5f977ef74"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/thread_scale.rs",
+        "sha256": "8b275b21ee5988e9051909783f17d1d9f9548587bb06c96afcda2b5d18a30a79"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/trace64.rs",
+        "sha256": "5ab5dad88cb5580287292feeef11fe5670c3b652aff676cfc7b661676890a315"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/examples/trace_accel.rs",
+        "sha256": "5a112fb51dea57f7aa6684702d34e8c7c1f43995b88bbb108264504754800e37"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/convert.rs",
+        "sha256": "e7c3d1507c9b518878543922929547ed0da85d1b55972c149143c8c3714d4f86"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/crypto/mod.rs",
+        "sha256": "cc4eb8949a4d4a8dd3da5f2c74d3bfec3e5505e2b45c3ddb21835c2c298efa93"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/field/goldilocks.rs",
+        "sha256": "f5e1394708c077f136c5425d35dd90e3e28d15ad8fb77832d731922e914173bf"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/field/merkle.rs",
+        "sha256": "cfe52cb62c426c48fb3590f27f0da989848b139c7aa46a7970ae2840f27a9907"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/field/mod.rs",
+        "sha256": "ea596b66ade4ca91ac7567d65a510d7a6641a12bc7190975bf4e466835c1d0e9"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/field/ntt.rs",
+        "sha256": "5ffa933a7d796068468d54ef766a94e3f9bd6560262f946c8ae3fe238aba1455"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/field/permute.rs",
+        "sha256": "2f99fbd0ae80e2af7d39bea7511cc887e0a71b8fc1acba392e519db415b94e7f"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/field/poly.rs",
+        "sha256": "f23e00ec02a665e5dc3e4a93485a8c8317b601f4c50dd31349b0d69ddaf439fe"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/gemm/gemv_amx_asm.rs",
+        "sha256": "a3a6250f2dcf0745d97e690feef175fde7ed7f38d4fbe58e89043ec9df63ca51"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/gemm/gemv_kern.rs",
+        "sha256": "26a9b3fdd62a6c1cfb76f5324441d9979674752623be2d641b93cdfe91b6cc03"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/gemm/matvec.rs",
+        "sha256": "0d00cff9cfb4c1a5bd957b6f75808e29165552dc2870c1ea4d643be9e35180c8"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/gemm/mod.rs",
+        "sha256": "b78d32f1a3e14da8d2a68c522f48102708cceedc46b4df4ad978d5cd1f7961e6"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/gemm/other.rs",
+        "sha256": "41bc2adfa4f7fc6bda783130f6bae2e2cdc4f699553aad04327285d229ab6309"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/gemm/pool.rs",
+        "sha256": "c50622c7bc0ce45910a8ec42ddcffbe6adaaf843d8a4a6a894154a5c0a377245"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/gemm/small.rs",
+        "sha256": "bd50b88771624dc5e4b6083820ce9b917169dbb55240d5220c377bf163ae9f60"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/lib.rs",
+        "sha256": "8c4ae72c1bc80bfbaee66797ad14fb58e23d38ba50424c14bb7ae739447e2344"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/matrix/asm.rs",
+        "sha256": "46be3e4fb00ff77340e05a4d960df40cdaa1d6e6d0edb0c1bc255921236bfb48"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/matrix/fma.rs",
+        "sha256": "3a80a2b2e5b088194a829fcca90f972cfb19a5ec7676f87a85c8823dc202504d"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/matrix/kern.rs",
+        "sha256": "82385a164255bb5b62199d18e829d13acf69a3e7263eb7e3646d7933096c8759"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/matrix/mod.rs",
+        "sha256": "8abc4ebdff73b9a803c776aced909829ad6b497567328df987585f2c23f166af"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/matrix/ops.rs",
+        "sha256": "8e380bc513d71d7237d95c1650d9f20422ba706817469fbf935279c132793413"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/matrix/regs.rs",
+        "sha256": "adeb6bbfc090fb0ececf6535bec1972ecf1fc272433e34ac5d745aeef88442ed"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/matrix/tile.rs",
+        "sha256": "8ba29022ce2c9b78ca3bb55fd85adb7507410b2c276f72098da9fd407f3357d2"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/matrix/tile_f16.rs",
+        "sha256": "0f7e363c74ab3d3ed8aacfb09d4314d023adb68ef6a34f298abf430eeea6f5cf"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/numeric/bf16.rs",
+        "sha256": "fdd68b9a4a143817b8fae1e15300d8c27690c7ac1a826d6b97861d6c9477f726"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/numeric/complex.rs",
+        "sha256": "30d61759b2049a5cb4d75d4c76efa455a009b13129fec6d0bdf6dfec92e50fdf"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/numeric/fp16.rs",
+        "sha256": "b36dee4ad740e6f6b7ba10d7fcac75c58b32ae60f3486dc0f58e8686e1289d80"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/numeric/mod.rs",
+        "sha256": "61f86e95164da0fb36d72ebe5514eb7572dcfbbb4700afbed6ada2b1d14814de"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/numeric/quant.rs",
+        "sha256": "0d1d859de9a1382bb7b2ab325a6ef07aabbee7760e4f88af165f2776674eb677"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/probe/main.rs",
+        "sha256": "b99becc4b1fc84e1863e99b79fabba3fb9a3376dfba2933d9c2fd30821aab12d"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/probe/mod.rs",
+        "sha256": "491a42c85918b2ce1e56d44b30fa1e08e7ab48913b912edccd20d4568ba373e0"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/pulse/ffi.rs",
+        "sha256": "e24afa82241a15fc429cf4681ae2441cbd70ab83ebe31df930bce061d664d31c"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/pulse/mod.rs",
+        "sha256": "2a5fac0702dad6d5808f870b619a0f905ae50e5b71614cf87b975bde89f7e812"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/sparse/chebyshev.rs",
+        "sha256": "d5c3199fcd1ae0016e584aaefcbbe0ecb4fad4ed387f106bf875a17ee38f83fb"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/sparse/mod.rs",
+        "sha256": "a1eb8b86ef8b5c01cfd9be9c2a0cf23ba5fe2b85315274dd961f336c47d2dc14"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/sync/affinity.rs",
+        "sha256": "7bfe3d34f7e276df619990cb0c10ae5e3e92c1121d4add16df0277448ffe21ae"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/sync/mod.rs",
+        "sha256": "4b650ee78e86d27bce9fc60e0236c3c84a994b86f97ea83f55bf993e2ba05e85"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/sync/prefetch.rs",
+        "sha256": "1fac7e1b88b09d02a2c105bd6696f29b66a83361989d10af2f08fea69d89d336"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/vector/exp_kern.rs",
+        "sha256": "85d44efe477d4985601476878dc1ce1c1b6321a7d28092cc672af5210c5c4d2b"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/vector/integer.rs",
+        "sha256": "cb9aadd87b49bdd2a45688f900e973e152752ceb472ce41fd3dda243442dddb4"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/vector/integer_fused.rs",
+        "sha256": "7d1e8f478e3de5cfd15884dbd122ebbc0f79a7326235dacb1daa8f9c1c707ee5"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/vector/math.rs",
+        "sha256": "e7273c53c90b7cc1e750c5f171d330365551c5d495a1a876f8c39cbfcb668e25"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/vector/media.rs",
+        "sha256": "72c8db64048f861a1580db2bcb5aead4204f2faa31beb7946b29b81a9547fcaa"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/vector/mod.rs",
+        "sha256": "c8304e08a5524741c47186e003950307de6ba078e94472a3de646279306203ed"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/vector/reduce.rs",
+        "sha256": "1c9e7865bcfacc262dd9964c505186999c0d93118393cbec0b23f20303c25d41"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/vector/render.rs",
+        "sha256": "11e693ddcbd552a8db7be635640217d87be750ac0a10308ae930776dfc698045"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/vector/rope.rs",
+        "sha256": "1b9d70b29d05e0c95c32a88424a7109f32a3ab6ae161d36632ed63324811dc6c"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/vector/scan.rs",
+        "sha256": "4685b29b2815ff1f971372a793717f0ca2d37bab9958d99731a944fbcacdd02f"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/src/vector/softmax.rs",
+        "sha256": "87d5a6bae48cfea49859b26b99de2769069c2013fe2777cef2ad5f2b358cfba4"
+      },
+      {
+        "path": "/Users/master/.cache/cyber/kadek/honeycrisp-backend-design/package/acpu-0.2.0/tests/integration.rs",
+        "sha256": "fb5fe9dd18a5b26dc88e8eaa27f3d8455fb18ed27690d5561121cb469b5f4828"
+      }
+    ]
+  }
+}

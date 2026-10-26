@@ -1,0 +1,46 @@
+{
+  "command": [
+    "/Users/master/.cargo/bin/rustup",
+    "run",
+    "1.95.0",
+    "cargo",
+    "tree",
+    "--manifest-path",
+    "/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/nox/Cargo.toml",
+    "-p",
+    "cyber-nox",
+    "--locked",
+    "--offline",
+    "-e",
+    "features",
+    "-i",
+    "cyber-hemera"
+  ],
+  "launcher": [
+    "/usr/bin/env",
+    "-i"
+  ],
+  "environment": {
+    "HOME": "/Users/master",
+    "RUSTUP_HOME": "/Users/master/.rustup",
+    "PATH": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin:/Users/master/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "CARGO_HOME": "/Users/master/.cache/cyber/nox/hemera-feature-performance/cargo-home",
+    "CARGO_TARGET_DIR": "/Users/master/.cache/cyber/nox/hemera-feature-performance/targets/D",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "RUSTC": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustdoc",
+    "RUSTFLAGS": "",
+    "RUSTDOCFLAGS": "",
+    "LANG": "C",
+    "LC_ALL": "C",
+    "TZ": "UTC"
+  },
+  "cwd": "/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/nox",
+  "started": "2026-10-17T13:24:12.440082+00:00",
+  "finished": "2026-10-17T13:24:12.475187+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "f7936eb2d169cc12cfb1668d47e1b710a701c222cfd04d98e6defcf94ae4cbb9",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

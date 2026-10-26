@@ -1,0 +1,3 @@
+   Compiling cyber-nox v0.2.0 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs)
+    Finished `release` profile [optimized] target(s) in 1.49s
+     Running unittests lib.rs (/Users/master/.cache/cyber/kadek/nox-release-hygiene/release/deps/nox-0dad0d22a4014c8c)

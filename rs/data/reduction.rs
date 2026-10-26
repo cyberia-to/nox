@@ -4,11 +4,11 @@
 //! hash-consing ensures identical sub-expressions share one slot.
 //! DAG, not tree — immutable data nodes, safe structural sharing.
 
-use nebu::Goldilocks;
-use super::inner::Data;
-use super::hash::{Digest, hash_atom, hash_pair};
 use super::cost::{Cost, PATTERN_COSTS};
-use super::{Order, NIL};
+use super::hash::{Digest, hash_atom, hash_pair};
+use super::inner::Data;
+use super::{NIL, Order};
+use nebu::Goldilocks;
 
 #[path = "reduction_heap.rs"]
 mod heap;
@@ -68,7 +68,9 @@ impl<const N: usize> Reduction<N> {
         // bounded worst-case (~N/4 max probe). The hash-cons table lives in
         // the same Reduction; refusing past 3N/4 means index_insert always finds
         // an empty slot quickly.
-        if self.count >= self.allocation_limit { return None; }
+        if self.count >= self.allocation_limit {
+            return None;
+        }
         let idx = self.count;
         self.entries[idx as usize] = core::mem::MaybeUninit::new(entry);
         self.count += 1;
@@ -77,7 +79,9 @@ impl<const N: usize> Reduction<N> {
 
     /// returns None for out-of-bounds Order (never panics)
     pub fn get(&self, r: Order) -> Option<&DataEntry> {
-        if (r as usize) >= self.count as usize { return None; }
+        if (r as usize) >= self.count as usize {
+            return None;
+        }
         // SAFETY: entries[0..count] are initialized, r < count
         Some(unsafe { self.entries[r as usize].assume_init_ref() })
     }
@@ -85,9 +89,15 @@ impl<const N: usize> Reduction<N> {
     pub fn atom(&mut self, value: Goldilocks) -> Option<Order> {
         let inner = Data::Atom { value };
         let hash = hash_atom(value);
-        if let Some(existing) = self.index_lookup(&hash) { return Some(existing); }
+        if let Some(existing) = self.index_lookup(&hash) {
+            return Some(existing);
+        }
         // Atoms have no formula interpretation; bound is 0 by definition.
-        let r = self.alloc_raw(DataEntry { inner, hash, bound: Cost::Exact(0) })?;
+        let r = self.alloc_raw(DataEntry {
+            inner,
+            hash,
+            bound: Cost::Exact(0),
+        })?;
         self.index_insert(&hash, r);
         Some(r)
     }
@@ -96,7 +106,9 @@ impl<const N: usize> Reduction<N> {
         let lh = self.get(left)?.hash;
         let rh = self.get(right)?.hash;
         let hash = hash_pair(&lh, &rh);
-        if let Some(existing) = self.index_lookup(&hash) { return Some(existing); }
+        if let Some(existing) = self.index_lookup(&hash) {
+            return Some(existing);
+        }
         let inner = Data::Pair { left, right };
         let bound = self.compute_pair_bound(left, right);
         let r = self.alloc_raw(DataEntry { inner, hash, bound })?;
@@ -109,17 +121,20 @@ impl<const N: usize> Reduction<N> {
     /// pattern range; otherwise bound is 0 (the pair is data, not code).
     /// Children's cached bounds are looked up in O(1).
     fn compute_pair_bound(&self, left: Order, right: Order) -> Cost {
-        let left_entry = match self.get(left) { Some(e) => e, None => return Cost::Exact(0) };
+        let left_entry = match self.get(left) {
+            Some(e) => e,
+            None => return Cost::Exact(0),
+        };
         let tag = match left_entry.inner {
             Data::Atom { value } => value.as_u64(),
             _ => return Cost::Exact(0),
         };
-        if (tag as usize) >= PATTERN_COSTS.len() { return Cost::Exact(0); }
+        if (tag as usize) >= PATTERN_COSTS.len() {
+            return Cost::Exact(0);
+        }
         let base = PATTERN_COSTS[tag as usize];
 
-        let child_bound = |id: Order| -> Cost {
-            self.get(id).map_or(Cost::Exact(0), |e| e.bound)
-        };
+        let child_bound = |id: Order| -> Cost { self.get(id).map_or(Cost::Exact(0), |e| e.bound) };
         let pair = |id: Order| -> Option<(Order, Order)> {
             match self.get(id)?.inner {
                 Data::Pair { left, right } => Some((left, right)),
@@ -148,9 +163,9 @@ impl<const N: usize> Reduction<N> {
             // Branch: max of arms
             4 => match pair(right) {
                 Some((test, rest)) => match pair(rest) {
-                    Some((yes, no)) => Cost::branch(
-                        base, child_bound(test), child_bound(yes), child_bound(no),
-                    ),
+                    Some((yes, no)) => {
+                        Cost::branch(base, child_bound(test), child_bound(yes), child_bound(no))
+                    }
                     None => Cost::Exact(base),
                 },
                 None => Cost::Exact(base),
@@ -206,8 +221,12 @@ impl<const N: usize> Reduction<N> {
         let mut slot = (hash[0].as_u64() as u32) & self.index_mask;
         for _ in 0..N {
             let val = self.index_vals[slot as usize];
-            if val == NIL { return None; }
-            if self.index_keys[slot as usize] == *hash { return Some(val); }
+            if val == NIL {
+                return None;
+            }
+            if self.index_keys[slot as usize] == *hash {
+                return Some(val);
+            }
             slot = (slot + 1) & self.index_mask;
         }
         None
@@ -225,7 +244,9 @@ impl<const N: usize> Reduction<N> {
         }
     }
 
-    pub fn count(&self) -> u32 { self.count }
+    pub fn count(&self) -> u32 {
+        self.count
+    }
 
     /// Maximum distinct nodes admitted by this arena, including loaded data.
     pub fn allocation_limit(&self) -> u32 { self.allocation_limit }
@@ -293,23 +314,34 @@ impl<const N: usize> Reduction<N> {
     }
 
     pub fn is_atom(&self, r: Order) -> bool {
-        self.get(r).is_some_and(|e| matches!(e.inner, Data::Atom { .. }))
+        self.get(r)
+            .is_some_and(|e| matches!(e.inner, Data::Atom { .. }))
     }
 
     pub fn is_pair(&self, r: Order) -> bool {
-        self.get(r).is_some_and(|e| matches!(e.inner, Data::Pair { .. }))
+        self.get(r)
+            .is_some_and(|e| matches!(e.inner, Data::Pair { .. }))
     }
 
     pub fn head(&self, r: Order) -> Option<Order> {
-        match self.get(r)?.inner { Data::Pair { left, .. } => Some(left), _ => None }
+        match self.get(r)?.inner {
+            Data::Pair { left, .. } => Some(left),
+            _ => None,
+        }
     }
 
     pub fn tail(&self, r: Order) -> Option<Order> {
-        match self.get(r)?.inner { Data::Pair { right, .. } => Some(right), _ => None }
+        match self.get(r)?.inner {
+            Data::Pair { right, .. } => Some(right),
+            _ => None,
+        }
     }
 
     pub fn atom_value(&self, r: Order) -> Option<Goldilocks> {
-        match self.get(r)?.inner { Data::Atom { value } => Some(value), _ => None }
+        match self.get(r)?.inner {
+            Data::Atom { value } => Some(value),
+            _ => None,
+        }
     }
 
     pub fn digest(&self, r: Order) -> Option<&Digest> {
@@ -320,3 +352,196 @@ impl<const N: usize> Reduction<N> {
 #[cfg(test)]
 #[path = "allocation_tests.rs"]
 mod allocation_tests;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
+
+    #[test]
+    fn atom_hash_conses_identical_values() {
+        let mut r = Reduction::<16>::new();
+        let a = r.atom(g(7)).unwrap();
+        let b = r.atom(g(7)).unwrap();
+        assert_eq!(a, b);
+        assert_eq!(r.count(), 1);
+    }
+
+    #[test]
+    fn atom_distinguishes_values() {
+        let mut r = Reduction::<16>::new();
+        let a = r.atom(g(7)).unwrap();
+        let b = r.atom(g(8)).unwrap();
+        assert_ne!(a, b);
+        assert_eq!(r.count(), 2);
+    }
+
+    #[test]
+    fn pair_hash_conses_identical_children() {
+        let mut r = Reduction::<16>::new();
+        let a = r.atom(g(1)).unwrap();
+        let b = r.atom(g(2)).unwrap();
+        let p1 = r.pair(a, b).unwrap();
+        let p2 = r.pair(a, b).unwrap();
+        assert_eq!(p1, p2);
+        assert_eq!(r.count(), 3); // two atoms + one pair, not two pairs
+    }
+
+    #[test]
+    fn get_returns_none_out_of_bounds() {
+        let mut r = Reduction::<16>::new();
+        let a = r.atom(g(1)).unwrap();
+        assert!(r.get(a).is_some());
+        assert!(r.get(a + 1).is_none());
+        assert!(r.get(Order::MAX).is_none());
+    }
+
+    #[test]
+    fn alloc_raw_refuses_past_three_quarter_load_factor() {
+        // N=4: cap is (4/4)*3 = 3 entries. Distinct atoms never hash-cons,
+        // so the 4th allocation must be refused instead of overflowing entries[].
+        let mut r = Reduction::<4>::new();
+        assert!(r.atom(g(1)).is_some());
+        assert!(r.atom(g(2)).is_some());
+        assert!(r.atom(g(3)).is_some());
+        assert_eq!(r.count(), 3);
+        assert!(r.atom(g(4)).is_none());
+        assert_eq!(r.count(), 3); // refused allocation must not bump count
+    }
+
+    #[test]
+    fn hash_data_round_trips_through_read_hash_data() {
+        let mut r = Reduction::<16>::new();
+        let d = hash_atom(g(0xC0FFEE));
+        let node = r.hash_data(&d).unwrap();
+        assert_eq!(r.read_hash_data(node).unwrap(), d);
+    }
+
+    #[test]
+    fn read_hash_data_rejects_a_plain_atom() {
+        let mut r = Reduction::<16>::new();
+        let a = r.atom(g(1)).unwrap();
+        assert!(r.read_hash_data(a).is_none());
+    }
+
+    #[test]
+    fn is_atom_is_pair_head_tail_atom_value() {
+        let mut r = Reduction::<16>::new();
+        let a = r.atom(g(9)).unwrap();
+        let b = r.atom(g(10)).unwrap();
+        let p = r.pair(a, b).unwrap();
+
+        assert!(r.is_atom(a) && !r.is_pair(a));
+        assert!(r.is_pair(p) && !r.is_atom(p));
+        assert_eq!(r.head(p), Some(a));
+        assert_eq!(r.tail(p), Some(b));
+        assert_eq!(r.atom_value(a), Some(g(9)));
+        assert_eq!(r.atom_value(p), None);
+        assert_eq!(r.head(a), None);
+    }
+
+    // compute_pair_bound dispatch — each arm below matches the same tag
+    // that data::cost::PATTERN_COSTS (and reduce::COSTS, locked together
+    // in row 211) assigns that pattern.
+    mod compute_pair_bound {
+        use super::*;
+
+        fn tagged_pair<const N: usize>(r: &mut Reduction<N>, tag: u64, body: Order) -> Order {
+            let t = r.atom(g(tag)).unwrap();
+            r.pair(t, body).unwrap()
+        }
+
+        #[test]
+        fn no_sub_formula_tag_is_exact_base() {
+            let mut r = Reduction::<64>::new();
+            let body = r.atom(g(0)).unwrap();
+            let p = tagged_pair(&mut r, 1, body); // 1 = quote
+            assert_eq!(r.get(p).unwrap().bound, Cost::Exact(PATTERN_COSTS[1]));
+        }
+
+        #[test]
+        fn compose_tag_is_dynamic() {
+            let mut r = Reduction::<64>::new();
+            let x = r.atom(g(0)).unwrap();
+            let y = r.atom(g(0)).unwrap();
+            let xy = r.pair(x, y).unwrap();
+            let p = tagged_pair(&mut r, 2, xy); // 2 = compose
+            assert!(r.get(p).unwrap().bound.is_dynamic());
+        }
+
+        #[test]
+        fn binary_structural_tag_sums_children() {
+            let mut r = Reduction::<64>::new();
+            let a = r.atom(g(0)).unwrap();
+            let b = r.atom(g(0)).unwrap();
+            let ab = r.pair(a, b).unwrap();
+            let p = tagged_pair(&mut r, 5, ab); // 5 = add
+            assert_eq!(r.get(p).unwrap().bound, Cost::Exact(PATTERN_COSTS[5]));
+        }
+
+        #[test]
+        fn branch_tag_takes_max_of_arms() {
+            let mut r = Reduction::<64>::new();
+            // Build a deep `yes` branch (tag 5, add) so its bound exceeds `no`'s.
+            let x = r.atom(g(0)).unwrap();
+            let y = r.atom(g(0)).unwrap();
+            let xy = r.pair(x, y).unwrap();
+            let yes = tagged_pair(&mut r, 5, xy);
+            let no = r.atom(g(0)).unwrap();
+            let test = r.atom(g(0)).unwrap();
+            let rest = r.pair(yes, no).unwrap();
+            let body = r.pair(test, rest).unwrap();
+            let p = tagged_pair(&mut r, 4, body); // 4 = branch
+
+            let expected = Cost::branch(
+                PATTERN_COSTS[4],
+                Cost::Exact(0), // test is a bare atom, bound 0
+                r.get(yes).unwrap().bound,
+                Cost::Exact(0), // no is a bare atom, bound 0
+            );
+            assert_eq!(r.get(p).unwrap().bound, expected);
+        }
+
+        #[test]
+        fn unary_tag_uses_sum1() {
+            let mut r = Reduction::<64>::new();
+            let inner = r.atom(g(0)).unwrap();
+            let p = tagged_pair(&mut r, 8, inner); // 8 = inv
+            assert_eq!(r.get(p).unwrap().bound, Cost::Exact(PATTERN_COSTS[8]));
+        }
+
+        #[test]
+        fn call_tag_is_dynamic() {
+            let mut r = Reduction::<64>::new();
+            let tag_f = r.atom(g(0)).unwrap();
+            let check_f = r.atom(g(0)).unwrap();
+            let body = r.pair(tag_f, check_f).unwrap();
+            let p = tagged_pair(&mut r, 16, body); // 16 = call
+            assert!(r.get(p).unwrap().bound.is_dynamic());
+        }
+
+        #[test]
+        fn unknown_tag_is_exact_zero() {
+            let mut r = Reduction::<64>::new();
+            let body = r.atom(g(0)).unwrap();
+            let p = tagged_pair(&mut r, 99, body); // no pattern uses tag 99
+            assert_eq!(r.get(p).unwrap().bound, Cost::Exact(0));
+        }
+
+        #[test]
+        fn left_child_not_an_atom_is_exact_zero() {
+            // compute_pair_bound treats a pair as data, not a formula, when
+            // its own left child isn't an atom (no tag to dispatch on).
+            let mut r = Reduction::<64>::new();
+            let a = r.atom(g(0)).unwrap();
+            let b = r.atom(g(0)).unwrap();
+            let left = r.pair(a, b).unwrap(); // pair, not an atom tag
+            let right = r.atom(g(0)).unwrap();
+            let p = r.pair(left, right).unwrap();
+            assert_eq!(r.get(p).unwrap().bound, Cost::Exact(0));
+        }
+    }
+}

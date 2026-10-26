@@ -1,0 +1,18 @@
+[
+  {
+    "path": "Cargo.toml",
+    "parent_and_candidate_sha256": "ad7773752267560ef10a2c82d6e5d5352d8a96ba7f362816cf2695f1d3396753"
+  },
+  {
+    "path": "Cargo.lock",
+    "parent_and_candidate_sha256": "9bc954f1ed09d6dc9b49f5d35e76289ef700567ee36a9b8172d15588b179a179"
+  },
+  {
+    "path": "rs/Cargo.toml",
+    "parent_and_candidate_sha256": "c40c954cf23798f1f82e3aae9b882651a4431bf4d263da9382f5f89e79652689"
+  },
+  {
+    "path": "cli/Cargo.toml",
+    "parent_and_candidate_sha256": "1e3d0e407e958073928fc3525bd4fa73db9305f77dd841c75b3599ce4461d3a4"
+  }
+]

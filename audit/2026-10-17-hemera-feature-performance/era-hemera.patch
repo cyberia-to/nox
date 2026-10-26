@@ -1,0 +1,885 @@
+diff --git a/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign/cico1.py b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign/cico1.py
+new file mode 100644
+index 0000000..e6dc172
+--- /dev/null
++++ b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign/cico1.py
+@@ -0,0 +1,95 @@
++"""CICO-1 on reduced-round hemera by univariate rational interpolation.
++
++One free rate element X; every other input element fixed; ask for output
++limb `limb` = target. The state is carried symbolically as numerators N_i(X)
++over one common denominator D(X):
++  full round   x_i -> (x_i + c)^7          N_i' = (N_i + cD)^7, D' = D^7
++  partial      x_0 -> (x_0 + c)^-1         U = N_0 + cD; N_0' = D^2,
++                                           N_i' = N_i U, D' = D U
++so a partial inverse round doubles the degree and a full x^7 round
++multiplies it by seven: deg <= 7^(2 rf_half) * 2^rp.
++Roots of N_limb - target*D are candidate inputs; each is checked against
++the concrete permutation of hemera_ref.py (the model verified against
++hemera's vectors).
++Root finding: gcd(f, X^p - X) by one modular powering, then the roots of the
++gcd (python-flint nmod_poly).
++usage: python3 cico1.py rf_half rp [limb] [target]   (needs python-flint)
++"""
++import sys, os, time, random
++sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
++import flint
++from hemera_ref import P, RC, DIAG, permute
++
++rf_half, rp = int(sys.argv[1]), int(sys.argv[2])
++limb = int(sys.argv[3]) if len(sys.argv) > 3 else 0
++target = int(sys.argv[4]) if len(sys.argv) > 4 else 0
++
++R = lambda coeffs: flint.nmod_poly(coeffs, P)
++rng = random.Random(20261016)
++fixed = [rng.randrange(1 << 56) for _ in range(8)]
++cap = [0, 0, 168, 0, 0, 0, 0, 0]          # counter, flags, msg_length, domain, ns, ns, -, -
++base = fixed + cap
++FREE = 3                                   # position of X in the rate
++
++
++def m4(a, b, c, d):
++    return (2*a + 3*b + c + d, a + 2*b + 3*c + d, a + b + 2*c + 3*d, 3*a + b + c + 2*d)
++
++
++def m_e(s):
++    out = []
++    for j in range(4):
++        out.extend(m4(*s[4*j:4*j+4]))
++    sums = [out[k] + out[4 + k] + out[8 + k] + out[12 + k] for k in range(4)]
++    return [out[i] + sums[i % 4] for i in range(16)]
++
++
++def m_i(s):
++    t = s[0]
++    for x in s[1:]:
++        t = t + x
++    return [s[i] * DIAG[i] + t for i in range(16)]
++
++
++t0 = time.time()
++N = [R([base[i]]) for i in range(16)]
++N[FREE] = R([0, 1])
++D = R([1])
++N = m_e(N)
++ext, intl = RC[:128], RC[128:]
++for r in range(rf_half):
++    N = [(N[i] + ext[r*16 + i] * D) ** 7 for i in range(16)]
++    D = D ** 7
++    N = m_e(N)
++for j in range(rp):
++    U = N[0] + intl[j] * D
++    N = [D * D] + [N[i] * U for i in range(1, 16)]
++    D = D * U
++    N = m_i(N)
++for k in range(rf_half):
++    N = [(N[i] + ext[(4 + k)*16 + i] * D) ** 7 for i in range(16)]
++    D = D ** 7
++    N = m_e(N)
++f = N[limb] - target * D
++t1 = time.time()
++deg = f.degree()
++X = R([0, 1])
++xp = X.pow_mod(P, f)
++t_pow = time.time()
++g = f.gcd(xp - X)
++roots = g.roots() if g.degree() > 0 else []
++t2 = time.time()
++
++ok = 0
++enc = 0
++for (x, _) in roots:
++    x = int(x)
++    s = list(base); s[FREE] = x
++    out = permute(s, rc=RC, rf_half=rf_half, rp=rp)
++    if out[limb] == target:
++        ok += 1
++        enc += x < (1 << 56)
++bound = 7 ** (2*rf_half) * 2 ** rp
++import math
++print(f"rf={rf_half}+{rf_half} rp={rp} bound_deg={bound} (2^{math.log2(bound):.2f}) deg={deg} "
++      f"build={t1-t0:.2f}s powmod={t_pow-t1:.2f}s gcd_deg={g.degree()} roots={len(roots)} verified={ok} encodable={enc} solve={t2-t1:.2f}s")
+diff --git a/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign/hemera_ref.py b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign/hemera_ref.py
+new file mode 100644
+index 0000000..ec7feeb
+--- /dev/null
++++ b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign/hemera_ref.py
+@@ -0,0 +1,113 @@
++"""Independent Python model of the hemera 0.3 permutation and sponge.
++
++Reads the constants from rs/src; `python3 hemera_ref.py` checks the model
++against vectors/hemera.json and re-derives the 144 constants by the
++self-bootstrap (specs/bootstrap.md).
++"""
++import sys, os, re, json
++
++_RS = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'rs', 'src')
++
++
++def _hexes(path, start):
++    src = open(os.path.join(_RS, path)).read()
++    body = src[src.index(start):]
++    body = body[:body.index('];')]
++    return [int(x, 16) for x in re.findall(r'0x([0-9A-Fa-f]+)', body)]
++
++
++RC = _hexes('constants.rs', 'pub const ROUND_CONSTANTS_U64')   # 128 external + 16 internal
++DIAG = _hexes('field.rs', 'pub const MATRIX_DIAG_16')
++assert len(RC) == 144 and len(DIAG) == 16
++
++P = 0xFFFFFFFF00000001
++RF_HALF, RP = 4, 16
++
++
++def inv(x):
++    return pow(x, P - 2, P) if x else 0
++
++
++def m4(a, b, c, d):
++    return ((2*a + 3*b + c + d) % P, (a + 2*b + 3*c + d) % P,
++            (a + b + 2*c + 3*d) % P, (3*a + b + c + 2*d) % P)
++
++
++def m_e(s):
++    out = []
++    for j in range(4):
++        out.extend(m4(*s[4*j:4*j+4]))
++    sums = [sum(out[j*4 + k] for j in range(4)) % P for k in range(4)]
++    return [(out[i] + sums[i % 4]) % P for i in range(16)]
++
++
++def m_i(s):
++    t = sum(s) % P
++    return [(DIAG[i] * s[i] + t) % P for i in range(16)]
++
++
++def permute(s, rc=RC, rf_half=RF_HALF, rp=RP, partial='inv'):
++    ext, intl = rc[:128], rc[128:]
++    s = m_e(list(s))
++    r = 0
++    for _ in range(rf_half):
++        s = [pow((s[i] + ext[r*16 + i]) % P, 7, P) for i in range(16)]
++        s = m_e(s); r += 1
++    for j in range(rp):
++        x = (s[0] + intl[j]) % P
++        s[0] = inv(x) if partial == 'inv' else pow(x, 7, P)
++        s = m_i(s)
++    r = 4  # terminal rounds always use RC rows 4..7
++    for k in range(rf_half):
++        s = [pow((s[i] + ext[(r + k)*16 + i]) % P, 7, P) for i in range(16)]
++        s = m_e(s)
++    return s
++
++
++def encode(block56):
++    return [int.from_bytes(block56[7*i:7*i+7] + b'\0', 'little') for i in range(8)]
++
++
++def hash_bytes(msg, domain=0, rc=RC):
++    s = [0]*16
++    s[11] = domain
++    n = len(msg)
++    full = n // 56
++    # eager absorption of full blocks
++    for b in range(full):
++        blk = encode(msg[56*b:56*b+56])
++        s = [(s[i] + blk[i]) % P if i < 8 else s[i] for i in range(16)]
++        s = permute(s, rc)
++    tail = msg[56*full:] + b'\x01'
++    tail = tail + b'\0'*(56 - len(tail))
++    blk = encode(tail)
++    s = [(s[i] + blk[i]) % P if i < 8 else s[i] for i in range(16)]
++    s[10] = n
++    s = permute(s, rc)
++    return b''.join(x.to_bytes(8, 'little') for x in s[:4])
++
++
++def bootstrap():
++    zero = [0]*144
++    seed = b'cyber'
++    pad = seed + b'\x01' + b'\0'*(56 - len(seed) - 1)
++    s = [0]*16
++    blk = encode(pad)
++    for i in range(8):
++        s[i] = (s[i] + blk[i]) % P
++    s[10] = len(seed)
++    s = permute(s, zero)
++    out, pos = [], 0
++    for i in range(144):
++        if pos >= 8:
++            s = permute(s, zero); pos = 0
++        out.append(s[pos]); pos += 1
++    return out
++
++
++if __name__ == '__main__':
++    vec = json.load(open(os.path.join(_RS, '..', '..', 'vectors', 'hemera.json')))['hash']
++    for name, msg in [('empty', b''), ('hello', b'hello'), ('hemera', b'hemera')]:
++        got = hash_bytes(msg).hex()
++        print(name, got == vec[name], got)
++    print('bootstrap constants match rs/src/constants.rs:', bootstrap() == RC)
+diff --git a/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign/p2rounds.py b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign/p2rounds.py
+new file mode 100644
+index 0000000..fccf5ae
+--- /dev/null
++++ b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign/p2rounds.py
+@@ -0,0 +1,39 @@
++"""Poseidon2 round-number inequalities (HorizenLabs/poseidon2 poseidon2_rust_params.sage,
++sat_inequiv_alpha, incl. the eprint 2023/537 binomial term) re-implemented for
++Goldilocks, alpha=7, t=16, M=128. Prints the cheapest admissible (R_F, R_P), the
++minimal R_P per R_F, and each inequality's slack for given profiles."""
++from math import log, ceil, floor, lgamma, inf
++p = 2**64 - 2**32 + 1
++FIELD_SIZE = ceil(log(p, 2))
++def lbinom(n, k):
++    return (lgamma(n + 1) - lgamma(k + 1) - lgamma(n - k + 1)) / log(2)
++def terms(t, RF, RP, a=7, M=128):
++    r1 = 6 if M <= (floor(log(p, 2) - (a - 1) / 2.0)) * (t + 1) else 10
++    r2 = 1 + ceil(log(2, a) * min(M, FIELD_SIZE)) + ceil(log(t, a)) - RP
++    r3 = log(2, a) * min(M, log(p, 2)) - RP
++    r4 = t - 1 + log(2, a) * min(M / (t + 1), log(p, 2) / 2) - RP
++    r5 = (t - 2 + M / (2 * log(a, 2)) - RP) / (t - 1)
++    rt = floor(t / 3)
++    over = (RF - 1) * t + RP + rt + rt * (RF / 2) + RP + a
++    under = rt * (RF / 2) + RP + a
++    gb4 = ceil(2 * lbinom(over, under))
++    return dict(stat=r1, interp=r2, gb1=r3, gb2=r4, gb3=r5, gb4_bits=gb4)
++def ok(t, RF, RP, M=128):
++    d = terms(t, RF, RP, M=M)
++    return RF >= max(ceil(d['stat']), ceil(d['interp']), ceil(d['gb1']), ceil(d['gb2']), ceil(d['gb3'])) and d['gb4_bits'] >= M
++for t in (16, 24):
++    best = None
++    for RP in range(1, 200):
++        for RF in range(4, 40, 2):
++            if ok(t, RF, RP):
++                c = t * RF + RP
++                if best is None or c < best[0]:
++                    best = (c, RF, RP)
++                break
++    c, RF, RP = best
++    print(f"t={t}: minimal admissible RF={RF} RP={RP}; with the script's margin (+2 RF, x1.075 RP): RF={RF+2} RP={ceil(RP*1.075)}")
++    for RF in (6, 8, 10, 12):
++        mn = next((RP for RP in range(0, 400) if ok(t, RF, RP)), None)
++        print(f"   RF={RF}: minimal RP = {mn}")
++for t, RF, RP in [(16, 8, 22), (16, 12, 48), (24, 12, 48), (16, 8, 16)]:
++    print(t, RF, RP, ok(t, RF, RP), {k: round(v, 2) for k, v in terms(t, RF, RP).items()})
+diff --git a/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign.md b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign.md
+new file mode 100644
+index 0000000..b2d1612
+--- /dev/null
++++ b/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/hemera/audit/campaign.md
+@@ -0,0 +1,614 @@
++---
++tags: hemera, audit, cryptanalysis, bounty, security
++crystal-type: audit
++crystal-domain: crypto
++status: draft
++date: 2026-10-16
++---
++# hemera cryptanalysis campaign
++
++gate G3 of `soft3/proposals/privacy-frozen.md` §5: hemera is the one
++material consensus rests on — proof of work, block and transaction Merkle
++trees, particles, commitments, nullifiers and every zheng transcript. the
++privacy pool switches on only after a public cryptanalysis campaign has run
++at least 90 days with no result that lowers hemera below 128 bits classical
++(§6 of that page, condition 3). this page is the campaign: the exact object,
++the claims, the attack map with margins computed for both candidate
++profiles, the bounty, the review plan, the pass criterion and the results
++log. the reproducible tools are in `audit/campaign/`.
++
++written 2026-10-16 against hemera `main` at `d5f0a09` (crate
++`cyber-hemera` 0.3.1; outputs bit-identical to `23f3bbc`, the revision
++pinned by `soft3/release/phase1.toml` for the 2026-11-05 root chain).
++
++## 0. the decision that comes first
++
++two profiles are on the table and the campaign can only measure one.
++
++- 0.3 — shipped: x⁷ full rounds 4 + 4, x⁻¹ partial rounds 16. it is what
++  `main` computes, what the phase-1 chain spec pins and what every vector
++  in `vectors/hemera.json` encodes.
++- v2 — proposed in hemera#15 (`roadmap/profile-v2.md`, open): x⁷ in every
++  round, full rounds 6 + 6, partial rounds 48, Poseidon2 reference linear
++  layers, digest 6 limbs at t = 16 (or t = 24 with 8 limbs). one profile,
++  no second round count: `roadmap/one-pure-hash.md` §4 (in #15) and the
++  one-profile paragraph of `cyber/whitepaper.md` §4.4.
++
++§3 computes the margins of both side by side. the result is lopsided. the
++0.3 profile fails the interpolation inequality of the Poseidon2 design
++rules once the inverse is counted by its rational degree (it would need 51
++inverse partial rounds at R_F = 8, it has 16), its one-variable CICO
++problem has a rational degree of 2^38.46 — below the field size — and the
++attack that follows from that degree was run here: with both outer layers
++reduced to one full round and all sixteen inverse rounds kept, a CICO-1
++solution was found and checked against the concrete permutation in 92
++seconds on one core (§3.2). the full-round instance extrapolates to well
++under the generic cost. no published bound covers the hybrid S-box, so
++none of the Poseidon2 literature transfers to it. the v2 profile clears
++every Poseidon2 inequality with large slack (at R_F = 12 the inequalities
++need R_P ≥ 14; v2 has 48) and sits inside the instance family that the
++public literature and the Ethereum Foundation bounty measure.
++
++recommendation. freeze the hemera#15 permutation — x⁷ in every round, R_F
++6 + 6, R_P 48, Poseidon2 reference matrices, self-bootstrapped constants
++that pass the Poseidon2 matrix and subspace checks — before genesis, and
++point the campaign at it. the reasoning in one line each: the 0.3 profile's
++only argument (degree p − 2 per inverse round) is withdrawn by the repo's
++own research and refuted here by a measured attack on its partial layer;
++the hybrid S-box puts hemera outside every published bound and every
++bounty, so ninety days of public silence about it would measure only how
++few people looked; v2 keeps native throughput (~2 304 against ~2 224
++multiplications per permutation) and pays only in-circuit (+76 % S-box
++constraints per permutation), a cost the roadmap shrinks; and rounds are
++the one parameter that cannot be raised after genesis without rehashing
++the graph. the digest length (4, 6 or 8 limbs) is a separate parameter
++that changes no margin in §3 except the generic collision row — choose it
++for the post-quantum requirement, independently. if the owner keeps 0.3,
++the campaign below still runs (its instance table covers both), but the
++results log already opens with a CICO-1 solution through the whole
++partial layer, and the honest status of 0.3 is a profile with a known
++full-round distinguisher under measurement: it can meet criterion 2 of §6
++only on the estimates of §3.1, and the published subspace-trail reach
++(≈ 30 internal rounds at t = 16, §3.3) already exceeds its 16 partial
++rounds, which fails criterion 3.
++
++either way the campaign clock starts when the chosen profile's constants,
++vectors and this page's instance table are published together; a change of
++profile restarts it.
++
++## 1. the object
++
++### 1.1 parameters
++
++| | 0.3 (shipped) | v2 (hemera#15) | source |
++|---|---|---|---|
++| field | Goldilocks p = 2^64 − 2^32 + 1 | same | `specs/field.md` |
++| width t / rate r / capacity c | 16 / 8 / 8 (512 bits) | 16 / 8 / 8, or 24 / 16 / 8 | `rs/src/params.rs`; `roadmap/profile-v2.md` |
++| full-round S-box | x⁷ (7 is the least d with gcd(d, p − 1) = 1) | x⁷ | `specs/permutation.md` |
++| partial-round S-box | x⁻¹ = x^(p−2), 0 ↦ 0, on state[0] | x⁷ on state[0] | `rs/src/profile.rs` (`HEMERA`, `PartialSbox::Inverse`) |
++| full rounds R_F | 8 = 4 + 4 | 12 = 6 + 6 | |
++| partial rounds R_P | 16 | 48 | |
++| initial linear layer | M_E applied once before round 0 | same | `specs/permutation.md` |
++| external layer M_E | circ(2·M4, M4, M4, M4), M4 = circ(2, 3, 1, 1) (Plonky3 form) | Poseidon2 reference | `rs/src/field.rs` `mds_light_permutation` |
++| internal layer M_I | 1 + diag(d), d = Plonky3 width-16 Goldilocks diagonal | Poseidon2 reference, checked | `specs/matrices.md` |
++| round constants | 128 external + 16 internal, self-bootstrapped: Hemera₀ (all constants 0) absorbs the bytes 63 79 62 65 72 and squeezes 144 elements | same seed, then the Poseidon2 parameter checks; failures regenerated with a counter | `specs/bootstrap.md`, `rs/src/bootstrap.rs` |
++| digest | 4 limbs = 32 bytes, little-endian canonical | 6 limbs = 48 B (t = 16) or 8 limbs = 64 B (t = 24) | `specs/encoding.md` |
++| native cost | ~2 224 multiplications; 2.93 µs single, 0.80 µs batched (M4 Max) | ~2 304 multiplications (#15 estimate) | `audit/permutation-performance-2026-10.md` |
++
++checked here: `audit/campaign/hemera_ref.py` is an independent Python model
++of the 0.3 permutation and sponge that reproduces the three `hash` vectors
++of `vectors/hemera.json` and re-derives all 144 constants of
++`rs/src/constants.rs` from the five-byte seed.
++
++### 1.2 modes — every way an input reaches the permutation
++
++the sponge (`specs/sponge.md`, `rs/src/sponge.rs`): state ← 0; state[11] ←
++mode tag; input bytes are packed 7 per limb (every limb < 2^56); each full
++56-byte block is added into state[0..8] (field addition) and permuted; the
++final block is the tail ‖ 0x01 ‖ 0* (a full extra block when the length is
++a multiple of 56), state[10] ← total byte length (overwritten, not added),
++permute; output state[0..4]. capacity lanes (`specs/capacity.md`):
++state[8] chunk counter, state[9] flags (CHUNK 4, PARENT 2, ROOT 1),
++state[10] length, state[11] mode, state[12..14] NMT namespace bounds,
++state[14..16] zero.
++
++| mode | how it uses the permutation | callers that matter for consensus |
++|---|---|---|
++| plain `hash` | the sponge, mode 0 | particles, block id (168-byte header: three full blocks plus a padding block), txid, signing statement, token ids, balance keys, axon ids (`soft3/specs/chain.md`); record commitment, owner and nullifier in the pool (`privacy-frozen.md` §2) |
++| `hash_secret`, `Hasher::new_secret`, `permute_ct` | identical digest, constant-time kernel | owner = hemera(D_OWNER ‖ sk) and nullifiers when computed from secrets |
++| tree: `hash_leaf`, `hash_node`, NMT node | sponge with counter / flags / namespace in capacity; a binary node (32 + 32 bytes) is one rate block | content trees of particles, BBG |
++| zheng node jet | `permute(L ‖ R ‖ 0 ‖ flags ‖ 0⁶)[0..4]` — a truncated permutation, no sponge | the chain's Merkle trees inside proofs, the pool's depth-40 commitment tree |
++| zheng field-native words and 4-ary nodes | `perm(l ‖ r ‖ NODE_TAG ‖ 0⁷)[0..4]`; 4-ary node = `perm(c0 ‖ c1 ‖ c2 ‖ c3)[0..4]` with no tag | every IVC tree and inner wrap level |
++| zheng transcript (`recursion::sponge`) | overwrite duplex, rate 9, capacity 7 | every Fiat–Shamir challenge of profiles 4–6 |
++| keyed_hash, derive_key | sponge with mode 1 / 2 / 3 | radio handshake only; deprecated, moving to mudra (`roadmap/one-pure-hash.md` §3) |
++
++the campaign's object is the permutation and these constructions over it.
++the zheng truncated-permutation modes put full field elements (digest
++limbs, not 7-byte limbs) into the rate, so instances below use unrestricted
++inputs.
++
++### 1.3 defects in the current documents
++
++found while fixing the object; none changes an output bit, all must be
++corrected before the public launch of the campaign:
++
++- `specs/README.md`, `specs/permutation.md`, `docs/explanation/parameters.md`,
++  `roadmap/inversion-sbox.md`: "algebraic degree 2^1046, 2^918 margin" — the
++  unreduced composition degree; it is no lower bound on any attack (§3.2).
++- `rs/src/params.rs` header: "collision 256 bits, quantum 170" — the
++  32-byte digest caps collision at 2^128 classical, 2^85.3 quantum.
++- `docs/explanation/parameters.md`: preimage 2^512 at cap 8 — the digest
++  caps preimage at p^4 ≈ 2^256; `docs/explanation/security.md` lists
++  "Hemera R_P = 64".
++- `specs/constants.md` prints round constants (round 0 begins
++  `0xD5CCEAC23026433F`) that differ from the shipped `rs/src/constants.rs`
++  (`0x7E6EF67C13BC8100`); the code matches the bootstrap, the spec page is
++  stale. `specs/field.md` says 192 constants; there are 144.
++- `specs/permutation.md` x⁻¹ witness equations `xy(xy − 1) = 0`,
++  `(1 − xy)y = 0` accept every (x, 0); the sound pair is `x(xy − 1) = 0`,
++  `y(xy − 1) = 0` (hemera#2, `research/inverse-sbox-assessment.md` §1).
++- `specs/matrices.md` claims both 16 × 16 matrices are MDS; they are not
++  (zero 2 × 2 minors, hemera#2). this is the Poseidon2 design — its external
++  and internal layers are not MDS at t ≥ 8 by construction — so the defect
++  is the claim; the criteria that matter for M_I are the subspace-trail
++  conditions (§3.5).
++- `cyber/whitepaper.md` §4.2 lists only d = 7 and "algebraic degree
++  7^64 ≈ 2^1046"; the §4.4 one-profile paragraph exists only as commit
++  `a4f57507` on a local checkout of `cyber` master, not on `origin/master`.
++
++## 2. claims
++
++### 2.1 what hemera claims
++
++| property | 0.3, 4-limb digest | v2, 6-limb digest | v2, t = 24, 8-limb digest | basis |
++|---|---|---|---|---|
++| collision, classical | p² = 2^128.0 | p³ = 2^192 | 2^256 | birthday on the digest |
++| collision, quantum (BHT) | p^(4/3) = 2^85.3 | 2^128 | 2^170 (capacity-bound) | Brassard–Høyer–Tapp |
++| preimage, classical | p⁴ ≈ 2^256 | 2^384 → capacity 2^256 | 2^256 | min(digest, capacity) |
++| preimage, quantum (Grover) | 2^128 | 2^128+ | 2^128+ | |
++| capacity (generic sponge, c = 512 bits) | 2^256 | 2^256 | 2^256 | sponge indifferentiability, c/2 |
++| algebraic margin | claimed 2^918 — withdrawn (§1.3) | "measured by bounty, not claimed" | same | |
++
++the campaign's pass target is the one in G3: no result below 128 bits
++classical on any property the stack uses. for the 4-limb digest that means
++collision and preimage attacks below 2^128, second preimages on tree
++nodes below 2^128, and any structural property of the permutation that
++yields one of those.
++
++### 2.2 zheng rows that rest on these claims
++
++from `zheng/specs/soundness.md` on `release/0.4` (`09308d7`, 2026-10-14):
++
++| ledger row | what it takes from hemera | number used |
++|---|---|---|
++| hash (hemera, 4-limb output) | collision resistance and random-oracle behaviour; status conjectured: "parameters experimental, inverse-S-box partial rounds unanalysed" | 2^128 classical, 2^85.3 quantum |
++| relation compiler — hemera node jet | collision resistance for what a Merkle root means | hash row |
++| state v3 certificate | a read is forged only by a hemera collision in the root fold or a table commitment | hash row |
++| verifying keys; program binding by digest (profiles 4–6) | collision resistance of the key and program digests | 2^128 |
++| succinct profile, zk profile, private MITH, composition over N steps | Fiat–Shamir with hemera as a random oracle: `Q · 2^-128` for Q hemera queries, plus hemera collisions | 128.0, 128.2, 128.1 bits |
++| WHIR, TensorRs, hiding opening | hemera Merkle binding | hash row |
++| zk — zero knowledge | hemera as a random oracle on salted leaves | `Q · 2^-256` term |
++| MITH challenges; base-field challenges | hemera XOF limbs uniform on F_p | exact / ≤ 2^-128 |
++| field-native transcript (`recursion::sponge`) | hemera's permutation as an ideal permutation, capacity 7 lanes | generic 2^224 |
++| field-native words and 4-ary nodes | ideal-permutation collision bound for 4-limb truncated outputs | 2^128 |
++| IVC composition, wrap composition | hemera as a random oracle inside the circuit (conjectured) | per round ≥ 128 |
++| grinding (WHIR fold, query, combination) | every grinding permutation counted in Q | interactive 110.23 / 104.24 / 101.89 without grinding |
++
++two rows use more than collision and preimage resistance: the field-native
++transcript treats the permutation as ideal, and query indices are the low
++k ≤ 32 bits of single output limbs. a structural property of the
++permutation — a one-limb CICO solver, a low-degree relation — falsifies
++"ideal permutation" as a model before it breaks any digest claim. §3.2
++shows the 0.3 profile already has one; whether it moves a soundness row is
++review question R4 (§5).
++
++## 3. attack surface and margins
++
++conventions. "CICO-k": fix the capacity and all but k rate inputs, ask k
++chosen output limbs to take target values (the Ethereum Foundation bounty
++problem). generic cost of CICO-k is p^k permutation calls. margins are
++log2 of (attack cost / 2^128) for hash-level claims, or rounds left over a
++stated attack reach. "computed" means derived on this page and reproduced
++by a script in `audit/campaign/`; "published" means taken from the cited
++paper; "estimate" means a degree bound turned into a cost by the usual
++root-finding complexity, not run.
++
++### 3.1 margin table — both profiles
++
++| line | 0.3 (x⁷ 4+4, x⁻¹ 16) | v2 (x⁷ 6+6, x⁷ 48) | how |
++|---|---|---|---|
++| statistical / differential (wide trail; R_F ≥ 6 rule) | R_F 8: +2 full rounds over the rule; partial x⁻¹ differential uniformity 4, x⁷ 6 | R_F 12: +6 | Poseidon2 statistical inequality; uniformity from hemera#2 `research/inverse-sbox-assessment.md` §2 |
++| interpolation (Poseidon2 inequality R_F + R_P ≥ 26 at Goldilocks, t = 16, M = 128) | x⁷-equivalent rounds 8 + 16 · log_7 2 = 13.70 of 26 needed: −12.3 rounds; needs R_P ≥ 51 at R_F = 8 | 60 of 26: +34 rounds | computed, `p2rounds.py`; inverse counted by its rational degree 2, as in the x⁻¹ interpolation bound of Poseidon (ePrint 2019/458, eq. 4) and hemera#2 |
++| Gröbner (Poseidon2 inequalities 1–3 and the ePrint 2023/537 binomial term) | not applicable: every inequality is written for x^α in all rounds; no published bound for the hybrid | all satisfied; minimal R_P at R_F = 12 is 14 (48 = 3.4×); binomial term 2^521 against 2^128 | computed, `p2rounds.py`; reproduces Poseidon2's (8, 22) for this field |
++| univariate CICO-1 degree (one free limb) | 7^8 · 2^16 = 2^38.46 < p | 7^60 = 2^168.4 > p, capped by p | computed; degree confirmed exact on 10 reduced instances (§3.2) |
++| CICO-1 cost (generic p = 2^64 calls ≈ 2^75 multiplications) | ≈ 2^52–2^56 multiplications, ≈ 2^41–2^45 permutation-equivalents: 2^19–2^23 below generic; memory of order 10 TB | generic | estimate from the measured slope (§3.2) |
++| CICO-2 / 128-bit partial preimage (generic 2^128) | Bézout degree D² = 2^76.9 → ≈ 2^77+ by resultant and root finding: −51 bits against 128 | generic | estimate |
++| full preimage of the 4-limb digest, CICO-4 (generic 2^256) | Bézout D⁴ = 2^153.8: +25.8 over 128; with one initial full round skipped (the round-skipping technique of Bariant et al., ToSC 2022, needs ≥ 2 free limbs) D = 2^35.65, D⁴ = 2^142.6: +14.6 | ≥ 2^128 by the inequalities; best published reach in §3.3 | estimate |
++| collision of the 4-limb digest | generic 2^128: margin 0 by construction; no algebraic route found below it (one-limb CICO + birthday on 3 limbs costs at best 2^96 · 2^41 = 2^137) | 6-limb digest: 2^192 | computed |
++| subspace / linearization through the partial layer | an affine line of inputs makes 15 of 16 inverse rounds affine (every active S-box input = 1): 1 round margin for that construction | the same construction stops at 15 rounds of 48: +33 | hemera#2 `research/partial_subspace.py` |
++| subspace trails through the internal layer (ePrint 2026/967, 2026/1792) | linear trails ≤ t − 1 = 15 rounds: +1; nonlinear trails ≈ 30: −14 | +33 linear, +18 nonlinear | published bounds, per abstract; §3.3 |
++| subspace restriction reach (ePrint 2026/1692) | the attacked KoalaBear design was crossed through all 23 partial rounds once cut to 1 of 4 initial full rounds; 0.3 keeps 4 initial full rounds and 16 partial — transfer to the hybrid unanalysed | 6 initial full rounds of x⁷ | published, per abstract; §3.3 |
++| Goldilocks root-finding (NTT-friendly p − 1 = 2^32 · 3 · 5 · 17 · 257 · 65537) | applies: speeds the univariate rows above | does not bind: univariate degree exceeds p | §3.4 |
++| generic: capacity 512 bits, MITM on the sponge | 2^256 | 2^256 | generic |
++
++the 0.3 column has three rows below the generic level of the problem they
++measure (interpolation, CICO-1, CICO-2). none is yet a collision or
++preimage of the 32-byte digest below 2^128; the closest hash-level row is
++the full preimage estimate, 14.6 to 25.8 bits over the target, on an
++estimate that ignores every Gröbner improvement since 2023. the v2 column
++has no row below its target.
++
++### 3.2 the inverse partial layer — computed and run
++
++the argument for 16 inverse rounds was degree: x^(p−2) has degree p − 2,
++so sixteen rounds "give" (p − 2)^16. an attacker never meets that degree.
++carry the state as rational functions of one free input X with a common
++denominator, x_i = N_i / D. a full x⁷ round maps (N_i + cD)^7 / D^7 and
++multiplies the degree by 7; an inverse round on x_0 maps
++x_0 ↦ D / (N_0 + cD), and with the common denominator D · U
++(U = N_0 + cD) the numerators become D², N_i U: the degree doubles. the
++whole permutation is therefore a rational function of degree at most
++7^8 · 2^16 = 377 801 998 336 ≈ 2^38.46 in any single input limb, on all
++inputs except the ≤ 16 · D² roots of some inverse argument (probability
++negligible). the Poseidon paper rejected inverse partial rounds for exactly
++this growth (ePrint 2019/458: "the inverse function does not provide a sufficiently fast degree growth"; its x⁻¹ interpolation bound counts one bit of degree per partial round); hemera#2 derived the
++same bound (`research/full-round-status.md`).
++
++`audit/campaign/cico1.py` builds N_limb − target · D symbolically with the
++real constants and matrices, takes gcd(f, X^p − X) by one modular powering,
++reads off the roots, and checks every root on the concrete permutation
++(`hemera_ref.py`, itself checked against the vectors). capacity fixed to a
++hash's final block (length 168), seven rate limbs fixed at random values,
++X in limb 3, target output limb 0 = 0. one core of an M4 Max, python-flint
++0.9.0, 2026-10-16:
++
++| R_F | R_P (x⁻¹) | degree bound | degree found | total time | roots | verified on the permutation |
++|---|---|---|---|---|---|---|
++| 1 + 1 | 4 | 784 = 2^9.61 | 784 | 0.1 s | 1 | 1 |
++| 1 + 1 | 8 | 12 544 = 2^13.61 | 12 544 | 0.2 s | 2 | 2 |
++| 1 + 1 | 10 | 50 176 = 2^15.61 | 50 176 | 0.8 s | 1 | 1 |
++| 2 + 2 | 4 | 38 416 = 2^15.23 | 38 416 | 0.6 s | 1 | 1 |
++| 1 + 1 | 12 | 200 704 = 2^17.61 | 200 704 | 3.9 s | 0 | — |
++| 2 + 2 | 8 | 614 656 = 2^19.23 | 614 656 | 13.7 s | 0 | — |
++| 1 + 1 | 14 | 802 816 = 2^19.61 | 802 816 | 22.1 s | 1 | 1 |
++| 3 + 3 | 4 | 1 882 384 = 2^20.84 | 1 882 384 | 45.8 s | 0 | — |
++| 1 + 1 | 16 (all) | 3 211 264 = 2^21.61 | 3 211 264 | 92.1 s | 1 | 1 |
++| 2 + 2 | 10 | 2 458 624 = 2^21.23 | 2 458 624 | 120.2 s | 1 | 1 |
++
++the bound is attained exactly every time: no cancellation saves the
++defender. a run with no root is the expected ~37 % case of a random
++polynomial; the attacker changes one fixed limb and repeats. time grows as
++D^1.0 to D^1.2 over the measured range (2^17.6 → 2^21.6; the machine was
++shared, so single runs carry noise). extrapolated to the full 0.3
++permutation, D = 2^38.46 is 2^16.85 times the largest run: 92 s · 2^16.85
++to 92 s · 2^20.2, i.e. 10^7 to 10^8 core-seconds (0.35 to 3.5
++core-years) of fast-polynomial arithmetic, ≈ 2^52–2^56 field multiplications, with
++polynomials of 2^38.46 coefficients (2.75 TB each, order 10 TB working
++memory). the generic cost of the same CICO-1 problem is 2^64 permutation
++calls: ≈ 4.7 · 10^5 core-years at the batched 0.80 µs per permutation.
++memory, not time, is the barrier, and out-of-core NTT arithmetic over
++Goldilocks is an engineering problem with known solutions (§3.4).
++
++what this does and does not break. it is a full-round distinguisher of the
++0.3 permutation and an attack on its one-limb CICO problem at 2^19 to 2^23
++below generic; it falsifies "hemera's permutation as an ideal permutation"
++as a model. it is not a collision or preimage of the 32-byte digest
++(§3.1). it does not reach the chain's proof of work: the 168-byte header
++occupies three full blocks, so every header byte passes through at least
++two permutations before the output (degree D² > p), and sponge rate limbs
++are confined to 2^56 values (a random root is encodable with probability
++2^-8). its reach into the zheng rows that treat the permutation as ideal
++is open (review question R4).
++
++with x⁷ in the partial rounds the same construction multiplies the degree
++by 7 per partial round, and the x⁷-only Poseidon2 reference (R_F 8, R_P
++22) already has 7^30 = 2^84.2 > p; v2 has 7^60. the univariate route is
++closed for both.
++
++### 3.3 published attacks, line by line
++
++each line: the best published result, its instance, and what it means for
++the two profiles. ePrint numbers and claims were checked against the ePrint
++abstract pages and poseidon-initiative.info on 2026-10-16; figures that
++appear only inside PDFs (which returned 403) are marked "per abstract" or
++"secondhand".
++
++| line | best published result | instance and reach | 0.3 | v2 |
++|---|---|---|---|---|
++| interpolation, univariate root finding | Bariant, Bouvier, Leurent, Perrin, ToSC 2022(3):73–101 — root finding solves EF Feistel-MiMC, Poseidon and Rescue-Prime challenges; a technique shaves two full rounds off SPN CICO at little cost | EF reduced-round challenges | the 0.3 univariate degree 2^38.46 is lower than the degree of the EF Goldilocks instance already claimed (below) — the full 0.3 permutation is easier than a solved bounty instance | degree 7^60 > p: closed |
++| root finding over NTT-friendly fields | Sanso, Vitto, ePrint 2025/937 (Graeffe and tangent-Graeffe single-root finding); Zhao, Ding, ePrint 2025/950 (Graeffe in interpolation attacks, $20 000 of challenges, 2^13 faster wall time); merged as ePrint 2025/1916 | EF Poseidon-64: Goldilocks, d = 7, t = 8, R_F 6, R_P 7 / 8 / 10 claimed (24 / 28 / 32-bit levels), R_P 13 (40-bit) open; one Goldilocks instance reported solved after 9 h 38 min of root finding (secondhand) | binds: R_P 10 at R_F 6 is degree 7^16 = 2^44.9, solved; 0.3 full is 2^38.46 | does not bind |
++| Gröbner basis, HADES | Ashur, Buschman, Mahzoun, ePrint 2023/537 ("Algebraic Cryptanalysis of HADES Design Strategy: Application to POSEIDON and Poseidon2") — Gröbner cheaper than the designers' bound; the Poseidon2 round script adopted its binomial term | large-field Poseidon instances | no bound exists for the hybrid S-box | binomial term 2^521 ≥ 128 (§3.1) |
++| Gröbner on CICO, "FreeLunch" | Bariant, Boeuf, Lemoine, Manterola Ayala, Øygarden, Perrin, Raddum, ePrint 2024/347 (CRYPTO 2024) — the natural CICO system is already a Gröbner basis; Griffin CICO 7 of 10 rounds in < 4 h; full-round threat to Griffin, Anemoi, ArionHash. CheapLunch, ePrint 2025/2040 (Bak, Bariant, Boeuf, Briaud, Øygarden, Phanse) extends it to CICO-k and covers Poseidon, Neptune, XHash8 with "no full-round threat" | Griffin, Anemoi, ArionHash; Poseidon family unaffected at full rounds | not analysed for x⁻¹ partial rounds; in-house task T3 | no full-round threat reported for the family |
++| Gröbner with subspace trails | Grassi, Koschatko, Rechberger, ePrint 2025/954 (ToSC 2025) — the original round model under- or over-estimates depending on the instance; first case of preimage easier than CICO (Neptune compression) | Poseidon, Poseidon2, Neptune judged secure | — | inside the analysed family |
++| resultants, CICO-2 | Bak, Bariant, Boeuf, Hostettler, Jazeron, ePrint 2026/150 — claimed the first three Poseidon2-31m and -31k instances and two Poseidon-256 instances (per the authors' March 2025 slides: up to 40 h on 1 000 cores, or 8.5 days and 1.3 TB); "we did not manage to attack any of the Poseidon2-64 instances". Bak, Hostettler, ePrint 2026/1905 — bivariate resultant of degree d^(2R_F + R_P) | 31-bit and 256-bit EF instances | D² = 2^76.9 by Bézout (§3.1) is already below generic CICO-2; the 2026/1905 degree formula is written for x^d rounds and is not applied here (task T3) | for x⁷ throughout, the formula gives 7^(2·12+48) = 2^202 if R_F counts all full rounds, 7^(12+48) = 2^168 if it counts one side: above 2^128 either way |
++| subspace restriction | Bhati, Tariq, Ashur, ePrint 2026/1692 ("How to Attack Poseidon via Smart Subspace Restriction") — per abstract: Poseidon over KoalaBear (4, 23, 4): CICO-1 on 28 of 31 rounds and CICO-2 on 25 of 31, both on instances with one initial full round; interpolation / resultant reach 20 rounds (CICO-1) and 15 (CICO-2); a (3, 10, 3) CICO-1 F4 estimate drops from 2^560 to 2^121 | d = 3, 31-bit field, t = 24; the whole partial layer is crossed once the initial full layer is cut to one round | the hemera#2 affine line already crosses 15 of 16 partial rounds; margin lives in the 4 initial full rounds | margin lives in the 6 initial full rounds (x⁷), against the attacked design's 4 (x³) |
++| linear-layer weakness, round skipping | Merz, Rodríguez García, ePrint 2026/306 ("Skipping Class") — weak matrices improve round skipping on Poseidon2 and Poseidon2b; first algebraic collision cheaper than the matching algebraic preimage; a 2^106 improvement on one 128-bit set, still above its claimed security. secondhand only: Gröbner preimage estimates for 31-bit Poseidon2 fell 2^164 → 2^126 (t = 16, α = 3) and 2^174 → 2^123 (t = 24), reported at Ethproofs call 8 and in a ZKM blog post | 31-bit Poseidon2 / Poseidon2b | review question R3 for M_E, M_I | review question R3 for the reference matrices |
++| subspace trails through the internal layer | Li, Wang, ePrint 2026/967 — a linear subspace trail covers at most t − 1 internal rounds; Li, Wang, Liu, ePrint 2026/1792 — nonlinear trails cover about twice as many, reaching or exceeding the designers' internal round counts for several instances | t − 1 = 15 at t = 16; ≈ 30 nonlinear | 16 partial rounds: covered by the nonlinear estimate (−14) and one round past the linear bound (+1) | 48 against ≈ 30: +18 |
++| invariant subspaces of the partial layer | Keller, Rosemarin, ePrint 2020/179 (EUROCRYPT 2021) — a good MDS matrix gives more active S-boxes than claimed; Starkad t = 24 had a large invariant subspace through the partial rounds. Grassi, Rechberger, Schofnegger, ePrint 2020/500 (FSE 2022) — conditions on the internal matrix that exclude infinitely long subspace trails | design rules | partly checked (§3.5) | the v2 constant and matrix checks |
++| differential / statistical, higher-order | Beyne et al., ePrint 2020/188 (CRYPTO 2020, "Out of Oddity") — distinguishers on most STARK-friendly challenge parameters, a practical collision on reduced GMiMC, preimages on some HadesMiMC instances | EF STARK-friendly challenges (2019–20) | R_F 8 ≥ 6: +2 | +6 |
++| collisions on Goldilocks AO hashes | Liu, Koschatko, Grassi, Yan, Chen, Banik, Meier, ePrint 2024/1900 (ToSC 2024(4)) — practical collisions on 2 of 6 rounds of Monolith-64, 3 of 5 of Tip5 / Tip4 / Tip4′, semi-free-start further; no practical differential or rebound collision on reduced Poseidon or Poseidon2 found in the literature | Tip5, Monolith | B1 instances measure this line | B1 |
++| inverse S-boxes in history | Poseidon, ePrint 2019/458 (USENIX Security 2021): "the inverse function does not provide a sufficiently fast degree growth" — its x⁻¹ interpolation bound gives one bit of degree per partial round. Albrecht, Cid, Grassi, Khovratovich, Lüftenegger, Rechberger, Schofnegger, ePrint 2019/419 (ASIACRYPT 2019): Jarvis and Friday, single-inverse-S-box designs, fall to Gröbner attacks | design history | the reason 16 inverse rounds are short | — |
++| full-round breaks of AO hashes | Anemoi (ePrint 2022/840): full-round attack at 2^110.1 against the claimed 127 bits, ePrint 2024/886 (ASIACRYPT 2024); Griffin (ePrint 2022/403): 7 of 10 rounds by FreeLunch | the family breaks at full rounds when margins are thin | — | — |
++
++the Ethereum Foundation Poseidon Cryptanalysis Initiative (poseidon-initiative.info)
++is the yardstick for §4: its 2025 program ($130 000) paid $4 000 / $6 000 /
++$10 000 / $15 000 for the 24 / 28 / 32 / 40-bit levels of reduced-round
++CICO instances; the 2026 CICO program pays $6 000 / $10 000 / $15 000 on
++Poseidon-31 KoalaBear (R_F 6, R_P 6 / 8 / 10), all three claimed by July
++2026; a zero-test program ($40 000) was fully claimed in June–July 2026;
++an attack-reward program pays at least $5 000 per ePrint paper through the
++end of 2026. the Foundation announced in August 2026 that Ethereum's
++post-quantum paths will not use Poseidon (secondhand, ZKM blog).
++
++reading the table for the decision: every line that has a published
++number either binds 0.3 below its generic level or has no bound for the
++hybrid at all; for v2 every line with a number leaves rounds in hand. the
++one line where v2's margin is thinnest is the subspace restriction of
++2026/1692, because its reach is measured in initial full rounds, not
++partial rounds; this also means hemera#15's margin rule ("best reach
++≈ 14 of 23 partial rounds") rests on a misreading of that abstract —
++the reported reach crosses all 23 partial rounds of the attacked instance
++once the initial layer is cut to one full round. the rule should be
++restated per layer: each outer full layer keeps at least three times the
++full rounds a published attack crosses or skips (two: the round-skipping
++technique of Bariant et al.; 2026/1692 crosses one), and the partial layer
++at least 1.5 times the longest published subspace trail (≈ 30 at t = 16,
++so ≥ 45). v2 meets both, the first exactly (6 against 3 · 2; 48 against
++45); 0.3 meets neither (4; 16).
++
++### 3.4 Goldilocks-specific structure
++
++- p − 1 = 2^32 · 3 · 5 · 17 · 257 · 65537 is smooth, so F_p has
++  multiplicative subgroups of many orders and NTTs of length up to 2^32
++  radix-2 and far longer mixed-radix. this is what makes Goldilocks fast
++  for proofs and is equally what makes univariate root-finding and
++  polynomial interpolation over it cheap (the Graeffe-transform attacks of
++  §3.3 use exactly this). it binds wherever a univariate degree is below
++  p — the 0.3 rows of §3.1 — and nowhere else.
++- the smallest invertible power map is x⁷ (gcd(3, p − 1) = 3,
++  gcd(5, p − 1) = 5); the degree per round is 7 rather than 3 or 5, which
++  is why Goldilocks Poseidon2 needs fewer rounds than BN254 or BabyBear
++  instances per bit.
++- both x⁷ and x⁻¹ map every multiplicative subgroup to itself; constants
++  and the linear layers are what break invariant cosets. the constant
++  checks of v2 (§1.1) must include the invariant-subspace and
++  invariant-coset tests of the Poseidon2 parameter script.
++- input encoding packs 7 bytes per limb, so sponge inputs live in a 2^56
++  subset of F_p; a CICO solution is a sponge preimage only with
++  probability 2^-8 per free limb. the zheng truncated-permutation modes
++  (§1.2) take full limbs and carry no such restriction.
++- the 64-bit field makes p² = 2^128 exactly the collision target of a
++  4-limb digest: the digest carries no margin above 128 bits classical,
++  and 2^85.3 quantum.
++
++### 3.5 the linear layers
++
++M_I = 1 + diag(d) with the Plonky3 diagonal: rank 16, characteristic
++polynomial irreducible of degree 16 over F_p, and the rows of
++[e0; e0 M_I; …; e0 M_I^15] have full rank for every prefix, so no nonzero
++difference stays inactive at coordinate 0 through 16 partial rounds
++(hemera#2 `research/inverse-sbox-assessment.md` §4). this is the necessary
++part of the Poseidon2 internal-matrix condition; the full condition (no
++invariant subspace for any power of M_I, the "infinitely long subspace
++trail" test of ePrint 2020/500) is not yet recorded and is campaign task
++T2 for either profile. M_E is the Plonky3 circulant form; the ePrint
++2026/306 line attacks linear-layer structure and must be read against both
++matrices (review question R3).
++
++## 4. the bounty
++
++### 4.1 tiers
++
++the bounty pays for results on the profile frozen by §0. instances use
++the frozen constants, matrices and S-boxes with reduced round counts:
++reduced-round instances keep the first R_F / 2 external constant rows and
++the last R_F / 2, and the first R_P internal constants (the convention of
++`hemera_ref.permute`). the "full" row is the frozen profile.
++
++v2 (recommended) instance table:
++
++| tier | instance (R_F, R_P) | problem | what it measures |
++|---|---|---|---|
++| A1 | (4, 8) | CICO-1, CICO-2 | warm-up; expected to fall |
++| A2 | (6, 16) | CICO-1, CICO-2 | reach into the partial layer |
++| A3 | (8, 24) | CICO-1, CICO-2 | half the partial budget at reduced full rounds |
++| A4 | (12, 24) | CICO-2 | half the partial budget at full R_F: a solution breaches the #15 margin rule and triggers re-parameterization |
++| B1 | (8, 22) and (12, 32) | collision or second preimage of the 4-limb truncated permutation `perm(L ‖ R ‖ tag ‖ 0⁷)[0..4]` below 2^128 | the zheng node and tree modes |
++| B2 | (8, 22) and (12, 32) | preimage of the sponge digest below 2^128 | particles, commitments |
++| C | (12, 48) — full | any distinguisher of the permutation from a random permutation with advantage/work better than generic | the ideal-permutation rows of zheng |
++| D | (12, 48) — full | collision, preimage or second preimage below 2^128 classical | the G3 pass criterion; a D result fails the campaign |
++
++0.3 instance table (if the owner keeps it): A1 (2, 8), A2 (4, 12), A3
++(8, 12); B1 and B2 at (8, 16) on the truncated permutation and sponge; C at
++(8, 16) is already met in-house (§3.2, results log entry 1) and pays only
++for a CICO-1 solution demonstrated on the full permutation or a better
++complexity; D as above.
++
++### 4.2 terms
++
++- eligible: the first public, reproducible result on an instance, measured
++  against the frozen profile at the campaign's start date. a result must
++  ship code that runs against `audit/campaign/hemera_ref.py` or the Rust
++  crate at the pinned revision and prints the solution; CICO solutions are
++  checked by evaluating the permutation, nothing else.
++- complexity claims without a solution (tiers C and D) need a written
++  argument, a reduced-round instance where the method is demonstrated, and
++  an extrapolation the reviewers of §5 accept.
++- one payout per instance and tier; a strictly better result on an already
++  claimed instance (more rounds, or lower complexity by ≥ 2^8) is a new
++  claim.
++- the team, its contractors and anyone paid for §5 review are ineligible for
++  payouts on tiers A–B; reviewers are eligible for C–D.
++- results are public: the authors may publish when they wish after the
++  disclosure window below; hemera publishes every accepted result in the
++  results log with credit.
++- no claim reaches a payout by moving the target: the instance table is
++  frozen at the start of the campaign and versioned with this page.
++
++### 4.3 disclosure
++
++- tiers A–C: report publicly (an issue or eprint) or privately; there is no
++  embargo — these instances protect nothing that is deployed.
++- tier D, and any result that reaches a deployed mode of §1.2 (the chain's
++  proof of work, Merkle trees, particles, transcripts): report privately
++  first, 30-day window before publication; the team acknowledges within 72
++  hours, confirms or refutes within 14 days, and states in the results log
++  that a private report exists and its status without its content.
++- private channel: a GitHub private security advisory on
++  `cyberia-to/hemera` ("report a vulnerability"). private vulnerability
++  reporting is currently disabled on the repository — the owner enables it
++  before the campaign starts — and the owner publishes a contact key here:
++
++```
++contact key: [owner publishes an age or OpenPGP public key and its fingerprint]
++```
++
++### 4.4 payouts
++
++amounts are the owner's decision; the structure is fixed so the decision is
++one number per row.
++
++| tier | payout | nearest EF Poseidon-initiative figure (§3.3) |
++|---|---|---|
++| A1 | [owner] | $4 000 (24-bit level, 2025) |
++| A2 | [owner] | $6 000 – $10 000 (28 / 32-bit levels; 2026 CICO program) |
++| A3 | [owner] | $15 000 (40-bit level; 2026 top instance) |
++| A4 | [owner] — and the profile is re-parameterized | above every EF instance |
++| B1, B2 | [owner] each | no EF analogue; the zero-test program paid $40 000 in total |
++| C | [owner] | attack-reward program: at least $5 000 per paper |
++| D | [owner] — the largest; the campaign fails and the pool stays off | no EF analogue |
++
++payment in CYB or a stable asset at the claimant's choice, released when
++the result is verified and listed.
++
++## 5. third-party review
++
++### 5.1 who
++
++the people who wrote the attacks of §3.3 and the design rules hemera
++borrows. invited by name, in two rounds: a paid review (two groups) and the
++open invitation to the rest.
++
++| group | people (affiliation per ePrint) | lines | ask |
++|---|---|---|---|
++| Poseidon / Poseidon2 designers | Lorenzo Grassi (TU Eindhoven, Ponos), Dmitry Khovratovich (Ethereum Foundation), Markus Schofnegger (Horizen Labs), Christian Rechberger and Katharina Koschatko (TU Graz) | design rules, subspace trails, Gröbner | paid review: R1–R3 |
++| Inria / Simula algebraic group | Augustin Bariant, Aurélien Boeuf, Antoine Bak, Guilhem Jazeron, Léo Perrin, Gaëtan Leurent (Inria); Morten Øygarden, Håvard Raddum (Simula UiB) | FreeLunch, CheapLunch, resultants, round skipping | paid review: R1, R4; in-house instance calibration |
++| subspace restriction | Tomer Ashur, Amit Singh Bhati, Michiel Tariq (3MI Labs, KU Leuven); Jan Buschman, Mohammad Mahzoun (TU Eindhoven) | 2026/1692, 2023/537 | open invitation: the A instances |
++| root finding over NTT fields | Antonio Sanso (Ethereum Foundation), Giuseppe Vitto (Zircuit), Zhao and Ding (Tsinghua, XJTLU) | Graeffe; the 0.3 CICO-1 line | open invitation: C instance of 0.3 if kept |
++| linear layers | Simon-Philipp Merz (ETH Zurich), Rodríguez García (UPC); Li, Wang (ECNU), Fukang Liu (Science Tokyo) | 2026/306, 2026/967, 2026/1792 | open invitation: R3 |
++| collisions on Goldilocks hashes | Fukang Liu, Willi Meier (FHNW) and co-authors of 2024/1900 | B1 | open invitation |
++
++the two paid reviews go to the designers' group and to the Inria/Simula
++group: together they wrote the design rules hemera borrows and the attacks
++that moved those rules in 2023–2026. the rest receive the package and the
++bounty terms. names and affiliations are as printed on the cited ePrint
++pages; contact goes through the corresponding authors' published
++addresses.
++
++### 5.2 what to send
++
++one package, the same for everybody: this page; the frozen profile's
++`specs/` (permutation, matrices, constants, bootstrap, sponge, capacity,
++encoding); `vectors/hemera.json`; `audit/campaign/` (the Python model, the
++CICO harness, the round-number script); the zheng hash rows of §2.2; and
++four questions:
++
++- R1. does any published attack line (§3.3) reach the frozen profile's
++  instance table further than this page says?
++- R2. is the self-bootstrap of constants, followed by the Poseidon2
++  matrix and subspace checks, as good as the reference constant generator
++  (the Grain LFSR of the Poseidon scripts)?
++- R3. do the external and internal matrices admit invariant or
++  infinitely long subspace trails (ePrint 2020/500), or the linear-layer
++  structure exploited by ePrint 2026/306?
++- R4. do the zheng rows that model hemera as an ideal permutation or read
++  query indices from single limbs (§2.2) lose bits against a one-limb CICO
++  solver, and against the profile's best known distinguisher?
++
++### 5.3 in-house tasks
++
++run by the team before and during the campaign; each lands as a results
++log row with its script in `audit/campaign/`.
++
++- T1. `cico1.py` on every A instance of the frozen profile, CICO-1 and a
++  two-variable resultant variant for CICO-2, to calibrate the instance
++  table (a v2 instance that falls in-house moves up a tier before day 0).
++- T2. the infinitely-long-subspace-trail check of ePrint 2020/500 on M_I
++  and its powers, and the invariant-coset checks of §3.4, for the frozen
++  constants and matrices.
++- T3. Gröbner (msolve or F4) and resultant runs on reduced instances with
++  the CICO system written as FreeLunch / ePrint 2026/1905 write it; for
++  0.3, the same with the inverse as the two cubic relations of §1.3.
++- T4. the reach of a one-limb CICO solver into the zheng rows of §2.2
++  (R4), written as a note in `zheng/audit/`.
++
++### 5.4 timeline
++
++| when | step |
++|---|---|
++| before 2026-11-05 | owner picks the profile (§0); constants, vectors and this instance table frozen and published together; private reporting enabled; contact key published; campaign day 0 |
++| day 0 | public announcement (eprint-style note, ethresear.ch, the zkHack and Poseidon-initiative channels); paid-review invitations sent |
++| day 0–30 | in-house runs: every A instance attacked with `cico1.py` and a Gröbner run (msolve / magma F4) to calibrate the table |
++| day 45 | paid reviewers' interim notes; instance table may be extended, never weakened |
++| day 90 | earliest pass date; reviewers' final reports; G3 decision recorded in `soft3/proposals/privacy-frozen.md` |
++| after day 90 | the bounty stays open for as long as hemera is consensus material; any later D result triggers the hash-break response of `cyber/whitepaper.md` §4.5 |
++
++## 6. pass criterion and results log
++
++G3 passes when all of these hold:
++
++1. the campaign has run at least 90 days from day 0 on one frozen profile;
++2. no result in the log lowers collision, preimage or second preimage of
++   any §1.2 mode below 128 bits classical (no tier D);
++3. no tier-A4 result (for v2: CICO-2 on half the partial budget at full
++   R_F), and the per-layer margin rule of §3.3 still holds against the
++   literature at day 90: each outer full layer at least three times the
++   full rounds a published attack crosses or skips, the partial layer at
++   least 1.5 times the longest published subspace trail;
++4. at least one paid third-party review has answered R1–R4 in writing, with
++   no open finding;
++5. the zheng hash row (`soundness.md`) moves from "parameters experimental"
++   to the frozen profile with this page as its argument.
++
++a result that fails 2 stops the campaign and keeps the pool off; a result
++that fails 3 forces a re-parameterization before genesis or a fork after
++it, and restarts the clock.
++
++### results log
++
++| # | date | profile | instance | tier | result | by | status |
++|---|---|---|---|---|---|---|---|
++| 1 | 2026-10-16 | 0.3 | R_F 1 + 1, R_P 16 (all inverse rounds) and nine smaller | C (reduced) | CICO-1 solved by rational interpolation in 92 s on one core, roots checked on the permutation; degree 7^R_F · 2^R_P attained exactly; full-round extrapolation ≈ 2^52–2^56 multiplications against generic 2^75 | in-house, §3.2 | reproducible: `audit/campaign/cico1.py` |
++| 2 | 2026-10-16 | 0.3 | full | interpolation inequality | fails the Poseidon2 interpolation inequality by 12.3 x⁷-equivalent rounds (needs R_P ≥ 51 at R_F 8) | in-house, §3.1 | `audit/campaign/p2rounds.py` |
++| 3 | 2026-10-16 | v2 | full | inequalities | all Poseidon2 inequalities hold; minimal R_P at R_F 12 is 14 | in-house, §3.1 | `audit/campaign/p2rounds.py` |
++| 4 | 2026-09-11 | 0.3 | partial layer | linearization | affine input line through 15 of 16 inverse rounds | hemera#2 | `research/partial_subspace.py` (open PR) |
++
++## sources
++
++- Grassi, Khovratovich, Rechberger, Roy, Schofnegger. Poseidon. ePrint 2019/458, USENIX Security 2021.
++- Grassi, Khovratovich, Schofnegger. Poseidon2. ePrint 2023/323, AFRICACRYPT 2023; round script `poseidon2_rust_params.sage`, github.com/HorizenLabs/poseidon2.
++- Albrecht et al. Algebraic cryptanalysis of STARK-friendly designs: MARVELlous and MiMC. ePrint 2019/419, ASIACRYPT 2019.
++- Beyne et al. Out of Oddity. ePrint 2020/188, CRYPTO 2020.
++- Keller, Rosemarin. Mind the Middle Layer. ePrint 2020/179, EUROCRYPT 2021.
++- Grassi, Rechberger, Schofnegger. Proving resistance against infinitely long subspace trails. ePrint 2020/500, FSE 2022.
++- Bariant, Bouvier, Leurent, Perrin. Algebraic attacks against some arithmetization-oriented primitives. ToSC 2022(3):73–101.
++- Ashur, Buschman, Mahzoun. Algebraic cryptanalysis of HADES design strategy. ePrint 2023/537.
++- Bariant et al. The algebraic FreeLunch. ePrint 2024/347, CRYPTO 2024. Bak et al. CheapLunch. ePrint 2025/2040.
++- Liu et al. Collision attacks on round-reduced Tip5, Tip4, Tip4′ and Monolith. ePrint 2024/1900, ToSC 2024(4).
++- Yang et al. full-round attack on Anemoi. ePrint 2024/886, ASIACRYPT 2024.
++- Grassi, Koschatko, Rechberger. Poseidon and Neptune: Gröbner basis cryptanalysis exploiting subspace trails. ePrint 2025/954, ToSC 2025.
++- Sanso, Vitto. Graeffe-based root finding against Poseidon. ePrint 2025/937. Zhao, Ding. ePrint 2025/950. Zhao, Sanso, Vitto, Ding. ePrint 2025/1916.
++- Bak, Bariant, Boeuf, Hostettler, Jazeron. Resultant-based attacks on EF bounty instances. ePrint 2026/150. Bak, Hostettler. ePrint 2026/1905.
++- Merz, Rodríguez García. Skipping Class. ePrint 2026/306.
++- Li, Wang. ePrint 2026/967. Li, Wang, Liu. ePrint 2026/1792.
++- Bhati, Tariq, Ashur. How to attack Poseidon via smart subspace restriction. ePrint 2026/1692.
++- Ethereum Foundation Poseidon Cryptanalysis Initiative, poseidon-initiative.info (read 2026-10-16).
++- ZKM, "Why Ethereum walked away from Poseidon" (August 2026) — secondhand source for the 2^126 / 2^123 figures and the Ethereum decision.
++- Brassard, Høyer, Tapp. Quantum cryptanalysis of hash and claw-free functions. LATIN 1998.
++
++internal: `soft3/proposals/privacy-frozen.md` §5–6; `soft3/specs/chain.md`
++§1; `zheng/specs/soundness.md` (`release/0.4`); `cyber/audit/cryptography-2026-10-08.md`;
++`cyber/whitepaper.md` §4; hemera#2 (`research/permutation-decision.md`,
++`research/full-round-status.md`, `research/inverse-sbox-assessment.md`,
++`research/partial_subspace.py`); hemera#15 (`roadmap/profile-v2.md`,
++`roadmap/one-pure-hash.md` §4); `audit/permutation-performance-2026-10.md`.

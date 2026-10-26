@@ -1,0 +1,11 @@
+   Compiling strata-core v0.1.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/strata/core)
+   Compiling cyber-hemera v0.3.1 (/Users/master/cyber/nox/.worktrees/no-std-dependencies/hemera/rs)
+error[E0463]: can't find crate for `core`
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+For more information about this error, try `rustc --explain E0463`.
+error: could not compile `strata-core` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `cyber-hemera` (lib) due to 1 previous error

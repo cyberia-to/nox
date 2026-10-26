@@ -1,0 +1,50 @@
+{
+  "command": [
+    "/Users/master/.cargo/bin/rustup",
+    "run",
+    "1.95.0",
+    "cargo",
+    "build",
+    "-p",
+    "cyber-nox",
+    "--no-default-features",
+    "--target",
+    "thumbv7em-none-eabi",
+    "--locked",
+    "--offline"
+  ],
+  "cwd": "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox",
+  "started": "2026-10-17T13:12:27.639705+00:00",
+  "finished": "2026-10-17T13:12:27.922854+00:00",
+  "exit_code": 101,
+  "source_sha256": "422a229decb12ae6c888b4e797ed1a269fde29f2a68d465d8919ec856663643f",
+  "sources_equal": true,
+  "hygiene_source_sha256": "f61c0ba0b475a463db1bc627a592b4f3c16c8dc88d8d3a723aba3766409fd1df",
+  "complete_hygiene_inventory_equal": true,
+  "versions": [
+    {
+      "tool": "cargo",
+      "result": {
+        "stdout": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: aarch64-apple-darwin\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.7.1 (sys:0.4.83+curl-8.15.0 system ssl:(SecureTransport) LibreSSL/3.3.6)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Mac OS 26.4.1 [64-bit]\n",
+        "stderr": "",
+        "exit_code": 0
+      }
+    },
+    {
+      "tool": "rustc",
+      "result": {
+        "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+        "stderr": "",
+        "exit_code": 0
+      }
+    }
+  ],
+  "cargo_target": "/Users/master/.cache/cyber/nox/hemera-feature-performance/plan-thumb",
+  "jobs": "2",
+  "incremental": "0",
+  "rustflags": "-Dwarnings",
+  "rustdocflags": "-Dwarnings",
+  "runner_sha256": "6bbd770b126757ca4fd9c63c0e59395ea4360d2c5ae5ebf3cbdf4a9a2b3d9785",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "9d1adb1f0910b42a9aaee19d70af609e5c5e35002d3f1b3e5f508d6cb46cae0c"
+}

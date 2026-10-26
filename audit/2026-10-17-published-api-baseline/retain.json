@@ -1,0 +1,23 @@
+{
+  "command": [
+    "tar",
+    "-czf",
+    "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/audit/2026-10-17-published-api-baseline/evidence.tar.gz",
+    "-C",
+    "/Users/master/.cache/cyber/nox/published-api-baseline/retained-2",
+    "baseline-default.json",
+    "current-default.json",
+    "baseline-std.json",
+    "current-std.json",
+    "baseline.crate",
+    "current.crate"
+  ],
+  "cwd": "/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox",
+  "env": {},
+  "started": "2026-10-17T10:05:14.699113+00:00",
+  "finished": "2026-10-17T10:05:14.730729+00:00",
+  "exit_code": 0,
+  "expected_exit_code": 0,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

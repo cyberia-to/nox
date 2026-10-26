@@ -14,13 +14,13 @@ see [[jets|jets spec]] for principles, semantic contract, recognition mechanism,
 | group | algebra | jets | PCS | spec |
 |-------|---------|------|-----|------|
 | hash | all (Hemera anchor) | 1 | — | [[hash]] |
-| recursion | F_p (Goldilocks) | 4 | Brakedown | [[recursion]] |
+| recursion | F_p (Goldilocks) | 4 | WHIR | [[recursion]] |
 | binary-tower | F₂ (binary tower) | 8 | Binius | [[binary-tower]] |
 | polynomial-ring | R_q (polynomial ring) | 5 | Ikat | [[polynomial-ring]] |
 | isogeny-curves | F_q (isogeny curves) | 5 (incl. secret_hash boundary) | Porphyry | [[isogeny-curves]] |
 | tropical-semiring | (min,+) (tropical) | 6 (incl. witness_commit boundary) | Assayer | [[tropical-semiring]] |
-| state | F_p (polynomial data) | 6 (1 exact + 5 templates) | Brakedown | [[state]] |
-| decider | F_p (accumulator) | 1 | Brakedown | [[decider]] |
+| state | F_p (polynomial data) | 6 (1 exact + 5 templates) | WHIR | [[state]] |
+| decider | F_p (accumulator) | 1 | WHIR (zheng; jet retired) | [[jets/decider]] |
 
 boundary jets (quantize, dequantize, gadget_decompose, secret_hash, witness_commit) live within their parent algebra.
 
@@ -35,7 +35,7 @@ boundary jets (quantize, dequantize, gadget_decompose, secret_hash, witness_comm
 | isogeny-curves | 5 | native F_q privacy (incl. secret_hash boundary) |
 | tropical-semiring | 6 | O(|problem|) → O(|witness|) proof cost (incl. witness_commit boundary) |
 | state | 6 | 500× state transition proving (1 exact circuit + 5 templates) |
-| decider | 1 | 89 constraints — all-history verification |
+| decider | 1 | all-history verification — cost set by the proof-system repair |
 
 ## hardware mapping
 

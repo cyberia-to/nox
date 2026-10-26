@@ -21,15 +21,20 @@
 extern crate alloc;
 use alloc::vec::Vec;
 
-use nebu::Goldilocks;
-use crate::data::{Reduction, Order, Data};
-use crate::reduce::{Outcome, ErrorKind, pair_children};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Data, Order, Reduction};
+use crate::reduce::{ErrorKind, Outcome, pair_children};
+use crate::trace::{TraceRow, Tracer};
+use nebu::Goldilocks;
 
 pub fn fri_fold_jet<const N: usize>(
-    reduction: &mut Reduction<N>, object: Order, _body: Order, budget: u64,
-    _hints: &dyn CallProvider<N>, _tracer: &mut dyn Tracer, _depth: u64,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    _body: Order,
+    budget: u64,
+    _hints: &dyn CallProvider<N>,
+    _tracer: &mut dyn Tracer,
+    _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
     // object = [[k | formula] | [evals_tree | r]]
@@ -50,6 +55,11 @@ pub fn fri_fold_jet<const N: usize>(
         Some(v) => v.as_u64() as usize,
         None => return Outcome::Error(ErrorKind::TypeError),
     };
+    // k comes straight from the calling program: reject before it can shift
+    // out of range (panics in debug, silently wraps mod 64 in release).
+    if k >= usize::BITS as usize {
+        return Outcome::Error(ErrorKind::TypeError);
+    }
     let r = match reduction.atom_value(r_id) {
         Some(v) => v,
         None => return Outcome::Error(ErrorKind::TypeError),
@@ -76,7 +86,7 @@ pub fn fri_fold_jet<const N: usize>(
         let half = evals.len() / 2;
         let mut next = Vec::with_capacity(half);
         for i in 0..half {
-            let left  = evals[2 * i];
+            let left = evals[2 * i];
             let right = evals[2 * i + 1];
             next.push(left + r * (right - left));
         }
@@ -95,14 +105,21 @@ pub fn fri_fold_jet<const N: usize>(
     }
 }
 
-fn flatten_tree<const N: usize>(reduction: &Reduction<N>, id: Order, out: &mut Vec<Goldilocks>) -> bool {
+fn flatten_tree<const N: usize>(
+    reduction: &Reduction<N>,
+    id: Order,
+    out: &mut Vec<Goldilocks>,
+) -> bool {
     let inner = match reduction.get(id) {
         Some(e) => e.inner,
         None => return false,
     };
     match inner {
         Data::Atom { .. } => match reduction.atom_value(id) {
-            Some(v) => { out.push(v); true }
+            Some(v) => {
+                out.push(v);
+                true
+            }
             None => false,
         },
         Data::Pair { left, right } => {
@@ -114,12 +131,14 @@ fn flatten_tree<const N: usize>(reduction: &Reduction<N>, id: Order, out: &mut V
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::reduce::Outcome;
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::Outcome;
     use crate::trace::{NoTrace, TraceRow};
-    use crate::data::{Reduction};
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     fn build_tree<const N: usize>(ar: &mut Reduction<N>, vals: &[Goldilocks]) -> Order {
         assert!(vals.len().is_power_of_two() && !vals.is_empty());
@@ -132,20 +151,27 @@ mod tests {
         ar.pair(l, r).unwrap()
     }
 
-    fn run<const N: usize>(
-        ar: &mut Reduction<N>, evals: &[Goldilocks], r: Goldilocks,
-    ) -> Outcome {
+    fn run<const N: usize>(ar: &mut Reduction<N>, evals: &[Goldilocks], r: Goldilocks) -> Outcome {
         let k_val = evals.len().trailing_zeros() as u64;
-        let k_id  = ar.atom(g(k_val)).unwrap();
+        let k_id = ar.atom(g(k_val)).unwrap();
         let dummy = ar.atom(g(0)).unwrap();
-        let lhs   = ar.pair(k_id, dummy).unwrap();
-        let tree  = build_tree(ar, evals);
-        let r_id  = ar.atom(r).unwrap();
-        let rhs   = ar.pair(tree, r_id).unwrap();
-        let obj   = ar.pair(lhs, rhs).unwrap();
-        let body  = ar.atom(g(0)).unwrap();
+        let lhs = ar.pair(k_id, dummy).unwrap();
+        let tree = build_tree(ar, evals);
+        let r_id = ar.atom(r).unwrap();
+        let rhs = ar.pair(tree, r_id).unwrap();
+        let obj = ar.pair(lhs, rhs).unwrap();
+        let body = ar.atom(g(0)).unwrap();
         let mut row = TraceRow::default();
-        fri_fold_jet(ar, obj, body, 100_000, &NullCalls, &mut NoTrace, 0, &mut row)
+        fri_fold_jet(
+            ar,
+            obj,
+            body,
+            100_000,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        )
     }
 
     #[test]
@@ -189,6 +215,66 @@ mod tests {
         match run(&mut ar, &[g(0), g(4), g(8), g(12)], half) {
             Outcome::Ok(r, _) => assert_eq!(ar.atom_value(r).unwrap(), g(6)),
             o => panic!("{:?}", o),
+        }
+    }
+
+    /// k=64: `1usize << k` panics in debug (attempt to shift left with
+    /// overflow) before the tree-length check ever runs. Must be rejected,
+    /// not crash the reducer on an untrusted program.
+    #[test]
+    fn k_at_bit_width_is_rejected_not_a_shift_panic() {
+        let mut ar = Reduction::<256>::new();
+        let k_id = ar.atom(g(64)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs = ar.pair(k_id, dummy).unwrap();
+        let leaf = ar.atom(g(1)).unwrap();
+        let r_id = ar.atom(g(1)).unwrap();
+        let rhs = ar.pair(leaf, r_id).unwrap();
+        let obj = ar.pair(lhs, rhs).unwrap();
+        let body = ar.atom(g(0)).unwrap();
+        let mut row = TraceRow::default();
+        match fri_fold_jet(
+            &mut ar,
+            obj,
+            body,
+            100_000,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        ) {
+            Outcome::Error(ErrorKind::TypeError) => {}
+            o => panic!("expected TypeError, got {:?}", o),
+        }
+    }
+
+    /// a large-but-valid k (larger than any real tree, smaller than the
+    /// bit-width bound) still rejects cleanly on the tree-length mismatch,
+    /// not on the shift itself.
+    #[test]
+    fn k_below_bit_width_falls_through_to_the_length_check() {
+        let mut ar = Reduction::<256>::new();
+        let k_id = ar.atom(g(40)).unwrap();
+        let dummy = ar.atom(g(0)).unwrap();
+        let lhs = ar.pair(k_id, dummy).unwrap();
+        let leaf = ar.atom(g(1)).unwrap();
+        let r_id = ar.atom(g(1)).unwrap();
+        let rhs = ar.pair(leaf, r_id).unwrap();
+        let obj = ar.pair(lhs, rhs).unwrap();
+        let body = ar.atom(g(0)).unwrap();
+        let mut row = TraceRow::default();
+        match fri_fold_jet(
+            &mut ar,
+            obj,
+            body,
+            100_000,
+            &NullCalls,
+            &mut NoTrace,
+            0,
+            &mut row,
+        ) {
+            Outcome::Error(ErrorKind::TypeError) => {}
+            o => panic!("expected TypeError, got {:?}", o),
         }
     }
 }

@@ -1,0 +1,223 @@
+    Checking strata-core v0.1.0
+    Checking cyber-hemera v0.3.1
+    Checking strata-compute v0.1.0
+    Checking strata-proof v0.1.0
+    Checking strata-ext v0.1.0
+    Checking strata-nebu v0.1.1
+ Documenting cyber-nox v0.2.0 (/Users/master/.cache/cyber/nox/published-api-baseline/pair-2/baseline/cyber-nox-0.2.0)
+warning: unresolved link to `11`
+  --> call.rs:47:50
+   |
+47 |     /// Called by pattern 0 (axis) to populate r[11]-r[14] with the commitment
+   |                                                  ^^ no item named `11` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+   = note: `#[warn(rustdoc::broken_intra_doc_links)]` on by default
+
+warning: unresolved link to `14`
+  --> call.rs:47:56
+   |
+47 |     /// Called by pattern 0 (axis) to populate r[11]-r[14] with the commitment
+   |                                                        ^^ no item named `14` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `0`
+ --> patterns/eq.rs:5:18
+  |
+5 | //! pair: digest[0]), r5 = right operand field value (same rule), r6 = result
+  |                  ^ no item named `0` in scope
+  |
+  = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `0`
+ --> patterns/look.rs:5:40
+  |
+5 | //! step 4: call LookProvider.look(C_t[0], ns, key)
+  |                                        ^ no item named `0` in scope
+  |
+  = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `0`
+ --> trace.rs:8:7
+  |
+8 | //! r[0]  = pattern tag (0-17)
+  |       ^ no item named `0` in scope
+  |
+  = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `1`
+ --> trace.rs:9:7
+  |
+9 | //! r[1]  = object particle
+  |       ^ no item named `1` in scope
+  |
+  = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `2`
+  --> trace.rs:10:7
+   |
+10 | //! r[2]  = formula particle
+   |       ^ no item named `2` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `3`
+  --> trace.rs:11:7
+   |
+11 | //! r[3]  = result particle (NIL on halt/error)
+   |       ^ no item named `3` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `8`
+  --> trace.rs:13:7
+   |
+13 | //! r[8]  = budget before step
+   |       ^ no item named `8` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `9`
+  --> trace.rs:14:7
+   |
+14 | //! r[9]  = budget after step
+   |       ^ no item named `9` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `10`
+  --> trace.rs:15:7
+   |
+15 | //! r[10] = error kind on error rows; pattern-specific witness on success rows
+   |       ^^ no item named `10` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: public documentation for `parallel` links to private item `crate::reduce::evaluate_binary`
+  --> parallel.rs:14:20
+   |
+14 | //! pattern uses [`crate::reduce::evaluate_binary`] /
+   |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this item is private
+   |
+   = note: this link will resolve properly if you pass `--document-private-items`
+   = note: `#[warn(rustdoc::private_intra_doc_links)]` on by default
+
+warning: public documentation for `parallel` links to private item `crate::reduce::evaluate_unary`
+  --> parallel.rs:15:7
+   |
+15 | //! [`crate::reduce::evaluate_unary`] which thread budget via the partition
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this item is private
+   |
+   = note: this link will resolve properly if you pass `--document-private-items`
+
+warning: unresolved link to `0`
+  --> jets/registry.rs:22:9
+   |
+22 | //!   r[0] = tag of formula's outer pattern (from reduce_inner)
+   |         ^ no item named `0` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `1`
+  --> jets/registry.rs:23:9
+   |
+23 | //!   r[1] = object Order
+   |         ^ no item named `1` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `2`
+  --> jets/registry.rs:24:9
+   |
+24 | //!   r[2] = formula Order
+   |         ^ no item named `2` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `3`
+  --> jets/registry.rs:25:9
+   |
+25 | //!   r[3] = result Order (filled by reduce_inner from Outcome)
+   |         ^ no item named `3` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `8`
+  --> jets/registry.rs:27:9
+   |
+27 | //!   r[8] = budget before jet (from reduce_inner)
+   |         ^ no item named `8` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `9`
+  --> jets/registry.rs:28:9
+   |
+28 | //!   r[9] = budget after jet (filled by reduce_inner from Outcome)
+   |         ^ no item named `9` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `10`
+  --> jets/registry.rs:29:9
+   |
+29 | //!   r[10] = error kind if any (filled by reduce_inner from Outcome)
+   |         ^^ no item named `10` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `hash`
+  --> jets/merkle_verify.rs:19:59
+   |
+19 | //! Budget: depth × 25 (one hash per step, matching COSTS[hash] = 25).
+   |                                                           ^^^^ no item named `hash` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: redundant explicit link target
+  --> parallel.rs:12:32
+   |
+12 | //! single-threaded [`reduce`](crate::reduce::reduce) function already
+   |                      --------  ^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |                      |
+   |                      because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+   = note: `#[warn(rustdoc::redundant_explicit_links)]` on by default
+help: remove explicit link target
+   |
+12 - //! single-threaded [`reduce`](crate::reduce::reduce) function already
+12 + //! single-threaded [`reduce`] function already
+   |
+
+warning: unclosed HTML tag `N`
+ --> jets/backends/cpu.rs:9:34
+  |
+9 | //! All jet functions match JetFn<N> directly (non-generic over Tracer).
+  |                                  ^^^
+  |
+  = note: `#[warn(rustdoc::invalid_html_tags)]` on by default
+help: try marking as source code
+  |
+9 | //! All jet functions match `JetFn<N>` directly (non-generic over Tracer).
+  |                             +        +
+
+warning: `crate::reduce` is both a function and a module
+  --> parallel.rs:63:36
+   |
+63 | /// Observationally identical to [`crate::reduce`] on every `(o, t, f)` input.
+   |                                    ^^^^^^^^^^^^^ ambiguous link
+   |
+help: to link to the function, add parentheses
+   |
+63 | /// Observationally identical to [`crate::reduce()`] on every `(o, t, f)` input.
+   |                                                 ++
+help: to link to the module, prefix with `mod@`
+   |
+63 | /// Observationally identical to [`mod@crate::reduce`] on every `(o, t, f)` input.
+   |                                    ++++
+
+warning: `cyber-nox` (lib doc) generated 24 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.34s

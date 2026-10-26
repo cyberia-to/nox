@@ -565,7 +565,7 @@ per-pattern constraints, register usage, and degrees are specified in the per-pa
 
 ```
 degree 1: axis, quote, add, sub (linear constraints)
-degree 1 inline + folded sub-instance: look (wiring constraints inline; Brakedown verification folded via HyperNova)
+degree 1 inline + folded sub-instance: look (wiring constraints inline; the opening verification is accumulated)
 degree 2: mul, eq, lt, branch, call, compose, cons (quadratic constraints)
 degree 3: inv transition (square-and-multiply step)
 degree 7: hash full rounds (x^7 s-box)
@@ -653,17 +653,6 @@ Brakedown commits to f. sumcheck verifies transition constraints. the verifier c
 
 ## self-verification
 
-the zheng verifier is a nox program. with Brakedown (Merkle-free PCS), the verifier is pure field arithmetic — no Merkle paths, no FRI folding. Fiat-Shamir via hemera hash is the only non-field operation.
+the zheng verifier is a nox program: field arithmetic for the sumcheck, hemera for Fiat-Shamir and for the Merkle paths that authenticate every opening.
 
-canonical verifier cost (from zheng specs):
-
-```
-tier                        constraints
-──────────────────────────  ───────────
-generic (no jets)              ~8,000
-CCS jet + batch Brakedown        ~825
-+ algebraic Fiat-Shamir            ~89
-```
-
-see zheng/specs/verifier.md for the canonical breakdown.
-recursive composition: proof-of-proof at every block. constant proof size (~2 KiB with zheng). per-fold cost: ~30 field ops + 1 hemera hash.
+the verifier tiers, the constant proof size and the per-fold cost of the retired design do not hold. the verifier's cost, and where recursion is used, are set by [[soft3/proposals/proof-system-repair|the proof-system repair]] §3–4.

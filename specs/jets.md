@@ -73,13 +73,13 @@ individual jet specifications live in `jets/` (within specs/). see [[jets/README
 | group | algebra | jets | PCS | spec |
 |-------|---------|------|-----|------|
 | hash | all (Hemera anchor) | 1 | — | [[jets/hash]] |
-| recursion | F_p | 4 | Brakedown | [[jets/recursion]] |
+| recursion | F_p | 4 | WHIR | [[jets/recursion]] |
 | binary-tower | F₂ | 8 | Binius | [[jets/binary-tower]] |
 | polynomial-ring | R_q | 5 | Ikat | [[jets/polynomial-ring]] |
 | isogeny-curves | F_q | 5 | Porphyry | [[jets/isogeny-curves]] |
 | tropical-semiring | (min,+) | 6 | Assayer | [[jets/tropical-semiring]] |
-| state | F_p | 6 (1 exact + 5 templates) | Brakedown | [[jets/state]] |
-| decider | F_p | 1 | Brakedown | [[jets/decider]] |
+| state | F_p | 6 (1 exact + 5 templates) | WHIR | [[jets/state]] |
+| decider | F_p | 1 | WHIR (zheng; jet retired) | [[jets/decider]] |
 
 boundary jets (quantize, dequantize, gadget_decompose, secret_hash, witness_commit) live within their parent algebra — not a separate group.
 
@@ -100,7 +100,7 @@ the stack is continuous: nox pattern → software jet → GFP hardware primitive
 
 ## self-verification
 
-the zheng verifier for nox is itself a nox program. with Brakedown (Merkle-free PCS), the verifier is pure field arithmetic — ~825 constraints (CCS jet + batch) or ~89 (algebraic Fiat-Shamir). recursion to arbitrary depth, constant proof size at every level. the decider jet reduces all-history verification to 89 constraints. see zheng/specs/verifier.md for canonical costs.
+the zheng verifier for nox is itself a nox program: field arithmetic for the sumcheck and hemera for the Merkle paths and Fiat-Shamir. the constraint counts and the constant-size recursion of the retired design do not hold; the verifier's cost and the place of recursion are set by [[soft3/proposals/proof-system-repair|the proof-system repair]] §4.
 
 ## domain-specific jets
 

@@ -1,0 +1,4 @@
+command=/usr/bin/pmset -g batt
+started_unix_ns=1792243833730144000
+elapsed_ns=6750292
+exit_code=0

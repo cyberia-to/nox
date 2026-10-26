@@ -1,0 +1,4 @@
+command=/bin/ps -axo pid,ppid,pcpu,comm
+started_unix_ns=1792243833713544000
+elapsed_ns=15176708
+exit_code=0

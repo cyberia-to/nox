@@ -1,0 +1,26 @@
+{
+  "parent": "0b1407a4b855e4961ede07e1b7ea199cb8018c30",
+  "review_bytes": 220069,
+  "review_sha256": "aebaed2fa934763ec3f401c0cb1414b8e6aeae7a93ef9d4c73d3d6d315377e46",
+  "sections": 50,
+  "support_files": 904,
+  "records": 103,
+  "production_files": 2,
+  "performance_gate": "red/unverified",
+  "required_exact_tag_gate": "unmet",
+  "source_patch_sha256": "387f9ccee4480bbfeb957ee9a2cbb7d959ac808db5635a3f296ee51b001f3899",
+  "archive_sha256": "b3ce8ef34ef80b59d0dd4a5c979490faffe009fbcdf4795805aabfcbd9219ed9",
+  "archive_bytes": 526494,
+  "index_sha256": "b83bc1ca01d1c0ac1d7f7af2b5b7c9a120c11c01584dd08f562c74852b14de4d",
+  "logical_payloads": 921,
+  "unique_objects": 516,
+  "new_objects": 213,
+  "borrowed_objects": 303,
+  "base": {
+    "relative_path": "../2026-10-13-hemera-no-std-plan-v2",
+    "archive_sha256": "02a61c325f3c72834dbe3c92674ebc20828fd17b4d35f3a7b7ae1ddc41f6ffca",
+    "index_sha256": "506c29bf7af4b15d55155d86e95e86b63b7a23c9b8789f726305f4fb47fadfa2",
+    "verifier_sha256": "d8dee4b5cab26947264ec31b0397d6efb857baeb7734a0a0e28e9ed18046adc1"
+  },
+  "state_at_freeze": "PLAN v2 APPROVE; exact candidate tested; CODE v1 independently replayed and fresh Opus CODE pending. Source frozen. Performance red/unverified, inherited named gate failures and exact last-tag locked API unmet; ordinary source decision only, no release or registry publication."
+}

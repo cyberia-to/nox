@@ -1,0 +1,65 @@
+def require [ok: bool, message: string] { if not $ok { error make {msg: $message} } }
+def sha [p: path] { open --raw $p | hash sha256 }
+def sources [repo: path] {
+    [nox hemera strata lens] | each {|name|
+        let p = (if $name == nox { $repo } else { $repo | path dirname | path join $name | path expand })
+        let paths = (^git -C $p ls-files --cached --others --exclude-standard | lines | uniq | sort
+            | where {|f| (not ($f | str starts-with audit/) and not ($f | str starts-with .claude/)
+                and (($f | str ends-with '.rs') or ($f | path basename) in [Cargo.toml Cargo.lock rust-toolchain.toml]))})
+        {repo: $name, root: $p, head: (^git -C $p rev-parse HEAD | str trim),
+            files: ($paths | each {|f| {path: $f, sha256: (sha ($p | path join $f))}})}
+    }
+}
+def main [repo: path, target: path, epoch: string = 'plan'] {
+    let root = ($repo | path expand)
+    cd $root
+    let out = 'audit/2026-10-17-hemera-feature-performance'
+    require (not ($out | path join $'($epoch)-thumb.json' | path exists)) 'retain earlier gate epoch'
+    let before = (sources $root)
+    let old = (open audit/2026-10-16-release-hygiene/sources-reviewed.json)
+    require (($old.inputs | to json --raw | hash sha256) == $old.source_sha256) 'hygiene manifest identity'
+    for pair in ($before | zip $old.inputs) {
+        require ($pair.0.repo == $pair.1.repo and $pair.0.files == $pair.1.files) 'complete unchanged source inventory'
+        let ancestry = (do { ^git -C $pair.0.root merge-base --is-ancestor $pair.1.head HEAD } | complete)
+        require ($ancestry.exit_code == 0) 'recorded source ancestry'
+        if $pair.0.repo != nox { require ($pair.0.head == $pair.1.head) 'unchanged sibling revision' }
+    }
+    let rustup = (which rustup | first | get path)
+    let rustc = (^$rustup which --toolchain 1.95.0 rustc | str trim)
+    let cargo = (^$rustup which --toolchain 1.95.0 cargo | str trim)
+    let inherited_path = $env.PATH
+    $env.PATH = [($rustc | path dirname) ($rustup | path dirname) /usr/bin /bin /usr/sbin /sbin]
+    let versions = ([cargo rustc] | each {|tool|
+        let r = (do { ^$rustup run 1.95.0 $tool -Vv } | complete)
+        require ($r.exit_code == 0) 'pinned tool prerequisite'
+        {tool: $tool, result: $r}
+    })
+    let command = [$rustup run 1.95.0 cargo build -p cyber-nox --no-default-features
+        --target thumbv7em-none-eabi --locked --offline]
+    $env.CARGO_TARGET_DIR = ($target | path expand)
+    $env.CARGO_BUILD_JOBS = '2'
+    $env.CARGO_INCREMENTAL = '0'
+    $env.RUSTFLAGS = '-Dwarnings'
+    $env.RUSTDOCFLAGS = '-Dwarnings'
+    hide-env -i RUSTC RUSTDOC RUSTC_WRAPPER RUSTC_WORKSPACE_WRAPPER
+    let started = (date now | format date '%+')
+    let result = (do { ^($command | first) ...($command | skip 1) } | complete)
+    let after = (sources $root)
+    $before | to json | save ($out | path join $'($epoch)-sources.json')
+    $result.stdout | save ($out | path join $'($epoch)-thumb.stdout')
+    $result.stderr | save ($out | path join $'($epoch)-thumb.stderr')
+    {command: $command, cwd: $root, started: $started, finished: (date now | format date '%+'),
+        exit_code: $result.exit_code, source_sha256: ($before | to json --raw | hash sha256),
+        sources_equal: ($before == $after), hygiene_source_sha256: $old.source_sha256,
+        complete_hygiene_inventory_equal: true, versions: $versions,
+        inherited_path: $inherited_path, clean_path: $env.PATH,
+        tools: ([$rustup $cargo $rustc] | each {|p| {path: $p, sha256: (sha $p)}}),
+        cargo_target: $env.CARGO_TARGET_DIR, jobs: $env.CARGO_BUILD_JOBS,
+        incremental: $env.CARGO_INCREMENTAL, rustflags: $env.RUSTFLAGS, rustdocflags: $env.RUSTDOCFLAGS,
+        runner_sha256: (sha ($out | path join plan-gate.nu)),
+        stdout_sha256: ($result.stdout | hash sha256), stderr_sha256: ($result.stderr | hash sha256)
+    } | to json | save ($out | path join $'($epoch)-thumb.json')
+    require ($before == $after) 'source drift during gate'
+    if $result.exit_code != 0 { exit $result.exit_code }
+    print 'named thumb gate passed; unchanged complete hygiene source inventory verified'
+}

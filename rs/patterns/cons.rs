@@ -1,22 +1,31 @@
 //! pattern 3: cons — evaluate two sub-formulas, construct pair from results
 
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_binary};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Order, Reduction};
 use crate::jets::registry::JetRegistry;
+use crate::reduce::{ErrorKind, Outcome, evaluate_binary, pair_children};
+use crate::trace::{TraceRow, Tracer};
 
 pub fn cons<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
     let (a, b) = match pair_children(reduction, body) {
         Some(p) => p,
         None => return Outcome::Error(ErrorKind::Malformed),
     };
-    let (left, right, budget) = match evaluate_binary(reduction, object, a, b, budget, hints, tracer, depth, registry) {
-        Ok(v) => v, Err(o) => return o,
+    let (left, right, budget) = match evaluate_binary(
+        reduction, object, a, b, budget, hints, tracer, depth, registry,
+    ) {
+        Ok(v) => v,
+        Err(o) => return o,
     };
     row.r[4] = left as u64;
     row.r[5] = right as u64;
@@ -28,13 +37,15 @@ pub fn cons<const N: usize, T: Tracer>(
 
 #[cfg(test)]
 mod tests {
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::NoTrace;
-    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     /// cons([1 10], [1 20]) → pair(10, 20)
     /// formula = [3 [[1 10] [1 20]]]

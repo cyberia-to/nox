@@ -1,0 +1,153 @@
+diff --git a/tmp/nox-release-hygiene-formatted-parent/cli/main.rs b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/cli/main.rs
+index 03e6e6e..06c3998 100644
+--- a/tmp/nox-release-hygiene-formatted-parent/cli/main.rs
++++ b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/cli/main.rs
+@@ -265,7 +265,7 @@ fn run() -> i32 {
+         }
+     };
+ 
+-    let formula = match parse_data(&mut reduction, &formula_text) {
++    let formula = match parse_data(&mut reduction, formula_text) {
+         Ok(n) => n,
+         Err(e) => {
+             eprintln!("error parsing formula: {}", e);
+
+diff --git a/tmp/nox-release-hygiene-formatted-parent/rs/call.rs b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/call.rs
+index ac5b53e..f7dd6b0 100644
+--- a/tmp/nox-release-hygiene-formatted-parent/rs/call.rs
++++ b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/call.rs
+@@ -54,7 +54,7 @@ pub trait CallProvider<const N: usize>: LookProvider + Sync {
+ 
+     /// Return the 32-byte Lens commitment for the data polynomial of `object_id`.
+     ///
+-    /// Called by pattern 0 (axis) to populate r[11]-r[14] with the commitment
++    /// Called by pattern 0 (axis) to populate `r[11]`-`r[14]` with the commitment
+     /// bytes, enabling zheng to circuit-constrain the opening. Proof-unaware
+     /// callers (interpreter, tests) return None — registers stay zero.
+     fn axis_commitment(&self, _object_id: u64) -> Option<[u8; 32]> {
+
+diff --git a/tmp/nox-release-hygiene-formatted-parent/rs/jets/backends/cpu.rs b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/jets/backends/cpu.rs
+index 7d49d91..5d15b59 100644
+--- a/tmp/nox-release-hygiene-formatted-parent/rs/jets/backends/cpu.rs
++++ b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/jets/backends/cpu.rs
+@@ -6,7 +6,7 @@
+ //! CPU/Rust reference backend for genesis jets.
+ //!
+ //! Registers jet function pointers by formula digest.
+-//! All jet functions match JetFn<N> directly (non-generic over Tracer).
++//! All jet functions match `JetFn<N>` directly (non-generic over Tracer).
+ 
+ use crate::jets::registry::{JetRegistry, compute_genesis_digests};
+ use crate::jets::{decider, fri_fold, merkle_verify, ntt, poly_eval, state};
+
+diff --git a/tmp/nox-release-hygiene-formatted-parent/rs/jets/merkle_verify.rs b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/jets/merkle_verify.rs
+index a882717..227e1e8 100644
+--- a/tmp/nox-release-hygiene-formatted-parent/rs/jets/merkle_verify.rs
++++ b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/jets/merkle_verify.rs
+@@ -16,7 +16,7 @@
+ //!   dir     = 0: sibling is left child; 1: sibling is right child
+ //!
+ //! Returns: Field atom 1 (valid path) or 0 (invalid).
+-//! Budget: depth × 25 (one hash per step, matching COSTS[hash] = 25).
++//! Budget: depth × 25 (one hash per step, matching `COSTS[hash]` = 25).
+ 
+ extern crate alloc;
+ use alloc::vec::Vec;
+
+diff --git a/tmp/nox-release-hygiene-formatted-parent/rs/jets/registry.rs b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/jets/registry.rs
+index b9d0e2a..669c59f 100644
+--- a/tmp/nox-release-hygiene-formatted-parent/rs/jets/registry.rs
++++ b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/jets/registry.rs
+@@ -19,6 +19,7 @@
+ //! than one specific data.
+ //!
+ //! Register layout convention for jets (single-row):
++//! ```text
+ //!   r[0] = tag of formula's outer pattern (from reduce_inner)
+ //!   r[1] = object Order
+ //!   r[2] = formula Order
+@@ -27,6 +28,7 @@
+ //!   r[8] = budget before jet (from reduce_inner)
+ //!   r[9] = budget after jet (filled by reduce_inner from Outcome)
+ //!   r[10] = error kind if any (filled by reduce_inner from Outcome)
++//! ```
+ 
+ extern crate alloc;
+ use alloc::vec::Vec;
+
+diff --git a/tmp/nox-release-hygiene-formatted-parent/rs/parallel.rs b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/parallel.rs
+index b251730..a4129a8 100644
+--- a/tmp/nox-release-hygiene-formatted-parent/rs/parallel.rs
++++ b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/parallel.rs
+@@ -9,10 +9,10 @@
+ //!
+ //! Nox commits to a single canonical reduction semantics — bound-partitioned
+ //! evaluation (see `specs/reduction.md §parallel reduction`). The
+-//! single-threaded [`reduce`](crate::reduce::reduce) function already
++//! single-threaded [`reduce()`] function already
+ //! produces the parallel-canonical witness because every binary / unary
+-//! pattern uses [`crate::reduce::evaluate_binary`] /
+-//! [`crate::reduce::evaluate_unary`] which thread budget via the partition
++//! pattern uses `crate::reduce::evaluate_binary` /
++//! `crate::reduce::evaluate_unary` which thread budget via the partition
+ //! rule, not classical f → f1 → f2.
+ //!
+ //! [`reduce_parallel`] is the explicit name for the parallel-canonical
+@@ -60,7 +60,7 @@ use crate::trace::Tracer;
+ 
+ /// Parallel-canonical reduction.
+ ///
+-/// Observationally identical to [`crate::reduce`] on every `(o, t, f)` input.
++/// Observationally identical to [`crate::reduce()`] on every `(o, t, f)` input.
+ /// When the `std` feature is enabled, binary sub-formulas with Exact bounds
+ /// run on separate threads (`par_binary`). Without `std`, the semantics is
+ /// identical but evaluation is single-threaded.
+
+diff --git a/tmp/nox-release-hygiene-formatted-parent/rs/patterns/eq.rs b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/patterns/eq.rs
+index 0f75946..aabb98f 100644
+--- a/tmp/nox-release-hygiene-formatted-parent/rs/patterns/eq.rs
++++ b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/patterns/eq.rs
+@@ -2,7 +2,7 @@
+ //!
+ //! works for ALL data types: atoms, pairs, hash data. returns 0 if equal,
+ //! 1 if not equal. r4 = left operand field value (atom: canonical value,
+-//! pair: digest[0]), r5 = right operand field value (same rule), r6 = result
++//! pair: `digest[0]`), r5 = right operand field value (same rule), r6 = result
+ //! (0=equal, 1=unequal), r7 = inverse hint: (r4-r5)^-1 when unequal, 0 when
+ //! equal. zheng constrains the gadget (r4 - r5) * r7 = r6 with r6 ∈ {0, 1}.
+ 
+
+diff --git a/tmp/nox-release-hygiene-formatted-parent/rs/patterns/look.rs b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/patterns/look.rs
+index 3c0be8c..818f7c6 100644
+--- a/tmp/nox-release-hygiene-formatted-parent/rs/patterns/look.rs
++++ b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/patterns/look.rs
+@@ -2,7 +2,7 @@
+ //! step 1: evaluate ns_formula → namespace field element (must be 0..9)
+ //! step 2: evaluate key_formula → key field element
+ //! step 3: extract C_t limbs from object at axes [4, 10, 22, 23]
+-//! step 4: call LookProvider.look(C_t[0], ns, key)
++//! step 4: call `LookProvider.look(C_t[0], ns, key)`
+ //! step 5: return value as field atom, or Unavailable
+ 
+ use nebu::Goldilocks;
+
+diff --git a/tmp/nox-release-hygiene-formatted-parent/rs/trace.rs b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/trace.rs
+index 9df80b2..2112439 100644
+--- a/tmp/nox-release-hygiene-formatted-parent/rs/trace.rs
++++ b/Users/master/cyber/nox/.worktrees/no-std-dependencies/nox/rs/trace.rs
+@@ -5,6 +5,7 @@
+ // ---
+ //! execution trace — 16-column register table, one row per reduce() call
+ //!
++//! ```text
+ //! r[0]  = pattern tag (0-17)
+ //! r[1]  = object particle
+ //! r[2]  = formula particle
+@@ -14,6 +15,7 @@
+ //! r[9]  = budget after step
+ //! r[10] = error kind on error rows; pattern-specific witness on success rows
+ //! r[11..16] = pattern-specific (bit decomp, step counter, etc.)
++//! ```
+ 
+ extern crate alloc;
+ use alloc::vec::Vec;

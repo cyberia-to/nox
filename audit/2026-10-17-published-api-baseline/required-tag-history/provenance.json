@@ -1,0 +1,25 @@
+{
+  "index": "audit/2026-10-13-hemera-no-std/index.json",
+  "index_sha256": "b83bc1ca01d1c0ac1d7f7af2b5b7c9a120c11c01584dd08f562c74852b14de4d",
+  "capsule": "audit/2026-10-13-hemera-no-std-plan-v2/evidence.tar.gz",
+  "records": [
+    {
+      "path": "code/support/execution/records/64-parent-api-json-tag/receipt.json",
+      "bytes": 2354,
+      "sha256": "94da663d7ccc6a551129f923ce416ca4740551d2b794bea74fc0cb939d99ea61",
+      "storage": "base"
+    },
+    {
+      "path": "code/support/execution/records/64-parent-api-json-tag/stderr",
+      "bytes": 236,
+      "sha256": "cde97627c2e4cc2199e0001ae89d0a76d3a712b05c202fd4c2db53985364dfe1",
+      "storage": "base"
+    },
+    {
+      "path": "code/support/execution/records/64-parent-api-json-tag/stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storage": "base"
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+use support.nu *
+
+# Independent consumer: Hemera requests no defaults. Nox alone supplies std.
+def main [repo: string, pair: string, pair_cache: string, cache: string, epoch: string] {
+    let root = ($repo | path expand)
+    let audit = ($root | path join audit/2026-10-17-published-api-baseline)
+    let pair_file = ($audit | path join $pair identities.json)
+    let identity = (open $pair_file)
+    let pair_cache = ($pair_cache | path expand)
+    let cache = ($cache | path expand)
+    let out = ($audit | path join $epoch)
+    require (not ($out | path exists) and not ($cache | path exists)) 'epoch/cache already exists'
+    require (($epoch | str replace -r '^[a-z0-9-]+$' '') == '') 'invalid epoch name'
+    require ((owner-inputs $root) == $identity.owner_files) 'owner inputs changed'
+    mkdir $cache $out
+    let source = ([support.nu features.nu std-surface.rs.txt] | each {|p| {path: $p, sha256: (digest ($audit | path join $p))}})
+    $source | to json | save ($out | path join tooling.json)
+    mut cases = []
+    for side in [baseline current] {
+        let input = (pair-input $identity $side $pair_cache)
+        require ((package-inputs $input.root) == $input.files) $'($side) package changed'
+        let fixture = ($cache | path join $side)
+        mkdir $fixture
+        let manifest = {package: {name: 'nox-inherited-std-witness', version: '0.0.0', edition: '2024'},
+            workspace: {}, lib: {path: 'lib.rs'}, features: {std: ['nox/std']}, dependencies: {
+                nox: {package: 'cyber-nox', path: $input.root},
+                hemera: {package: 'cyber-hemera', version: '=0.3.1', default-features: false}
+            }}
+        $manifest | to toml | save ($fixture | path join Cargo.toml)
+        cp ($audit | path join std-surface.rs.txt) ($fixture | path join lib.rs)
+        let environment = ($identity.environment | upsert CARGO_TARGET_DIR ($cache | path join $'target-($side)'))
+        capture $out $'lock-($side)' [cargo generate-lockfile --offline] $fixture $environment | ignore
+        let inputs = (package-inputs $fixture)
+        for feature in [default std] {
+            let feature_args = (if $feature == std { [--features std] } else { [] })
+            let expected = (if $side == current and $feature == default { 101 } else { 0 })
+            let name = $'($side)-($feature)'
+            capture $out $name ([cargo check --locked --offline] | append $feature_args) $fixture $environment $expected | ignore
+            if $expected == 101 {
+                let errors = (open --raw ($out | path join $'($name).stderr'))
+                require (($errors | str contains 'error[E0277]') and ($errors | str contains 'error[E0599]')
+                    and ($errors | str contains 'to_hex') and ($errors | str contains 'std::io::Read')) 'unexpected negative witness diagnostics'
+            }
+            capture $out $'($name)-features' ([cargo tree --locked --offline -e features] | append $feature_args) $fixture $environment | ignore
+            $cases = ($cases | append {name: $name, expected_exit_code: $expected, fixture: $fixture, inputs: $inputs})
+        }
+        require ((package-inputs $fixture) == $inputs) 'consumer inputs changed'
+        require ((package-inputs $input.root) == $input.files) 'owning package inputs changed'
+        cp ($fixture | path join Cargo.toml) ($out | path join $'($side)-Cargo.toml.txt')
+        cp ($fixture | path join Cargo.lock) ($out | path join $'($side)-Cargo.lock.txt')
+    }
+    for file in $source {
+        require ((digest ($audit | path join $file.path)) == $file.sha256) 'tooling changed during witnesses'
+    }
+    require ((owner-inputs $root) == $identity.owner_files) 'owner inputs changed during witnesses'
+    {pair: $pair, pair_sha256: (digest $pair_file), cases: $cases,
+        source_sha256: ($source | to json --raw | hash sha256), policy: $identity.policy}
+    | to json | save ($out | path join result.json)
+    {result: ($out | path join result.json), policy: $identity.policy} | to json
+}

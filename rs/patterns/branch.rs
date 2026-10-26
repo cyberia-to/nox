@@ -1,15 +1,21 @@
 //! pattern 4: branch — evaluate test, take yes (0) or no (nonzero)
 
-use crate::data::{Reduction, Order};
-use crate::reduce::{Outcome, ErrorKind, pair_children, evaluate_unary};
 use crate::call::CallProvider;
-use crate::trace::{Tracer, TraceRow};
+use crate::data::{Order, Reduction};
 use crate::jets::registry::JetRegistry;
+use crate::reduce::{ErrorKind, Outcome, evaluate_unary, pair_children};
+use crate::trace::{TraceRow, Tracer};
 
 pub fn branch<const N: usize, T: Tracer>(
-    reduction: &mut Reduction<N>, object: Order, body: Order, budget: u64,
-    hints: &dyn CallProvider<N>, tracer: &mut T, depth: u64,
-    row: &mut TraceRow, registry: &JetRegistry<N>,
+    reduction: &mut Reduction<N>,
+    object: Order,
+    body: Order,
+    budget: u64,
+    hints: &dyn CallProvider<N>,
+    tracer: &mut T,
+    depth: u64,
+    row: &mut TraceRow,
+    registry: &JetRegistry<N>,
 ) -> Outcome {
     let (test_formula, rest) = match pair_children(reduction, body) {
         Some(p) => p,
@@ -20,15 +26,29 @@ pub fn branch<const N: usize, T: Tracer>(
         None => return Outcome::Error(ErrorKind::Malformed),
     };
     // Step 1: evaluate test with its bound (partitioned if possible).
-    let (test_result, budget) = match evaluate_unary(reduction, object, test_formula, budget, hints, tracer, depth, registry) {
-        Ok(v) => v, Err(o) => return o,
+    let (test_result, budget) = match evaluate_unary(
+        reduction,
+        object,
+        test_formula,
+        budget,
+        hints,
+        tracer,
+        depth,
+        registry,
+    ) {
+        Ok(v) => v,
+        Err(o) => return o,
     };
     let test_value = match reduction.atom_value(test_result) {
         Some(v) => v.as_u64(),
         None => return Outcome::Error(ErrorKind::TypeError),
     };
     let selector: u64 = if test_value == 0 { 0 } else { 1 };
-    let chosen = if selector == 0 { yes_formula } else { no_formula };
+    let chosen = if selector == 0 {
+        yes_formula
+    } else {
+        no_formula
+    };
     // r4 = test value (canonical field repr), r5 = inverse hint for (test != 0),
     // r6 = result Order (output of chosen arm), r10 = selector (0=yes, 1=no).
     // gadget: selector * (1 - r4 * r5) = 0 binds selector to "test != 0".
@@ -42,7 +62,9 @@ pub fn branch<const N: usize, T: Tracer>(
     // Step 2: evaluate ONLY the chosen arm under partitioned semantics.
     // Slack from max-of-arms accrues to the caller automatically — we only
     // charge for the chosen arm's actual cost.
-    match evaluate_unary(reduction, object, chosen, budget, hints, tracer, depth, registry) {
+    match evaluate_unary(
+        reduction, object, chosen, budget, hints, tracer, depth, registry,
+    ) {
         Ok((val, remaining)) => {
             row.r[6] = val as u64;
             Outcome::Ok(val, remaining)
@@ -53,13 +75,15 @@ pub fn branch<const N: usize, T: Tracer>(
 
 #[cfg(test)]
 mod tests {
-    use crate::reduce::{reduce, Outcome};
     use crate::call::NullCalls;
+    use crate::data::Reduction;
+    use crate::reduce::{Outcome, reduce};
     use crate::trace::NoTrace;
-    use crate::data::{Reduction};
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     /// formula = [4 [1 0] [1 yes_val] [1 no_val]]
     /// test = quote(0) = 0 → take yes branch → yes_val

@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/Users/master/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustfmt",
+    "--edition",
+    2024,
+    "--emit",
+    "stdout"
+  ],
+  "stdin_path": "/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/B/nox/rs/benches/reduction.rs",
+  "stdin_sha256": "10cebcc2e0d554912eb87a68922b5fd64cac59b1385d74f47d715c77e521ad2d",
+  "compared_to": "/Users/master/.cache/cyber/nox/hemera-feature-performance/cells/D/nox/rs/benches/reduction.rs",
+  "compared_sha256": "4e70a210cb805fc643ecd89c6a7ade473e897e736e4cbbec0d0274a9f03f4897",
+  "formatter_sha256": "2462eda2ece5926a3b09538850c6c21ffd9100c3bc4573093c9e9b0f60785c6f",
+  "exit_code": 0,
+  "stdout_sha256": "4e70a210cb805fc643ecd89c6a7ade473e897e736e4cbbec0d0274a9f03f4897",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "exact_current_bytes": true
+}

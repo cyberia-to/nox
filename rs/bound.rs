@@ -25,7 +25,7 @@
 //! for the continuation phase (see `specs/reduction.md §parallel reduction`).
 
 pub use crate::data::Cost;
-use crate::data::{Reduction, Order};
+use crate::data::{Order, Reduction};
 
 /// Return the cached cost bound for a formula rooted at `root`.
 ///
@@ -40,10 +40,12 @@ pub fn bound<const N: usize>(reduction: &Reduction<N>, root: Order) -> Cost {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::data::{Reduction};
+    use crate::data::Reduction;
     use nebu::Goldilocks;
 
-    fn g(v: u64) -> Goldilocks { Goldilocks::new(v) }
+    fn g(v: u64) -> Goldilocks {
+        Goldilocks::new(v)
+    }
 
     #[test]
     fn atom_has_zero_bound() {

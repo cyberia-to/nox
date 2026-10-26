@@ -1,0 +1,13 @@
+Error: nu::shell::external_command
+
+  x External command failed
+     ,-[/Users/master/cyber/nox-no-std-dependencies/audit/2026-10-13-hemera-no-std/verify.nu:198:52]
+ 197 |                 let required = $ratio > 1.05 or $disjoint
+ 198 |                 let field = if $epoch == initial { paired_repeat_required } else { threshold_red }
+     :                                                    ^^^^^^^^^^^|^^^^^^^^^^
+     :                                                               `-- Command `paired_repeat_required` not found
+ 199 |                 if $r.parent_median_ns != $a.point_estimate or $r.candidate_median_ns != $b.point_estimate or (($r.median_change_percent - (($ratio - 1) * 100)) | math abs) > 0.000000001 or ($r | get $field) != $required { error make {msg: 'benchmark estimates and predeclared threshold'} }
+     `----
+  help: `paired_repeat_required` is neither a Nushell built-in or a known
+        external command
+

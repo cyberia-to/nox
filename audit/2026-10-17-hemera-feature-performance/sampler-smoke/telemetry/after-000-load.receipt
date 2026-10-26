@@ -1,0 +1,4 @@
+command=/usr/sbin/sysctl vm.loadavg
+started_unix_ns=1792243833728775000
+elapsed_ns=1311750
+exit_code=0
