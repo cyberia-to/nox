@@ -371,7 +371,7 @@ project/
 │   ├── plans/           design decisions and implementation plans
 │   ├── audits/          audit logs and summaries
 │   └── other/           performance reports, analysis, findings
-├── CLAUDE.md            agent instructions (project-specific)
+├── AGENTS.md            agent instructions (project-specific)
 ├── LICENSE.md           license (links to canonical source)
 └── README.md            project entry point
 ```
@@ -423,7 +423,7 @@ configuration lives alongside the target code, not in the root.
 
 every project has files that should not be modified without explicit
 discussion: dependency manifests, canonical reference structure,
-target configurations, license. document these in CLAUDE.md.
+target configurations, license. document these in AGENTS.md.
 
 ## git workflow
 
@@ -436,7 +436,7 @@ target configurations, license. document these in CLAUDE.md.
 ## companion repos
 
 when a system spans multiple repos, document the relationship in
-CLAUDE.md: what each repo does, how they depend on each other,
+AGENTS.md: what each repo does, how they depend on each other,
 how to rebuild after changes, and how to reference files across repos.
 use repo-qualified paths (e.g. `trident/src/` vs `trisha/src/`).
 
