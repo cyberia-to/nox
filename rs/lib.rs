@@ -17,6 +17,7 @@
 
 extern crate alloc;
 
+pub mod artifact;
 pub mod bound;
 pub mod call;
 pub mod data;
@@ -25,6 +26,7 @@ pub mod jets;
 pub mod parallel;
 pub mod patterns;
 pub mod reduce;
+pub mod sequential;
 pub mod trace;
 
 #[cfg(feature = "brakedown")]

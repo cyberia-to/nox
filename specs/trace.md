@@ -455,10 +455,14 @@ note: r7, r10, r11, r13 (bit decomposition witnesses): populated by zheng witnes
       not by the nox interpreter. the interpreter writes r4 (input), r5 (shift amount), r6 (output) only.
 ```
 
-### pattern 15: hash (multi-row, cost 25)
+### pattern 15: hash (multi-row, cost 61)
 
-25 consecutive rows, all with r0 = 15. Driven by [`hemera::StepSponge`]:
-24 Poseidon2 round rows (k = 0..23) plus a final squeeze row (k = 24).
+61 consecutive rows, all with r0 = 15. Driven by [`hemera::StepSponge`]:
+60 Poseidon2 round rows (k = 0..59) plus a final squeeze row (k = 60).
+The round count is hemera 0.4's profile 15, frozen 2026-10-16 — 6 + 6 full
+rounds and 48 partial rounds, x⁷ S-box in every round, no inverse S-box
+(hemera `ROUNDS_TOTAL = 60`; hemera `audit/profile-0.4-2026-10.md` §1).
+Cost 25 → 61 decided 2026-10-16.
 
 The input data's cached structural digest (4 Goldilocks elements) is packed
 into the 8-element sponge rate; capacity slots are zero. Each round row
@@ -466,7 +470,7 @@ records the post-round state. The squeeze row records the result particle
 and the 4-element output digest extracted from the final state.
 
 ```
-each round row k (k = 0..23):
+each round row k (k = 0..59):
   r0  = 15
   r1  = object particle              — constant across the block
   r2  = formula particle             — constant across the block
@@ -475,34 +479,30 @@ each round row k (k = 0..23):
   r8  = budget_in                  — constant across the block
   r9  = 0 (set only on squeeze row)
   r10..r13 = state[4..7]           — remaining rate elements
-  r14 = round index k              — 0..23
+  r14 = round index k              — 0..59
   r15 = input particle               — constant (for wiring)
 
-squeeze row (k = 24):
+squeeze row (k = 60):
   r0  = 15
   r1  = object particle
   r2  = formula particle
   r3  = result particle              — hash-data pair(pair(h0,h1), pair(h2,h3))
   r4..r7 = output digest h0..h3    — first 4 elements of final post-permutation state
   r8  = budget_in
-  r9  = budget_out                 — = r8 - 25
+  r9  = budget_out                 — = r8 - 61
   r10..r13 = final_state[4..7]
-  r14 = 24                         — squeeze sentinel
+  r14 = 60                         — squeeze sentinel
   r15 = input particle
 
-transition constraints (rows 1..23):
-  full round (k ∈ {0,1,2,3,20,21,22,23}): add round constants on all 16 elements,
-    apply x^7 S-box (degree 7), MDS-light permutation
-  partial round (k ∈ 4..19): add constant to state[0] only, apply x^{-1}
-    S-box on state[0] (degree 2 via y*state[0] = 1), matmul_internal
+transition constraints (rows 1..59):
+  full round (k ∈ 0..5, 54..59): add round constants on all 16 elements,
+    apply x^7 S-box (degree 7), external layer M_E
+  partial round (k ∈ 6..53): add constant to state[0] only, apply x^7
+    S-box on state[0] (degree 7), internal layer M_I = 1 + diag(d)
 
-init constraint (row 0): state initialized from rate input + initial MDS-light
+init constraint (row 0): state initialized from rate input + initial M_E
 final constraint (squeeze): r3 = reduction.hash_data(state[0..4])
-budget: r9 = r8 - 25 on squeeze row only.
-note: current implementation: single summary row; multi-row round-progression trace
-      (25 rows with full state) is deferred to step-level hemera API integration.
-      the result IS correct; only the trace witness is incomplete.
-      the 25-row layout above describes the target; the interpreter today emits 1 row.
+budget: r9 = r8 - 61 on squeeze row only.
 ```
 
 ### pattern 16: call (single-row, cost 1)
@@ -582,7 +582,7 @@ single-row (cost 1): 0-7, 9, 16, 17 (axis through mul, eq, call, look)
 multi-row:           8 inv (64 rows), 10 lt (64 rows),
                      11 xor (32 rows), 12 and (32 rows),
                      13 not (32 rows), 14 shl (32 rows),
-                     15 hash (25 rows: 24 rounds + 1 squeeze)
+                     15 hash (61 rows: 60 rounds + 1 squeeze)
 ```
 
 see per-pattern register map above for row-by-row layout of multi-row patterns.
@@ -608,7 +608,7 @@ trace-emit time by the interpreter. the interpreter populates the registers; zhe
 single-row patterns:  r9 = r8 - 1            (1 per reduce call)
 axis:                 r9 = r8 - 1            (1 — O(1) Lens opening)
 inv:                  r9 = r8 - 64           (64 for square-and-multiply)
-hash:                 r9 = r8 - 25           (24 Poseidon2 rounds + 1 squeeze)
+hash:                 r9 = r8 - 61           (60 Poseidon2 rounds + 1 squeeze)
 ```
 
 ## error and halt encoding

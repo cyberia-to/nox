@@ -1,0 +1,247 @@
+{
+  "schema": "nox-semantic-observer-local-validation-v1",
+  "scope": "bounded witness capture; no proof relation or SH7 acceptance",
+  "capture_revision": "f8047c22cc6075d5171c0fbe520174e78e94ccb6",
+  "capture_qualification": "local uncommitted implementation at test execution, bound by source file hashes",
+  "branch": "feat/0.4-semantic-observer",
+  "source_files": {
+    "rs/sequential.rs": "773d8e3a2db2cf10b2adc0ad32f9196c011debadd559faf7c799d02541c979c7",
+    "rs/sequential/compacting.rs": "253b66137aa3095f35f74bca5e7cc5b3395b1235fcc4fdfce4444f11c60592ab",
+    "rs/sequential/observe/capture.rs": "99d99682cdfb2c40f24e12ce768848bfcb523b6e2ef79c230fd598ab7f846dee",
+    "rs/sequential/observe/hook.rs": "cd2806034bd39befba176f00bf60f0969f62ee87fcbdd8b151745f871facd106",
+    "rs/sequential/observe/mod.rs": "a2d068010092138f5304fd107c7929eb8c886880311148a97856171d16db15e0",
+    "rs/sequential/observe/tests/differential.rs": "9d19f62b96e9284a74d9a5885de4b2f066abb858f062d9ef011d55df2cbb4779",
+    "rs/sequential/observe/tests/failures.rs": "ce02b511a4d5128916efd581e1ebb225b97882434593430de1718d1e5cdff27d",
+    "rs/sequential/observe/tests/wire.rs": "a4ef51319d4b05d117ea6a37391a1a016896143c88593df5cced37d2bf2e7949",
+    "rs/sequential/observe/tests.rs": "77b89ace07d26e317e54b3c5410f13aad9b2a7bcf34879832c5e0d7851f7df59",
+    "rs/sequential/observe/wire.rs": "3f1a2d393bf5bbe095d155ae45774c1465bac35fcd35d9272c24f471f18a7ac7"
+  },
+  "spec_files": {
+    "specs/sequential-compaction.md": "88b87014a6886b3e56137331408a6d2f2b4efb904b4c6a8f79437f0bd1d0b317"
+  },
+  "dependencies": {
+    "nox": {
+      "revision": "f8047c22cc6075d5171c0fbe520174e78e94ccb6",
+      "status": ""
+    },
+    "strata": {
+      "revision": "d2eb1763b8caf04e6c7647ac6fe99761519c2ef9",
+      "status": ""
+    },
+    "hemera": {
+      "revision": "a931a0a8e7ed369852ce0f8bc6451a59745ee692",
+      "status": ""
+    }
+  },
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14) (Homebrew)",
+  "host": "Darwin galapot 25.4.0 Darwin Kernel Version 25.4.0: Thu Mar 19 19:33:25 PDT 2026; root:xnu-12377.101.15~1/RELEASE_ARM64_T6041 arm64",
+  "commands": [
+    {
+      "name": "focused-initial",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cyber-nox",
+        "--lib",
+        "sequential::observe",
+        "--locked",
+        "--offline"
+      ],
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-observer",
+      "env": {
+        "CARGO_TARGET_DIR": "../target-observer"
+      },
+      "exit_code": 101,
+      "path": "logs/focused-initial.log.gz",
+      "raw_sha256": "c940931c0e318a769ed70b08a954abab261c633597325595e09a61535d5644d0",
+      "raw_bytes": 4175,
+      "gzip_sha256": "8792aaab554512ba1cdef54596f075267dd53e08f10037fae992a061c0706f16",
+      "gzip_bytes": 1396,
+      "rust_warning_lines": 0,
+      "test_results": [
+        {
+          "status": "FAILED",
+          "passed": 9,
+          "failed": 1,
+          "ignored": 0
+        }
+      ]
+    },
+    {
+      "name": "focused-corrected",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cyber-nox",
+        "--lib",
+        "sequential::observe",
+        "--locked",
+        "--offline"
+      ],
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-observer",
+      "env": {
+        "CARGO_TARGET_DIR": "../target-observer"
+      },
+      "exit_code": 0,
+      "path": "logs/focused-corrected.log.gz",
+      "raw_sha256": "bd66762dfd318346834a458724744a9ebbdc69d575a90c58a99d03b51963dbd1",
+      "raw_bytes": 1496,
+      "gzip_sha256": "90577090fe002c56d48b867f4eb7375ca13de669e57418d84fec0389b51aa223",
+      "gzip_bytes": 674,
+      "rust_warning_lines": 0,
+      "test_results": [
+        {
+          "status": "ok",
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0
+        }
+      ]
+    },
+    {
+      "name": "workspace-default",
+      "argv": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--release",
+        "--locked",
+        "--offline"
+      ],
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-observer",
+      "env": {
+        "CARGO_TARGET_DIR": "../target-observer"
+      },
+      "exit_code": 0,
+      "path": "logs/workspace-default.log.gz",
+      "raw_sha256": "39d0afcb082a536ec0dc74dce3f3b571eaaecbc783d41d303b50c9b53b5f0d2e",
+      "raw_bytes": 20257,
+      "gzip_sha256": "35611ca1fdbef0b9e8123188ea53ec8325372bcddf7aa19a665f2a6e257c1355",
+      "gzip_bytes": 4959,
+      "rust_warning_lines": 0,
+      "test_results": [
+        {
+          "status": "ok",
+          "passed": 234,
+          "failed": 0,
+          "ignored": 2
+        },
+        {
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        }
+      ]
+    },
+    {
+      "name": "workspace-parallel",
+      "argv": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--features",
+        "parallel",
+        "--release",
+        "--locked",
+        "--offline"
+      ],
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-observer",
+      "env": {
+        "CARGO_TARGET_DIR": "../target-observer"
+      },
+      "exit_code": 0,
+      "path": "logs/workspace-parallel.log.gz",
+      "raw_sha256": "3c5668d26676b5b553ca3af33d3f8e2c252fe669af8b4c945c577ef1a89fd37c",
+      "raw_bytes": 17861,
+      "gzip_sha256": "0c8d4267c95ca79cf6895fbfc1e6e60412ebb3692d9dc482960e7e1174ca9bc8",
+      "gzip_bytes": 4371,
+      "rust_warning_lines": 0,
+      "test_results": [
+        {
+          "status": "ok",
+          "passed": 233,
+          "failed": 0,
+          "ignored": 2
+        },
+        {
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "status": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        }
+      ]
+    },
+    {
+      "name": "check-all-targets",
+      "argv": [
+        "cargo",
+        "check",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--offline"
+      ],
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-observer",
+      "env": {
+        "CARGO_TARGET_DIR": "../target-observer"
+      },
+      "exit_code": 0,
+      "path": "logs/check-all-targets.log.gz",
+      "raw_sha256": "a13905646e2aed93ec6ea9ed6ac91490a4e01f91af0215c3965279a910612149",
+      "raw_bytes": 72,
+      "gzip_sha256": "5d57a939ab84570377481b9bd1f7637428c23f8c72279a5f084433d57281e842",
+      "gzip_bytes": 91,
+      "rust_warning_lines": 0,
+      "test_results": []
+    },
+    {
+      "name": "check-no-default-features",
+      "argv": [
+        "cargo",
+        "check",
+        "-p",
+        "cyber-nox",
+        "--no-default-features",
+        "--locked",
+        "--offline"
+      ],
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-observer",
+      "env": {
+        "CARGO_TARGET_DIR": "../target-observer"
+      },
+      "exit_code": 0,
+      "path": "logs/check-no-default-features.log.gz",
+      "raw_sha256": "83fa136b19731d250274c63e42e5422e278d9e28e12d97a4da710e24c5ddf754",
+      "raw_bytes": 179,
+      "gzip_sha256": "87cbce59424425357d367e01b02dd1011c3ea4e19660570dd153d8c37868dc53",
+      "gzip_bytes": 166,
+      "rust_warning_lines": 0,
+      "test_results": []
+    }
+  ],
+  "initial_failure": "Only an incorrect test assumption: loop result reuses a pinned input atom, so final result Order need not move. Replaced inequality of result Orders with verified relocation of surviving fresh allocations. No production source change was needed.",
+  "validation_counts": {
+    "default_passed": 234,
+    "default_ignored": 2,
+    "parallel_passed": 233,
+    "parallel_ignored": 2,
+    "new_tests": 11,
+    "all_pattern_vectors": 336
+  },
+  "benchmark_receipt": "benchmark.json"
+}

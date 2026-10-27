@@ -1,0 +1,98 @@
+{
+  "head": "13b4c2ee71b3f3e205ddc9ad30d1476b86a7ccc5",
+  "branch": "feat/0.4-bounded-compaction",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14) (Homebrew)",
+  "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21) (Homebrew)",
+  "platform": "Darwin galapot 25.4.0 Darwin Kernel Version 25.4.0: Thu Mar 19 19:33:25 PDT 2026; root:xnu-12377.101.15~1/RELEASE_ARM64_T6041 arm64",
+  "siblings": {
+    "hemera": "a931a0a8e7ed369852ce0f8bc6451a59745ee692",
+    "strata": "d2eb1763b8caf04e6c7647ac6fe99761519c2ef9"
+  },
+  "files": [
+    {
+      "path": "rs/data/reduction.rs",
+      "bytes": 12711,
+      "sha256": "08010c42fe275775ea1e846cd0635d5ee8846f7ea13ede87ab0a7404ab0d4a37"
+    },
+    {
+      "path": "rs/data/reduction_compaction.rs",
+      "bytes": 5640,
+      "sha256": "b33150464afd6ab1355e462b3f11b8b963f77dc599e976eb4ae81dd627b8ecf8"
+    },
+    {
+      "path": "rs/sequential.rs",
+      "bytes": 6691,
+      "sha256": "8a698d2f5d716ea1e0b5c4bf0b2e08964a48d588a6148157f276baf39131dcb8"
+    },
+    {
+      "path": "rs/sequential/finalizer_cache.rs",
+      "bytes": 2163,
+      "sha256": "677b79efb2476196d7b43228d2f6edb3021de69ce04cd2200701652d0929451a"
+    },
+    {
+      "path": "rs/sequential/tests.rs",
+      "bytes": 7984,
+      "sha256": "de0a28215fbe9d31b00db77d91e170dcf6d88040cfe6ccb4d2bc8b15a65d3d0e"
+    },
+    {
+      "path": "rs/sequential/compacting.rs",
+      "bytes": 7804,
+      "sha256": "5bcc5bffd702248ad67ea06f4fbdb7981092d950f245b8d276c0aa4d6741eaab"
+    },
+    {
+      "path": "rs/sequential/compacting/collection.rs",
+      "bytes": 2531,
+      "sha256": "19275e81dc6b0116a3122656a60644b90fd3b8f66d1a2974cc5bdcdf79ef8d2b"
+    },
+    {
+      "path": "rs/sequential/compacting/roots.rs",
+      "bytes": 2100,
+      "sha256": "c124b9c695e007def5ad0406d1eddd43f5e5346f90dfe00605e05433975c0504"
+    },
+    {
+      "path": "rs/sequential/compacting/tests/collection.rs",
+      "bytes": 9365,
+      "sha256": "f771f190a70dc12b428aebc8dc5abe8f107661e9e2ce8aef44d3ab1d20590e23"
+    },
+    {
+      "path": "rs/sequential/compacting/tests/compiler.rs",
+      "bytes": 4802,
+      "sha256": "055d5b8d82d13d142874dc1fd95e5392282d9f800856d22bd5afa65ae3e96dd3"
+    },
+    {
+      "path": "rs/sequential/compacting/tests.rs",
+      "bytes": 14260,
+      "sha256": "e50db34f158fbee336fe22e69b9a553fe6f9c4a6c1f02133341f6675630a7a7e"
+    },
+    {
+      "path": "specs/sequential-compaction.md",
+      "bytes": 5534,
+      "sha256": "8877e96b5003999679f0f07def39ac26395ee63ec60ebf158b0364a9fa1ac3eb"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 17372,
+      "sha256": "b2e792a2512df027bef6513e36c1eeb08aa724782ef5619eee12cda1b5604e79"
+    },
+    {
+      "path": "../target-nox-compaction/release/deps/nox-155be5d25f5b91d7",
+      "bytes": 1871696,
+      "sha256": "3aae98b7f611948616c0c29e260a6f3ef3eb6535a50c884b41a23aa90536e00c"
+    },
+    {
+      "path": "../measurements/packed-prefix.dag",
+      "bytes": 8166949,
+      "sha256": "dc8dcb7e72c4e9a4c8999071f023215f8e593bbf6c69ee55a7d24de7e2d3acef"
+    },
+    {
+      "path": "../measurements/packed-closure-files-k_n8ecq7/job-visits.dag",
+      "bytes": 6561053,
+      "sha256": "9e87af7367f3aaafbebe990b92573c234c1a71bf14ad14bd0477b43b17ab75af"
+    },
+    {
+      "path": "../measurements/prefix-discovery-large.json",
+      "bytes": 899,
+      "sha256": "5cbf7a2276aa5e8ca53964a48a0576df250eaf8bc7d42fe8cd853b2b30b87939"
+    }
+  ]
+}

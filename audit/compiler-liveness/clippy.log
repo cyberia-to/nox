@@ -1,0 +1,54 @@
+    Checking strata-core v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/core)
+    Checking cfg-if v1.0.4
+    Checking either v1.17.0
+    Checking crossbeam-utils v0.8.22
+    Checking serde_core v1.0.229
+    Checking zmij v1.0.23
+    Checking ciborium-io v0.2.2
+    Checking memchr v2.8.3
+    Checking plotters-backend v0.3.7
+    Checking regex-syntax v0.8.11
+    Checking itoa v1.0.18
+    Checking clap_lex v1.1.0
+    Checking anstyle v1.0.14
+    Checking cyber-hemera v0.3.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/hemera/rs)
+    Checking zerocopy v0.8.56
+    Checking num-traits v0.2.19
+    Checking libc v0.2.189
+    Checking same-file v1.0.6
+    Checking strata-ext v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/ext)
+    Checking strata-proof v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/proof)
+    Checking strata-compute v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/compute)
+    Checking itertools v0.10.5
+    Checking cast v0.3.0
+    Checking clap_builder v4.6.6
+    Checking plotters-svg v0.3.7
+    Checking oorandom v11.1.5
+    Checking walkdir v2.5.0
+    Checking strata-nebu v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/nebu/rs)
+    Checking anes v0.1.6
+    Checking once_cell v1.21.4
+    Checking crossbeam-epoch v0.9.20
+    Checking cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-live-probe/rs)
+    Checking crossbeam-deque v0.8.7
+    Checking is-terminal v0.4.17
+    Checking plotters v0.3.7
+    Checking rayon-core v1.13.0
+    Checking regex-automata v0.4.18
+    Checking rayon v1.12.0
+    Checking criterion-plot v0.5.0
+    Checking clap v4.6.6
+    Checking nox-cli v0.2.0 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-live-probe/cli)
+error: this expression creates a reference which is immediately dereferenced by the compiler
+   --> cli/main.rs:247:52
+    |
+247 |     let formula = match parse_data(&mut reduction, &formula_text) {
+    |                                                    ^^^^^^^^^^^^^ help: change this to: `formula_text`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#needless_borrow
+    = note: `-D clippy::needless-borrow` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_borrow)]`
+
+error: could not compile `nox-cli` (bin "nox" test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `nox-cli` (bin "nox") due to 1 previous error

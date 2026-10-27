@@ -1,0 +1,72 @@
+--- measured/rs/sequential/compacting.rs
++++ final/rs/sequential/compacting.rs
+@@ -157,11 +157,7 @@
+     };
+     loop {
+         checkpoint(stats, cancelled)?;
+-        let headroom = if stack.len() < limits.max_frames as usize {
+-            roots::allocation_headroom(ar, &action, &stack)
+-        } else {
+-            0
+-        };
++        let headroom = roots::allocation_headroom(ar, &action, &stack, limits.max_frames);
+         if headroom > resident_limit - ar.count() {
+             collection::collect(
+                 ar,
+@@ -198,7 +194,8 @@
+         if matches!(
+             action,
+             Action::Return(Outcome::Error(crate::ErrorKind::Unavailable))
+-        ) && stats.total_allocations == limits.max_total_allocations
++        ) && headroom > 0
++            && stats.total_allocations == limits.max_total_allocations
+         {
+             return Err(CompactionFailureKind::TotalAllocations);
+         }
+--- measured/rs/sequential/compacting/roots.rs
++++ final/rs/sequential/compacting/roots.rs
+@@ -33,14 +33,21 @@
+     ar: &Reduction<N>,
+     action: &Action,
+     stack: &[Frame],
++    max_frames: u32,
+ ) -> u32 {
+     if let Action::Enter {
+-        formula, budget, ..
++        object,
++        formula,
++        budget,
+     } = action
+     {
++        if stack.len() >= max_frames as usize {
++            return 0;
++        }
+         // Axis zero returns hash data directly during Enter. A halted entry
+         // performs no allocation and must not start collection.
+         return if *budget >= 1
++            && ar.get(*object).is_some()
+             && ar
+                 .head(*formula)
+                 .and_then(|r| ar.atom_value(r))
+@@ -55,7 +62,11 @@
+             0
+         };
+     }
+-    if !matches!(action, Action::Return(Outcome::Ok(..))) {
++    let Action::Return(Outcome::Ok(value, _)) = action else {
++        return 0;
++    };
++    // Missing external values fail before a constructor attempts admission.
++    if ar.get(*value).is_none() {
+         return 0;
+     }
+     let Some(frame) = stack.last() else {
+@@ -67,7 +78,7 @@
+             8 | 13 => 1,
+             _ => 0,
+         },
+-        Phase::BinaryRight { .. } if frame.row.r[0] != 2 => 1,
++        Phase::BinaryRight { left, .. } if frame.row.r[0] != 2 && ar.get(left).is_some() => 1,
+         _ => 0,
+     }
+ }

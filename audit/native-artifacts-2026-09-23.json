@@ -1,0 +1,55 @@
+{
+  "date": "2026-09-23",
+  "base_revision": "f8807c5a5b173c286b23d3125ac9ec480a2669b5",
+  "branch": "feat/0.4-canonical-artifacts",
+  "integration_branch": "release/0.4",
+  "platform": "macOS aarch64",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14) (Homebrew)",
+  "commands": [
+    {
+      "command": "cargo check --workspace --all-targets --locked",
+      "exit_code": 0,
+      "log_sha256": "5591e9bd935327f3a2a894c19e309545d84ef24a250d8546f4196b3cdaa49a93",
+      "test_groups": []
+    },
+    {
+      "command": "cargo check -p cyber-nox --no-default-features --locked",
+      "exit_code": 0,
+      "log_sha256": "c11c834f21605539fb92da901670b2b600026ef5fd12bac7929ee3d5f9977261",
+      "test_groups": []
+    },
+    {
+      "command": "cargo test --workspace --release --locked",
+      "exit_code": 0,
+      "log_sha256": "89db70084d4b95766eb19bd5b9e70e5b1e21454185373e97e84c6e32fba7a8d1",
+      "test_groups": [
+        {
+          "passed": 178,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        }
+      ]
+    }
+  ],
+  "files_sha256": {
+    "rs/artifact.rs": "17d80747024a79115169ecae79cfb1bf02d3045ccdc75307a6f3404b11c5dc4f",
+    "rs/artifact/tests.rs": "6206e93175dadcdd718029c4c8fb8a4395ddb1f9eaf127df5e68ef1d36d66caa",
+    "specs/artifact.md": "21070bcbb1f0d228d1f01d7f0f5ff24ba4620b59cfc76f4432fb5189adb263d5"
+  },
+  "siblings": {
+    "strata": "d2eb1763b8caf04e6c7647ac6fe99761519c2ef9",
+    "hemera": "a931a0a8e7ed369852ce0f8bc6451a59745ee692",
+    "lens": "17cafe91431977b738e5b72361187cd01ad93638",
+    "honeycrisp": "ff735e6c262926bc9bab7534786a575020cbe442"
+  }
+}

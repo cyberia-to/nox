@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "scope": "independent root review of observer v2 extension; no proof closure",
+  "recorded_ns": 1790905703401597000,
+  "reviewer": "/root",
+  "base_revision": "172811b7746cdcd6ab198a3ed976dc6c19f55d5b",
+  "files": {
+    "specs/sequential-compaction.md": {
+      "bytes": 13357,
+      "sha256": "ba81952103b7e44a04ef16d3d6d5e0bf7906eadcda19c507742d3662e85c5fd9"
+    },
+    "rs/sequential/compacting.rs": {
+      "bytes": 9051,
+      "sha256": "9548eb023f10c8cb9ca4ab9b91e9dc18ae2993036174bcbbe3c187e5c6e3f3fb"
+    },
+    "rs/sequential/observe/mod.rs": {
+      "bytes": 6001,
+      "sha256": "97848d24492bceedd6a9d4b7033fbf15c0f841d16c3f867e63f6ec92e1b06fa3"
+    },
+    "rs/sequential/observe/hook.rs": {
+      "bytes": 2741,
+      "sha256": "6cecb7f08c84ce9d0131c722b64bbf88621cdae929ace524c043a4453c61fa19"
+    },
+    "rs/sequential/observe/capture.rs": {
+      "bytes": 10226,
+      "sha256": "f7fcde25606b16ed9ef48bdca6a50b8be380e45dd1b0610821b139b18287f688"
+    },
+    "rs/sequential/observe/stream.rs": {
+      "bytes": 1236,
+      "sha256": "a5181f23ad67281aef9a96d0bd16f05c08a4fdcc4d75f421d92331b49830fc37"
+    },
+    "rs/sequential/observe/v2.rs": {
+      "bytes": 1321,
+      "sha256": "2c5de680b20194891eb1c0b3f4d792a3813372b84aac609b4f698e2cc878ede3"
+    },
+    "rs/sequential/observe/wire.rs": {
+      "bytes": 6437,
+      "sha256": "257ce762cd5cd47991bfcbc66bd239b171ef5684bfc3ef8198a362ae7c50a2ae"
+    },
+    "rs/sequential/observe/tests.rs": {
+      "bytes": 13010,
+      "sha256": "19a77de778907445346b869795884c30ae6f10ba3701d60ded449f9c8230c6bc"
+    },
+    "rs/sequential/observe/tests/snapshots.rs": {
+      "bytes": 10496,
+      "sha256": "5c2d1d54661997f39aed5ad6f3f5d3b04dbe36a56d49d8e57cbcbafc1ad9aaa9"
+    },
+    "rs/sequential/observe/tests/snapshots/failures.rs": {
+      "bytes": 8978,
+      "sha256": "6f7d8d750a5354a0500ae27b975cf5a172f4d13e5a26324e0d30233e864b57fe"
+    }
+  },
+  "production_review": "Reviewed full production diff and spec: hook placement, v1 adapter without reset or work, v2 prior-order snapshots, accounting and tagging. No findings.",
+  "tests_review": "Reviewed positive and pre-extension golden tests, exact and one-below caps, partial snapshots, post-commit cancellation, failure at reset and each snapshot node, and failed collection. No findings.",
+  "source_identity_check": "All reviewed source hashes equal final all-target check and workspace/all-features gate receipts."
+}

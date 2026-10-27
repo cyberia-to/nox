@@ -1,0 +1,165 @@
+{
+  "scope": "Lossless deterministic gzip of measured logs and patches; original contents are not normalized.",
+  "files": [
+    {
+      "original_path": "audit/prefix-frontier/clippy-final.log",
+      "archive_path": "audit/prefix-frontier/clippy-final.log.gz",
+      "original_bytes": 160,
+      "original_sha256": "cba43bb95caf4a4da86d143ba3c07ac9f4f4ef989809382fd4f192bb1255125e",
+      "archive_bytes": 154,
+      "archive_sha256": "97b674a667fbf315515b53a2a0a74ba93985837e5ebc8de48e6381b48af89c50",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/clippy-parallel-final.log",
+      "archive_path": "audit/prefix-frontier/clippy-parallel-final.log.gz",
+      "original_bytes": 160,
+      "original_sha256": "7c17c78ad9c7c52c7e11f43b2117071e07cfd1157952ba8db8575327c7424a37",
+      "archive_bytes": 155,
+      "archive_sha256": "0c4e9b47f2267ea15c9b66cd5eda1682b797382fe821cc1311ba670f40e38525",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/clippy-parallel.log",
+      "archive_path": "audit/prefix-frontier/clippy-parallel.log.gz",
+      "original_bytes": 2045,
+      "original_sha256": "1e649c04d41a4f5e78137b5d8ba77c962c119866ad1c56e32cd91f4ea80213a8",
+      "archive_bytes": 624,
+      "archive_sha256": "b4019febd506aae88332f43cbec18cfa6db7195f7e808b7fdd78e63cb2391cc0",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/clippy.log",
+      "archive_path": "audit/prefix-frontier/clippy.log.gz",
+      "original_bytes": 2301,
+      "original_sha256": "0543d204eef5b7e8efc5e2fabc79c3a7e6bc974fdc005ffefa563abf46120601",
+      "archive_bytes": 705,
+      "archive_sha256": "d7ef73582dbe73975e0f11bf85ce0cc48fdc4db3d05e7607600bfb60ac8fcccd",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/fmt-all.log",
+      "archive_path": "audit/prefix-frontier/fmt-all.log.gz",
+      "original_bytes": 236667,
+      "original_sha256": "98271283cae6fa8742361d884c33563fe2c1fdecc5c1f9a42899ebb6b0635367",
+      "archive_bytes": 36274,
+      "archive_sha256": "fb986c61a9da2dc33e2dfb889676d9b6c6aa5803cc9fb21a3777f578f888387d",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/fmt-helper-final.log",
+      "archive_path": "audit/prefix-frontier/fmt-helper-final.log.gz",
+      "original_bytes": 0,
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_bytes": 20,
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/fmt-helper.log",
+      "archive_path": "audit/prefix-frontier/fmt-helper.log.gz",
+      "original_bytes": 0,
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_bytes": 20,
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/helper-test.log",
+      "archive_path": "audit/prefix-frontier/helper-test.log.gz",
+      "original_bytes": 2615,
+      "original_sha256": "b1f6e5128fe2401e24b34b569e319622e561b46b2cac1bac6f521e1075673970",
+      "archive_bytes": 878,
+      "archive_sha256": "3c546bd147248a4ece45fe1e1803c716b74c89db2182e48771bb3173b6f5c1f4",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/post-measure-helper.patch",
+      "archive_path": "audit/prefix-frontier/post-measure-helper.patch.gz",
+      "original_bytes": 5898,
+      "original_sha256": "329589f0fe643aa61eb96f7fa6e1f3be5649cdf3809ca34196ab0a3dd08338ba",
+      "archive_bytes": 1851,
+      "archive_sha256": "f5d63d859cf5d064560298a84a2a4be9b348f2a3deea4c998db715566010b1b9",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/stage120.log",
+      "archive_path": "audit/prefix-frontier/stage120.log.gz",
+      "original_bytes": 901,
+      "original_sha256": "ff8daf363452befa4a8aa8333be0db76a57cc637516178d8bcf928a348e38cfe",
+      "archive_bytes": 447,
+      "archive_sha256": "cd1d2a983f2cfa1b2ce68c9380b270a5105ea3d75a27a047d1565ded923b1261",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/stage4.log",
+      "archive_path": "audit/prefix-frontier/stage4.log.gz",
+      "original_bytes": 1611,
+      "original_sha256": "8389c063447ed2aa0d2f4481225592e3c5005de5c73b622e8bd817dac541bb8b",
+      "archive_bytes": 603,
+      "archive_sha256": "bb036c5def8b4d47d988707d34c9437951f5731e98603c7dc06a4c47d2f1d4ef",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/test-helper.patch",
+      "archive_path": "audit/prefix-frontier/test-helper.patch.gz",
+      "original_bytes": 9830,
+      "original_sha256": "b7d327f4786b64b52bd4abbee7a9f675e3f99ae2fa9a8e17febcf690c8f247df",
+      "archive_bytes": 3136,
+      "archive_sha256": "cd62f131426748450866970d123355b5cc3ca7ae524150982dd5cf487b107246",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/tests-final.log",
+      "archive_path": "audit/prefix-frontier/tests-final.log.gz",
+      "original_bytes": 16565,
+      "original_sha256": "f06c9c85852445bdeb0e00a903f6278daa17d314a6b9b17269992ab6adf5f5a1",
+      "archive_bytes": 4085,
+      "archive_sha256": "5de98b2080d5adf446e03df8fa9ffa7615e95c89d5513f277f80cfb199a0db2e",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/tests-parallel-final.log",
+      "archive_path": "audit/prefix-frontier/tests-parallel-final.log.gz",
+      "original_bytes": 16300,
+      "original_sha256": "326b5651d32e7189b89173c0b083c324ef9409fd9e7981021342b3c2b5a6fc45",
+      "archive_bytes": 4057,
+      "archive_sha256": "27fe697de456c01d1926310931b8d6f8e4f060005f9edd5f0c17a55ae7b9fe8d",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/tests-parallel.log",
+      "archive_path": "audit/prefix-frontier/tests-parallel.log.gz",
+      "original_bytes": 16059,
+      "original_sha256": "1a89907b0ddd4bd0e6765c3c2196f67751a1edb21ced6e2b32abb886c74f5287",
+      "archive_bytes": 3960,
+      "archive_sha256": "fab4b8674d2a23db6a40265aac1bc8b9a39843c9173cde8013a985fbd9c06c7c",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    },
+    {
+      "original_path": "audit/prefix-frontier/tests.log",
+      "archive_path": "audit/prefix-frontier/tests.log.gz",
+      "original_bytes": 16324,
+      "original_sha256": "6af8c0abdf2b88accbcca9acee4c5bbf2e0e632c9e843700777f11f58e65930a",
+      "archive_bytes": 4045,
+      "archive_sha256": "2af740fd962b38ff68cfc2cc2473e649599e4f8be5e6849b4004e9005aaad6f7",
+      "gzip_mtime": 0,
+      "gzip_filename": ""
+    }
+  ]
+}

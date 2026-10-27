@@ -1,0 +1,78 @@
+{
+  "schema": "nox/finalizer-cache-validation/v1",
+  "kind": "local-development",
+  "base_revision": "c9f7486a74fe81bfc194b598da40f6343ecb2ef1",
+  "source_sha256": {
+    "rs/sequential.rs": "ec062e38596cd25746edc2c888e29f255fb88336a8694a417bd833171d0e1b46",
+    "rs/sequential/dispatch.rs": "9ee04ce8d8bc660282be2ca46beb120fdd6164032c969d0d6e28b0e0ed6d4fb6",
+    "rs/sequential/finalizer_cache.rs": "3f57af179638f61199d5f04b4dc36dbeb283c1c1f9a272a648090695f859b3e4",
+    "rs/sequential/tests.rs": "aacf44a30c131e4ad22a63b26738faf4c2818abc4930b9801be2e0a45a4eb90d",
+    "rs/sequential/tests/cache.rs": "284f12028450be545f4f77a70980474c3f2e1f8f6ab0fde2a5f25ab7997cea2c",
+    "rs/sequential/tests/differential.rs": "d96171c64012e374430b048419f2e5bb8efdc2e5379750dd126a8a9c6a0f01a0",
+    "rs/jets/formulas.rs": "0b5bbe3ff1ebbdf4f2b4f1c22e407c5cc7434a2d5eeb33299f1d0309db226fe7",
+    "rs/jets/fri_fold.rs": "83e8854db48224fdb7665dffe8c3668a0753f3a407e9e3518a8916505bf0deef",
+    "rs/patterns/hash.rs": "461171c4133e0eec99d2847accb609827af8343eb8a5baec5faab0c85ffb5855",
+    "specs/sequential.md": "3f552ec27844e8e09ff32f9dc5453652e98fe5293c20023b0be1230112f4fba4"
+  },
+  "gates": [
+    {
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox",
+      "env": {
+        "CARGO_TARGET_DIR": "../target-nox-memo"
+      },
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox"
+      ],
+      "exit_code": 0,
+      "log": "default-tests.log",
+      "sha256": "1872a844b19353762ad0858ca6c72fa0bc629ddfc21d02ba8defbc959c51a8fd",
+      "passed": 203
+    },
+    {
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox",
+      "env": {
+        "CARGO_TARGET_DIR": "../target-nox-memo"
+      },
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox",
+        "--features",
+        "parallel"
+      ],
+      "exit_code": 0,
+      "log": "parallel-tests.log",
+      "sha256": "592d8253c6a37fe93f6c0593ddb0a9244569954493d9da129b1d6ad6b95a57bf",
+      "passed": 202
+    },
+    {
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox",
+      "env": {
+        "CARGO_TARGET_DIR": "../target-nox-memo"
+      },
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "clippy.log",
+      "sha256": "c8d61290256da444cc3015b527bac7e72c36faf6c2e86d66cfd6640b8e164627"
+    }
+  ]
+}

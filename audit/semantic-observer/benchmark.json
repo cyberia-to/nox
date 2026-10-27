@@ -1,0 +1,234 @@
+{
+  "scope": "ordinary compacting path only; local paired measurement",
+  "baseline_revision": "f8047c22cc6075d5171c0fbe520174e78e94ccb6",
+  "candidate_base_revision": "f8047c22cc6075d5171c0fbe520174e78e94ccb6",
+  "benchmark_sha256": "66054b7743fe42f14e18fee1dd364602c1322b20f57d3f8e9791dad4fd95f2d0",
+  "repetitions_per_sample": 30,
+  "samples": [
+    {
+      "sample": 0,
+      "variant": "baseline",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/baseline/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2562680875\n",
+      "elapsed_ns": 2562680875
+    },
+    {
+      "sample": 0,
+      "variant": "candidate",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/candidate/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2576594000\n",
+      "elapsed_ns": 2576594000
+    },
+    {
+      "sample": 1,
+      "variant": "candidate",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/candidate/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2583175209\n",
+      "elapsed_ns": 2583175209
+    },
+    {
+      "sample": 1,
+      "variant": "baseline",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/baseline/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2594734666\n",
+      "elapsed_ns": 2594734666
+    },
+    {
+      "sample": 2,
+      "variant": "baseline",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/baseline/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2575578458\n",
+      "elapsed_ns": 2575578458
+    },
+    {
+      "sample": 2,
+      "variant": "candidate",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/candidate/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2581201500\n",
+      "elapsed_ns": 2581201500
+    },
+    {
+      "sample": 3,
+      "variant": "candidate",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/candidate/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2581044292\n",
+      "elapsed_ns": 2581044292
+    },
+    {
+      "sample": 3,
+      "variant": "baseline",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/baseline/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2568607209\n",
+      "elapsed_ns": 2568607209
+    },
+    {
+      "sample": 4,
+      "variant": "baseline",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/baseline/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2567526375\n",
+      "elapsed_ns": 2567526375
+    },
+    {
+      "sample": 4,
+      "variant": "candidate",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/candidate/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2585931292\n",
+      "elapsed_ns": 2585931292
+    },
+    {
+      "sample": 5,
+      "variant": "candidate",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/candidate/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2578492667\n",
+      "elapsed_ns": 2578492667
+    },
+    {
+      "sample": 5,
+      "variant": "baseline",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/baseline/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2567001833\n",
+      "elapsed_ns": 2567001833
+    },
+    {
+      "sample": 6,
+      "variant": "baseline",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/baseline/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2565488125\n",
+      "elapsed_ns": 2565488125
+    },
+    {
+      "sample": 6,
+      "variant": "candidate",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/candidate/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2577529042\n",
+      "elapsed_ns": 2577529042
+    },
+    {
+      "sample": 7,
+      "variant": "candidate",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/candidate/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2578260209\n",
+      "elapsed_ns": 2578260209
+    },
+    {
+      "sample": 7,
+      "variant": "baseline",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/baseline/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2583481583\n",
+      "elapsed_ns": 2583481583
+    },
+    {
+      "sample": 8,
+      "variant": "baseline",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/baseline/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2579442750\n",
+      "elapsed_ns": 2579442750
+    },
+    {
+      "sample": 8,
+      "variant": "candidate",
+      "command": [
+        "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/candidate/release/observer-benchmark",
+        "30"
+      ],
+      "raw_stdout": "2579099625\n",
+      "elapsed_ns": 2579099625
+    }
+  ],
+  "builds": {
+    "baseline": {
+      "command": [
+        "cargo",
+        "build",
+        "--release",
+        "--offline",
+        "--manifest-path",
+        "/var/folders/gc/64p7ymwx60144drqltvslckr0000gn/T/nox-observer-bench-1d1iug35/baseline/Cargo.toml"
+      ],
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-observer",
+      "env": {
+        "CARGO_TARGET_DIR": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/baseline"
+      },
+      "exit_code": 0,
+      "binary": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/baseline/release/observer-benchmark",
+      "binary_sha256": "a9b5e10229f7f782285e87a757099d3672d813b1f9d641a65216900a3b3ce6eb",
+      "manifest": "[package]\nname=\"observer-benchmark\"\nversion=\"0.0.0\"\nedition=\"2024\"\n[workspace]\n[dependencies]\nnox={package=\"cyber-nox\",path=\"/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/rs\"}\nnebu={package=\"strata-nebu\",path=\"/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/nebu/rs\"}\n",
+      "lock_sha256": "898a203b8d23494ba95b396bef328c156c5526260582c1653802e14ad81fe483"
+    },
+    "candidate": {
+      "command": [
+        "cargo",
+        "build",
+        "--release",
+        "--offline",
+        "--manifest-path",
+        "/var/folders/gc/64p7ymwx60144drqltvslckr0000gn/T/nox-observer-bench-1d1iug35/candidate/Cargo.toml"
+      ],
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-observer",
+      "env": {
+        "CARGO_TARGET_DIR": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/candidate"
+      },
+      "exit_code": 0,
+      "binary": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-observer-benchmark/candidate/release/observer-benchmark",
+      "binary_sha256": "2bf1338c9b3ac47d5b904216a07b1745cf47f33714b37761489353f0eecb44c9",
+      "manifest": "[package]\nname=\"observer-benchmark\"\nversion=\"0.0.0\"\nedition=\"2024\"\n[workspace]\n[dependencies]\nnox={package=\"cyber-nox\",path=\"/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-observer/rs\"}\nnebu={package=\"strata-nebu\",path=\"/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/nebu/rs\"}\n",
+      "lock_sha256": "898a203b8d23494ba95b396bef328c156c5526260582c1653802e14ad81fe483"
+    }
+  },
+  "median_elapsed_ns": {
+    "baseline": 2568607209,
+    "candidate": 2579099625
+  },
+  "candidate_over_baseline": 1.004084865900569
+}

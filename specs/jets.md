@@ -1,13 +1,13 @@
 # jet specification
 
 version: 0.4
-status: canonical (specification) / **deferred (implementation)**
+status: canonical specification; partial runtime registry implemented
 
-> **Implementation status: deferred post-genesis.** The jet mechanism, registry,
-> and individual jet specifications in `specs/jets/` describe the target Layer 3
-> optimization layer. The current nox crate (`rs/`) exposes none of these — only
-> Layer 1 (16 patterns) and Layer 2 (call + look) are implemented. Pure Layer 1
-> expansions of every jet are sound and the only path the interpreter takes today.
+The Rust runtime exposes exact and template registries plus CPU/Honeycrisp
+kernels. The complete cross-algebra genesis catalog below remains a design
+specification. Runtime acceleration must satisfy the actual pure formula and
+[bounded input admission](jets/input-admission.md); in particular the current
+NTT anchor represents only one butterfly.
 
 ## overview
 

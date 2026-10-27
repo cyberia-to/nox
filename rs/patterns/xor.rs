@@ -35,6 +35,13 @@ pub fn xor<const N: usize, T: Tracer>(
         Ok(v) => v,
         Err(o) => return o,
     };
+    finish(reduction, a, b, budget, row, tracer)
+}
+
+pub(crate) fn finish<const N: usize, T: Tracer>(
+    reduction: &mut Reduction<N>, a: u64, b: u64, budget: u64,
+    row: &mut TraceRow, tracer: &mut T,
+) -> Outcome {
     let c = (a ^ b) & WORD_MASK;
     let result = match reduction.atom(Goldilocks::new(c)) {
         Some(r) => r,

@@ -36,7 +36,7 @@ pub(crate) const COSTS: [u64; 18] = [
     32, // 12 and
     32, // 13 not
     32, // 14 shl
-    25, // 15 hash  — 24 Poseidon2 rounds + 1 squeeze row
+    61, // 15 hash  — 60 Poseidon2 rounds + 1 squeeze row (hemera 0.4)
     1,  // 16 call
     1,  // 17 look
 ];
@@ -80,7 +80,7 @@ pub enum ErrorKind {
     CallRejected = 5,
 }
 
-fn cost(tag: u64) -> u64 {
+pub(crate) fn cost(tag: u64) -> u64 {
     // unknown tags get COST_DEFAULT; the dispatch later returns Malformed
     if (tag as usize) < COSTS.len() {
         COSTS[tag as usize]
@@ -173,7 +173,7 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
     // Fires before tag cost and before tag dispatch. Jets own all budget.
     if let Some(fkey) = reduction.digest(formula).map(digest_key) {
         let jet = registry
-            .lookup_exact(&fkey)
+            .lookup_exact_for(&fkey, reduction, object, budget_in)
             .or_else(|| registry.lookup_template(reduction, formula));
         if let Some(jet_fn) = jet {
             let outcome = jet_fn(
@@ -298,7 +298,7 @@ pub(crate) fn reduce_inner<const N: usize, T: Tracer>(
 /// Emit a synthetic error row for fast-fail paths (depth-exceeded, malformed
 /// dispatch). Preserves the "every reduce() call emits at least one row"
 /// invariant so the verifier can bind the halted step to a budget state.
-fn emit_error_row<T: Tracer>(
+pub(crate) fn emit_error_row<T: Tracer>(
     tracer: &mut T,
     object: Order,
     formula: Order,
@@ -318,7 +318,7 @@ fn emit_error_row<T: Tracer>(
 }
 
 /// Emit a halt row for budget exhaustion. Status: budget_in == budget_out.
-fn emit_halt_row<T: Tracer>(
+pub(crate) fn emit_halt_row<T: Tracer>(
     tracer: &mut T,
     object: Order,
     formula: Order,
@@ -666,7 +666,7 @@ mod tests {
         let body = ar.pair(t1, obj).unwrap();
         let formula = ar.pair(t15, body).unwrap();
         let mut tr = VecTrace::default();
-        // hash cost = 25, budget = 10 → halt before dispatching
+        // hash cost = 61, budget = 10 → halt before dispatching
         match reduce(&mut ar, obj, formula, 10, &NullCalls, &mut tr) {
             Outcome::Halt(b) => assert_eq!(b, 10),
             o => panic!("expected Halt(10), got {:?}", o),
@@ -734,7 +734,9 @@ mod tests {
         assert_eq!(cost(8), 64); // inv
         assert_eq!(cost(10), 64); // lt
         assert_eq!(cost(11), 32); // xor
-        assert_eq!(cost(15), 25); // hash (24 rounds + 1 squeeze)
+        assert_eq!(cost(15), 61); // hash (60 rounds + 1 squeeze)
+        assert_eq!(cost(15), crate::patterns::hash::HASH_COST);
+        assert_eq!(cost(15), crate::data::cost::PATTERN_COSTS[15]);
         assert_eq!(cost(99), 1); // unknown tag → default
     }
 

@@ -1,0 +1,22 @@
+{
+  "pid": 59985,
+  "command": [
+    "/Users/master/cyber/.worktrees/joy-soft3-reaudit/install-audit/bin/joy",
+    "run-artifact",
+    "/Users/master/cyber/.worktrees/joy-soft3-reaudit/measurements/final-c1.dag",
+    "--input",
+    "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/baseline-closure-files-cdfin1zh/job.dag",
+    "--emit",
+    "result",
+    "-o",
+    "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/audit/sequential-untraced/baseline-result.dag",
+    "--arena-nodes",
+    "3145728",
+    "--budget",
+    "100000000",
+    "--frames",
+    "65536",
+    "--time-ms",
+    "300000"
+  ]
+}

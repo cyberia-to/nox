@@ -53,7 +53,7 @@ mul cost = base F_p multiplications per one regime-native multiply. constraints/
 | lt | 1 | — | — | — | 1 | — | 1 | — |
 | xor | 1 | — | — | — | 1 | — | — | — |
 | and | 1 | — | — | — | 1 | — | — | — |
-| hash | 25 | 25 | 25 | 25 | deferred | 25 | 25 | deferred |
+| hash | 61 | 61 | 61 | 61 | deferred | 61 | 61 | deferred |
 | zheng/mul | ~32 | 3 | 6 | 9 | 1 | ~N (batch) | O(w) | 1 F_q |
 
 "—" = operation not defined or not meaningful for this regime. n = ring degree (1024). deferred = hemera computed at settlement boundary (~766 constraints). all costs are execution budget; zheng constraint counts are per-instantiation (see [[patterns]]).
@@ -210,11 +210,10 @@ HASH: Hemera (Poseidon2-Goldilocks, hemera)
   state: 16 field elements
   rate: 8 elements
   capacity: 8 elements
-  rounds: 8 full (4+4) + 16 partial = 24 total
-  s-box (full rounds): x^7
-  s-box (partial rounds): x^{-1} (field inversion, 0^{-1} = 0)
+  rounds: 12 full (6+6) + 48 partial = 60 total (hemera 0.4, frozen 2026-10-16)
+  s-box: x^7 in every round
   output: 4 field elements (32 bytes)
-  cost: ~736 zheng constraints per permutation
+  cost: ~1,440 zheng constraints per permutation (0.3 record: 24 rounds, x^{-1} partial S-box, ~736)
 ```
 
 hemera provides: sponge construction, domain-separated hashing, Merkle-compatible mode. nox imports the hash — it does not reimplement it.
@@ -223,9 +222,9 @@ hemera provides: sponge construction, domain-separated hashing, Merkle-compatibl
 
 all algebras settle through Goldilocks via Hemera (Poseidon2 over Goldilocks). this creates a permanent F_p dependency:
 
-- nox<F₂> programs must defer Hemera to settlement (~10 constraints deferred, ~736 at settlement)
+- nox<F₂> programs must defer Hemera to settlement (~10 constraints deferred, ~1,440 at settlement)
 - nox<F_{p³}> programs compute Hemera natively (Hemera operates over base field F_p)
-- nox<F_p> programs compute Hemera natively (25 budget cost: 24 rounds + 1 squeeze)
+- nox<F_p> programs compute Hemera natively (61 budget cost: 60 rounds + 1 squeeze, one row each; hemera 0.4, hemera `audit/profile-0.4-2026-10.md` §5)
 
 the polymorphism is real for computation but asymmetric for commitment. Goldilocks is the anchor field. all algebras settle through it.
 

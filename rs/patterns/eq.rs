@@ -34,6 +34,13 @@ pub fn eq<const N: usize, T: Tracer>(
         Ok(v) => v,
         Err(o) => return o,
     };
+    finish(reduction, ra, rb, budget, row)
+}
+
+pub(crate) fn finish<const N: usize>(
+    reduction: &mut Reduction<N>, ra: Order, rb: Order, budget: u64,
+    row: &mut TraceRow,
+) -> Outcome {
     let da = match reduction.digest(ra) {
         Some(d) => *d,
         None => return Outcome::Error(ErrorKind::Unavailable),

@@ -1,0 +1,22 @@
+   Compiling cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/rs)
+    Finished `release` profile [optimized] target(s) in 1.39s
+     Running unittests lib.rs (../target-nox-compaction/release/deps/nox-155be5d25f5b91d7)
+
+running 1 test
+test sequential::compacting::tests::invalid_external_operands_preserve_unavailable_without_claiming_allocation_rejection ... FAILED
+
+failures:
+
+---- sequential::compacting::tests::invalid_external_operands_preserve_unavailable_without_claiming_allocation_rejection stdout ----
+
+thread 'sequential::compacting::tests::invalid_external_operands_preserve_unavailable_without_claiming_allocation_rejection' (15701631) panicked at rs/sequential/compacting/tests.rs:413:92:
+called `Result::unwrap()` on an `Err` value: CompactionFailure { kind: TotalAllocations, stats: CompactionStats { pinned_nodes: 6, resident_nodes: 6, peak_resident_nodes: 6, total_allocations: 6, reclaimed_nodes: 0, collections: 0, collection_work: 0, scratch_bytes: 896, evaluator_checkpoints: 2, collection_checkpoints: 0 }, peak_frames: 1 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    sequential::compacting::tests::invalid_external_operands_preserve_unavailable_without_claiming_allocation_rejection
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 220 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p cyber-nox --lib`

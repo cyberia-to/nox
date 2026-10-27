@@ -111,6 +111,6 @@ the system is designed for one thing: produce a computation, prove it, verify th
 
 nouns are not efficient for everything. flat arrays of bytes, dense matrices, hash maps with O(1) lookup — these do not map naturally to binary trees. a 1MB image stored as a noun is a deeply nested tree of field elements, larger and slower to access than the raw bytes.
 
-this is by design. nox is a verification machine, and the things it verifies — identity, ownership, conservation laws, graph structure, proof validity — are naturally tree-shaped. bulk data lives in [[particles]] (content-addressed blobs); nox operates on their hashes. the VM handles the cryptographic and algebraic layer; data storage is a separate concern, handled by [[bbg]].
+this is by design. nox is a verification machine, and the things it verifies — identity, ownership, conservation laws, graph structure, proof validity — are naturally tree-shaped. bulk data lives in [[files]] (content-addressed blobs); nox operates on their [[particles]]. the VM handles the cryptographic and algebraic layer; data storage is a separate concern, handled by [[bbg]].
 
 the constraint is clarifying: if something does not naturally decompose into a binary tree of field elements, it probably should not be inside a nox computation. the VM's simplicity is its boundary — it does exactly what it needs to do for provable computation, and nothing more.
