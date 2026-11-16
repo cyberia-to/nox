@@ -17,7 +17,7 @@ two evaluators of the same `(object, formula, budget)` triple must agree on
 the **exact** `Result` variant **and** the **exact** remaining budget,
 otherwise consensus breaks.
 
-This proposal:
+This project:
 
 1. Formalizes the tension between confluence and sequential budget threading.
 2. Shows why every "obvious" parallelization breaks in the case of
@@ -29,8 +29,8 @@ This proposal:
    Layer 2 permissive).
 5. Identifies the open theorems and the implementation work.
 
-This is a specification-level proposal. The current sequential interpreter
-remains correct; this proposal layers a parallel-safe semantics on top
+This is a specification-level project. The current sequential interpreter
+remains correct; this project layers a parallel-safe semantics on top
 with an equivalence theorem.
 
 ## 1. The core tension
@@ -256,7 +256,7 @@ For call [16 [tag check]]:
 **Verdict**: ✅ Sequential-equivalent everywhere. ❌ Imposes new
 formula structure conventions (potential incompatibility, schema burden).
 
-## 4. The proposal — S4 with explicit dynamic-cost frontier
+## 4. The project — S4 with explicit dynamic-cost frontier
 
 We adopt **Scheme S4** as the parallel semantics for Layer 1 patterns,
 and explicitly mark pattern 2 (compose) and pattern 16 (call) as having
@@ -533,7 +533,7 @@ counter-example showing where it diverges from sequential. This is the
 
 ## 8. Migration path
 
-### 8.1 Phase 0 (this proposal accepted)
+### 8.1 Phase 0 (this project accepted)
 
 - Spec: add §parallel reduction to `reduction.md`, replacing the current
   "open spec gap" note at line 129.
@@ -611,7 +611,7 @@ semantics is parallel by construction".
 
 ## 10. Decision request
 
-This proposal asks for sign-off on:
+This project asks for sign-off on:
 
 1. **Adopting Scheme S4** (cost-bound partitioning with refund-at-join,
    sequential fallback for over-budget) as the parallel semantics.

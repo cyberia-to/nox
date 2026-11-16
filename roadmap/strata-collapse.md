@@ -87,7 +87,7 @@ substrate.
 
 nox already models this: genies is "a separate instantiation `nox<F_q>` with
 its own jet registry; cross-algebra composition accumulates F_q
-sub-traces into the F_p accumulator." This proposal does not introduce that —
+sub-traces into the F_p accumulator." This project does not introduce that —
 it confirms F_q as the *single* irreducible second floor. After the collapse,
 nox is exactly two prime substrates:
 

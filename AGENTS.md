@@ -362,7 +362,7 @@ project/
 │   ├── grammar.md       formal grammar (if applicable)
 │   ├── ir.md            internal representations
 │   ├── quality.md       review methodology
-│   └── props/           design proposals (draft → accepted → implemented)
+│   └── props/           design projects (draft → accepted → implemented)
 ├── docs/                documentation (Diataxis framework)
 │   ├── tutorials/       learning by building
 │   ├── guides/          task-oriented how-tos
@@ -398,13 +398,13 @@ when code and reference disagree, fix reference first, then propagate.
 docs/ is documentation — teaches, guides, explains. organized by the
 reader's needs (Diataxis). references spec but does not duplicate it.
 
-## design proposals
+## design projects
 
-`specs/props/` holds proposals for changes not yet committed to
-the spec. each proposal has status frontmatter (draft, accepted,
-rejected, implemented). proposals document desire before commitment.
-accepted proposals migrate to the relevant specs/ file.
-rejected proposals stay for rationale.
+`specs/props/` holds projects for changes not yet committed to
+the spec. each project has status frontmatter (draft, accepted,
+rejected, implemented). projects document desire before commitment.
+accepted projects migrate to the relevant specs/ file.
+rejected projects stay for rationale.
 
 ## agent state
 
@@ -492,8 +492,8 @@ specs/           canonical specification (separate from docs/)
 ├── language.md      types, operators, builtins
 ├── grammar.md       formal grammar
 ├── ir.md            intermediate representation
-├── props/           design proposals (not yet spec)
-│   └── README.md    proposal lifecycle: draft → accepted → rejected → implemented
+├── props/           design projects (not yet spec)
+│   └── README.md    project lifecycle: draft → accepted → rejected → implemented
 └── quality.md       review methodology
 ```
 
@@ -507,9 +507,9 @@ reality.
 specs/ is not documentation — it is specification. docs/ explains
 and teaches. specs/ defines.
 
-## design proposals
+## design projects
 
-proposals for future changes live in `specs/props/`. each proposal
+projects for future changes live in `specs/props/`. each project
 is a standalone markdown file with status frontmatter:
 
 | status | meaning |
@@ -519,7 +519,7 @@ is a standalone markdown file with status frontmatter:
 | rejected | decided against, kept for rationale |
 | implemented | done — migrated to the relevant spec file |
 
-proposals are not spec. they document desire before commitment.
+projects are not spec. they document desire before commitment.
 
 ## spec before code
 
