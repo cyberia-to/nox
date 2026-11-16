@@ -100,7 +100,7 @@ the stack is continuous: nox pattern → software jet → GFP hardware primitive
 
 ## self-verification
 
-the zheng verifier for nox is itself a nox program: field arithmetic for the sumcheck and hemera for the Merkle paths and Fiat-Shamir. the constraint counts and the constant-size recursion of the retired design do not hold; the verifier's cost and the place of recursion are set by [[soft3/proposals/proof-system-repair|the proof-system repair]] §4.
+the zheng verifier for nox is itself a nox program: field arithmetic for the sumcheck and hemera for the Merkle paths and Fiat-Shamir. the constraint counts and the constant-size recursion of the retired design do not hold; the verifier's cost and the place of recursion are set by [[soft3/projects/proof-system-repair|the proof-system repair]] §4.
 
 ## domain-specific jets
 

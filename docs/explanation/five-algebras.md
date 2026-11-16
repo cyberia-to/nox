@@ -69,7 +69,7 @@ each step proves via its native lens in zheng. zheng accumulates all sub-traces 
 
 ## the decider
 
-the universal accumulator folds all history from genesis, and one decider settles it. the accumulator size and decider cost of the retired design do not hold; the repaired accumulation and its measured numbers live in [[soft3/proposals/proof-system-repair|the proof-system repair]].
+the universal accumulator folds all history from genesis, and one decider settles it. the accumulator size and decider cost of the retired design do not hold; the repaired accumulation and its measured numbers live in [[soft3/projects/proof-system-repair|the proof-system repair]].
 
 ## the correspondence
 

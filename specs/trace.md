@@ -655,4 +655,4 @@ Brakedown commits to f. sumcheck verifies transition constraints. the verifier c
 
 the zheng verifier is a nox program: field arithmetic for the sumcheck, hemera for Fiat-Shamir and for the Merkle paths that authenticate every opening.
 
-the verifier tiers, the constant proof size and the per-fold cost of the retired design do not hold. the verifier's cost, and where recursion is used, are set by [[soft3/proposals/proof-system-repair|the proof-system repair]] §3–4.
+the verifier tiers, the constant proof size and the per-fold cost of the retired design do not hold. the verifier's cost, and where recursion is used, are set by [[soft3/projects/proof-system-repair|the proof-system repair]] §3–4.

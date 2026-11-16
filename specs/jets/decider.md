@@ -4,7 +4,7 @@ crystal-type: entity
 crystal-domain: comp
 alias: decider jet, all-history verification
 ---
-> superseded: the legacy decider jet of the retired zheng design verifies nothing and is retired in phase 3 of [[soft3/proposals/proof-system-repair|the proof-system repair]].
+> superseded: the legacy decider jet of the retired zheng design verifies nothing and is retired in phase 3 of [[soft3/projects/proof-system-repair|the proof-system repair]].
 
 # decider jet — legacy, retired in phase 3
 

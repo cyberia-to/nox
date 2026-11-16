@@ -508,7 +508,7 @@ result: (200, 95)
 
 ## proof-carrying reduction
 
-reduction and proving are one operation. each reduce() call generates a trace row AND folds it into a running accumulator. the accumulation scheme is set by [[soft3/proposals/proof-system-repair|the proof-system repair]]; the earlier fold over hemera was unsound and its per-step costs do not hold:
+reduction and proving are one operation. each reduce() call generates a trace row AND folds it into a running accumulator. the accumulation scheme is set by [[soft3/projects/proof-system-repair|the proof-system repair]]; the earlier fold over hemera was unsound and its per-step costs do not hold:
 
 ```
 reduce_with_proof(s, formula, f, acc) =
@@ -556,4 +556,4 @@ the signal is the unit of state change for [[BBG]]. it flows from device through
 
 ## zheng integration
 
-the reduction trace (sequence of pattern applications with register states) IS the zheng witness. the trace layout is per-instantiation — column widths depend on F element size. see trace.md for the register layout and AIR constraints. see jets.md for optimized verification. see [[soft3/proposals/proof-system-repair|the proof-system repair]] for the accumulation that replaces the retired fold.
+the reduction trace (sequence of pattern applications with register states) IS the zheng witness. the trace layout is per-instantiation — column widths depend on F element size. see trace.md for the register layout and AIR constraints. see jets.md for optimized verification. see [[soft3/projects/proof-system-repair|the proof-system repair]] for the accumulation that replaces the retired fold.
