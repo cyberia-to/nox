@@ -16,7 +16,7 @@
 //!   dir     = 0: sibling is left child; 1: sibling is right child
 //!
 //! Returns: Field atom 1 (valid path) or 0 (invalid).
-//! Budget: depth × 25 (one hash per step, matching `COSTS[hash]` = 25).
+//! Budget: depth × 61 (one hash per step, matching `COSTS[hash]` = 61).
 
 extern crate alloc;
 use alloc::vec::Vec;
@@ -27,6 +27,7 @@ use crate::data::{Data, Order, Reduction};
 use crate::reduce::{ErrorKind, Outcome, make_field, pair_children};
 use crate::trace::{TraceRow, Tracer};
 use hemera::StepSponge;
+use crate::patterns::hash::HASH_COST;
 use hemera::field::Goldilocks as HemeraGold;
 use nebu::Goldilocks;
 
@@ -63,8 +64,8 @@ pub fn merkle_verify_jet<const N: usize>(
         None => return Outcome::Error(ErrorKind::TypeError),
     };
 
-    // Budget: depth × 25 (hash cost per step)
-    let cost = depth.saturating_mul(25);
+    // Budget: depth × 61 (hash cost per step)
+    let cost = depth.saturating_mul(HASH_COST);
     if budget < cost {
         return Outcome::Halt(budget);
     }
@@ -75,7 +76,7 @@ pub fn merkle_verify_jet<const N: usize>(
         None => return Outcome::Error(ErrorKind::TypeError),
     };
 
-    // The budget charged above is `depth * 25`; verify_path performs exactly
+    // The budget charged above is `depth * HASH_COST`; verify_path performs exactly
     // one hash per path entry. A path longer than the declared depth would
     // let a caller buy N hash steps for the price of a smaller declared
     // depth — a metering bypass, not merely a wrong-shape input.
@@ -334,7 +335,7 @@ mod tests {
     fn budget_exhaustion_halts() {
         let mut ar = Reduction::<512>::new();
         let (root, hn0, hn1) = two_leaf_tree(&mut ar);
-        // depth=1, cost=25 — pass budget=10 → Halt
+        // depth=1, cost=61 — pass budget=10 → Halt
         let depth_id = ar.atom(g(1)).unwrap();
         let formula_p = ar.atom(g(0)).unwrap();
         let root_f = ar.pair(root, formula_p).unwrap();
@@ -379,8 +380,8 @@ mod tests {
     fn path_longer_than_declared_depth_is_rejected_not_underpriced() {
         let mut ar = Reduction::<512>::new();
         let (root, l0, steps) = four_leaf_tree(&mut ar);
-        // Genuinely valid 2-step path, but declared depth=1 (budget=25,
-        // not the 50 two real hash steps cost).
+        // Genuinely valid 2-step path, but declared depth=1 (budget=61,
+        // not the 122 two real hash steps cost).
         match run_with_path(&mut ar, root, l0, &steps, 1, 10_000) {
             Outcome::Error(ErrorKind::Malformed) => {}
             o => panic!("expected Malformed, got {:?}", o),

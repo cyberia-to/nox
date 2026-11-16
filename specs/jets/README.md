@@ -48,3 +48,7 @@ ntt              ntt, ntt_batch, blind_rotate                recursion, polynomi
 p2r              hash, merkle_verify                         recursion
 lut              activation_lut, tropical comparisons        binary-tower, tropical-semiring
 ```
+
+Runtime input and resource admission is defined in
+[input-admission.md](input-admission.md). The currently implemented NTT anchor
+is one butterfly; full recursive-transform registry equivalence is not assumed.

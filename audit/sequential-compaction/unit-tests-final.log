@@ -1,0 +1,26 @@
+   Compiling cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/rs)
+    Finished `release` profile [optimized] target(s) in 1.37s
+     Running unittests lib.rs (../target-nox-compaction/release/deps/nox-155be5d25f5b91d7)
+
+running 18 tests
+test sequential::compacting::tests::compiler::saved_full_discovery_preserves_result_gas_frames_and_guest_checkpoints ... ignored, saved full compiler discovery diagnostic; explicit NOX_COMPACTION_* paths required
+test sequential::compacting::tests::collection::phase_root_matrix_remaps_only_future_noun_reads ... ok
+test sequential::compacting::tests::zero_budget_axis_and_rejected_frames_do_not_start_collection ... ok
+test sequential::compacting::tests::collection::invalid_roots_and_unindexed_raw_entries_reject_before_mutation ... ok
+test sequential::compacting::tests::collection::relocation_preserves_shared_structure_and_flushes_live_and_dead_cache_results ... ok
+test sequential::compacting::tests::collection::returning_finalizer_can_collect_at_the_frame_capacity_boundary ... ok
+test sequential::compacting::tests::invalid_external_operands_preserve_unavailable_without_claiming_allocation_rejection ... ok
+test sequential::compacting::tests::collection::planning_polls_during_bounded_metadata_scans ... ok
+test sequential::compacting::tests::collection::cancellation_before_and_after_commit_always_returns_a_valid_arena ... ok
+test sequential::compacting::tests::full_pinned_arena_accepts_intern_hits_with_zero_fresh_allocation_allowance ... ok
+test sequential::compacting::tests::collection::commit_work_is_fully_admitted_before_mutation ... ok
+test sequential::compacting::tests::axis_zero_entry_collects_discarded_hash_output_before_allocating ... ok
+test sequential::compacting::tests::cumulative_admission_counts_partial_hash_output_and_restores_resident_allowance ... ok
+test sequential::compacting::tests::resident_exhaustion_keeps_partial_output_and_no_collection_work_fails_before_mutation ... ok
+test sequential::compacting::tests::frame_cancellation_and_service_errors_leave_a_reusable_arena ... ok
+test sequential::compacting::tests::collection_keeps_budget_halts_and_frame_failures_at_the_same_guest_boundary ... ok
+test sequential::compacting::tests::no_collection_preserves_all_pure_patterns_failures_budgets_and_checkpoints ... ok
+test sequential::compacting::tests::repeated_collections_keep_pins_sharing_bounds_gas_and_logical_depth ... ok
+
+test result: ok. 17 passed; 0 failed; 1 ignored; 0 measured; 203 filtered out; finished in 0.19s
+

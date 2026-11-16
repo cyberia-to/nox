@@ -1,0 +1,23 @@
+{
+  "schema": "nox/whole-compiler-driver-commands/v1",
+  "commands": [
+    {
+      "shell_command": "python3 /Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/observer-whole-compiler/run.py > /Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/observer-whole-compiler/launcher.stdout 2> /Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/observer-whole-compiler/launcher.stderr",
+      "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap",
+      "exit_code": 0,
+      "script_sha256": "1ae39176c63fc45acc9b8a5d0abb522254e06ff1bd2c2ded181aca4f7d23bd33"
+    },
+    {
+      "shell_command": "python3 /Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/observer-whole-compiler/verify.py > /Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/observer-whole-compiler/verification.stdout 2> /Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/observer-whole-compiler/verification.stderr",
+      "cwd": "/Users/master/cyber",
+      "exit_code": 0,
+      "script_sha256": "e641ab8d0a3c80cd3b3067382aa2847b022631a5c13faa3b0858756491dc3a28"
+    },
+    {
+      "shell_command": "python3 /Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/observer-whole-compiler/archive.py",
+      "cwd": "/Users/master/cyber",
+      "exit_code": 0,
+      "script_sha256": "1c267e2f32889612bbfd0c2ed7521df3e3226f3111cbc47c8132362c3fc1a87e"
+    }
+  ]
+}

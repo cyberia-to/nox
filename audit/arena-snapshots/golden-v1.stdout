@@ -1,0 +1,4 @@
+[247, 224, 8, 81, 140, 212, 21, 213, 119, 4, 247, 94, 124, 162, 147, 214, 209, 213, 65, 23, 165, 192, 251, 229, 103, 82, 241, 203, 84, 99, 27, 97]
+CaptureStats { events: 1383, bytes: 341960, work: 5183 }
+CompactionStats { pinned_nodes: 32, resident_nodes: 43, peak_resident_nodes: 100, total_allocations: 171, reclaimed_nodes: 128, collections: 2, collection_work: 133415, scratch_bytes: 1424, evaluator_checkpoints: 1211, collection_checkpoints: 6 }
+Ok(29, 395)

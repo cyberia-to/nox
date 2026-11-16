@@ -6,7 +6,9 @@
 //! jet: ntt — Number Theoretic Transform over Goldilocks
 //!
 //! Cooley-Tukey decimation-in-time NTT. Input size must be 2^n.
-//! Computes the forward or inverse NTT in-place.
+//! Computes the forward or inverse NTT in-place after shared bounded preflight.
+//! The current exact registry anchor is only a butterfly; runtime admission
+//! restricts replacement to cases equivalent to that actual pure formula.
 //!
 //! Registry calling convention:
 //!   object = [[n | formula] | [values_tree | omega]]
@@ -19,11 +21,13 @@
 //! Budget: n × 2^n (one unit per butterfly operation).
 
 extern crate alloc;
-use alloc::vec::Vec;
+
 
 use crate::call::CallProvider;
-use crate::data::{Data, Order, Reduction};
-use crate::reduce::{ErrorKind, Outcome, pair_children};
+#[cfg(test)]
+use crate::data::Data;
+use crate::data::{Order, Reduction};
+use crate::reduce::{ErrorKind, Outcome};
 use crate::trace::{TraceRow, Tracer};
 use nebu::Goldilocks;
 
@@ -37,52 +41,15 @@ pub fn ntt_jet<const N: usize>(
     _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
-    // object = [[n | formula] | [values_tree | omega]]
-    let (lhs, rhs) = match pair_children(reduction, object) {
-        Some(p) => p,
-        None => return Outcome::Error(ErrorKind::Malformed),
+    let prepared = match super::admission::prepare_ntt(reduction, object, budget) {
+        Ok(input) => input,
+        Err(outcome) => return outcome,
     };
-    let (n_id, _formula_id) = match pair_children(reduction, lhs) {
-        Some(p) => p,
-        None => return Outcome::Error(ErrorKind::Malformed),
-    };
-    let (tree_id, omega_id) = match pair_children(reduction, rhs) {
-        Some(p) => p,
-        None => return Outcome::Error(ErrorKind::Malformed),
-    };
-
-    let n = match reduction.atom_value(n_id) {
-        Some(v) => v.as_u64() as usize,
-        None => return Outcome::Error(ErrorKind::TypeError),
-    };
-    // n comes straight from the calling program: reject before it can shift
-    // out of range (panics in debug, silently wraps mod 64 in release) or
-    // drive an unbounded allocation below.
-    if n >= usize::BITS as usize {
-        return Outcome::Error(ErrorKind::TypeError);
-    }
-    let omega = match reduction.atom_value(omega_id) {
-        Some(v) => v,
-        None => return Outcome::Error(ErrorKind::TypeError),
-    };
-
-    let size = 1usize << n;
-
-    // Budget: n × size butterfly operations
-    let cost = (n as u64).saturating_mul(size as u64);
-    if budget < cost {
-        return Outcome::Halt(budget);
-    }
-    let remaining = budget - cost;
-
-    // Flatten the balanced binary tree into a Vec.
-    let mut vals: Vec<Goldilocks> = Vec::with_capacity(size);
-    if !flatten_tree(reduction, tree_id, &mut vals) {
-        return Outcome::Error(ErrorKind::TypeError);
-    }
-    if vals.len() != size {
-        return Outcome::Error(ErrorKind::TypeError);
-    }
+    let tree_id = prepared.input.tree;
+    let omega_id = prepared.input.parameter;
+    let omega = prepared.omega;
+    let remaining = prepared.remaining;
+    let mut vals = prepared.values;
 
     // Cooley-Tukey DIT NTT (bit-reversal permutation first, then butterflies).
     bit_reverse_permute(&mut vals);
@@ -161,30 +128,10 @@ fn bit_reverse(mut x: usize, bits: usize) -> usize {
     result
 }
 
-fn flatten_tree<const N: usize>(
-    reduction: &Reduction<N>,
-    id: Order,
-    out: &mut Vec<Goldilocks>,
-) -> bool {
-    let inner = match reduction.get(id) {
-        Some(e) => e.inner,
-        None => return false,
-    };
-    match inner {
-        Data::Atom { .. } => match reduction.atom_value(id) {
-            Some(v) => {
-                out.push(v);
-                true
-            }
-            None => false,
-        },
-        Data::Pair { left, right } => {
-            flatten_tree(reduction, left, out) && flatten_tree(reduction, right, out)
-        }
-    }
-}
-
-fn build_tree<const N: usize>(reduction: &mut Reduction<N>, vals: &[Goldilocks]) -> Option<Order> {
+pub(crate) fn build_tree<const N: usize>(
+    reduction: &mut Reduction<N>,
+    vals: &[Goldilocks],
+) -> Option<Order> {
     if vals.len() == 1 {
         return reduction.atom(vals[0]);
     }
@@ -302,6 +249,9 @@ mod tests {
     /// n=64: `1usize << n` panics in debug (attempt to shift left with
     /// overflow) before the budget check ever runs. Must be rejected, not
     /// crash the reducer on an untrusted program.
+    // Merge note: shared admission (jets::admission::metadata) bounds the
+    // exponent before the shift and reports Unavailable; master asserted
+    // TypeError from its inline check. Same rejection, line's error kind.
     #[test]
     fn n_at_bit_width_is_rejected_not_a_shift_panic() {
         let mut ar = Reduction::<256>::new();
@@ -324,8 +274,8 @@ mod tests {
             0,
             &mut row,
         ) {
-            Outcome::Error(ErrorKind::TypeError) => {}
-            o => panic!("expected TypeError, got {:?}", o),
+            Outcome::Error(ErrorKind::Unavailable) => {}
+            o => panic!("expected Unavailable, got {:?}", o),
         }
     }
 
@@ -352,8 +302,8 @@ mod tests {
             0,
             &mut row,
         ) {
-            Outcome::Error(ErrorKind::TypeError) => {}
-            o => panic!("expected TypeError, got {:?}", o),
+            Outcome::Error(ErrorKind::Unavailable) => {}
+            o => panic!("expected Unavailable, got {:?}", o),
         }
     }
 }

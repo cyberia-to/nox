@@ -1,0 +1,1619 @@
+diff --git a/rs/data/reduction.rs b/rs/data/reduction.rs
+index e7f88ec..24fd7d8 100644
+--- a/rs/data/reduction.rs
++++ b/rs/data/reduction.rs
+@@ -14,6 +14,9 @@ use super::{Order, NIL};
+ mod heap;
+ pub use heap::AllocationError;
+ 
++#[path = "reduction_compaction.rs"]
++pub(crate) mod compaction;
++
+ /// order entry — data node + cached identity hash + cached cost bound.
+ ///
+ /// `bound` is computed at construction time so reduce-time partition decisions
+diff --git a/rs/sequential.rs b/rs/sequential.rs
+index 2332c4d..400cfae 100644
+--- a/rs/sequential.rs
++++ b/rs/sequential.rs
+@@ -2,10 +2,16 @@
+ use crate::{Order, Outcome, Reduction, TraceRow, Tracer};
+ use alloc::vec::Vec;
+ 
++mod compacting;
+ mod dispatch;
+ mod finalizer_cache;
+ mod finish;
+ 
++pub use compacting::{
++    CompactingExecution, CompactionFailure, CompactionFailureKind, CompactionLimits,
++    CompactionStats, compaction_storage_bytes, reduce_compacting_cached,
++    reduce_compacting_cached_controlled,
++};
+ pub use finalizer_cache::finalizer_cache_storage_bytes;
+ 
+ #[derive(Debug, Clone, Copy)]
+diff --git a/rs/sequential/finalizer_cache.rs b/rs/sequential/finalizer_cache.rs
+index bae9de4..83e7057 100644
+--- a/rs/sequential/finalizer_cache.rs
++++ b/rs/sequential/finalizer_cache.rs
+@@ -22,6 +22,14 @@ pub(super) struct Cache<const ENABLED: bool> {
+ }
+ 
+ impl<const ENABLED: bool> Cache<ENABLED> {
++    pub(super) fn clear(&mut self) {
++        self.entries.fill(Entry::default());
++    }
++
++    pub(super) fn slots(&self) -> usize {
++        self.entries.len()
++    }
++
+     pub(super) fn new() -> Result<Self, Error> {
+         let mut entries = Vec::new();
+         if ENABLED {
+diff --git a/rs/sequential/tests.rs b/rs/sequential/tests.rs
+index 07da115..f6d13bc 100644
+--- a/rs/sequential/tests.rs
++++ b/rs/sequential/tests.rs
+@@ -7,26 +7,26 @@ mod cache;
+ #[cfg(not(feature = "parallel"))]
+ mod differential;
+ 
+-fn atom<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
++pub(super) fn atom<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
+     ar.atom(Goldilocks::new(v)).unwrap()
+ }
+-fn op<const N: usize>(ar: &mut Reduction<N>, tag: u64, body: Order) -> Order {
++pub(super) fn op<const N: usize>(ar: &mut Reduction<N>, tag: u64, body: Order) -> Order {
+     let t = atom(ar, tag);
+     ar.pair(t, body).unwrap()
+ }
+-fn binary<const N: usize>(ar: &mut Reduction<N>, tag: u64, a: Order, b: Order) -> Order {
++pub(super) fn binary<const N: usize>(ar: &mut Reduction<N>, tag: u64, a: Order, b: Order) -> Order {
+     let body = ar.pair(a, b).unwrap();
+     op(ar, tag, body)
+ }
+-fn quote<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
++pub(super) fn quote<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
+     let v = atom(ar, v);
+     op(ar, 1, v)
+ }
+-fn axis<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
++pub(super) fn axis<const N: usize>(ar: &mut Reduction<N>, v: u64) -> Order {
+     let v = atom(ar, v);
+     op(ar, 0, v)
+ }
+-fn loop_core<const N: usize>(ar: &mut Reduction<N>, n: u64) -> (Order, Order) {
++pub(super) fn loop_core<const N: usize>(ar: &mut Reduction<N>, n: u64) -> (Order, Order) {
+     let q0 = quote(ar, 0);
+     let q1 = quote(ar, 1);
+     let code = axis(ar, 2);
+diff --git a/rs/data/reduction_compaction.rs b/rs/data/reduction_compaction.rs
+new file mode 100644
+index 0000000..528c02d
+--- /dev/null
++++ b/rs/data/reduction_compaction.rs
+@@ -0,0 +1,170 @@
++//! Planning is cancellable and read-only; commit is a bounded linear pass.
++use super::{Data, Goldilocks, NIL, Order, Reduction};
++use alloc::vec::Vec;
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub(crate) enum Fault {
++    Allocation,
++    Work,
++    Cancelled,
++    InvalidArena,
++}
++
++pub(crate) fn storage_bytes(physical: usize, resident: u32) -> Option<usize> {
++    physical
++        .checked_add(resident as usize)?
++        .checked_mul(core::mem::size_of::<Order>())
++}
++
++pub(crate) struct Scratch {
++    forward: Vec<Order>,
++    index: Vec<Order>,
++}
++
++impl Scratch {
++    pub(crate) fn new<const N: usize>(resident: u32) -> Result<Self, Fault> {
++        fn buffer(len: usize) -> Result<Vec<Order>, Fault> {
++            let mut buffer = Vec::new();
++            buffer
++                .try_reserve_exact(len)
++                .map_err(|_| Fault::Allocation)?;
++            buffer.resize(len, NIL);
++            Ok(buffer)
++        }
++        Ok(Self {
++            forward: buffer(resident as usize)?,
++            index: buffer(N)?,
++        })
++    }
++
++    pub(crate) fn prepare<const N: usize>(
++        &mut self,
++        ar: &Reduction<N>,
++        pinned: u32,
++        work: &mut impl FnMut() -> Result<(), Fault>,
++    ) -> Result<(), Fault> {
++        if pinned > ar.count || ar.count as usize > self.forward.len() {
++            return Err(Fault::InvalidArena);
++        }
++        for id in 0..ar.count {
++            work()?;
++            self.forward[id as usize] = if id < pinned { 0 } else { NIL };
++        }
++        // alloc_raw deliberately bypasses interning. Such entries must not gain
++        // new interning behavior as an accidental consequence of collection.
++        let mut interned = 0u32;
++        for (old, next) in ar.index_vals.iter().zip(&mut self.index) {
++            work()?;
++            if *old != NIL {
++                if *old >= ar.count {
++                    return Err(Fault::InvalidArena);
++                }
++                interned += 1;
++            }
++            *next = NIL;
++        }
++        if interned != ar.count {
++            return Err(Fault::InvalidArena);
++        }
++        Ok(())
++    }
++
++    pub(crate) fn root(&mut self, id: Order, count: u32) -> Result<(), Fault> {
++        if id >= count {
++            return Err(Fault::InvalidArena);
++        }
++        self.forward[id as usize] = 0;
++        Ok(())
++    }
++
++    pub(crate) fn plan<const N: usize>(
++        &mut self,
++        ar: &Reduction<N>,
++        work: &mut impl FnMut() -> Result<(), Fault>,
++    ) -> Result<u32, Fault> {
++        for id in (0..ar.count).rev() {
++            work()?;
++            if let Data::Pair { left, right } = ar.get(id).ok_or(Fault::InvalidArena)?.inner {
++                if left >= id || right >= id {
++                    return Err(Fault::InvalidArena);
++                }
++                if self.forward[id as usize] != NIL {
++                    self.forward[left as usize] = 0;
++                    self.forward[right as usize] = 0;
++                }
++            }
++        }
++        let mut live = 0;
++        for id in 0..ar.count {
++            work()?;
++            if self.forward[id as usize] != NIL {
++                self.forward[id as usize] = live;
++                live += 1;
++            }
++        }
++        for old in 0..ar.count {
++            work()?;
++            let new = self.forward[old as usize];
++            if new == NIL {
++                continue;
++            }
++            let hash = ar.get(old).ok_or(Fault::InvalidArena)?.hash;
++            let mut slot = (hash[0].as_u64() as u32) & ar.index_mask;
++            // The load factor is bounded. Every actual probe still consumes
++            // work and may cancel, before touching the arena's existing index.
++            loop {
++                work()?;
++                if self.index[slot as usize] == NIL {
++                    self.index[slot as usize] = new;
++                    break;
++                }
++                slot = (slot + 1) & ar.index_mask;
++            }
++        }
++        Ok(live)
++    }
++
++    pub(crate) fn remap(&self, id: Order) -> Order {
++        // All live roots and pair children were checked during planning.
++        let mapped = self.forward[id as usize];
++        debug_assert_ne!(mapped, NIL);
++        mapped
++    }
++
++    pub(crate) fn commit<const N: usize>(&self, ar: &mut Reduction<N>, live: u32) {
++        for old in 0..ar.count {
++            let new = self.forward[old as usize];
++            if new == NIL {
++                continue;
++            }
++            let mut entry = *ar.get(old).expect("planned initialized entry");
++            if let Data::Pair { left, right } = entry.inner {
++                entry.inner = Data::Pair {
++                    left: self.remap(left),
++                    right: self.remap(right),
++                };
++            }
++            // Survivor order is preserved: new <= old, so no unread entry is
++            // overwritten. Pinned entries have new == old and pinned children.
++            ar.entries[new as usize].write(entry);
++        }
++        ar.count = live;
++        for (slot, id) in self.index.iter().copied().enumerate() {
++            ar.index_vals[slot] = id;
++            ar.index_keys[slot] = if id == NIL {
++                [Goldilocks::ZERO; 4]
++            } else {
++                ar.get(id).expect("planned live entry").hash
++            };
++        }
++    }
++}
++
++impl<const N: usize> Reduction<N> {
++    /// Restricted to the compacting evaluator, which restores the resident
++    /// limit after each step, including every error-return path.
++    pub(crate) fn set_step_allocation_limit(&mut self, limit: u32) {
++        debug_assert!(limit >= self.count);
++        self.allocation_limit = limit;
++    }
++}
+diff --git a/rs/sequential/compacting.rs b/rs/sequential/compacting.rs
+new file mode 100644
+index 0000000..95cb973
+--- /dev/null
++++ b/rs/sequential/compacting.rs
+@@ -0,0 +1,267 @@
++//! Opt-in resident-bounded execution. Legacy evaluation never enters this path.
++use super::*;
++use crate::data::reduction::compaction::{Fault, Scratch};
++
++mod collection;
++mod roots;
++
++#[derive(Debug, Clone, Copy)]
++pub struct CompactionLimits {
++    pub max_frames: u32,
++    /// Includes every entry present at execution entry and every fresh allocation.
++    pub max_total_allocations: u64,
++    /// Includes planning probes and pre-admitted linear commit visits.
++    pub max_collection_work: u64,
++}
++
++#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
++pub struct CompactionStats {
++    pub pinned_nodes: u32,
++    pub resident_nodes: u32,
++    pub peak_resident_nodes: u32,
++    pub total_allocations: u64,
++    pub reclaimed_nodes: u64,
++    pub collections: u64,
++    pub collection_work: u64,
++    pub scratch_bytes: usize,
++    pub evaluator_checkpoints: u64,
++    pub collection_checkpoints: u64,
++}
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub enum CompactionFailureKind {
++    Execution(Error),
++    TotalAllocations,
++    CollectionWork,
++    InvalidArena,
++}
++
++#[derive(Debug, Clone, Copy)]
++pub struct CompactionFailure {
++    pub kind: CompactionFailureKind,
++    pub stats: CompactionStats,
++    pub peak_frames: u32,
++}
++
++#[derive(Debug)]
++pub struct CompactingExecution {
++    pub outcome: Outcome,
++    pub peak_frames: u32,
++    pub stats: CompactionStats,
++}
++
++impl From<Error> for CompactionFailureKind {
++    fn from(error: Error) -> Self {
++        Self::Execution(error)
++    }
++}
++
++impl From<Fault> for CompactionFailureKind {
++    fn from(error: Fault) -> Self {
++        match error {
++            Fault::Allocation => Self::Execution(Error::Allocation),
++            Fault::Cancelled => Self::Execution(Error::Cancelled),
++            Fault::Work => Self::CollectionWork,
++            Fault::InvalidArena => Self::InvalidArena,
++        }
++    }
++}
++
++/// Requested scratch buffer bytes, excluding allocator/Vec metadata.
++pub fn compaction_storage_bytes(physical_capacity: usize, resident_limit: u32) -> Option<usize> {
++    crate::data::reduction::compaction::storage_bytes(physical_capacity, resident_limit)
++}
++
++pub fn reduce_compacting_cached<const N: usize>(
++    ar: &mut Reduction<N>,
++    object: Order,
++    formula: Order,
++    budget: u64,
++    limits: CompactionLimits,
++) -> Result<CompactingExecution, CompactionFailure> {
++    reduce_compacting_cached_controlled(ar, object, formula, budget, limits, &mut || false)
++}
++
++/// Caller-held pre-entry Orders stay valid; only internal new Orders may move.
++/// Cancellation during a pre-admitted commit is reported after arena repair.
++pub fn reduce_compacting_cached_controlled<const N: usize>(
++    ar: &mut Reduction<N>,
++    object: Order,
++    formula: Order,
++    budget: u64,
++    limits: CompactionLimits,
++    cancelled: &mut impl FnMut() -> bool,
++) -> Result<CompactingExecution, CompactionFailure> {
++    let mut stats = CompactionStats {
++        pinned_nodes: ar.count(),
++        resident_nodes: ar.count(),
++        peak_resident_nodes: ar.count(),
++        total_allocations: u64::from(ar.count()),
++        ..CompactionStats::default()
++    };
++    let mut peak_frames = 0;
++    let result = execute_compacting(
++        ar,
++        object,
++        formula,
++        budget,
++        limits,
++        cancelled,
++        &mut stats,
++        &mut peak_frames,
++    );
++    stats.resident_nodes = ar.count();
++    match result {
++        Ok(outcome) => Ok(CompactingExecution {
++            outcome,
++            peak_frames,
++            stats,
++        }),
++        Err(kind) => Err(CompactionFailure {
++            kind,
++            stats,
++            peak_frames,
++        }),
++    }
++}
++
++fn execute_compacting<const N: usize>(
++    ar: &mut Reduction<N>,
++    object: Order,
++    formula: Order,
++    budget: u64,
++    limits: CompactionLimits,
++    cancelled: &mut impl FnMut() -> bool,
++    stats: &mut CompactionStats,
++    peak_frames: &mut u32,
++) -> Result<Outcome, CompactionFailureKind> {
++    if limits.max_frames == 0 {
++        return Err(Error::Frames.into());
++    }
++    checkpoint(stats, cancelled)?;
++    if stats.total_allocations > limits.max_total_allocations {
++        return Err(CompactionFailureKind::TotalAllocations);
++    }
++    let resident_limit = ar.allocation_limit();
++    let mut stack = Vec::new();
++    stack
++        .try_reserve_exact(limits.max_frames as usize)
++        .map_err(|_| Error::Allocation)?;
++    let mut cache = finalizer_cache::Cache::<true>::new()?;
++    let mut scratch = Scratch::new::<N>(resident_limit)?;
++    stats.scratch_bytes = compaction_storage_bytes(N, resident_limit).ok_or(Error::Allocation)?;
++    let mut action = Action::Enter {
++        object,
++        formula,
++        budget,
++    };
++    loop {
++        checkpoint(stats, cancelled)?;
++        let headroom = if stack.len() < limits.max_frames as usize {
++            roots::allocation_headroom(ar, &action, &stack)
++        } else {
++            0
++        };
++        if headroom > resident_limit - ar.count() {
++            collection::collect(
++                ar,
++                &mut action,
++                &mut stack,
++                &mut cache,
++                &mut scratch,
++                limits.max_collection_work,
++                stats,
++                cancelled,
++            )?;
++        }
++        let before = ar.count();
++        let allowance = (limits.max_total_allocations - stats.total_allocations)
++            .min(u64::from(resident_limit - before)) as u32;
++        ar.set_step_allocation_limit(before + allowance);
++        // Store the result before propagating errors so the caller's resident
++        // allowance is restored even when a service/frame error is returned.
++        let next = step(
++            ar,
++            action,
++            &mut stack,
++            &mut cache,
++            limits.max_frames,
++            peak_frames,
++        );
++        ar.set_step_allocation_limit(resident_limit);
++        stats.total_allocations += u64::from(ar.count() - before);
++        stats.peak_resident_nodes = stats.peak_resident_nodes.max(ar.count());
++        match next? {
++            Step::Done(outcome) => return Ok(outcome),
++            Step::Next(next) => action = next,
++        }
++        if matches!(
++            action,
++            Action::Return(Outcome::Error(crate::ErrorKind::Unavailable))
++        ) && stats.total_allocations == limits.max_total_allocations
++        {
++            return Err(CompactionFailureKind::TotalAllocations);
++        }
++    }
++}
++
++fn checkpoint(
++    stats: &mut CompactionStats,
++    cancelled: &mut impl FnMut() -> bool,
++) -> Result<(), CompactionFailureKind> {
++    stats.evaluator_checkpoints += 1;
++    if cancelled() {
++        Err(Error::Cancelled.into())
++    } else {
++        Ok(())
++    }
++}
++
++enum Step {
++    Next(Action),
++    Done(Outcome),
++}
++
++fn step<const N: usize>(
++    ar: &mut Reduction<N>,
++    action: Action,
++    stack: &mut Vec<Frame>,
++    cache: &mut finalizer_cache::Cache<true>,
++    max_frames: u32,
++    peak_frames: &mut u32,
++) -> Result<Step, Error> {
++    Ok(match action {
++        Action::Enter {
++            object,
++            formula,
++            budget,
++        } => {
++            if stack.len() >= max_frames as usize {
++                return Err(Error::Frames);
++            }
++            *peak_frames = (*peak_frames).max(stack.len() as u32 + 1);
++            Step::Next(dispatch::enter(
++                ar,
++                object,
++                formula,
++                budget,
++                stack,
++                &mut crate::NoTrace,
++            )?)
++        }
++        Action::Return(outcome) => match stack.pop() {
++            Some(frame) => Step::Next(dispatch::resume(
++                ar,
++                frame,
++                outcome,
++                stack,
++                &mut crate::NoTrace,
++                cache,
++            )),
++            None => Step::Done(outcome),
++        },
++    })
++}
++
++#[cfg(test)]
++mod tests;
+diff --git a/rs/sequential/compacting/collection.rs b/rs/sequential/compacting/collection.rs
+new file mode 100644
+index 0000000..0f37783
+--- /dev/null
++++ b/rs/sequential/compacting/collection.rs
+@@ -0,0 +1,91 @@
++use super::*;
++
++struct Meter<'a, F> {
++    limit: u64,
++    stats: &'a mut CompactionStats,
++    cancelled: &'a mut F,
++}
++
++impl<F: FnMut() -> bool> Meter<'_, F> {
++    fn reserve(&mut self, units: u64) -> Result<(), Fault> {
++        let total = self
++            .stats
++            .collection_work
++            .checked_add(units)
++            .ok_or(Fault::Work)?;
++        if total > self.limit {
++            return Err(Fault::Work);
++        }
++        self.stats.collection_work = total;
++        Ok(())
++    }
++
++    fn tick(&mut self) -> Result<(), Fault> {
++        self.reserve(1)?;
++        if self.stats.collection_work.is_multiple_of(4096) {
++            self.poll()?;
++        }
++        Ok(())
++    }
++
++    fn poll(&mut self) -> Result<(), Fault> {
++        self.stats.collection_checkpoints += 1;
++        if (self.cancelled)() {
++            Err(Fault::Cancelled)
++        } else {
++            Ok(())
++        }
++    }
++}
++
++pub(super) fn collect<const N: usize>(
++    ar: &mut Reduction<N>,
++    action: &mut Action,
++    stack: &mut [Frame],
++    cache: &mut finalizer_cache::Cache<true>,
++    scratch: &mut Scratch,
++    work_limit: u64,
++    stats: &mut CompactionStats,
++    cancelled: &mut impl FnMut() -> bool,
++) -> Result<(), Fault> {
++    let count = ar.count();
++    let pinned = stats.pinned_nodes;
++    let mut meter = Meter {
++        limit: work_limit,
++        stats,
++        cancelled,
++    };
++    meter.poll()?;
++    scratch.prepare(ar, pinned, &mut || meter.tick())?;
++    let mut invalid = false;
++    let mut mark = |id| {
++        invalid |= scratch.root(id, count).is_err();
++        id
++    };
++    meter.tick()?;
++    roots::action(action, &mut mark);
++    for frame in stack.iter_mut() {
++        meter.tick()?;
++        roots::frame(frame, &mut mark);
++    }
++    if invalid {
++        return Err(Fault::InvalidArena);
++    }
++    let live = scratch.plan(ar, &mut || meter.tick())?;
++    // Pre-admit every metadata-copy iteration. No hashing, probing, allocation
++    // or fallible callback occurs while the arena/index are being rewritten.
++    let commit_work = u64::from(count) + N as u64 + 1 + stack.len() as u64 + cache.slots() as u64;
++    meter.reserve(commit_work)?;
++    meter.poll()?;
++    cache.clear();
++    scratch.commit(ar, live);
++    roots::action(action, &mut |id| scratch.remap(id));
++    for frame in stack {
++        roots::frame(frame, &mut |id| scratch.remap(id));
++    }
++    meter.stats.collections += 1;
++    meter.stats.reclaimed_nodes += u64::from(count - live);
++    meter.stats.resident_nodes = live;
++    meter.poll()?;
++    Ok(())
++}
+diff --git a/rs/sequential/compacting/roots.rs b/rs/sequential/compacting/roots.rs
+new file mode 100644
+index 0000000..793dd00
+--- /dev/null
++++ b/rs/sequential/compacting/roots.rs
+@@ -0,0 +1,73 @@
++use super::*;
++
++pub(super) fn action(action: &mut Action, map: &mut impl FnMut(Order) -> Order) {
++    match action {
++        Action::Enter {
++            object, formula, ..
++        } => {
++            *object = map(*object);
++            *formula = map(*formula);
++        }
++        Action::Return(Outcome::Ok(value, _)) => *value = map(*value),
++        Action::Return(_) => {}
++    }
++}
++
++pub(super) fn frame(frame: &mut Frame, map: &mut impl FnMut(Order) -> Order) {
++    match &mut frame.phase {
++        Phase::BinaryLeft { b, .. } => {
++            frame.row.r[1] = u64::from(map(frame.row.r[1] as Order));
++            *b = map(*b);
++        }
++        Phase::BinaryRight { left, .. } => *left = map(*left),
++        Phase::BranchTest { yes, no, .. } => {
++            frame.row.r[1] = u64::from(map(frame.row.r[1] as Order));
++            *yes = map(*yes);
++            *no = map(*no);
++        }
++        Phase::Unary(_) | Phase::BranchChosen(_) | Phase::Compose => {}
++    }
++}
++
++pub(super) fn allocation_headroom<const N: usize>(
++    ar: &Reduction<N>,
++    action: &Action,
++    stack: &[Frame],
++) -> u32 {
++    if let Action::Enter {
++        formula, budget, ..
++    } = action
++    {
++        // Axis zero returns hash data directly during Enter. A halted entry
++        // performs no allocation and must not start collection.
++        return if *budget >= 1
++            && ar
++                .head(*formula)
++                .and_then(|r| ar.atom_value(r))
++                .is_some_and(|v| v.as_u64() == 0)
++            && ar
++                .tail(*formula)
++                .and_then(|r| ar.atom_value(r))
++                .is_some_and(|v| v.as_u64() == 0)
++        {
++            7
++        } else {
++            0
++        };
++    }
++    if !matches!(action, Action::Return(Outcome::Ok(..))) {
++        return 0;
++    }
++    let Some(frame) = stack.last() else {
++        return 0;
++    };
++    match frame.phase {
++        Phase::Unary(_) => match frame.row.r[0] {
++            15 => 7,
++            8 | 13 => 1,
++            _ => 0,
++        },
++        Phase::BinaryRight { .. } if frame.row.r[0] != 2 => 1,
++        _ => 0,
++    }
++}
+diff --git a/rs/sequential/compacting/tests/collection.rs b/rs/sequential/compacting/tests/collection.rs
+new file mode 100644
+index 0000000..0d466b8
+--- /dev/null
++++ b/rs/sequential/compacting/tests/collection.rs
+@@ -0,0 +1,326 @@
++use super::*;
++use crate::sequential::compacting::collection::collect;
++
++fn setup() -> (
++    Reduction<64>,
++    Action,
++    Vec<Frame>,
++    finalizer_cache::Cache<true>,
++    CompactionStats,
++) {
++    let mut ar = Reduction::<64>::new();
++    let a = atom(&mut ar, 7);
++    let b = atom(&mut ar, 8);
++    atom(&mut ar, 999); // discarded before the surviving pair: forces relocation
++    let pair = ar.pair(a, b).unwrap();
++    let result = ar.pair(pair, pair).unwrap();
++    let dead = atom(&mut ar, 15);
++    let mut cache = finalizer_cache::Cache::<true>::new().unwrap();
++    cache.finish(3, a, b, 10, || Outcome::Ok(pair, 10));
++    cache.finish(5, a, b, 10, || Outcome::Ok(dead, 10));
++    let mut row = TraceRow::default();
++    row.r[0] = 3;
++    row.r[1] = u64::from(dead); // unused at BinaryRight; must not pin garbage
++    row.r[2] = u64::from(dead);
++    let stack = std::vec![Frame {
++        row,
++        budget: 10,
++        phase: Phase::BinaryRight {
++            a: dead,
++            b: dead,
++            left: a,
++            used: 0,
++            second: 5,
++        }
++    }];
++    let stats = CompactionStats {
++        pinned_nodes: 2,
++        resident_nodes: ar.count(),
++        peak_resident_nodes: ar.count(),
++        total_allocations: u64::from(ar.count()),
++        ..CompactionStats::default()
++    };
++    (
++        ar,
++        Action::Return(Outcome::Ok(result, 3)),
++        stack,
++        cache,
++        stats,
++    )
++}
++
++#[test]
++fn relocation_preserves_shared_structure_and_flushes_live_and_dead_cache_results() {
++    let (mut ar, mut action, mut stack, mut cache, mut stats) = setup();
++    let digest = *ar.digest(4).unwrap();
++    let bound = crate::bound(&ar, 4);
++    let mut scratch = Scratch::new::<64>(ar.allocation_limit()).unwrap();
++    collect(
++        &mut ar,
++        &mut action,
++        &mut stack,
++        &mut cache,
++        &mut scratch,
++        1_000_000,
++        &mut stats,
++        &mut || false,
++    )
++    .unwrap();
++    assert_eq!(ar.count(), 4);
++    assert_eq!(stats.reclaimed_nodes, 2);
++    assert_eq!(stats.collections, 1);
++    assert!(matches!(action, Action::Return(Outcome::Ok(3, 3))));
++    assert_eq!(ar.head(3), Some(2));
++    assert_eq!(ar.tail(3), Some(2));
++    assert_eq!(ar.digest(3), Some(&digest));
++    assert_eq!(crate::bound(&ar, 3), bound);
++    let mut calls = 0;
++    let pair = cache.finish(3, 0, 1, 10, || {
++        calls += 1;
++        Outcome::Ok(ar.pair(0, 1).unwrap(), 10)
++    });
++    assert!(matches!(pair, Outcome::Ok(2, 10)));
++    let sum = cache.finish(5, 0, 1, 10, || {
++        calls += 1;
++        Outcome::Ok(atom(&mut ar, 15), 10)
++    });
++    assert!(matches!(sum, Outcome::Ok(4, 10)));
++    assert_eq!(calls, 2);
++    valid_index(&mut ar);
++}
++
++#[test]
++fn cancellation_before_and_after_commit_always_returns_a_valid_arena() {
++    for cancel_at in 1..=3 {
++        let (mut ar, mut action, mut stack, mut cache, mut stats) = setup();
++        let before = snapshot(&ar);
++        let mut scratch = Scratch::new::<64>(ar.allocation_limit()).unwrap();
++        let mut calls = 0;
++        let error = collect(
++            &mut ar,
++            &mut action,
++            &mut stack,
++            &mut cache,
++            &mut scratch,
++            1_000_000,
++            &mut stats,
++            &mut || {
++                calls += 1;
++                calls == cancel_at
++            },
++        )
++        .unwrap_err();
++        assert_eq!(error, Fault::Cancelled);
++        assert_eq!(stats.collection_checkpoints, cancel_at);
++        if cancel_at < 3 {
++            assert_eq!(snapshot(&ar), before);
++            assert_eq!(stats.collections, 0);
++        } else {
++            assert_eq!(ar.count(), 4);
++            assert_eq!(stats.collections, 1);
++        }
++        assert_eq!(ar.atom_value(0).unwrap().as_u64(), 7);
++        assert_eq!(ar.atom_value(1).unwrap().as_u64(), 8);
++        valid_index(&mut ar);
++    }
++}
++
++#[test]
++fn commit_work_is_fully_admitted_before_mutation() {
++    let (mut ar, mut action, mut stack, mut cache, mut stats) = setup();
++    let mut scratch = Scratch::new::<64>(ar.allocation_limit()).unwrap();
++    collect(
++        &mut ar,
++        &mut action,
++        &mut stack,
++        &mut cache,
++        &mut scratch,
++        1_000_000,
++        &mut stats,
++        &mut || false,
++    )
++    .unwrap();
++    let needed = stats.collection_work;
++    for cap in [0, 100, needed - 1] {
++        let (mut ar, mut action, mut stack, mut cache, mut stats) = setup();
++        let before = snapshot(&ar);
++        let mut scratch = Scratch::new::<64>(ar.allocation_limit()).unwrap();
++        assert_eq!(
++            collect(
++                &mut ar,
++                &mut action,
++                &mut stack,
++                &mut cache,
++                &mut scratch,
++                cap,
++                &mut stats,
++                &mut || false
++            )
++            .unwrap_err(),
++            Fault::Work
++        );
++        assert_eq!(snapshot(&ar), before);
++        assert_eq!(stats.collections, 0);
++        assert!(stats.collection_work <= cap);
++        valid_index(&mut ar);
++    }
++}
++
++#[test]
++fn planning_polls_during_bounded_metadata_scans() {
++    let mut ar = Reduction::<8192>::try_new_boxed().unwrap();
++    let a = atom(&mut ar, 7);
++    let before = snapshot(&ar);
++    let mut action = Action::Return(Outcome::Ok(a, 1));
++    let mut scratch = Scratch::new::<8192>(ar.allocation_limit()).unwrap();
++    let mut cache = finalizer_cache::Cache::<true>::new().unwrap();
++    let mut stats = CompactionStats {
++        pinned_nodes: 1,
++        ..CompactionStats::default()
++    };
++    let mut calls = 0;
++    assert_eq!(
++        collect(
++            &mut ar,
++            &mut action,
++            &mut [],
++            &mut cache,
++            &mut scratch,
++            1_000_000,
++            &mut stats,
++            &mut || {
++                calls += 1;
++                calls == 2
++            }
++        )
++        .unwrap_err(),
++        Fault::Cancelled
++    );
++    assert_eq!(stats.collection_work, 4096);
++    assert_eq!(stats.collections, 0);
++    assert_eq!(snapshot(&ar), before);
++    valid_index(&mut ar);
++}
++
++#[test]
++fn invalid_roots_and_unindexed_raw_entries_reject_before_mutation() {
++    for raw in [false, true] {
++        let (mut ar, mut action, mut stack, mut cache, mut stats) = setup();
++        if raw {
++            let mut entry = *ar.get(0).unwrap();
++            entry.inner = Data::Pair {
++                left: ar.count(),
++                right: 0,
++            };
++            ar.alloc_raw(entry).unwrap();
++        } else {
++            action = Action::Return(Outcome::Ok(crate::NIL, 0));
++        }
++        let before = snapshot(&ar);
++        let mut scratch = Scratch::new::<64>(ar.allocation_limit()).unwrap();
++        assert_eq!(
++            collect(
++                &mut ar,
++                &mut action,
++                &mut stack,
++                &mut cache,
++                &mut scratch,
++                1_000_000,
++                &mut stats,
++                &mut || false
++            )
++            .unwrap_err(),
++            Fault::InvalidArena
++        );
++        assert_eq!(snapshot(&ar), before);
++    }
++}
++
++#[test]
++fn phase_root_matrix_remaps_only_future_noun_reads() {
++    let reservation = Reservation {
++        parent: 100,
++        child: 10,
++    };
++    for (phase, expected) in [
++        (Phase::Unary(reservation), std::vec![]),
++        (Phase::BranchChosen(reservation), std::vec![]),
++        (Phase::Compose, std::vec![]),
++        (
++            Phase::BinaryLeft {
++                a: 21,
++                b: 22,
++                first: 10,
++                second: Some(10),
++            },
++            std::vec![20, 22],
++        ),
++        (
++            Phase::BinaryRight {
++                a: 21,
++                b: 22,
++                left: 23,
++                used: 4,
++                second: 10,
++            },
++            std::vec![23],
++        ),
++        (
++            Phase::BranchTest {
++                yes: 24,
++                no: 25,
++                reservation,
++            },
++            std::vec![20, 24, 25],
++        ),
++    ] {
++        let mut row = TraceRow::default();
++        row.r[1] = 20;
++        row.r[2] = 999_999;
++        let mut frame = Frame {
++            row,
++            budget: 777,
++            phase,
++        };
++        let mut seen = Vec::new();
++        roots::frame(&mut frame, &mut |id| {
++            seen.push(id);
++            id + 100
++        });
++        assert_eq!(seen, expected);
++        assert_eq!(frame.budget, 777);
++        assert_eq!(frame.row.r[2], 999_999);
++        let mut after = Vec::new();
++        roots::frame(&mut frame, &mut |id| {
++            after.push(id);
++            id
++        });
++        assert_eq!(
++            after,
++            expected.into_iter().map(|id| id + 100).collect::<Vec<_>>()
++        );
++    }
++    for (mut action, expected) in [
++        (
++            Action::Enter {
++                object: 20,
++                formula: 21,
++                budget: 100,
++            },
++            std::vec![20, 21],
++        ),
++        (Action::Return(Outcome::Ok(22, 30)), std::vec![22]),
++        (Action::Return(Outcome::Halt(55)), std::vec![]),
++        (
++            Action::Return(Outcome::Error(ErrorKind::Unavailable)),
++            std::vec![],
++        ),
++    ] {
++        let mut seen = Vec::new();
++        roots::action(&mut action, &mut |id| {
++            seen.push(id);
++            id + 100
++        });
++        assert_eq!(seen, expected);
++    }
++}
+diff --git a/rs/sequential/compacting/tests/compiler.rs b/rs/sequential/compacting/tests/compiler.rs
+new file mode 100644
+index 0000000..9a8b45c
+--- /dev/null
++++ b/rs/sequential/compacting/tests/compiler.rs
+@@ -0,0 +1,85 @@
++use super::*;
++use std::{
++    io::Read,
++    path::PathBuf,
++    time::{Duration, Instant},
++};
++
++fn read(path: &PathBuf, max: usize) -> Vec<u8> {
++    let file = std::fs::File::open(path).unwrap();
++    let metadata = file.metadata().unwrap();
++    assert!(metadata.is_file() && metadata.len() <= max as u64);
++    let mut bytes = Vec::new();
++    file.take(max as u64 + 1).read_to_end(&mut bytes).unwrap();
++    assert!(bytes.len() <= max);
++    bytes
++}
++
++#[test]
++#[ignore = "saved full compiler discovery diagnostic; explicit NOX_COMPACTION_* paths required"]
++fn saved_full_discovery_preserves_result_gas_frames_and_guest_checkpoints() {
++    std::thread::Builder::new().stack_size(256 << 20).spawn(|| {
++        let program = PathBuf::from(std::env::var_os("NOX_COMPACTION_PROGRAM").unwrap());
++        let job = PathBuf::from(std::env::var_os("NOX_COMPACTION_JOB").unwrap());
++        let output = PathBuf::from(std::env::var_os("NOX_COMPACTION_OUTPUT").unwrap());
++        assert!(!output.exists() && !output.with_extension("dag").exists());
++        let codec = crate::artifact::Limits { max_bytes: 16 << 20, max_nodes: 196_608, max_depth: 4096 };
++        let mut ar = Reduction::<{ 1 << 22 }>::try_new_boxed().unwrap();
++        assert!(ar.limit_allocations(3_145_728));
++        let program = crate::artifact::decode(&mut ar, &read(&program, codec.max_bytes), codec).unwrap();
++        let job = crate::artifact::decode(&mut ar, &read(&job, codec.max_bytes), codec).unwrap();
++        let stage = atom(&mut ar, 2);
++        let input = ar.pair(job, stage).unwrap();
++        let mut fields = ar.tail(program).unwrap();
++        for _ in 0..3 { fields = ar.tail(fields).unwrap(); }
++        let formula = ar.head(fields).unwrap();
++        assert_eq!(ar.count(), 159_037);
++        let started = Instant::now();
++        let mut callbacks = 0u64;
++        let mut next_report = Duration::from_secs(60);
++        let result = reduce_compacting_cached_controlled(&mut ar, input, formula, 1_000_000_000,
++            CompactionLimits { max_frames: 65_536, max_total_allocations: 64_000_000, max_collection_work: 2_000_000_000 },
++            &mut || {
++                callbacks += 1;
++                let elapsed = started.elapsed();
++                if elapsed >= next_report {
++                    std::eprintln!("compacting discovery: {}s, {callbacks} total checkpoints", elapsed.as_secs());
++                    next_report += Duration::from_secs(60);
++                }
++                elapsed >= Duration::from_secs(1200)
++            });
++        let elapsed_micros = started.elapsed().as_micros();
++        let result = match result {
++            Ok(result) => result,
++            Err(failure) => {
++                std::fs::write(output, std::format!("{failure:#?}\n")).unwrap();
++                panic!("compacting discovery failed: {failure:?}");
++            }
++        };
++        let stats = result.stats;
++        let Outcome::Ok(value, remaining) = result.outcome else { panic!("{:?}", result.outcome); };
++        let bytes = crate::artifact::encode(&ar, value, codec).unwrap();
++        std::fs::write(output.with_extension("dag"), bytes).unwrap();
++        let mut words = Vec::new();
++        let mut rest = value;
++        for _ in 0..4 {
++            words.push(ar.atom_value(ar.head(rest).unwrap()).unwrap().as_u64());
++            rest = ar.tail(rest).unwrap();
++        }
++        words.push(ar.atom_value(rest).unwrap().as_u64());
++        std::fs::write(&output, std::format!(
++            "{{\n  \"stage\": 2,\n  \"remaining_budget\": {remaining},\n  \"charged_reductions\": {},\n  \"peak_frames\": {},\n  \"prefix_words\": {words:?},\n  \"elapsed_micros\": {elapsed_micros},\n  \"pinned_nodes\": {},\n  \"resident_nodes\": {},\n  \"peak_resident_nodes\": {},\n  \"total_allocations\": {},\n  \"reclaimed_nodes\": {},\n  \"collections\": {},\n  \"collection_work\": {},\n  \"scratch_bytes\": {},\n  \"evaluator_checkpoints\": {},\n  \"collection_checkpoints\": {},\n  \"total_checkpoints\": {callbacks}\n}}\n",
++            1_000_000_000 - remaining, result.peak_frames, stats.pinned_nodes, stats.resident_nodes,
++            stats.peak_resident_nodes, stats.total_allocations, stats.reclaimed_nodes, stats.collections,
++            stats.collection_work, stats.scratch_bytes, stats.evaluator_checkpoints, stats.collection_checkpoints,
++        )).unwrap();
++        assert_eq!(remaining, 315_353_719);
++        assert_eq!(result.peak_frames, 3259);
++        assert_eq!(stats.evaluator_checkpoints, 566_412_397);
++        assert_eq!(callbacks, stats.evaluator_checkpoints + stats.collection_checkpoints);
++        assert_eq!(words, [2, 94, 0, 0, 0]);
++        assert!(stats.collections > 0);
++        assert!(stats.total_allocations > 3_145_728);
++        assert!(stats.peak_resident_nodes <= 3_145_728);
++    }).unwrap().join().unwrap();
++}
+diff --git a/rs/sequential/compacting/tests.rs b/rs/sequential/compacting/tests.rs
+new file mode 100644
+index 0000000..ba67c91
+--- /dev/null
++++ b/rs/sequential/compacting/tests.rs
+@@ -0,0 +1,380 @@
++extern crate std;
++use super::*;
++use crate::ErrorKind;
++use crate::data::Data;
++use crate::sequential::tests::{atom, axis, binary, loop_core, op, quote};
++
++mod collection;
++mod compiler;
++
++fn limits() -> CompactionLimits {
++    CompactionLimits {
++        max_frames: 16384,
++        max_total_allocations: 100_000,
++        max_collection_work: 100_000_000,
++    }
++}
++
++fn snapshot<const N: usize>(ar: &Reduction<N>) -> Vec<std::string::String> {
++    (0..ar.count())
++        .map(|id| std::format!("{:?}", ar.get(id).unwrap()))
++        .collect()
++}
++
++fn valid_index<const N: usize>(ar: &mut Reduction<N>) {
++    let count = ar.count();
++    for id in 0..count {
++        let entry = *ar.get(id).unwrap();
++        let interned = match entry.inner {
++            Data::Atom { value } => ar.atom(value),
++            Data::Pair { left, right } => {
++                assert!(left < id && right < id);
++                ar.pair(left, right)
++            }
++        };
++        assert_eq!(interned, Some(id), "interned entry {id}");
++    }
++    assert_eq!(ar.count(), count);
++}
++
++#[test]
++fn repeated_collections_keep_pins_sharing_bounds_gas_and_logical_depth() {
++    let mut old = Reduction::<32768>::try_new_boxed().unwrap();
++    let mut new = Reduction::<256>::new();
++    let (object, formula) = loop_core(&mut new, 3000);
++    assert_eq!(loop_core(&mut old, 3000), (object, formula));
++    // Unrelated caller-held data is pinned too.
++    let extra = quote(&mut new, 777);
++    assert_eq!(quote(&mut old, 777), extra);
++    let pins = snapshot(&new);
++    assert!(new.limit_allocations(160));
++    let expected = reduce_cached(
++        &mut old,
++        object,
++        formula,
++        100_000,
++        Limits { max_frames: 16384 },
++    )
++    .unwrap();
++    let actual = reduce_compacting_cached(&mut new, object, formula, 100_000, limits()).unwrap();
++    let (Outcome::Ok(a, left_a), Outcome::Ok(b, left_b)) = (expected.outcome, actual.outcome)
++    else {
++        panic!("both profiles must complete the loop");
++    };
++    assert_eq!(old.digest(a), new.digest(b));
++    assert_eq!(left_a, left_b);
++    assert_eq!(left_b, 100_000 - 45_005);
++    assert_eq!(expected.peak_frames, actual.peak_frames);
++    assert!(actual.stats.collections > 10);
++    assert!(actual.stats.reclaimed_nodes > 5000);
++    assert_eq!(
++        actual.stats.total_allocations,
++        u64::from(new.count()) + actual.stats.reclaimed_nodes
++    );
++    assert_eq!(actual.stats.pinned_nodes as usize, pins.len());
++    assert!(actual.stats.peak_resident_nodes <= 160);
++    assert_eq!(actual.stats.scratch_bytes, (256 + 160) * 4);
++    assert_eq!(&snapshot(&new)[..pins.len()], pins);
++    for id in 0..new.count() {
++        let matching = (0..old.count())
++            .find(|old_id| old.digest(*old_id) == new.digest(id))
++            .unwrap();
++        assert_eq!(crate::bound(&new, id), crate::bound(&old, matching));
++    }
++    valid_index(&mut new);
++    // A later call pins the previous result and all other resident entries.
++    let q = op(&mut new, 1, b);
++    let count = new.count();
++    let second = reduce_compacting_cached(&mut new, object, q, 1, limits()).unwrap();
++    assert!(matches!(second.outcome, Outcome::Ok(result, 0) if result == b));
++    assert_eq!(second.stats.pinned_nodes, count);
++}
++
++#[test]
++fn no_collection_preserves_all_pure_patterns_failures_budgets_and_checkpoints() {
++    for tag in 0..16 {
++        for value in [0, 7, 1 << 32] {
++            for budget in [0, 1, 3, 25, 33, 65, 1000] {
++                fn build<const N: usize>(
++                    ar: &mut Reduction<N>,
++                    tag: u64,
++                    value: u64,
++                ) -> (Order, Order) {
++                    let object = atom(ar, 0);
++                    let q = quote(ar, value);
++                    let other = quote(ar, 7);
++                    let f = match tag {
++                        0 => axis(ar, value),
++                        1 => op(ar, 1, other),
++                        8 | 13 | 15 => op(ar, tag, q),
++                        4 => {
++                            let arms = ar.pair(q, other).unwrap();
++                            binary(ar, 4, q, arms)
++                        }
++                        _ => binary(ar, tag, q, other),
++                    };
++                    (object, f)
++                }
++                let mut old = Reduction::<256>::new();
++                let mut new = Reduction::<256>::new();
++                let (object, formula) = build(&mut old, tag, value);
++                assert_eq!(build(&mut new, tag, value), (object, formula));
++                let mut old_checks = 0;
++                let mut new_checks = 0;
++                let a = reduce_cached_controlled(
++                    &mut old,
++                    object,
++                    formula,
++                    budget,
++                    Limits { max_frames: 64 },
++                    &mut || {
++                        old_checks += 1;
++                        false
++                    },
++                )
++                .unwrap();
++                let b = reduce_compacting_cached_controlled(
++                    &mut new,
++                    object,
++                    formula,
++                    budget,
++                    limits(),
++                    &mut || {
++                        new_checks += 1;
++                        false
++                    },
++                )
++                .unwrap();
++                assert_eq!(
++                    std::format!("{:?}", a.outcome),
++                    std::format!("{:?}", b.outcome)
++                );
++                assert_eq!(a.peak_frames, b.peak_frames);
++                assert_eq!(old_checks, new_checks);
++                assert_eq!(b.stats.evaluator_checkpoints, new_checks);
++                assert_eq!(b.stats.collections, 0);
++                assert_eq!(snapshot(&old), snapshot(&new));
++            }
++        }
++    }
++}
++
++#[test]
++fn cumulative_admission_counts_partial_hash_output_and_restores_resident_allowance() {
++    for extra in 0..7 {
++        let mut ar = Reduction::<128>::new();
++        let object = atom(&mut ar, 0);
++        let q = quote(&mut ar, 42);
++        let f = op(&mut ar, 15, q);
++        let loaded = ar.count();
++        let resident = ar.allocation_limit();
++        let mut cap = limits();
++        cap.max_total_allocations = u64::from(loaded + extra);
++        let failed = reduce_compacting_cached(&mut ar, object, f, 1000, cap).unwrap_err();
++        assert_eq!(failed.kind, CompactionFailureKind::TotalAllocations);
++        assert_eq!(failed.stats.total_allocations, cap.max_total_allocations);
++        assert_eq!(ar.count(), loaded + extra);
++        assert_eq!(ar.allocation_limit(), resident);
++        valid_index(&mut ar);
++        assert!(ar.atom(nebu::Goldilocks::new(987654)).is_some());
++    }
++}
++
++#[test]
++fn resident_exhaustion_keeps_partial_output_and_no_collection_work_fails_before_mutation() {
++    for extra in 0..7 {
++        let mut ar = Reduction::<128>::new();
++        let object = atom(&mut ar, 0);
++        let q = quote(&mut ar, 42);
++        let f = op(&mut ar, 15, q);
++        let loaded = ar.count();
++        assert!(ar.limit_allocations(loaded + extra));
++        let before = snapshot(&ar);
++        let mut cap = limits();
++        cap.max_collection_work = 0;
++        let failed = reduce_compacting_cached(&mut ar, object, f, 1000, cap).unwrap_err();
++        assert_eq!(failed.kind, CompactionFailureKind::CollectionWork);
++        assert_eq!(snapshot(&ar), before);
++        let result = reduce_compacting_cached(&mut ar, object, f, 1000, limits()).unwrap();
++        assert!(matches!(
++            result.outcome,
++            Outcome::Error(ErrorKind::Unavailable)
++        ));
++        assert_eq!(ar.count(), loaded + extra);
++        valid_index(&mut ar);
++    }
++}
++
++#[test]
++fn frame_cancellation_and_service_errors_leave_a_reusable_arena() {
++    for tag in [16, 17] {
++        let mut ar = Reduction::<128>::new();
++        let object = atom(&mut ar, 0);
++        let f = op(&mut ar, tag, object);
++        let cap = ar.allocation_limit();
++        let error = reduce_compacting_cached(&mut ar, object, f, 100, limits()).unwrap_err();
++        assert_eq!(
++            error.kind,
++            CompactionFailureKind::Execution(Error::UnsupportedService(tag))
++        );
++        assert_eq!(ar.allocation_limit(), cap);
++        valid_index(&mut ar);
++    }
++    for max_frames in [0, 1, 3] {
++        let mut ar = Reduction::<256>::new();
++        let (object, formula) = loop_core(&mut ar, 20);
++        let mut cap = limits();
++        cap.max_frames = max_frames;
++        let failed = reduce_compacting_cached(&mut ar, object, formula, 1000, cap).unwrap_err();
++        assert_eq!(failed.kind, CompactionFailureKind::Execution(Error::Frames));
++        let cancelled = reduce_compacting_cached_controlled(
++            &mut ar,
++            object,
++            formula,
++            1000,
++            limits(),
++            &mut || true,
++        )
++        .unwrap_err();
++        assert_eq!(
++            cancelled.kind,
++            CompactionFailureKind::Execution(Error::Cancelled)
++        );
++        assert_eq!(cancelled.stats.evaluator_checkpoints, 1);
++        valid_index(&mut ar);
++    }
++}
++
++#[test]
++fn axis_zero_entry_collects_discarded_hash_output_before_allocating() {
++    fn build<const N: usize>(ar: &mut Reduction<N>) -> (Order, Order) {
++        let object = atom(ar, 42);
++        let q7 = quote(ar, 7);
++        let hash = op(ar, 15, q7);
++        let q42 = quote(ar, 42);
++        let quoted = op(ar, 1, q42);
++        let discard = binary(ar, 2, hash, quoted);
++        let a0 = axis(ar, 0);
++        let qa0 = op(ar, 1, a0);
++        (object, binary(ar, 2, discard, qa0))
++    }
++    let mut old = Reduction::<128>::new();
++    let mut new = Reduction::<128>::new();
++    let (object, formula) = build(&mut old);
++    assert_eq!(build(&mut new), (object, formula));
++    assert!(new.limit_allocations(new.count() + 7));
++    let expected =
++        reduce_cached(&mut old, object, formula, 1000, Limits { max_frames: 64 }).unwrap();
++    let actual = reduce_compacting_cached(&mut new, object, formula, 1000, limits()).unwrap();
++    let (Outcome::Ok(a, left_a), Outcome::Ok(b, left_b)) = (expected.outcome, actual.outcome)
++    else {
++        panic!("axis zero must complete");
++    };
++    assert_eq!(old.digest(a), new.digest(b));
++    assert_eq!(left_a, left_b);
++    assert_eq!(expected.peak_frames, actual.peak_frames);
++    assert!(actual.stats.reclaimed_nodes >= 7);
++    valid_index(&mut new);
++}
++
++#[test]
++fn full_pinned_arena_accepts_intern_hits_with_zero_fresh_allocation_allowance() {
++    for tag in [0, 3, 5, 15] {
++        let mut ar = Reduction::<128>::new();
++        let object = atom(&mut ar, 42);
++        let q = quote(&mut ar, 7);
++        let f = match tag {
++            0 => axis(&mut ar, 0),
++            15 => op(&mut ar, 15, q),
++            _ => binary(&mut ar, tag, q, q),
++        };
++        let expected = reduce_cached(&mut ar, object, f, 1000, Limits { max_frames: 64 }).unwrap();
++        let loaded = ar.count();
++        assert!(ar.limit_allocations(loaded));
++        let mut cap = limits();
++        cap.max_total_allocations = u64::from(loaded);
++        let actual = reduce_compacting_cached(&mut ar, object, f, 1000, cap).unwrap();
++        assert_eq!(
++            std::format!("{:?}", expected.outcome),
++            std::format!("{:?}", actual.outcome)
++        );
++        assert_eq!(actual.stats.total_allocations, u64::from(loaded));
++        assert_eq!(actual.stats.reclaimed_nodes, 0);
++        assert!(actual.stats.collections > 0);
++        valid_index(&mut ar);
++    }
++}
++
++#[test]
++fn collection_keeps_budget_halts_and_frame_failures_at_the_same_guest_boundary() {
++    for budget in [0, 1, 3, 30, 199, 1504, 1505, 2000] {
++        let mut old = Reduction::<1024>::new();
++        let mut new = Reduction::<256>::new();
++        let (object, formula) = loop_core(&mut old, 100);
++        assert_eq!(loop_core(&mut new, 100), (object, formula));
++        assert!(new.limit_allocations(100));
++        let a = reduce_cached(
++            &mut old,
++            object,
++            formula,
++            budget,
++            Limits { max_frames: 1000 },
++        )
++        .unwrap();
++        let b = reduce_compacting_cached(&mut new, object, formula, budget, limits()).unwrap();
++        match (a.outcome, b.outcome) {
++            (Outcome::Ok(a, x), Outcome::Ok(b, y)) => {
++                assert_eq!(old.digest(a), new.digest(b));
++                assert_eq!(x, y);
++            }
++            (Outcome::Halt(x), Outcome::Halt(y)) => assert_eq!(x, y),
++            (x, y) => panic!("unexpected outcomes: {x:?}, {y:?}"),
++        }
++        assert_eq!(a.peak_frames, b.peak_frames);
++        valid_index(&mut new);
++    }
++    for frames in [90, 120, 150] {
++        let mut old = Reduction::<1024>::new();
++        let mut new = Reduction::<256>::new();
++        let (object, formula) = loop_core(&mut old, 100);
++        assert_eq!(loop_core(&mut new, 100), (object, formula));
++        assert!(new.limit_allocations(100));
++        let mut cap = limits();
++        cap.max_frames = frames;
++        assert_eq!(
++            reduce_cached(
++                &mut old,
++                object,
++                formula,
++                2000,
++                Limits { max_frames: frames }
++            )
++            .unwrap_err(),
++            Error::Frames
++        );
++        let error = reduce_compacting_cached(&mut new, object, formula, 2000, cap).unwrap_err();
++        assert_eq!(error.kind, CompactionFailureKind::Execution(Error::Frames));
++        assert!(error.stats.collections > 0, "frame limit {frames}");
++        valid_index(&mut new);
++    }
++}
++
++#[test]
++fn zero_budget_axis_and_rejected_frames_do_not_start_collection() {
++    let mut ar = Reduction::<128>::new();
++    let object = atom(&mut ar, 42);
++    let formula = axis(&mut ar, 0);
++    assert!(ar.limit_allocations(ar.count()));
++    let mut cap = limits();
++    cap.max_collection_work = 0;
++    let halted = reduce_compacting_cached(&mut ar, object, formula, 0, cap).unwrap();
++    assert!(matches!(halted.outcome, Outcome::Halt(0)));
++    assert_eq!(halted.stats.collections, 0);
++    cap.max_frames = 0;
++    assert_eq!(
++        reduce_compacting_cached(&mut ar, object, formula, 100, cap)
++            .unwrap_err()
++            .kind,
++        CompactionFailureKind::Execution(Error::Frames)
++    );
++}
+diff --git a/specs/sequential-compaction.md b/specs/sequential-compaction.md
+new file mode 100644
+index 0000000..0c667d0
+--- /dev/null
++++ b/specs/sequential-compaction.md
+@@ -0,0 +1,88 @@
++# Bounded compacting NoTrace execution
++
++Status: implementation in progress; opt-in component profile.
++
++`sequential::reduce_compacting_cached` and its `_controlled` variant execute
++the same pure tags and scalar budget rules as cached sequential execution.
++They accept `CompactionLimits { max_frames, max_total_allocations,
++max_collection_work }`. The controlled variant accepts the existing cooperative
++cancellation callback. Legacy sequential, traced and recursive APIs preserve
++their allocation and trace contracts.
++
++Every Order present at entry is pinned at its original index. Their data,
++digests and cached formula bounds remain unchanged, including data unrelated
++to the initial subject and formula. New internal entries may move. The returned
++result Order is valid in the caller's arena; a later call pins that result with
++all other entries present at its own entry. Compaction uses exclusive access
++to the arena. Only the NoTrace profile supports relocation.
++
++The arena's existing allocation limit bounds resident entries. The new total
++allocation allowance counts the preloaded entries plus every fresh allocation
++during this execution, including partial finalizer allocations and values
++recreated after collection. Intern hits do not consume it. Admission within
++each evaluator step is capped by both remaining total allowance and resident
++capacity. The original resident limit is restored before returning from the
++step. A fresh allocation rejected by the total allowance is a host resource
++failure. The new profile does not reproduce the legacy lifetime unique-entry
++quota: its explicit resident and allocation-event counters serve different
++purposes.
++
++Collection happens between evaluator steps, before a budget-admitted axis-zero
++Enter or before a successful child return
++enters a finalizer with less free resident capacity than its maximum output
++allocation count: seven entries for axis-zero/hash, one for the other allocating pure
++finalizers. It may precede a finalizer whose cache or interner eventually hits,
++or whose operands cause a semantic error. One collection attempt precedes each
++such finalizer step; insufficient reclamation leaves normal resident admission
++to return `Unavailable`. Collection neither reevaluates a child nor changes
++guest charging, budget partitions, scalar refunds, or logical frame depth.
++
++Roots consist of the entire preloaded prefix, the current action's object and
++formula (Enter) or value (successful Return), and pending phase references:
++BinaryLeft retains object/right formula, BinaryRight retains its left value,
++and BranchTest retains object/both alternatives. Unary, BranchChosen and
++Compose retain scalar metadata only. Trace-only historical fields contribute
++no roots. The per-execution finalizer cache is cleared before relocation and
++contributes no roots.
++
++The collector requires topologically ordered pairs, with both children earlier
++than their parent. It rejects malformed roots or allocated pairs before
++mutation. It also verifies that all resident entries participate in the
++private interning index. Public `alloc_raw` entries which bypass that index
++therefore reject collection; rebuilding must not silently start interning
++previously unindexed entries.
++
++Scratch is fallibly reserved before evaluation: one Order per logical resident
++slot for mark/forwarding state and one Order per physical hash-index slot for
++planned placement. `compaction_storage_bytes(physical_capacity, resident_limit)`
++reports the requested buffers, excluding allocator metadata and the existing
++arena, frame buffer and finalizer cache. No graph recursion or growing traversal
++stack is used. Marking proceeds backwards; relocation preserves survivor order.
++Digests and cached cost bounds are copied, while pair children and live
++continuations are remapped through the forwarding array.
++
++Collection work is separate from guest reductions. One unit is charged before
++each visited arena entry, index slot, planned insertion probe, root/action or
++frame visit, and cache slot cleared. Fixed-size child/reference operations are
++included in their containing visit. Repeated scans each charge their visits.
++Planning constructs the future index in scratch, so adversarial probe chains
++consume the work allowance and can be cancelled before arena mutation.
++
++Planning polls cancellation periodically, at most 4,096 charged work units
++apart. Before mutation, it reserves the exact linear commit visits (old resident
++entries, physical index slots, action/frame remapping and cache clearing) from
++the work allowance and polls cancellation. Compaction and index replacement
++then finish as one bounded, allocation-free commit before cancellation is
++polled again. Cancellation during that commit is observed afterward; the arena
++always has a valid index when returned. The host must check its publication
++deadline after execution. Commit is cooperative, with a capacity-bounded
++non-preemptible interval.
++
++`CompactionStats` reports pinned, final resident and peak resident entries;
++total allocation events; reclaimed entries; completed collection passes;
++charged collection work; scratch bytes; and separate evaluator/collection
++cancellation checkpoint counts. Host failures carry these stats. Failed guest
++outcomes carry no invented root remaining-budget or charged-reduction figure.
++Where both profiles finish, values are compared structurally/by digest rather
++than by relocated Order; successful remaining budget and peak frame depth must
++match. Observed performance and workload results belong in `audit/`.

@@ -1,0 +1,3 @@
+   Compiling cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/nox/rs)
+    Finished `release` profile [optimized] target(s) in 4.82s
+     Running unittests lib.rs (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/target/release/deps/nox-0a5f63b27b57cab9)

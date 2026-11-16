@@ -113,7 +113,7 @@ equal-split: a gets 50, halts (101 > 50, but cost(a)=100 > 50 already aborts).
 f = 50, c = 1, so f - c = 49
 cost(a) = 30, cost(b) = 26
 sequential: a runs with 49, succeeds, returns 19. b runs with 19, halts
-            because some inner step needs 25 > 19. Result: Halt(x_b_seq).
+            because some inner step needs 61 > 19. Result: Halt(x_b_seq).
 parallel-full-budget: a runs with 49, succeeds (used 30, returns 19).
                        b runs with 49 (parallel sees full budget!), succeeds
                        (used 26, returns 23). Join: total work = 1+30+26=57 > 50.
@@ -221,7 +221,7 @@ This works if `bound()` is exact for every formula. For nox patterns
 - `bound([3 [a b]]) = 1 + bound(a) + bound(b)`
 - `bound([5..7,9..14 [a b]]) = COST_op + bound(a) + bound(b)`
 - `bound([8 a]) = 64 + bound(a)`
-- `bound([15 a]) = 25 + bound(a)`
+- `bound([15 a]) = 61 + bound(a)`
 - `bound([17 [n k]]) = 1 + bound(n) + bound(k)`
 
 For pattern 4 (branch), bound is the **max** over arms (only one is
@@ -281,7 +281,7 @@ bound([11 [a b]])       = 32 + bound(a) + bound(b)    -- xor
 bound([12 [a b]])       = 32 + bound(a) + bound(b)    -- and
 bound([13 a])           = 32 + bound(a)                -- not
 bound([14 [a n]])       = 32 + bound(a) + bound(n)    -- shl
-bound([15 a])           = 25 + bound(a)                -- hash
+bound([15 a])           = 61 + bound(a)                -- hash
 bound([16 [tag check]]) = 1 + bound(tag) + DYNAMIC
 bound([17 [n k]])       = 1 + bound(n) + bound(k)
 ```

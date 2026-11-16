@@ -1,0 +1,23 @@
+
+running 18 tests
+test sequential::observe::tests::cache_hits_still_emit_each_hash_finalizer_and_keep_107_reductions ... ok
+test sequential::observe::tests::computed_continuation_preserves_variable_topology_at_exact_budget ... ok
+test sequential::observe::tests::failures::cancellation_after_terminal_transition_prevents_completed_delivery ... ok
+test sequential::observe::tests::failures::exact_capture_caps_pass_and_one_less_rejects_without_completion ... ok
+test sequential::observe::tests::failures::execution_failures_keep_their_kinds_and_never_complete_capture ... ok
+test sequential::observe::tests::failures::invalid_export_references_fail_closed_without_changing_legacy_behavior ... ok
+test sequential::observe::tests::failures::sink_failure_at_every_delivery_leaves_only_accepted_prefix ... ok
+test sequential::observe::tests::failures::zero_caps_stop_before_export_and_initial_export_is_cancellable ... ok
+test sequential::observe::tests::relocation_changes_physical_orders_without_changing_logical_transitions ... ok
+test sequential::observe::tests::snapshots::failures::caps_and_cancellation_interrupt_snapshot_without_a_following_transition ... ok
+test sequential::observe::tests::snapshots::failures::failed_collection_exports_no_reset ... ok
+test sequential::observe::tests::differential::observed_all_pure_patterns_match_unobserved_values_failures_and_physical_reports ... ok
+test sequential::observe::tests::snapshots::failures::snapshot_caps_admit_exact_totals_and_reject_one_less_without_completion ... ok
+test sequential::observe::tests::snapshots::snapshots_preserve_runtime_stats_logical_steps_and_version_one_bytes ... ok
+test sequential::observe::tests::snapshots::version_two_reset_has_a_distinct_tag_without_wrapping_ordinary_bytes ... ok
+test sequential::observe::tests::snapshots::version_two_without_collection_only_changes_begin_version ... ok
+test sequential::observe::tests::wire::encoding_has_fixed_tags_little_endian_words_and_no_padding ... ok
+test sequential::observe::tests::snapshots::failures::sink_failure_at_reset_or_each_snapshot_node_keeps_only_accepted_prefix ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 225 filtered out; finished in 0.12s
+

@@ -1,0 +1,71 @@
+{
+  "baseline": "ce3819f616012c3a0cd0791dd29901a130e2627b",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14) (Homebrew)",
+  "sources": {
+    "rs/lib.rs": "7d69d9d0671ba027f2b0784edb1942257508508dca099ce60f480486c4ffa6cf",
+    "rs/patterns/and.rs": "757728317cd11afe8eb551563880d5eb83f9584bdce5669d551e5b0d42234d70",
+    "rs/patterns/eq.rs": "15dd575f97a9e7198fa77d2df021b746259a356c10a23835481538d2a7aea697",
+    "rs/patterns/hash.rs": "3b9cae48ac18ddabf65b330a6a75a00009a90ca3457dd0d41e812478224ccab9",
+    "rs/patterns/inv.rs": "fc3751947ffa1dd0c6e2098d0b04d23c5dacef60fb77b24ba801b9329ea6682a",
+    "rs/patterns/lt.rs": "e4d030463dd5c091be71acae01e4d03130d1bb999c0b50aa6c816011f0e98732",
+    "rs/patterns/not.rs": "d88630c4a179c29e439d6452f6badb2a40e590229747c60ee16781d45381cb28",
+    "rs/patterns/shl.rs": "edf55c9fc3e08e31f10c43d42aec1fa4beb7f61fa0ff2205942a7dbff5a23146",
+    "rs/patterns/xor.rs": "36038b7e3cc6de79bfd1819ebe0220ff2cc34a2fa3eff36d4629cfd19e850b2e",
+    "rs/reduce.rs": "d8e9ab4ea7787a417febd36e1333db1ee03f60829a79260b765352d5b75626d7",
+    "rs/sequential.rs": "ccc2623645927bdefca576ade13fc9174d341cda30ad34b5761ca5062236003b",
+    "rs/sequential/dispatch.rs": "9259abf8a7ed376b3ddd4032155f237bd515c0b1f288c31776f689f1ccb28b50",
+    "rs/sequential/finish.rs": "2780318563897e13dfa909399b747d0262a390f0d88652ddf3e4de75f748c62f",
+    "rs/sequential/tests.rs": "7a0750b375328628a4b250010c22aa4c3a7d1b312a5cc3dd591c20b77e222924",
+    "rs/sequential/tests/differential.rs": "87a419295e7e6e760142df5a608a1d14fe8c6c6b2feb03d8535dfc3c8f44677e",
+    "specs/README.md": "7b99f58a192d9e4cf766a983c19b10aae38aafd634582207f5804a038534624b",
+    "specs/sequential.md": "cb64197ae43c970972645d24e49301715dc3b65b3570d3b57ee503c884c6c9c5"
+  },
+  "checks": [
+    {
+      "command": "cargo test --workspace --release --locked",
+      "exit_code": 0,
+      "passed_tests": 192,
+      "log_sha256": "81259a4fb1975d411761accc8d2be2d2114fe59c87d720b88e7a67dc43e072d1"
+    },
+    {
+      "command": "cargo test -p cyber-nox --release --features parallel --locked",
+      "exit_code": 0,
+      "passed_tests": 191,
+      "log_sha256": "7cc2f79ba2fc6e396024c335475cffb3d9e72769ab4cb61b9fbf4dab4410f9e4"
+    },
+    {
+      "command": "cargo check --workspace --all-targets --locked",
+      "exit_code": 0,
+      "passed_tests": null,
+      "log_sha256": "41445e8918bc1cb2ec9a141ce2b2b57d3105b88c31cb97040476da05527265d8"
+    },
+    {
+      "command": "cargo check -p cyber-nox --no-default-features --locked",
+      "exit_code": 0,
+      "passed_tests": null,
+      "log_sha256": "8207f2049a29755aab347b73e7c15830309ba857f55ae2d7e681cd5f5c4b511e"
+    }
+  ],
+  "differential_configurations": 4185,
+  "loop_assertions": {
+    "iterations": [
+      0,
+      1,
+      16,
+      4097,
+      5000
+    ],
+    "charged_reductions": [
+      5,
+      20,
+      245,
+      61460,
+      75005
+    ],
+    "same_formula_particle": true,
+    "run_only_vs_traced": true,
+    "exact_observed_frame_limit_reexecution": true
+  },
+  "profile": "pure-sequential-L1-tags0..15-no-jets-no-services",
+  "review": "read-only independent implementation review; host guard added afterward and verified by explicit cancellation test; no maintainer approval claim"
+}

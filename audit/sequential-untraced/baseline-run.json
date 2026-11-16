@@ -1,0 +1,41 @@
+{
+  "command": [
+    "/Users/master/cyber/.worktrees/joy-soft3-reaudit/install-audit/bin/joy",
+    "run-artifact",
+    "/Users/master/cyber/.worktrees/joy-soft3-reaudit/measurements/final-c1.dag",
+    "--input",
+    "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/baseline-closure-files-cdfin1zh/job.dag",
+    "--emit",
+    "result",
+    "-o",
+    "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/audit/sequential-untraced/baseline-result.dag",
+    "--arena-nodes",
+    "3145728",
+    "--budget",
+    "100000000",
+    "--frames",
+    "65536",
+    "--time-ms",
+    "300000"
+  ],
+  "revision": "c9f7486a74fe81bfc194b598da40f6343ecb2ef1",
+  "elapsed_seconds": 63.687148125027306,
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "error: execution budget exhausted\n",
+  "files": {
+    "joy": {
+      "path": "/Users/master/cyber/.worktrees/joy-soft3-reaudit/install-audit/bin/joy",
+      "sha256": "1185285c8032f7b3670a97bb724075305cf2654157212225fa6bcd78b53a9391"
+    },
+    "compiler": {
+      "path": "/Users/master/cyber/.worktrees/joy-soft3-reaudit/measurements/final-c1.dag",
+      "sha256": "4aed7fc83be96156fcb65c3bbb369c192ad27f894ab78a030e3588056a66d112"
+    },
+    "job": {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/baseline-closure-files-cdfin1zh/job.dag",
+      "sha256": "8378325b29710c5982281ac69b81df93b4b0325eea7a9654bd8341f06b13356c"
+    }
+  },
+  "source_receipt": "/Users/master/cyber/.worktrees/joy-soft3-reaudit/joy/audit/soft3-reaudit/final-installed.json"
+}

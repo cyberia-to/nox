@@ -1,0 +1,92 @@
+[
+  {
+    "path": "rs/sequential.rs",
+    "bytes": 6624,
+    "sha256": "94ee16ea4d4cde53212005feedaf667eaad07f9d1a8a6f8dfedf738a495a8022"
+  },
+  {
+    "path": "rs/sequential/liveness.rs",
+    "bytes": 5815,
+    "sha256": "d608f283a0ff2d642b92c3b7c7337bf4fed8955ee25f4090c50829f1af45b191"
+  },
+  {
+    "path": "rs/sequential/liveness/tests.rs",
+    "bytes": 8193,
+    "sha256": "9400464f6cb146224e1091489d9f733e28db49550b07f5404d7088b88223cbf5"
+  },
+  {
+    "path": "specs/compiler-liveness-census.md",
+    "bytes": 2054,
+    "sha256": "f22765225cd777921b73c824fb617604683cac4911db678e49ac4bfb36f33da0"
+  },
+  {
+    "path": "audit/compiler-liveness/README.md",
+    "bytes": 6283,
+    "sha256": "54fba7cb4d5a00b1c5b05a7afc1a3bfdbfef1df91f37cb745c2c3ab098631513"
+  },
+  {
+    "path": "audit/compiler-liveness/all-tests-final.log",
+    "bytes": 14356,
+    "sha256": "f74816eb0779ec033c12c780dae642480c9549ac9c8be21696c4cd565cf44daf"
+  },
+  {
+    "path": "audit/compiler-liveness/all-tests.log",
+    "bytes": 16497,
+    "sha256": "a3161eb7f4c4877cb1e3f6b251890ff6fc451f779b01db6f079e132c0018e1f9"
+  },
+  {
+    "path": "audit/compiler-liveness/baseline-prefix-bodies.json",
+    "bytes": 1743,
+    "sha256": "140b4c8c42c08def0b87c9758ab8caf5051a2d903fa40cabdf2d4334a751a2bb"
+  },
+  {
+    "path": "audit/compiler-liveness/clippy.log",
+    "bytes": 2650,
+    "sha256": "bc4e85b2c59977ce7cf7dd9f6a87618c9b90c40fa08183faa6783808163bb28c"
+  },
+  {
+    "path": "audit/compiler-liveness/commands.sh",
+    "bytes": 1271,
+    "sha256": "663adf583a6598e6a92b8d398a68f3d81ed4ae963dc336024e09a667ef68137b"
+  },
+  {
+    "path": "audit/compiler-liveness/implementation.patch",
+    "bytes": 15580,
+    "sha256": "6e81375277d961cb13fbe07de53f69f2a6d32b9da8195a13c5a5f385e37d6de4"
+  },
+  {
+    "path": "audit/compiler-liveness/marker-tests.log",
+    "bytes": 695,
+    "sha256": "6490d2ff23e30eec103bb06ec8bc7353085488e9f9cb318a0a399df03f0c1f17"
+  },
+  {
+    "path": "audit/compiler-liveness/nox-clippy-final.log",
+    "bytes": 181,
+    "sha256": "b56b687ee891767e8f57d61a5ea587c9160623269de33ac5b8d2082e0172855e"
+  },
+  {
+    "path": "audit/compiler-liveness/nox-clippy.log",
+    "bytes": 991,
+    "sha256": "f930f5305e0fcff2bcf8e2e8bdacc1e77af25777551cfa90846edfcd1e1bd149"
+  },
+  {
+    "path": "audit/compiler-liveness/run-inputs.json",
+    "bytes": 4642,
+    "sha256": "2827011a53ba85e93244995f12e742f5cba0fd86e8878ffd7aa93aa158734aa3"
+  },
+  {
+    "path": "audit/compiler-liveness/stage4-census.execution.json",
+    "bytes": 315,
+    "sha256": "e11c0754f50f88266cf6f731ffb9301db559c79d844f3757420542d6264d4f27"
+  },
+  {
+    "path": "audit/compiler-liveness/stage4-census.json",
+    "bytes": 471,
+    "sha256": "f8ffd39af24bcef7d23f9299d3ad6b08c42835d7d3c0d60564b857ee6fcde8ed"
+  },
+  {
+    "path": "audit/compiler-liveness/stage4-run.log",
+    "bytes": 594,
+    "sha256": "85e694b23824f40e56d8674cc63c6854400bef7218ce2f5b8ed3e05afb80c7be"
+  }
+]

@@ -1,0 +1,10 @@
+     Locking 7 packages to latest Rust 1.95.0 compatible versions
+   Compiling strata-core v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/core)
+   Compiling cyber-hemera v0.3.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/hemera/rs)
+   Compiling strata-ext v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/ext)
+   Compiling strata-compute v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/compute)
+   Compiling strata-proof v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/proof)
+   Compiling strata-nebu v0.1.1 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/strata/nebu/rs)
+   Compiling cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox-observer/rs)
+   Compiling observer-benchmark v0.0.0 (/var/folders/gc/64p7ymwx60144drqltvslckr0000gn/T/nox-observer-bench-1d1iug35/candidate)
+    Finished `release` profile [optimized] target(s) in 0.70s

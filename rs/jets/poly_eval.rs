@@ -12,15 +12,17 @@
 //!   evals_tree = balanced binary tree of 2^k field atoms
 //!   point      = right-nested cons list of k field coordinates (big-endian: MSV first)
 //!
-//! Budget: 2^k (one unit per leaf evaluation retrieved).
+//! Budget: 2^k (one unit per leaf evaluation retrieved). Shared preflight
+//! bounds expansion before allocation; runtime admission also binds recursion
+//! to the actual matched pure formula.
 //! Point encoding: axis 14 = x_{k-1} (most-significant variable), axis 15 = rest.
 
 extern crate alloc;
-use alloc::vec::Vec;
+
 
 use crate::call::CallProvider;
-use crate::data::{Data, Order, Reduction};
-use crate::reduce::{ErrorKind, Outcome, pair_children};
+use crate::data::{Order, Reduction};
+use crate::reduce::{ErrorKind, Outcome};
 use crate::trace::{TraceRow, Tracer};
 use nebu::Goldilocks;
 
@@ -34,63 +36,15 @@ pub fn poly_eval_jet<const N: usize>(
     _depth: u64,
     row: &mut TraceRow,
 ) -> Outcome {
-    // object = [[k | formula] | [evals_tree | point]]
-    let (lhs, rhs) = match pair_children(reduction, object) {
-        Some(p) => p,
-        None => return Outcome::Error(ErrorKind::Malformed),
+    let prepared = match super::admission::prepare_poly(reduction, object, budget) {
+        Ok(input) => input,
+        Err(outcome) => return outcome,
     };
-    let (k_id, _formula_id) = match pair_children(reduction, lhs) {
-        Some(p) => p,
-        None => return Outcome::Error(ErrorKind::Malformed),
-    };
-    let (evals_id, point_id) = match pair_children(reduction, rhs) {
-        Some(p) => p,
-        None => return Outcome::Error(ErrorKind::Malformed),
-    };
-
-    let k = match reduction.atom_value(k_id) {
-        Some(v) => v.as_u64() as usize,
-        None => return Outcome::Error(ErrorKind::TypeError),
-    };
-    // k comes straight from the calling program: reject before it can shift
-    // out of range (panics in debug, silently wraps mod 64 in release) or
-    // drive `Vec::with_capacity(k)` below — the masked `expected` a crafted
-    // small evals tree can satisfy does not bound the unmasked k used there.
-    if k >= usize::BITS as usize {
-        return Outcome::Error(ErrorKind::TypeError);
-    }
-
-    // Flatten the balanced binary tree of evaluations into a Vec.
-    let mut evals: Vec<Goldilocks> = Vec::new();
-    if !flatten_tree(reduction, evals_id, &mut evals) {
-        return Outcome::Error(ErrorKind::TypeError);
-    }
-    let expected = 1usize << k;
-    if evals.len() != expected {
-        return Outcome::Error(ErrorKind::TypeError);
-    }
-
-    // Decode k coordinates from the right-nested point list (big-endian, MSV first).
-    let mut point: Vec<Goldilocks> = Vec::with_capacity(k);
-    let mut cur = point_id;
-    for _ in 0..k {
-        match pair_children(reduction, cur) {
-            Some((head, tail)) => match reduction.atom_value(head) {
-                Some(v) => {
-                    point.push(v);
-                    cur = tail;
-                }
-                None => return Outcome::Error(ErrorKind::TypeError),
-            },
-            None => return Outcome::Error(ErrorKind::TypeError),
-        }
-    }
-
-    let cost = expected as u64;
-    if budget < cost {
-        return Outcome::Halt(budget);
-    }
-    let remaining = budget - cost;
+    let evals_id = prepared.input.tree;
+    let point_id = prepared.input.parameter;
+    let remaining = prepared.remaining;
+    let evals = prepared.values;
+    let point = prepared.point;
 
     let value = multilinear_eval(&evals, &point);
 
@@ -101,30 +55,6 @@ pub fn poly_eval_jet<const N: usize>(
     match reduction.atom(value) {
         Some(r) => Outcome::Ok(r, remaining),
         None => Outcome::Error(ErrorKind::Unavailable),
-    }
-}
-
-/// Flatten a balanced binary tree of field atoms into a Vec (left-to-right DFS).
-fn flatten_tree<const N: usize>(
-    reduction: &Reduction<N>,
-    id: Order,
-    out: &mut Vec<Goldilocks>,
-) -> bool {
-    let inner = match reduction.get(id) {
-        Some(e) => e.inner,
-        None => return false,
-    };
-    match inner {
-        Data::Atom { .. } => match reduction.atom_value(id) {
-            Some(v) => {
-                out.push(v);
-                true
-            }
-            None => false,
-        },
-        Data::Pair { left, right } => {
-            flatten_tree(reduction, left, out) && flatten_tree(reduction, right, out)
-        }
     }
 }
 
@@ -268,6 +198,9 @@ mod tests {
     /// k=64: `1usize << k` panics in debug (attempt to shift left with
     /// overflow) before anything validates k. Must be rejected, not crash
     /// the reducer on an untrusted program.
+    // Merge note: shared admission (jets::admission::metadata) bounds the
+    // exponent before the shift and reports Unavailable; master asserted
+    // TypeError from its inline check. Same rejection, line's error kind.
     #[test]
     fn k_at_bit_width_is_rejected_not_a_shift_panic() {
         let mut ar = Reduction::<256>::new();
@@ -290,8 +223,8 @@ mod tests {
             0,
             &mut row,
         ) {
-            Outcome::Error(ErrorKind::TypeError) => {}
-            o => panic!("expected TypeError, got {:?}", o),
+            Outcome::Error(ErrorKind::Unavailable) => {}
+            o => panic!("expected Unavailable, got {:?}", o),
         }
     }
 
@@ -332,8 +265,8 @@ mod tests {
             0,
             &mut row,
         ) {
-            Outcome::Error(ErrorKind::TypeError) => {}
-            o => panic!("expected TypeError, got {:?}", o),
+            Outcome::Error(ErrorKind::Unavailable) => {}
+            o => panic!("expected Unavailable, got {:?}", o),
         }
     }
 }

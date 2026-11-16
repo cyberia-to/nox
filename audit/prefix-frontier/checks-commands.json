@@ -1,0 +1,166 @@
+{
+  "cwd": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox",
+  "production_revision": "1eaa8a494f994e4da6b20509469c1e62624f3f2d",
+  "environment": {
+    "CARGO_TARGET_DIR": "../target-nox-frontier"
+  },
+  "checks": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox"
+      ],
+      "log": "tests.log",
+      "exit_code": 0,
+      "archived_log": "tests.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox",
+        "--features",
+        "parallel"
+      ],
+      "log": "tests-parallel.log",
+      "exit_code": 0,
+      "archived_log": "tests-parallel.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox",
+        "--all-targets",
+        "--features",
+        "parallel",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "clippy-parallel.log",
+      "exit_code": 0,
+      "archived_log": "clippy-parallel.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "log": "fmt-all.log",
+      "exit_code": 1,
+      "scope": "pre-existing untouched formatting; first diff cli/main.rs:16",
+      "archived_log": "fmt-all.log.gz"
+    },
+    {
+      "command": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "rs/sequential/compacting/tests/frontier.rs"
+      ],
+      "log": "fmt-helper.log",
+      "exit_code": 0,
+      "archived_log": "fmt-helper.log.gz"
+    }
+  ],
+  "post_measure_checks": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox"
+      ],
+      "log": "tests-final.log",
+      "exit_code": 0,
+      "archived_log": "tests-final.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox",
+        "--features",
+        "parallel"
+      ],
+      "log": "tests-parallel-final.log",
+      "exit_code": 0,
+      "archived_log": "tests-parallel-final.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "clippy-final.log",
+      "exit_code": 0,
+      "archived_log": "clippy-final.log.gz"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "cyber-nox",
+        "--all-targets",
+        "--features",
+        "parallel",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "clippy-parallel-final.log",
+      "exit_code": 0,
+      "archived_log": "clippy-parallel-final.log.gz"
+    },
+    {
+      "command": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "rs/sequential/compacting/tests/frontier.rs"
+      ],
+      "log": "fmt-helper-final.log",
+      "exit_code": 0,
+      "archived_log": "fmt-helper-final.log.gz"
+    }
+  ]
+}

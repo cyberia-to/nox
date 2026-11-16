@@ -1,0 +1,12 @@
+   Compiling crossbeam-queue v0.3.13
+   Compiling mutants v0.0.3
+   Compiling cyber-lens-core v0.1.2 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/lens/core)
+   Compiling unimem v0.2.0 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/honeycrisp/unimem)
+   Compiling cyber-lens-brakedown v0.2.0 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/lens/brakedown)
+   Compiling acpu v0.2.0 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/honeycrisp/acpu)
+   Compiling cyber-nox v0.3.0 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/nox/rs)
+   Compiling nox-cli v0.2.0 (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/nox/cli)
+    Finished `release` profile [optimized] target(s) in 7.90s
+     Running unittests lib.rs (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/target/release/deps/nox-0c0cc3c99fa7199c)
+     Running unittests main.rs (/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/observe/target/release/deps/nox-beeaf1b1c5f3d5d0)
+   Doc-tests nox

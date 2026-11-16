@@ -1,0 +1,59 @@
+{
+  "production_revision": "1eaa8a494f994e4da6b20509469c1e62624f3f2d",
+  "branch": "chore/0.4-prefix-frontier",
+  "changed_tracked_files": "rs/sequential/compacting/tests.rs",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14) (Homebrew)",
+  "platform": "Darwin galapot 25.4.0 Darwin Kernel Version 25.4.0: Thu Mar 19 19:33:25 PDT 2026; root:xnu-12377.101.15~1/RELEASE_ARM64_T6041 arm64",
+  "siblings": {
+    "hemera": "a931a0a8e7ed369852ce0f8bc6451a59745ee692",
+    "strata": "d2eb1763b8caf04e6c7647ac6fe99761519c2ef9",
+    "trident": "90ac882be8fe8b7af861ac8d8ba7aa9e9f291eb9"
+  },
+  "files": [
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/scaled-prefix.dag",
+      "bytes": 8306632,
+      "sha256": "12d6420e22d48a5ce6629ee8916f0af78e463be0ff6e7da3612ac5ae082b5c7d"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/compacting-closure-files-1ipul9q9/job.dag",
+      "bytes": 6752255,
+      "sha256": "77ed0d6e18e956952717cfd357e9ebd07626e0fe00b3f9a61cdb63adab48705f"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/compacting-closure.json",
+      "bytes": 119404,
+      "sha256": "be3a1bd1c91a6efda1062f60b7b5f8d67061e014573a2dc43ea7ffe51a8c2e92"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/measurements/scaled-inventory.json",
+      "bytes": 357053,
+      "sha256": "de7681059b2d6b0f54602ef0f541fb6cb56eb73c32010724ccda77077261ecf7"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/trident/tests/fixtures/native_selfhost_prefix.tri",
+      "bytes": 3971,
+      "sha256": "9da6fe44ddbc2b2a83151347d54a8c4baa2d6519778b8b5f8c979b2614725cf9"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/rs/sequential/compacting/tests.rs",
+      "bytes": 15818,
+      "sha256": "947d7611a361cfc17963144c5213e6c3979d830bbb8737f83366ee3ffaf11455"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/rs/sequential/compacting/tests/frontier.rs",
+      "bytes": 8984,
+      "sha256": "1fe80bb6404a674e54660e421bf0eb5208abe128ec7c41c7c205056eae23c170"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/target-nox-frontier/release/deps/nox-155be5d25f5b91d7",
+      "bytes": 1910528,
+      "sha256": "a4c080c89595b9e4971caa56ad7f23732f38fbe07d8669a5d2cf705db8b1597a"
+    },
+    {
+      "path": "/Users/master/cyber/.worktrees/selfhost-0.4-full-bootstrap/nox/Cargo.lock",
+      "bytes": 17372,
+      "sha256": "b2e792a2512df027bef6513e36c1eeb08aa724782ef5619eee12cda1b5604e79"
+    }
+  ]
+}

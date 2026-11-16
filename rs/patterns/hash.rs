@@ -1,22 +1,23 @@
-//! pattern 15: hash — structural hash (multi-row, cost 25)
+//! pattern 15: hash — structural hash (multi-row, cost 61)
 //!
 //! Drives a [`hemera::StepSponge`] one round at a time and emits one trace
-//! row per Poseidon2 round (24 rounds) plus a final squeeze row — 25 rows
+//! row per Poseidon2 round (60 rounds: 6 + 6 full, 48 partial, x⁷ everywhere —
+//! hemera 0.4, profile 15) plus a final squeeze row — 61 rows
 //! total. The input rate is the data's cached structural digest (4 elements,
 //! zero-padded to RATE = 8). The output is a 4-element digest derived from
 //! the post-permutation state, wrapped into a hash-data `pair(pair(h0,h1),
 //! pair(h2,h3))`.
 //!
-//! Per-round register layout (k = 0..23):
+//! Per-round register layout (k = 0..59):
 //!   r0  = 15 (tag)               r1 = object Order
 //!   r2  = formula Order         r3 = NIL (set only on squeeze row)
 //!   r4..r7  = state[0..3]        r10..r13 = state[4..7] (rate region)
 //!   r8  = budget_in              r9 = 0 (set only on squeeze row)
 //!   r14 = round index k          r15 = input Order
 //!
-//! Squeeze row (k = 24):
+//! Squeeze row (k = 60):
 //!   r3  = result Order          r4..r7 = output digest (4 elements)
-//!   r9  = budget_out             r14 = 24 (sentinel)
+//!   r9  = budget_out             r14 = 60 (sentinel)
 //!   r10..r13 = state[4..7] of the final post-permutation state
 //!
 //! Reduce.rs skips post-hoc recording for tag=15 (see is_multi_row).
@@ -32,7 +33,15 @@ use hemera::field::Goldilocks as HemeraGold;
 use nebu::Goldilocks;
 
 const RATE: usize = 8;
-const ROUNDS_TOTAL: u64 = 24;
+
+/// Rounds of the hemera permutation the pattern walks, one trace row each.
+/// Fixed at 60 by hemera 0.4 (profile 15); `rounds_match_hemera` pins it.
+pub(crate) const ROUNDS_TOTAL: u64 = 60;
+
+/// Budget cost of pattern 15: one row per round plus the squeeze row.
+/// `reduce::COSTS[15]`, `data::cost::PATTERN_COSTS[15]` and the merkle_verify
+/// jet budget mirror this value; `specs/trace.md` §pattern 15 carries it.
+pub(crate) const HASH_COST: u64 = ROUNDS_TOTAL + 1;
 
 pub fn hash<const N: usize, T: Tracer>(
     reduction: &mut Reduction<N>,
@@ -51,6 +60,13 @@ pub fn hash<const N: usize, T: Tracer>(
         Ok(v) => v,
         Err(o) => return o,
     };
+    finish(reduction, input, budget, row, tracer)
+}
+
+pub(crate) fn finish<const N: usize, T: Tracer>(
+    reduction: &mut Reduction<N>, input: Order, budget: u64,
+    row: &mut TraceRow, tracer: &mut T,
+) -> Outcome {
     let in_digest: Digest = match reduction.digest(input) {
         Some(d) => *d,
         None => return Outcome::Error(ErrorKind::Unavailable),
@@ -154,7 +170,7 @@ fn emit_squeeze_row<T: Tracer>(
     r.r[11] = final_state[5].as_canonical_u64();
     r.r[12] = final_state[6].as_canonical_u64();
     r.r[13] = final_state[7].as_canonical_u64();
-    r.r[14] = ROUNDS_TOTAL; // 24 — sentinel for squeeze
+    r.r[14] = ROUNDS_TOTAL; // 60 — sentinel for squeeze
     r.r[15] = input as u64;
     tracer.record(r);
 }
@@ -196,7 +212,13 @@ mod tests {
     }
 
     #[test]
-    fn hash_emits_25_rows() {
+    fn rounds_match_hemera() {
+        assert_eq!(super::ROUNDS_TOTAL as usize, hemera::ROUNDS_TOTAL);
+        assert_eq!(super::HASH_COST, 61);
+    }
+
+    #[test]
+    fn hash_emits_61_rows() {
         let mut ar = Reduction::<1024>::new();
         let obj = ar.atom(g(0)).unwrap();
         let formula = make_hash(&mut ar, 7);
@@ -206,7 +228,7 @@ mod tests {
             o => panic!("{:?}", o),
         }
         let hash_rows = tracer.0.iter().filter(|r| r.r()[0] == 15).count();
-        assert_eq!(hash_rows, 25, "hash emits 24 round rows + 1 squeeze row");
+        assert_eq!(hash_rows, 61, "hash emits 60 round rows + 1 squeeze row");
     }
 
     #[test]
@@ -240,7 +262,7 @@ mod tests {
         };
         let last = tracer.0.iter().rfind(|r| r.r()[0] == 15).unwrap();
         assert_eq!(last.r()[3], result_id as u64);
-        assert_eq!(last.r()[14], 24, "squeeze sentinel is 24");
+        assert_eq!(last.r()[14], 60, "squeeze sentinel is 60");
     }
 
     #[test]

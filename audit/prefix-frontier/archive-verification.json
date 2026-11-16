@@ -1,0 +1,12 @@
+{
+  "production_revision": "1eaa8a494f994e4da6b20509469c1e62624f3f2d",
+  "scope": "All gzip archives verified against decompressed digests; both helper patches applied in order to an isolated temporary git repository containing base tests.rs. Reconstructed source compared byte for byte.",
+  "commands": [
+    "git show 1eaa8a494f994e4da6b20509469c1e62624f3f2d:rs/sequential/compacting/tests.rs",
+    "gzip -dc audit/prefix-frontier/test-helper.patch.gz | git apply -",
+    "gzip -dc audit/prefix-frontier/post-measure-helper.patch.gz | git apply -"
+  ],
+  "status": "pass",
+  "measured_helper_sha256": "1fe80bb6404a674e54660e421bf0eb5208abe128ec7c41c7c205056eae23c170",
+  "final_helper_sha256": "0a71a8ba6b15e11725ffd5a1a064c7957005726615836073ba3524f4c4ceb12a"
+}

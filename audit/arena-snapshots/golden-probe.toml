@@ -1,0 +1,12 @@
+[package]
+name = "snapshot-v1-golden"
+version = "0.0.0"
+edition = "2024"
+[workspace]
+[[bin]]
+name = "snapshot-v1-golden"
+path = "main.rs"
+[dependencies]
+nox = {package = "cyber-nox", path = "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/nox/rs"}
+nebu = {package = "strata-nebu", path = "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/strata/nebu/rs"}
+hemera = {package = "cyber-hemera", path = "/Users/master/cyber/.worktrees/selfhost-0.4-finalization-20261002/distribution/hemera/rs"}
