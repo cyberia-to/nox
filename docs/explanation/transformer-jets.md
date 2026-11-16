@@ -181,7 +181,7 @@ the loop is self-improving: every cyberlink added increases |E|, raises d*, may 
 |-----------|-------|--------|---------------|
 | verifier jets (recursive-jets) | 5 | proof composition | Tri |
 | binary jets (binary-jets) | 8 | Bt prover | Bt |
-| transformer jets (this proposal) | 7 | compiled inference | Ten, Arc, Bel, Ren, Tok, Tri |
+| transformer jets (this project) | 7 | compiled inference | Ten, Arc, Bel, Ren, Tok, Tri |
 | total | 20 | complete acceleration stack | |
 
 verifier jets are pure Tri. binary jets are pure Bt. transformer jets are the first cross-language composite jets — they compose six of the fourteen proof languages. this validates the [[cyb/languages]] architecture: the languages are independently irreducible, but their compositions produce the complex operations needed for intelligence.
@@ -206,7 +206,7 @@ Percepta built a WASM interpreter inside transformer weights to make LLMs comput
 
 we need none of that. the existing language set already covers every algebraic domain their construction requires. their "programs into weights" vision is our §6.6 compile_weights — already specified. their "exponentially fast attention" is one new Ren primitive. their "execution traces" are our append-only cybergraph (axiom A3).
 
-the languages doc states: "Add any plausible new language — say, a concurrent process calculus or an optimization language — and it turns out to reduce to a composition of existing ones via Nox." this proposal confirms it: a compiled transformer inference engine — the most complex composite operation we've specified — reduces to compositions of Ten, Arc, Bel, Ren, Tok, and Tri. no new language needed.
+the languages doc states: "Add any plausible new language — say, a concurrent process calculus or an optimization language — and it turns out to reduce to a composition of existing ones via Nox." this project confirms it: a compiled transformer inference engine — the most complex composite operation we've specified — reduces to compositions of Ten, Arc, Bel, Ren, Tok, and Tri. no new language needed.
 
 ## open questions
 

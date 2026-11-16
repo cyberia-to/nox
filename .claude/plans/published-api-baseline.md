@@ -11,10 +11,10 @@ remain unchanged. Builds use an external task cache; no production inputs change
 
 The required exact locked v0.2.0 tag gate remains unchanged and red. Its existing
 research explicitly withholds policy-change authority. This task creates an
-executable companion diagnostic and a concrete policy proposal for owner review;
+executable companion diagnostic and a concrete policy project for owner review;
 no successful companion result can replace, waive or mark that gate green.
 No dependency/version edits, source substitutions, tags or publication actions.
-Scope is Nu/Rust tooling, fixture inputs, this proposal and audit evidence.
+Scope is Nu/Rust tooling, fixture inputs, this project and audit evidence.
 
 ## Evidence design
 
@@ -61,5 +61,5 @@ the tag is proposed. State this separation in the machine-readable outcome.
 
 Acceptance for this task: genuine old/current artifacts, executable comparison,
 independent feature-inheritance findings, preserved historical red and a reviewable
-policy proposal. Root reviews this plan before tool implementation; final CODE
+policy project. Root reviews this plan before tool implementation; final CODE
 review and source-bound evidence precede an ordinary tooling commit.

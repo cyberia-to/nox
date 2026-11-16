@@ -6,7 +6,7 @@ optimization without compromise — from sixteen patterns to silicon, preserving
 
 the [[zheng]] verifier for nox is itself a nox program. to achieve recursive proof composition — proving that a proof is valid — the network runs the verifier inside the VM and proves THAT execution.
 
-the verifier is field arithmetic for the sumcheck plus hemera for Fiat-Shamir and the Merkle paths of every opening; its cost is set by [[soft3/proposals/proof-system-repair|the proof-system repair]] (the constraint tiers of the retired design do not hold). the five nebu jets accelerate both verification and general-purpose computation.
+the verifier is field arithmetic for the sumcheck plus hemera for Fiat-Shamir and the Merkle paths of every opening; its cost is set by [[soft3/projects/proof-system-repair|the proof-system repair]] (the constraint tiers of the retired design do not hold). the five nebu jets accelerate both verification and general-purpose computation.
 
 the sixteen patterns can express these operations. the patterns are Turing-complete. but expressing a Poseidon2 permutation as ~2,800 individual add/mul patterns produces ~2,800 rows in the trace, each requiring separate constraint verification. the proof is correct but enormous.
 

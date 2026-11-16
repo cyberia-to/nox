@@ -9,7 +9,7 @@ date: 2026-03-20
 
 can someone implement a working nox VM from the spec, using Rs (~/git/rs) as the implementation language?
 
-nox has 7 canonical spec files (vm, nouns, patterns, reduction, jets, trace, encoding), 3 proposals, 18 explanation docs, and stub implementation (35 lines across 8 modules). Rs has ~6,800 LOC implementation (core + macros + compiler), complete spec, and enforces determinism by construction.
+nox has 7 canonical spec files (vm, nouns, patterns, reduction, jets, trace, encoding), 3 projects, 18 explanation docs, and stub implementation (35 lines across 8 modules). Rs has ~6,800 LOC implementation (core + macros + compiler), complete spec, and enforces determinism by construction.
 
 ## spec completeness — what's ready
 

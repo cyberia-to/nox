@@ -34,4 +34,4 @@ nox depends on two companion crates:
 
 zheng (~/git/zheng/) is a downstream consumer — it takes nox execution traces and produces zheng proofs.
 
-nox is frozen. no roadmap, no proposals. the specification is complete.
+nox is frozen. no roadmap, no projects. the specification is complete.

@@ -3,13 +3,13 @@ title: field members — yin and yang
 tags: cyber, nox, soft3, roadmap
 crystal-type: spec
 crystal-domain: cyber
-status: proposal
-alias: yin yang, field halves, word rename proposal
+status: proposed
+alias: yin yang, field halves, word rename project
 ---
 
 # field members — yin and yang
 
-## proposal
+## project
 
 name the two 32-bit halves of a [[Goldilocks field]] element `yin` (low) and `yang` (high), and retire `Word` (= a field proven in `[0,2³²)`) — which frees `word` for [[neural]]'s lexical unit.
 

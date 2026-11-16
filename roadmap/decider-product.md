@@ -4,7 +4,7 @@ date: 2026-06-09
 author: jet taxonomy review session
 ---
 
-> superseded: this page describes the retired zheng design (Merkle-free Brakedown, unchecked HyperNova fold, ~2 KiB / ~5 μs figures). It is unsound and its numbers do not hold. The repair and the measured numbers live in [[soft3/proposals/proof-system-repair|soft3 proposals/proof-system-repair]].
+> superseded: this page describes the retired zheng design (Merkle-free Brakedown, unchecked HyperNova fold, ~2 KiB / ~5 μs figures). It is unsound and its numbers do not hold. The repair and the measured numbers live in [[soft3/projects/proof-system-repair|soft3 projects/proof-system-repair]].
 
 # decider — fold recursion in
 
@@ -13,16 +13,16 @@ author: jet taxonomy review session
 The decider settles all accumulated chain history in one check. The four
 jets grouped as `recursion` (`poly_eval`, `ntt`, `fri_fold`,
 `merkle_verify`) are not a peer capability — they are field-computation
-ingredients. This proposal dissolves the `recursion` group: `poly_eval`
+ingredients. This project dissolves the `recursion` group: `poly_eval`
 serves the decider, `ntt` moves to the FHE product, and `fri_fold` /
 `merkle_verify` are flagged for a deliberate genesis-inclusion decision.
 Circuit ownership follows the domain — the verifier is zheng's.
 
-Status (2026-10): the decider design this proposal was written against
+Status (2026-10): the decider design this project was written against
 (an unchecked fold, a Brakedown opening without Merkle authentication, constraint
 counts and byte sizes for both) is retired as unsound. The legacy nox
 decider jet verifies nothing (launch #40). Phase 3 of
-[[soft3/proposals/proof-system-repair|the proof-system repair]] replaces it;
+[[soft3/projects/proof-system-repair|the proof-system repair]] replaces it;
 the ownership conclusion below survives, the figures do not.
 
 ## 1. The decider
@@ -93,7 +93,7 @@ merkle_verify    → interop primitive; genesis inclusion under review
 
 ## 6. Note: jets as products
 
-The lens behind this proposal generalizes and is worth recording in
+The lens behind this project generalizes and is worth recording in
 `specs/jets/`: a jet earns its genesis slot because it delivers a *product*
 — a capability a caller wants as an end (tangible, powerful, complete). What
 a caller only uses *inside* something else is an ingredient and belongs under

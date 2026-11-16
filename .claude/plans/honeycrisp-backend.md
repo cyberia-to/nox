@@ -36,7 +36,7 @@ dependencies? Does any proposed repair add an unnecessary implementation?
 
 Investigation complete: unpublished APIs confirmed; source debug/release and
 normalized-package diagnostics pass the independent arithmetic and Nox backend
-checks. Prefer an upstream acpu-only 0.2.1 proposal with explicit package-version
+checks. Prefer an upstream acpu-only 0.2.1 project with explicit package-version
 approval, then a Nox registry-lock update after owner publication. No Nox runtime
 repair is justified by the missing symbols. Whole-upstream release gates remain
 unrun; see the audit for exact identities, results, caveats and owner handoff.

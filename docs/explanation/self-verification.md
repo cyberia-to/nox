@@ -30,7 +30,7 @@ level 1: the verifier (a nox program) takes P₀ as its object and the verificat
 
 level 2: the verifier takes P₁ as its object. it runs. it produces P₂.
 
-each level is a composition, not a compression: P₁ is not smaller than P₀. constant size in the number of steps comes from accumulation (phase 3 of [[soft3/proposals/proof-system-repair|the proof-system repair]]): the nox machine is one uniform step relation, each step's evaluation claims enter an accumulator of one root plus a fixed number of claims, and one WHIR opening decides it. goal: ≤ 64 KB, verify ≤ 1 ms, constant in the number of steps; measured size and time TODO(F-numbers).
+each level is a composition, not a compression: P₁ is not smaller than P₀. constant size in the number of steps comes from accumulation (phase 3 of [[soft3/projects/proof-system-repair|the proof-system repair]]): the nox machine is one uniform step relation, each step's evaluation claims enter an accumulator of one root plus a fixed number of claims, and one WHIR opening decides it. goal: ≤ 64 KB, verify ≤ 1 ms, constant in the number of steps; measured size and time TODO(F-numbers).
 
 ## aggregation
 
@@ -50,7 +50,7 @@ this is the scalability mechanism of [[cyber]]. the chain does not re-execute tr
 
 ## the verifier's cost
 
-the zheng verifier is field arithmetic for the sumcheck plus hemera for Fiat-Shamir and the Merkle paths of every opening. the constraint tiers, per-fold cost and per-level proof size of the retired design do not hold. in a hash-only system recursion composes proofs and leaves their size where it was; the measured verifier cost and the place of recursion are in [[soft3/proposals/proof-system-repair|the proof-system repair]] §4.
+the zheng verifier is field arithmetic for the sumcheck plus hemera for Fiat-Shamir and the Merkle paths of every opening. the constraint tiers, per-fold cost and per-level proof size of the retired design do not hold. in a hash-only system recursion composes proofs and leaves their size where it was; the measured verifier cost and the place of recursion are in [[soft3/projects/proof-system-repair|the proof-system repair]] §4.
 
 ## the verifier as a program
 

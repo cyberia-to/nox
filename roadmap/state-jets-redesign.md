@@ -18,7 +18,7 @@ templates describe operations that no longer exist.
 
 Genesis jets are frozen by axiom A3 (append-only). Freezing a state circuit
 carved against a dead model is the one mistake that is expensive to undo.
-This proposal rewrites the state jet set against the current cybergraph
+This project rewrites the state jet set against the current cybergraph
 axioms (A1–A6) and BBG state model before any genesis commitment.
 
 ## 1. The drift
@@ -182,4 +182,4 @@ the current set is carved against a model bbg no longer implements.
    tri-kernel is a composite (diffusion + springs + heat); its proof shape
    needs cross-checking with bbg.
 4. Coordinate the genesis-digest source of truth with [[decider-product]]
-   — both proposals move circuit ownership out of nox while keeping anchors.
+   — both projects move circuit ownership out of nox while keeping anchors.

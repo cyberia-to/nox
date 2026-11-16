@@ -43,7 +43,7 @@ retained. The source revisions below are historical exact inputs, not dirty
 working trees. Each direct Hemera path resolves to the same sibling location
 as nox's edge in its stated layout.
 
-| Repository and revision | Manifest-level Hemera/std inheritance after the proposal |
+| Repository and revision | Manifest-level Hemera/std inheritance after the project |
 | --- | --- |
 | soft3 `44824e6cf64f5b0b1d7443eea412001e74c5f32e` | `conformance/rs/Cargo.toml` independently enables Hemera defaults; nox also requests brakedown → std. |
 | zheng `5733dfdcc15cbc22fce9f5877b37515d005b8c44` | Both `rs` and `cli` independently enable Hemera defaults and request nox/brakedown → std. |
