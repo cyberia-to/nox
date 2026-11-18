@@ -34,7 +34,7 @@ secret_hash boundary jet: H(shared_secret) → F_p hemera digest
 recursion continuation (F_p)
 ```
 
-zheng folds F_q sub-traces into the F_p accumulator via Porphyry (~766 constraints per crossing).
+zheng folds F_q sub-traces into the F_p accumulator via Porphyry (~1,470 constraints per crossing).
 
 ## hardware mapping
 

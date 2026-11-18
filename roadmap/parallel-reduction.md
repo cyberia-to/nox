@@ -113,7 +113,7 @@ equal-split: a gets 50, halts (101 > 50, but cost(a)=100 > 50 already aborts).
 f = 50, c = 1, so f - c = 49
 cost(a) = 30, cost(b) = 26
 sequential: a runs with 49, succeeds, returns 19. b runs with 19, halts
-            because some inner step needs 61 > 19. Result: Halt(x_b_seq).
+            because some inner step needs 25 > 19. Result: Halt(x_b_seq).
 parallel-full-budget: a runs with 49, succeeds (used 30, returns 19).
                        b runs with 49 (parallel sees full budget!), succeeds
                        (used 26, returns 23). Join: total work = 1+30+26=57 > 50.
