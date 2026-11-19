@@ -21,14 +21,14 @@ no VM values and must only implement resource supervision, never guest work or
 witnesses. It is cooperative; it cannot preempt an allocator, tracer callback
 or an individual pattern finalizer. The plain entrypoint never cancels.
 
-Tags0..15 retain sequential recursive semantics, dispatch costs, binary
+Tags 0..15 retain sequential recursive semantics, dispatch costs, binary
 left-before-right evaluation, after-both-children type checks, bound reservation
 and success refunds, chosen-arm evaluation, native dynamic compose and exact
 postorder trace columns. Error paths keep existing partial multirow behavior.
 Bounds are upper bounds; a branch may run below its worst arm's bound. Failed
 child outcomes propagate without fabricated reservation refunds.
 
-Reached tag16/17 returns UnsupportedService before dispatch charging or child
+Reached tag 16/17 returns UnsupportedService before dispatch charging or child
 execution. Those numbers are allowed inside quoted data. This entrypoint has
 no registry/provider argument, never invokes jets or the parallel evaluator,
 and remains sequential when the optional parallel feature is enabled.
@@ -44,7 +44,7 @@ Zheng production coverage for dynamic applications or compiler workloads.
 Acceptance: differential small pure formulas compare every trace column,
 result/budget and node allocation order against the recursive sequential path;
 failures include malformed/type/word/inverse/budget/allocation cases. A compact
-runtime loop exceeds4097 iterations without formula expansion. Exact frame
+runtime loop exceeds 4097 iterations without formula expansion. Exact frame
 bounds and unsupported reached services fail explicitly. Optional parallel
 builds must pass the new entrypoint's deterministic fixtures independently.
 

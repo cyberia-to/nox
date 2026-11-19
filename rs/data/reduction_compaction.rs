@@ -162,13 +162,17 @@ impl Scratch {
 
 impl<const N: usize> Reduction<N> {
     /// Maximum distinct nodes admitted by this arena, including loaded data.
-    pub fn allocation_limit(&self) -> u32 { self.allocation_limit }
+    pub fn allocation_limit(&self) -> u32 {
+        self.allocation_limit
+    }
 
     /// Tighten the arena's lifetime node allowance. Existing nodes stay valid;
     /// hash-cons hits still succeed at the limit. A rejected change is inert.
     /// The limit cannot be raised, even after a failed allocation.
     pub fn limit_allocations(&mut self, limit: u32) -> bool {
-        if limit < self.count || limit > self.allocation_limit { return false; }
+        if limit < self.count || limit > self.allocation_limit {
+            return false;
+        }
         self.allocation_limit = limit;
         true
     }
