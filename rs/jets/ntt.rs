@@ -22,7 +22,6 @@
 
 extern crate alloc;
 
-
 use crate::call::CallProvider;
 #[cfg(test)]
 use crate::data::Data;

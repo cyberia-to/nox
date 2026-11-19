@@ -7,8 +7,10 @@
 # checked out side by side.
 # The `lockfile` job resolves that stand and uploads the resulting Cargo.lock
 # as an artifact so it can be committed.
-# The `test` job runs `cargo test --locked` in `rs`, exactly the release train's
-# `stack-nox` gate, then builds `cli`.
+# The `test` job checks formatting, then runs `cargo test --locked` in `rs`,
+# exactly the release train's `stack-nox` gate, then builds `cli`.
+# The `no_std` job runs AGENTS.md's no_std dependency gate: a library build for
+# `thumbv7em-none-eabi` with no default features.
 name: CI
 
 on:
@@ -101,12 +103,55 @@ jobs:
           path: honeycrisp
           ref: ${{ env.HONEYCRISP_REF }}
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: nox
+      - name: cargo fmt --check
+        run: cargo fmt --all --check
+        working-directory: nox
       - name: cargo test (rs)
         run: cargo test --locked
         working-directory: nox/rs
       - name: cargo build (cli)
         run: cargo build --locked
         working-directory: nox/cli
+
+  no_std:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: nox
+      - uses: actions/checkout@v4
+        with:
+          repository: cyberia-to/strata
+          path: strata
+          ref: ${{ env.STRATA_REF }}
+      - uses: actions/checkout@v4
+        with:
+          repository: cyberia-to/hemera
+          path: hemera
+          ref: ${{ env.HEMERA_REF }}
+      - uses: actions/checkout@v4
+        with:
+          repository: cyberia-to/lens
+          path: lens
+          ref: ${{ env.LENS_REF }}
+      - uses: actions/checkout@v4
+        with:
+          repository: cyberia-to/honeycrisp
+          path: honeycrisp
+          ref: ${{ env.HONEYCRISP_REF }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv7em-none-eabi
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: nox
+      # AGENTS.md "no_std dependency gate": a missing target or dependency is a
+      # red prerequisite, not a passed gate, so this job fails rather than skips.
+      - name: cargo build (no_std, thumbv7em-none-eabi)
+        run: cargo build -p cyber-nox --no-default-features --target thumbv7em-none-eabi --locked
+        working-directory: nox

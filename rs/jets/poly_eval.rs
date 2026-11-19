@@ -19,7 +19,6 @@
 
 extern crate alloc;
 
-
 use crate::call::CallProvider;
 use crate::data::{Order, Reduction};
 use crate::reduce::{ErrorKind, Outcome};

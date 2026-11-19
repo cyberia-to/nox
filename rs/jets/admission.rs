@@ -1,7 +1,7 @@
 //! Bounded, allocation-free admission shared by CPU and accelerated backends.
-use super::registry::{digest_key, DigestKey};
+use super::registry::{DigestKey, digest_key};
 use crate::data::{Order, Reduction};
-use crate::reduce::{pair_children, ErrorKind};
+use crate::reduce::{ErrorKind, pair_children};
 
 pub const MAX_ACCELERATED_DEPTH: u32 = 16;
 pub const MAX_ACCELERATED_WORDS: usize = 1 << MAX_ACCELERATED_DEPTH;

@@ -24,10 +24,10 @@ use alloc::vec::Vec;
 use crate::call::CallProvider;
 use crate::data::hash::hash_pair;
 use crate::data::{Data, Order, Reduction};
+use crate::patterns::hash::HASH_COST;
 use crate::reduce::{ErrorKind, Outcome, make_field, pair_children};
 use crate::trace::{TraceRow, Tracer};
 use hemera::StepSponge;
-use crate::patterns::hash::HASH_COST;
 use hemera::field::Goldilocks as HemeraGold;
 use nebu::Goldilocks;
 
