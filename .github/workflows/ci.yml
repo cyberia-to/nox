@@ -7,8 +7,9 @@
 # checked out side by side.
 # The `lockfile` job resolves that stand and uploads the resulting Cargo.lock
 # as an artifact so it can be committed.
-# The `test` job checks formatting, then runs `cargo test --locked` in `rs`,
-# exactly the release train's `stack-nox` gate, then builds `cli`.
+# The `test` job runs `cargo test --locked` in `rs`, exactly the release
+# train's `stack-nox` gate, then builds `cli`, then checks formatting last so a
+# formatting nit cannot mask the gate's result.
 # The `no_std` job runs AGENTS.md's no_std dependency gate: a library build for
 # `thumbv7em-none-eabi` with no default features.
 name: CI
@@ -108,15 +109,17 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: nox
-      - name: cargo fmt --check
-        run: cargo fmt --all --check
-        working-directory: nox
       - name: cargo test (rs)
         run: cargo test --locked
         working-directory: nox/rs
       - name: cargo build (cli)
         run: cargo build --locked
         working-directory: nox/cli
+      # nox's own two packages only: `--all` would reach the sibling path
+      # dependencies checked out beside us, whose formatting is their repos'.
+      - name: cargo fmt --check
+        run: cargo fmt -p cyber-nox -p nox-cli --check
+        working-directory: nox
 
   no_std:
     runs-on: ubuntu-latest
