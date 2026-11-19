@@ -215,6 +215,8 @@ mod tests {
     fn rounds_match_hemera() {
         assert_eq!(super::ROUNDS_TOTAL as usize, hemera::ROUNDS_TOTAL);
         assert_eq!(super::HASH_COST, 61);
+        assert_eq!(crate::reduce::cost(15), super::HASH_COST);
+        assert_eq!(crate::data::cost::PATTERN_COSTS[15], super::HASH_COST);
     }
 
     #[test]

@@ -735,8 +735,6 @@ mod tests {
         assert_eq!(cost(10), 64); // lt
         assert_eq!(cost(11), 32); // xor
         assert_eq!(cost(15), 61); // hash (60 rounds + 1 squeeze)
-        assert_eq!(cost(15), crate::patterns::hash::HASH_COST);
-        assert_eq!(cost(15), crate::data::cost::PATTERN_COSTS[15]);
         assert_eq!(cost(99), 1); // unknown tag → default
     }
 

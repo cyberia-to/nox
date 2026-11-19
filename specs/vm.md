@@ -56,7 +56,7 @@ mul cost = base F_p multiplications per one regime-native multiply. constraints/
 | hash | 61 | 61 | 61 | 61 | deferred | 61 | 61 | deferred |
 | zheng/mul | ~32 | 3 | 6 | 9 | 1 | ~N (batch) | O(w) | 1 F_q |
 
-"—" = operation not defined or not meaningful for this regime. n = ring degree (1024). deferred = hemera computed at settlement boundary (~766 constraints). all costs are execution budget; zheng constraint counts are per-instantiation (see [[patterns]]).
+"—" = operation not defined or not meaningful for this regime. n = ring degree (1024). deferred = hemera computed at settlement boundary (~1,440 constraints). all costs are execution budget; zheng constraint counts are per-instantiation (see [[patterns]]).
 
 five arithmetics (repos): nebu (4 regimes), kuro (1), jali (1), trop (1), genies (1).
 five lenses (zheng): Brakedown (4 regimes), Binius (1), Ikat (1), Porphyry (1), Assayer (1).
@@ -80,7 +80,7 @@ Iso, Shade         genies      Isogeny         isogeny jets (group_action, ...)
 
 cross-regime boundary: where types change. the Trident compiler inserts hemera commitments at type transitions — no manual boundary management. nox VM executes uniformly (18 patterns). zheng partitions the trace by operand types and proves each partition through its native lens. zheng accumulates all partitions into one accumulator.
 
-boundary cost: ~766 F_p constraints per type transition (30 field ops + 1 hemera hash).
+boundary cost: ~1,470 F_p constraints per type transition (30 field ops + 1 hemera hash).
 
 ### how the eight regimes enter nox
 
@@ -101,14 +101,14 @@ boundary cost: ~766 F_p constraints per type transition (30 field ops + 1 hemera
 a single Trident program can use multiple types from different algebras. the Trident compiler inserts hemera commitments at type transitions. nox executes uniformly. zheng partitions the trace by operand type and proves each partition through its native lens. zheng accumulates all partitions into one F_p accumulator. one decider, one proof.
 
 ```
-boundary cost: ~766 F_p constraints per type transition
+boundary cost: ~1,470 F_p constraints per type transition
                (30 field ops + 1 hemera hash)
 
 example — FHE bootstrapping uses three types:
-  Lattice → Bit (gadget_decomp)          ~766
-  Bit → Lattice (blind rotation)         ~766
-  Lattice → Field (key switching)        ~766
-  total boundary:                        ~2,298
+  Lattice → Bit (gadget_decomp)          ~1,470
+  Bit → Lattice (blind rotation)         ~1,470
+  Lattice → Field (key switching)        ~1,470
+  total boundary:                        ~4,410
 
 the programmer writes:
   fn bootstrap(ct: &Lattice) -> Lattice { ... }

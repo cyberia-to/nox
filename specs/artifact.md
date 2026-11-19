@@ -31,8 +31,8 @@ exactly the root's reachable DAG, with no duplicate particles, unreachable nodes
 missing/forward references or extra bytes. Equal shared children appear once.
 Hash identity has the native collision-resistance assumption.
 
-For example, `[[1 2] 3]` emits atoms 1,2, pair[1,2], atom3, root. `[1 [2 3]]`
-emits atoms1,2,3, pair[2,3], root. Both root identities and artifact bytes differ.
+For example, `[[1 2] 3]` emits atoms 1,2, pair[1,2], atom 3, root. `[1 [2 3]]`
+emits atoms 1,2,3, pair[2,3], root. Both root identities and artifact bytes differ.
 `[x x]` emits the complete DAG of x once, followed by the pair root.
 
 ## Bounds and failure
